@@ -1,0 +1,35 @@
+{
+	"name": "Dreamcast Environment",
+	// Docker image
+	"image": "maishuji/dc-kos-image:14.2.1-dev-08feb25-kp01feb25-gl07dec24",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools-extension-pack",
+				"donjayamanne.githistory",
+				"eamodio.gitlens",
+				"github.vscode-github-actions",
+				"shd101wyy.markdown-preview-enhanced"
+			]
+		}
+	},
+	"updateRemoteUserUID": true,
+	"mounts": [
+		"type=bind,source=${localEnv:HOME}/.ssh/,target=/home/non-root/.ssh/,readonly"
+	],
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "uname -a",
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	"remoteUser": "non-root"
+}
