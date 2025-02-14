@@ -22,20 +22,10 @@ int main(int argc, char **argv)
 	cont_state_t *cont;
 
 	InitWindow(640, 480, "Block stacking puzzle game in KOS!");
-	Camera camera = {0};
-	camera.position = (Vector3){4.0f, 4.0f, 4.0f}; // Camera position
-	camera.target = (Vector3){0.0f, 0.0f, 0.0f};   // Look-at point
-	camera.up = (Vector3){0.0f, 1.0f, 0.0f};	   // Camera up vector
-	camera.fovy = 45.0f;						   // Field of view
-
-	float rotationAngle = 0.0f; // Cube rotation angle
-
+	Rectangle r = Rectangle(40, 30, 200, 200);
 	SetTargetFPS(60);
 	while (true)
 	{
-		rotationAngle += 1.0f; // Increment rotation angle
-		if (rotationAngle >= 360.0f)
-			rotationAngle -= 360.0f;
 		controller = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
 		if (controller)
 		{
@@ -55,25 +45,14 @@ int main(int argc, char **argv)
 			}
 		}
 		BeginDrawing();
-		ClearBackground(RAYWHITE);
-		BeginMode3D(camera);
+		ClearBackground(RAYWHITE); // Clear the background with a color
 
-		rlPushMatrix();
-		rlRotatef(rotationAngle, 0.0f, 1.0f, 0.0f); // Rotate around the Y-axis
-		DrawCube((Vector3){0.0f, 0.0f, 0.0f}, 2.0f, 2.0f, 2.0f, RED);
-		DrawCubeWires((Vector3){0.0f, 0.0f, 0.0f}, 2.0f, 2.0f, 2.0f, DARKGRAY);
-
-		rlPopMatrix();
-
-		EndMode3D();
-
+        // Draw the rectangle
+        DrawRectangleRec(r, BLUE);
+		
 		DrawText("Hello, World. Press START to break.\n", 10, 10, 20, RED);
 
-		std::string text = "Rotation angle: ";
-		text += std::to_string(rotationAngle);
 
-		DrawText(text.c_str(), 10, 30, 20, RED);
-		// DrawRectangle(165, 145, 310, 210, BLACK);
 		DrawFPS(10, 50); // Draw FPS counter
 
 		EndDrawing();

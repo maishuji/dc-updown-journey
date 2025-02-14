@@ -1,1 +1,1 @@
-add_subdirectory(my_module)
+add_subdirectory(udjourney)
