@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "Dreamcast",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/toolchains/dc/kos-ports/include/",
+                "/usr/include/c++/14.2.0/",
+                "/usr/include/c++/14.2.0/x86_64-alpine-linux-musl/"
+            ],
+            "defines": [],
+            "compilerPath": "/opt/toolchains/dc/kos/utils/build_wrappers/kos-c++",
+            "cStandard": "gnu17",
+            "cppStandard": "c++20",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "intelliSenseMode": "linux-gcc-x86"
+        }
+    ],
+    "version": 4
+}

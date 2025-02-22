@@ -4,8 +4,13 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
     cmake_policy(SET CMP0135 NEW)
 endif()
 
-set(TARGET_NAME "my_module")
-add_executable(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+set(TARGET_NAME "upown-journey")
+add_executable(${TARGET_NAME} 
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Platform.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Game.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Player.cpp
+)
 set_target_properties(${TARGET_NAME} PROPERTIES
                       CMAKE_CXX_STANDARD 20
                       CXX_EXTENSIONS OFF
