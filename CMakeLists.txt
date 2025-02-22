@@ -17,6 +17,8 @@ find_program(IWYU_PATH NAMES include-what-you-use iwyu)
 # Global cmake variables
 # ------------------------------------------ #
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True) # Enfore the use of C++20
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # ------------------------------------------ #
 # Subdirectories
