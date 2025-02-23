@@ -9,6 +9,7 @@
 
 #include "IActor.hpp"
 #include "Platform.hpp"
+#include "Player.hpp"
 
 const double kUpdateInterval = 0.06;
 
@@ -40,6 +41,9 @@ Game::Game(int w, int h) : IGame(), m_state(GameState::TITLE)
 void Game::run()
 {
 	m_actors = init_platforms(*this);
+	std::unique_ptr<IActor> player = std::make_unique<Player>(*this, Rectangle(320, 240, 20, 20));
+	m_actors.push_back(std::move(player));
+	// m_actors.emplace_back(std::make_unique<Player>(*this, Rectangle(320, 240, 20, 20)));
 
 	InitWindow(r.width, r.height, "Up-Down Journey");
 	SetTargetFPS(60);
