@@ -1,6 +1,6 @@
 #include "Platform.hpp"
 
-Platform::Platform(Rectangle r) : r(r)
+Platform::Platform(IGame &game, Rectangle r) : IActor(game), r(r)
 {
 }
 

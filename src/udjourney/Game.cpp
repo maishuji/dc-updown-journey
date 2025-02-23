@@ -14,7 +14,7 @@ const double kUpdateInterval = 0.06;
 
 Rectangle r;
 
-std::vector<std::unique_ptr<IActor>> init_platforms()
+std::vector<std::unique_ptr<IActor>> init_platforms(Game &game)
 {
 	std::vector<std::unique_ptr<IActor>> res;
 	int lastx = 0;
@@ -23,7 +23,7 @@ std::vector<std::unique_ptr<IActor>> init_platforms()
 	for (int i = 0; i < 800; i += 100)
 	{
 		auto r = Rectangle(lastx, i, lastx2, 5);
-		res.emplace_back(std::make_unique<Platform>(r));
+		res.emplace_back(std::make_unique<Platform>(game, r));
 		int ra = std::rand();
 		lastx = (ra % 10) * 50;
 		lastx2 = ra % 100 + 50;
@@ -31,7 +31,7 @@ std::vector<std::unique_ptr<IActor>> init_platforms()
 	return res;
 }
 
-Game::Game(int w, int h)
+Game::Game(int w, int h) : IGame(), m_state(GameState::TITLE)
 {
 	r = Rectangle(0, 0, w, h);
 	m_actors.reserve(10);
@@ -39,7 +39,7 @@ Game::Game(int w, int h)
 
 void Game::run()
 {
-	m_actors = init_platforms();
+	m_actors = init_platforms(*this);
 
 	InitWindow(r.width, r.height, "Up-Down Journey");
 	SetTargetFPS(60);

@@ -3,9 +3,8 @@
 #include "raylib/raymath.h"
 #include "raylib/rlgl.h"
 
-Player::Player(Rectangle r) {
-
-};
+Player::Player(IGame &game, Rectangle r) : IActor(game), r(r) {
+                                           };
 
 void Player::draw() const
 {

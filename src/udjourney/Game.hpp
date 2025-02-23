@@ -7,6 +7,7 @@
 #include <kos.h>           // maple_device_t, cont_state_t
 #include <raylib/raylib.h> // Rectangle
 
+#include "IGame.hpp"
 #include "IActor.hpp"
 
 enum class GameState : uint8_t
@@ -17,14 +18,14 @@ enum class GameState : uint8_t
     GAMEOVER
 };
 
-class Game
+class Game : public IGame
 {
 public:
     Game(int w, int h);
-    void run();
-    void update();
-    void add_actor(std::unique_ptr<IActor> actor);
-    void remove_actor(IActor &actor);
+    void run() override;
+    void update() override;
+    void add_actor(std::unique_ptr<IActor> actor) override;
+    void remove_actor(IActor &actor) override;
     void process_input(cont_state_t *cont);
 
 private:
