@@ -31,3 +31,8 @@ void Player::update(float delta)
         r.y += 1;
     }
 }
+
+void Player::process_input(cont_state_t *cont)
+{
+    // Do nothing
+}

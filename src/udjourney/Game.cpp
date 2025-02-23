@@ -1,15 +1,17 @@
 #include "Game.hpp"
 
 #include <vector>
+#include <algorithm>
 
 #include <kos.h>
 #include "raylib/raymath.h"
 #include "raylib/rlgl.h"
 
-#include "Actor.hpp"
+#include "IActor.hpp"
 #include "Platform.hpp"
 
-std::vector<std::unique_ptr<IActor>> platforms;
+const double kUpdateInterval = 0.06;
+
 Rectangle r;
 
 std::vector<std::unique_ptr<IActor>> init_platforms()
@@ -32,57 +34,127 @@ std::vector<std::unique_ptr<IActor>> init_platforms()
 Game::Game(int w, int h)
 {
 	r = Rectangle(0, 0, w, h);
-	platforms.reserve(10);
+	m_actors.reserve(10);
 }
 
 void Game::run()
 {
+	m_actors = init_platforms();
 
-	maple_device_t *controller;
-	cont_state_t *cont;
-	platforms = init_platforms();
-
-	InitWindow(r.width, r.height, "Block stacking puzzle game in KOS!");
+	InitWindow(r.width, r.height, "Up-Down Journey");
 	SetTargetFPS(60);
+	last_update_time = GetTime();
+
 	while (true)
 	{
-		controller = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
-		if (controller)
+		update();
+	}
+}
+
+void Game::add_actor(std::unique_ptr<IActor> actor)
+{
+	if (m_updating_actors)
+	{
+		m_pending_actors.push_back(std::move(actor));
+	}
+	else
+	{
+		m_actors.push_back(std::move(actor));
+	}
+}
+
+void Game::remove_actor(IActor &actor)
+{
+	auto iter = std::find_if(
+		m_actors.begin(),
+		m_actors.end(),
+		[&actor](const std::unique_ptr<IActor> &p)
 		{
-			cont = (cont_state_t *)maple_dev_status(controller);
-			if (cont->buttons & CONT_DPAD_UP)
-			{
-			}
-			else if (cont->buttons & CONT_DPAD_DOWN)
-			{
-			}
-			else if (cont->buttons & CONT_A)
-			{
-			}
-			else if (cont->buttons & CONT_START)
-			{
-				break;
-			}
-		}
-		for (auto &p : platforms)
+			return p.get() == &actor;
+		});
+	if (iter != m_actors.end())
+	{
+		m_actors.erase(iter);
+	}
+}
+
+void Game::process_input(cont_state_t *cont)
+{
+	for (auto &a : m_actors)
+	{
+		a->process_input(cont);
+	}
+}
+
+void Game::update()
+{
+	// Update actors
+	if (m_state == GameState::PLAY)
+	{
+		m_updating_actors = true;
+		for (auto &p : m_actors)
 		{
 			p->update(0.0f);
 		}
-		// TODO
-		BeginDrawing();
-		ClearBackground(RAYWHITE); // Clear the background with a color
+		m_updating_actors = false;
 
-		// Draw the rectangle
-		// DrawRectangleRec(r, BLUE);
+		// Move pending actors to actors
+		for (auto &pa : m_pending_actors)
+		{
+			m_actors.push_back(std::move(pa));
+		}
+		m_pending_actors.clear();
 
-		DrawText("Hello, World. Press START to break.\n", 10, 10, 20, RED);
-		for (const auto &p : platforms)
+		// TODO: Remove dead actors
+
+	} // GameState::PLAY
+
+	double cur_update_time = GetTime();
+	if (cur_update_time - last_update_time > kUpdateInterval)
+	{
+		maple_device_t *controller = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
+		if (controller)
+		{
+			cont_state_t *cont = (cont_state_t *)maple_dev_status(controller);
+			if (cont)
+			{
+
+				// Preprocessing of input
+				if (cont->buttons & CONT_START)
+				{
+					if (m_state == GameState::PLAY)
+						m_state = GameState::PAUSE;
+					else
+						m_state = GameState::PLAY;
+				}
+				process_input(cont);
+			}
+		}
+		for (auto &p : m_actors)
+		{
+			p->update(0.0f);
+		}
+		last_update_time = cur_update_time;
+	}
+
+	// TODO
+	BeginDrawing();
+	ClearBackground(RAYWHITE); // Clear the background with a color
+
+	// Draw the rectangle
+	// DrawRectangleRec(r, BLUE);
+
+	DrawText("Hello, World. Press START to break.\n", 10, 10, 20, RED);
+
+	if (m_state == GameState::PLAY)
+	{
+		for (const auto &p : m_actors)
 		{
 			p->draw();
 		}
+	} // GameState::PLAY
 
-		DrawFPS(10, 50); // Draw FPS counter
+	DrawFPS(10, 50); // Draw FPS counter
 
-		EndDrawing();
-	}
+	EndDrawing();
 }

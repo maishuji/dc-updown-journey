@@ -18,3 +18,8 @@ void Platform::update(float delta)
         r.y = 480;
     }
 }
+
+void Platform::process_input(cont_state_t *t)
+{
+    // Do nothing
+}

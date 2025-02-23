@@ -5,6 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/opt/toolchains/dc/kos-ports/include/",
+                "/opt/toolchains/dc/kos/kernel/arch/dreamcast/include/",
                 "/usr/include/c++/14.2.0/",
                 "/usr/include/c++/14.2.0/x86_64-alpine-linux-musl/"
             ],
