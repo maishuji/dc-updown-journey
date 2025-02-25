@@ -29,6 +29,7 @@ public:
     void process_input(cont_state_t *cont);
 
 private:
+    void draw() const;
     std::vector<std::unique_ptr<IActor>> m_pending_actors;
     std::vector<std::unique_ptr<IActor>> m_actors;
     std::vector<std::unique_ptr<IActor>> m_dead_actors;

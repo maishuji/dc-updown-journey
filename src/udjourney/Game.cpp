@@ -90,6 +90,29 @@ void Game::process_input(cont_state_t *cont)
 	}
 }
 
+void Game::draw() const {
+		// TODO
+	BeginDrawing();
+	ClearBackground(RAYWHITE); // Clear the background with a color
+
+	// Draw the rectangle
+	// DrawRectangleRec(r, BLUE);
+
+	DrawText("Hello, World. Press START to break.\n", 10, 10, 20, RED);
+
+	if (m_state == GameState::PLAY)
+	{
+		for (const auto &p : m_actors)
+		{
+			p->draw();
+		}
+	} // GameState::PLAY
+
+	DrawFPS(10, 50); // Draw FPS counter
+
+	EndDrawing();
+}
+
 void Game::update()
 {
 	// Update actors
@@ -140,25 +163,5 @@ void Game::update()
 		}
 		last_update_time = cur_update_time;
 	}
-
-	// TODO
-	BeginDrawing();
-	ClearBackground(RAYWHITE); // Clear the background with a color
-
-	// Draw the rectangle
-	// DrawRectangleRec(r, BLUE);
-
-	DrawText("Hello, World. Press START to break.\n", 10, 10, 20, RED);
-
-	if (m_state == GameState::PLAY)
-	{
-		for (const auto &p : m_actors)
-		{
-			p->draw();
-		}
-	} // GameState::PLAY
-
-	DrawFPS(10, 50); // Draw FPS counter
-
-	EndDrawing();
+	draw();
 }
