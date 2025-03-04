@@ -12,6 +12,7 @@
 #include "Player.hpp"
 
 const double kUpdateInterval = 0.06;
+std::unique_ptr<Player> player = nullptr;
 
 Rectangle r;
 
@@ -41,9 +42,9 @@ Game::Game(int w, int h) : IGame(), m_state(GameState::TITLE)
 void Game::run()
 {
 	m_actors = init_platforms(*this);
-	std::unique_ptr<IActor> player = std::make_unique<Player>(*this, Rectangle(320, 240, 20, 20));
-	m_actors.push_back(std::move(player));
-	// m_actors.emplace_back(std::make_unique<Player>(*this, Rectangle(320, 240, 20, 20)));
+	player = std::make_unique<Player>(*this, Rectangle(320, 240, 20, 20));
+	// m_actors.push_back(std::move(player));
+	//  m_actors.emplace_back(std::make_unique<Player>(*this, Rectangle(320, 240, 20, 20)));
 
 	InitWindow(r.width, r.height, "Up-Down Journey");
 	SetTargetFPS(60);
@@ -88,10 +89,12 @@ void Game::process_input(cont_state_t *cont)
 	{
 		a->process_input(cont);
 	}
+	player->process_input(cont);
 }
 
-void Game::draw() const {
-		// TODO
+void Game::draw() const
+{
+	// TODO
 	BeginDrawing();
 	ClearBackground(RAYWHITE); // Clear the background with a color
 
@@ -106,7 +109,9 @@ void Game::draw() const {
 		{
 			p->draw();
 		}
-	} // GameState::PLAY
+		player->draw();
+	}
+	// GameState::PLAY
 
 	DrawFPS(10, 50); // Draw FPS counter
 
@@ -123,6 +128,8 @@ void Game::update()
 		{
 			p->update(0.0f);
 		}
+		player->update(0.0f);
+
 		m_updating_actors = false;
 
 		// Move pending actors to actors
@@ -161,7 +168,11 @@ void Game::update()
 		{
 			p->update(0.0f);
 		}
+		player->update(0.0f);
 		last_update_time = cur_update_time;
 	}
+
+	player->handle_collision(m_actors);
+
 	draw();
 }

@@ -14,6 +14,8 @@ public:
     virtual void draw() const = 0;
     virtual void update(float delta) = 0;
     virtual void process_input(cont_state_t *t) = 0;
+    virtual Rectangle get_rectangle() const = 0;
+    virtual bool check_collision(const IActor &other) const = 0;
 
 private:
     IGame *m_game = nullptr;

@@ -33,3 +33,40 @@ void Player::process_input(cont_state_t *cont)
         r.y += 5;
     }
 }
+
+void Player::resolve_collision(const IActor &platform) noexcept
+{
+    Rectangle platformRect = platform.get_rectangle();
+
+    if (CheckCollisionRecs(r, platformRect))
+    {
+        if (r.x < platformRect.x)
+        {
+            r.x = platformRect.x - r.width;
+        }
+        else if (r.x > platformRect.x)
+        {
+            r.x = platformRect.x + platformRect.width;
+        }
+
+        if (r.y < platformRect.y)
+        {
+            r.y = platformRect.y - r.height;
+        }
+        else if (r.y > platformRect.y)
+        {
+            r.y = platformRect.y + platformRect.height;
+        }
+    }
+}
+
+void Player::handle_collision(const std::vector<std::unique_ptr<IActor>> &platforms) noexcept
+{
+    for (const auto &platform : platforms)
+    {
+        if (check_collision(*platform))
+        {
+            resolve_collision(*platform);
+        }
+    }
+}

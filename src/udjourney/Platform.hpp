@@ -16,6 +16,8 @@ public:
     void draw() const override;
     void update(float delta) override;
     void process_input(cont_state_t *t) override;
+    Rectangle get_rectangle() const override { return r; }
+    bool check_collision(const IActor &other) const override { return CheckCollisionRecs(r, other.get_rectangle()); }
 
 private:
     Rectangle r;
