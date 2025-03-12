@@ -20,6 +20,7 @@ public:
     void handle_collision(const std::vector<std::unique_ptr<IActor>> &platforms) noexcept;
     Rectangle get_rectangle() const override { return r; }
     bool check_collision(const IActor &other) const override { return CheckCollisionRecs(r, other.get_rectangle()); }
+    inline constexpr uint8_t get_group_id() const override { return 0; }
 
 private:
     Rectangle r;

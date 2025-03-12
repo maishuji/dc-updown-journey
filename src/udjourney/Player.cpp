@@ -66,6 +66,7 @@ void Player::handle_collision(const std::vector<std::unique_ptr<IActor>> &platfo
     {
         if (check_collision(*platform))
         {
+            
             resolve_collision(*platform);
         }
     }

@@ -1,5 +1,5 @@
-#ifndef PLATFORM_HPP
-#define PLATFORM_HPP
+#ifndef BONUS_HPP
+#define BONUS_HPP
 
 #include <kos.h> // maple_device_t, cont_state_t
 #include <raylib/raylib.h>
@@ -9,19 +9,19 @@
 #include "IActor.hpp"
 #include "IGame.hpp"
 
-class Platform : public IActor
+class Bonus : public IActor
 {
 public:
-    Platform(IGame &game, Rectangle r);
+    Bonus(IGame &game, Rectangle r);
     void draw() const override;
     void update(float delta) override;
     void process_input(cont_state_t *t) override;
     Rectangle get_rectangle() const override { return r; }
     bool check_collision(const IActor &other) const override { return CheckCollisionRecs(r, other.get_rectangle()); }
-    inline constexpr uint8_t get_group_id() const override { return 1; }
+    inline constexpr uint8_t get_group_id() const override { return 2; }
 
 private:
     Rectangle r;
 };
 
-#endif // PLATFORM_HPP
+#endif // BONUS_HPP

@@ -10,9 +10,11 @@
 #include "IActor.hpp"
 #include "Platform.hpp"
 #include "Player.hpp"
+#include "Bonus.hpp"
 
 const double kUpdateInterval = 0.06;
 std::unique_ptr<Player> player = nullptr;
+unsigned long score = 0;
 
 Rectangle r;
 
@@ -45,6 +47,8 @@ void Game::run()
 	player = std::make_unique<Player>(*this, Rectangle(320, 240, 20, 20));
 	// m_actors.push_back(std::move(player));
 	//  m_actors.emplace_back(std::make_unique<Player>(*this, Rectangle(320, 240, 20, 20)));
+	m_actors.emplace_back(std::make_unique<Bonus>(*this,
+												  Rectangle(300, 300, 20, 20)));
 
 	InitWindow(r.width, r.height, "Up-Down Journey");
 	SetTargetFPS(60);
@@ -102,7 +106,7 @@ void Game::draw() const
 	// DrawRectangleRec(r, BLUE);
 
 	DrawText("Hello, World. Press START to break.\n", 10, 10, 20, RED);
-
+	DrawText(std::to_string(score).c_str(), 10, 30, 20, BLUE);
 	if (m_state == GameState::PLAY)
 	{
 		for (const auto &p : m_actors)
