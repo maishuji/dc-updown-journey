@@ -1,7 +1,11 @@
 #include "Player.hpp"
 
+#include <algorithm>
+
 #include "raylib/raymath.h"
 #include "raylib/rlgl.h"
+
+std::vector<IObserver *> observers;
 
 Player::Player(IGame &game, Rectangle r) : IActor(game), r(r) {};
 
@@ -62,12 +66,29 @@ void Player::resolve_collision(const IActor &platform) noexcept
 
 void Player::handle_collision(const std::vector<std::unique_ptr<IActor>> &platforms) noexcept
 {
+    const uint8_t BONUS_TYPE_ID = 2;
     for (const auto &platform : platforms)
     {
         if (check_collision(*platform))
         {
-            
+
+            if (platform->get_group_id() == BONUS_TYPE_ID)
+                notify("1");
             resolve_collision(*platform);
         }
+    }
+}
+
+// Observable
+void Player::add_observer(IObserver *observer) { observers.push_back(observer); }
+void Player::remove_observer(IObserver *observer)
+{
+    observers.erase(std::remove(observers.begin(), observers.end(), observer), observers.end());
+}
+void Player::notify(const std::string &event)
+{
+    for (auto *observer : observers)
+    {
+        observer->on_notify(event);
     }
 }

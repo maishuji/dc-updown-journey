@@ -9,6 +9,7 @@
 
 #include "IGame.hpp"
 #include "IActor.hpp"
+#include "IObserver.hpp"
 
 enum class GameState : uint8_t
 {
@@ -18,7 +19,7 @@ enum class GameState : uint8_t
     GAMEOVER
 };
 
-class Game : public IGame
+class Game : public IGame, public IObserver
 {
 public:
     Game(int w, int h);
@@ -27,6 +28,7 @@ public:
     void add_actor(std::unique_ptr<IActor> actor) override;
     void remove_actor(IActor &actor) override;
     void process_input(cont_state_t *cont);
+    void on_notify(const std::string &event);
 
 private:
     void draw() const;

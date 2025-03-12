@@ -8,6 +8,7 @@
 
 #include "IGame.hpp"
 #include "IActor.hpp"
+#include "IObserver.hpp"
 
 class Player : public IActor
 {
@@ -20,6 +21,12 @@ public:
     void handle_collision(const std::vector<std::unique_ptr<IActor>> &platforms) noexcept;
     Rectangle get_rectangle() const override { return r; }
     bool check_collision(const IActor &other) const override { return CheckCollisionRecs(r, other.get_rectangle()); }
+
+    // Observable
+    void add_observer(IObserver *observer);
+    void remove_observer(IObserver *observer);
+    void notify(const std::string &event);
+
     inline constexpr uint8_t get_group_id() const override { return 0; }
 
 private:

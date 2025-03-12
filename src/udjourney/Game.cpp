@@ -45,6 +45,7 @@ void Game::run()
 {
 	m_actors = init_platforms(*this);
 	player = std::make_unique<Player>(*this, Rectangle(320, 240, 20, 20));
+	player->add_observer(static_cast<IObserver *>(this));
 	// m_actors.push_back(std::move(player));
 	//  m_actors.emplace_back(std::make_unique<Player>(*this, Rectangle(320, 240, 20, 20)));
 	m_actors.emplace_back(std::make_unique<Bonus>(*this,
@@ -179,4 +180,10 @@ void Game::update()
 	player->handle_collision(m_actors);
 
 	draw();
+}
+
+void Game::on_notify(const std::string &event)
+{
+	int v = std::stoi(event);
+	score += v;
 }
