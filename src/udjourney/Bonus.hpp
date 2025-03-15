@@ -1,7 +1,9 @@
-#ifndef BONUS_HPP
-#define BONUS_HPP
+// Copyright 2025 Quentin Cartier
 
-#include <kos.h> // maple_device_t, cont_state_t
+#ifndef SRC_UDJOURNEY_BONUS_HPP_
+#define SRC_UDJOURNEY_BONUS_HPP_
+
+#include <kos.h>  // maple_device_t, cont_state_t
 #include <raylib/raylib.h>
 #include <raylib/raymath.h>
 #include <raylib/rlgl.h>
@@ -9,19 +11,20 @@
 #include "IActor.hpp"
 #include "IGame.hpp"
 
-class Bonus : public IActor
-{
-public:
-    Bonus(IGame &game, Rectangle r);
+class Bonus : public IActor {
+ public:
+    Bonus(const IGame &game, Rectangle r);
     void draw() const override;
     void update(float delta) override;
     void process_input(cont_state_t *t) override;
     Rectangle get_rectangle() const override { return r; }
-    bool check_collision(const IActor &other) const override { return CheckCollisionRecs(r, other.get_rectangle()); }
+    bool check_collision(const IActor &other) const override {
+        return CheckCollisionRecs(r, other.get_rectangle());
+    }
     inline constexpr uint8_t get_group_id() const override { return 2; }
 
-private:
+ private:
     Rectangle r;
 };
 
-#endif // BONUS_HPP
+#endif  // SRC_UDJOURNEY_BONUS_HPP_

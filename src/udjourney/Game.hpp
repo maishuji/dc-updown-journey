@@ -1,27 +1,23 @@
-#ifndef GAME_HPP
-#define GAME_HPP
+// Copyright 2025 Quentin Cartier
 
-#include <memory> // unique_ptr
-#include <vector> // vector
+#ifndef SRC_UDJOURNEY_GAME_HPP_
+#define SRC_UDJOURNEY_GAME_HPP_
 
-#include <kos.h>           // maple_device_t, cont_state_t
-#include <raylib/raylib.h> // Rectangle
+#include <kos.h>            // maple_device_t, cont_state_t
+#include <raylib/raylib.h>  // Rectangle
 
-#include "IGame.hpp"
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "IActor.hpp"
+#include "IGame.hpp"
 #include "IObserver.hpp"
 
-enum class GameState : uint8_t
-{
-    TITLE,
-    PLAY,
-    PAUSE,
-    GAMEOVER
-};
+enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER };
 
-class Game : public IGame, public IObserver
-{
-public:
+class Game : public IGame, public IObserver {
+ public:
     Game(int w, int h);
     void run() override;
     void update() override;
@@ -30,7 +26,7 @@ public:
     void process_input(cont_state_t *cont);
     void on_notify(const std::string &event);
 
-private:
+ private:
     void draw() const;
     std::vector<std::unique_ptr<IActor>> m_pending_actors;
     std::vector<std::unique_ptr<IActor>> m_actors;
@@ -40,4 +36,4 @@ private:
     double last_update_time = 0.0;
 };
 
-#endif // GAME_HPP
+#endif  // SRC_UDJOURNEY_GAME_HPP_

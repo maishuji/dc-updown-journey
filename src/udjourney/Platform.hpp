@@ -1,7 +1,9 @@
-#ifndef PLATFORM_HPP
-#define PLATFORM_HPP
+// Copyright 2025 Quentin Cartier
 
-#include <kos.h> // maple_device_t, cont_state_t
+#ifndef SRC_UDJOURNEY_PLATFORM_HPP_
+#define SRC_UDJOURNEY_PLATFORM_HPP_
+
+#include <kos.h>  // maple_device_t, cont_state_t
 #include <raylib/raylib.h>
 #include <raylib/raymath.h>
 #include <raylib/rlgl.h>
@@ -9,19 +11,20 @@
 #include "IActor.hpp"
 #include "IGame.hpp"
 
-class Platform : public IActor
-{
-public:
-    Platform(IGame &game, Rectangle r);
+class Platform : public IActor {
+ public:
+    Platform(const IGame &game, Rectangle r);
     void draw() const override;
     void update(float delta) override;
     void process_input(cont_state_t *t) override;
     Rectangle get_rectangle() const override { return r; }
-    bool check_collision(const IActor &other) const override { return CheckCollisionRecs(r, other.get_rectangle()); }
+    bool check_collision(const IActor &other) const override {
+        return CheckCollisionRecs(r, other.get_rectangle());
+    }
     inline constexpr uint8_t get_group_id() const override { return 1; }
 
-private:
+ private:
     Rectangle r;
 };
 
-#endif // PLATFORM_HPP
+#endif  // SRC_UDJOURNEY_PLATFORM_HPP_
