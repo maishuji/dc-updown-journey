@@ -2,7 +2,7 @@
 
 #include "Platform.hpp"
 
-Platform::Platform(IGame &game, Rectangle r) : IActor(game), r(r) {}
+Platform::Platform(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 
 void Platform::draw() const { DrawRectangleRec(r, BLUE); }
 

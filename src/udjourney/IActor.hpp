@@ -21,7 +21,7 @@ class IActor {
     virtual constexpr uint8_t get_group_id() const = 0;
 
  private:
-    IGame *m_game = nullptr;
+    const IGame *m_game = nullptr;
 };
 
 #endif  // SRC_UDJOURNEY_IACTOR_HPP_

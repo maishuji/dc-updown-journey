@@ -11,7 +11,7 @@
 
 std::vector<IObserver *> observers;
 
-Player::Player(IGame &game, Rectangle r) : IActor(game), r(r) {}
+Player::Player(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 
 void Player::draw() const { DrawRectangleRec(r, RED); }
 

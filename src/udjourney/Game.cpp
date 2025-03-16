@@ -70,11 +70,12 @@ void Game::add_actor(std::unique_ptr<IActor> actor) {
     }
 }
 
-void Game::remove_actor(IActor &actor) {
+void Game::remove_actor(IActor *actor) {
+    if (actor == nullptr) return;
     auto iter = std::find_if(m_actors.begin(),
                              m_actors.end(),
                              [&actor](const std::unique_ptr<IActor> &p) {
-                                 return p.get() == &actor;
+                                 return p.get() == actor;
                              });
     if (iter != m_actors.end()) {
         m_actors.erase(iter);

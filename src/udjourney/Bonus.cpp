@@ -2,7 +2,7 @@
 
 #include "Bonus.hpp"
 
-Bonus::Bonus(IGame &game, Rectangle r) : IActor(game), r(r) {}
+Bonus::Bonus(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 
 void Bonus::draw() const { DrawRectangleRec(r, YELLOW); }
 
