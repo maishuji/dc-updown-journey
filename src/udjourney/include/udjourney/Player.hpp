@@ -1,7 +1,7 @@
 // Copyright 2025 Quentin Cartier
 
-#ifndef SRC_UDJOURNEY_PLAYER_HPP_
-#define SRC_UDJOURNEY_PLAYER_HPP_
+#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_
+#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_
 
 #include <kos.h>  // maple_device_t, cont_state_t
 #include <raylib/raylib.h>
@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "IActor.hpp"
-#include "IGame.hpp"
-#include "IObserver.hpp"
+#include "udjourney/IActor.hpp"
+#include "udjourney/IGame.hpp"
+#include "udjourney/IObserver.hpp"
 
 class Player : public IActor {
  public:
@@ -39,4 +39,4 @@ class Player : public IActor {
     Rectangle r;
 };
 
-#endif  // SRC_UDJOURNEY_PLAYER_HPP_
+#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_

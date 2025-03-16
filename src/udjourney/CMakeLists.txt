@@ -6,11 +6,11 @@ endif()
 
 set(TARGET_NAME "upown-journey")
 add_executable(${TARGET_NAME} 
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Platform.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Game.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Player.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/Bonus.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Game.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Bonus.cpp
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
                       CMAKE_CXX_STANDARD 20
@@ -18,8 +18,14 @@ set_target_properties(${TARGET_NAME} PROPERTIES
                       CXX_INCLUDE_WHAT_YOU_USE ${IWYU_PATH}
                       )
 
+target_include_directories(${TARGET_NAME}
+    PUBLIC
+        include)
+
 # GL must be linked after raylib
-target_link_libraries(${TARGET_NAME} PUBLIC dcplib raylib GL)
+target_link_libraries(${TARGET_NAME} 
+    PUBLIC 
+        dcplib raylib GL)
 
 # ---- ROMDISK generation ----
 set(ROMDISK_DIR "romdisk")

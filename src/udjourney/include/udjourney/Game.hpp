@@ -1,7 +1,7 @@
 // Copyright 2025 Quentin Cartier
 
-#ifndef SRC_UDJOURNEY_GAME_HPP_
-#define SRC_UDJOURNEY_GAME_HPP_
+#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_GAME_HPP_
+#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_GAME_HPP_
 
 #include <kos.h>            // maple_device_t, cont_state_t
 #include <raylib/raylib.h>  // Rectangle
@@ -10,9 +10,9 @@
 #include <string>
 #include <vector>
 
-#include "IActor.hpp"
-#include "IGame.hpp"
-#include "IObserver.hpp"
+#include "udjourney/IActor.hpp"
+#include "udjourney/IGame.hpp"
+#include "udjourney/IObserver.hpp"
 
 enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER };
 
@@ -36,4 +36,4 @@ class Game : public IGame, public IObserver {
     double last_update_time = 0.0;
 };
 
-#endif  // SRC_UDJOURNEY_GAME_HPP_
+#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_GAME_HPP_

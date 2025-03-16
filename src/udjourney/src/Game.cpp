@@ -1,8 +1,9 @@
 // Copyright 2025 Quentin Cartier
-
-#include "Game.hpp"
+#include "udjourney/Game.hpp"
 
 #include <kos.h>
+#include <raylib/raymath.h>
+#include <raylib/rlgl.h>
 
 #include <algorithm>
 #include <memory>
@@ -10,12 +11,11 @@
 #include <utility>
 #include <vector>
 
-#include "Bonus.hpp"
-#include "IActor.hpp"
-#include "Platform.hpp"
-#include "Player.hpp"
-#include "raylib/raymath.h"
-#include "raylib/rlgl.h"
+#include "udjourney/Bonus.hpp"
+#include "udjourney/IActor.hpp"
+#include "udjourney/Platform.hpp"
+#include "udjourney/Player.hpp"
+
 
 const double kUpdateInterval = 0.06;
 std::unique_ptr<Player> player = nullptr;

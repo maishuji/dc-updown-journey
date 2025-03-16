@@ -1,7 +1,7 @@
 // Copyright 2025 Quentin Cartier
 
-#ifndef SRC_UDJOURNEY_IACTOR_HPP_
-#define SRC_UDJOURNEY_IACTOR_HPP_
+#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IACTOR_HPP_
+#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IACTOR_HPP_
 
 #include <kos.h>  // maple_device_t, cont_state_t
 
@@ -24,4 +24,4 @@ class IActor {
     const IGame *m_game = nullptr;
 };
 
-#endif  // SRC_UDJOURNEY_IACTOR_HPP_
+#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IACTOR_HPP_

@@ -2,7 +2,7 @@
 
 #include <kos.h>
 
-#include "Game.hpp"
+#include "udjourney/Game.hpp"
 
 KOS_INIT_FLAGS(INIT_DEFAULT);
 

@@ -1,7 +1,7 @@
 // Copyright 2025 Quentin Cartier
 
-#ifndef SRC_UDJOURNEY_IGAME_HPP_
-#define SRC_UDJOURNEY_IGAME_HPP_
+#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IGAME_HPP_
+#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IGAME_HPP_
 
 #include <kos.h>  // maple_device_t, cont_state_t
 
@@ -19,4 +19,4 @@ class IGame {
     virtual void remove_actor(IActor *actor) = 0;
 };
 
-#endif  // SRC_UDJOURNEY_IGAME_HPP_
+#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IGAME_HPP_

@@ -1,6 +1,6 @@
 // Copyright 2025 Quentin Cartier
 
-#include "Bonus.hpp"
+#include "udjourney/Bonus.hpp"
 
 Bonus::Bonus(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 

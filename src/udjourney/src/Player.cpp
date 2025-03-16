@@ -1,6 +1,6 @@
 // Copyright 2025 Quentin Cartier
 
-#include "Player.hpp"
+#include "udjourney/Player.hpp"
 
 #include <algorithm>
 #include <string>

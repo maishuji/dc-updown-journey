@@ -1,6 +1,6 @@
 // Copyright 2025 Quentin Cartier
 
-#include "Platform.hpp"
+#include "udjourney/Platform.hpp"
 
 Platform::Platform(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 
