@@ -33,19 +33,25 @@ void Player::process_input(cont_state_t *cont) {
 }
 
 void Player::resolve_collision(const IActor &platform) noexcept {
-    Rectangle platformRect = platform.get_rectangle();
-
+    auto platformRect = platform.get_rectangle();
     if (CheckCollisionRecs(r, platformRect)) {
-        if (r.x < platformRect.x) {
-            r.x = platformRect.x - r.width;
-        } else if (r.x > platformRect.x) {
-            r.x = platformRect.x + platformRect.width;
-        }
+        float overlapLeft = r.x + r.width - platformRect.x;
+        float overlapRight = platformRect.x + platformRect.width - r.x;
+        float overlapTop = r.y + r.height - platformRect.y;
+        float overlapBottom = platformRect.y + platformRect.height - r.y;
 
-        if (r.y < platformRect.y) {
-            r.y = platformRect.y - r.height;
-        } else if (r.y > platformRect.y) {
-            r.y = platformRect.y + platformRect.height;
+        // Resolve the smallest overlap (to avoid diagonal teleportation)
+        if (overlapLeft < overlapRight && overlapLeft < overlapTop &&
+            overlapLeft < overlapBottom) {
+            r.x = platformRect.x - r.width;  // Adjust left
+        } else if (overlapRight < overlapLeft && overlapRight < overlapTop &&
+                   overlapRight < overlapBottom) {
+            r.x = platformRect.x + platformRect.width;  // Adjust right
+        } else if (overlapTop < overlapLeft && overlapTop < overlapRight &&
+                   overlapTop < overlapBottom) {
+            r.y = platformRect.y - r.height;  // Adjust top
+        } else {
+            r.y = platformRect.y + platformRect.height;  // Adjust bottom
         }
     }
 }
