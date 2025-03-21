@@ -16,12 +16,9 @@
 #include "udjourney/Platform.hpp"
 #include "udjourney/Player.hpp"
 
-
 const double kUpdateInterval = 0.06;
 std::unique_ptr<Player> player = nullptr;
 int64_t score = 0;
-
-Rectangle r;
 
 std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
     std::vector<std::unique_ptr<IActor>> res;
@@ -56,6 +53,7 @@ void Game::run() {
     InitWindow(r.width, r.height, "Up-Down Journey");
     SetTargetFPS(60);
     last_update_time = GetTime();
+    m_state = GameState::PLAY;
 
     while (true) {
         update();
@@ -95,16 +93,17 @@ void Game::draw() const {
 
     // Draw the rectangle
     // DrawRectangleRec(r, BLUE);
-
-    DrawText("Hello, World. Press START to break.\n", 10, 10, 20, RED);
     DrawText(std::to_string(score).c_str(), 10, 30, 20, BLUE);
     if (m_state == GameState::PLAY) {
         for (const auto &p : m_actors) {
             p->draw();
         }
         player->draw();
+    } else if (m_state == GameState::PAUSE) {
+        DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
+    } else {
+        DrawText("Hello, World. Press START to break.\n", 10, 10, 20, RED);
     }
-    // GameState::PLAY
 
     DrawFPS(10, 50);  // Draw FPS counter
 

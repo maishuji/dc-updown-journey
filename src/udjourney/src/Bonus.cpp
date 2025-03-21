@@ -4,7 +4,9 @@
 
 Bonus::Bonus(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 
-void Bonus::draw() const { DrawRectangleRec(r, YELLOW); }
+void Bonus::draw() const {
+    DrawRectangleRec(r, YELLOW);
+}
 
 void Bonus::update(float delta) {
     // r.y -= 1;

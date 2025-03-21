@@ -25,6 +25,7 @@ class Game : public IGame, public IObserver {
     void remove_actor(IActor *actor) override;
     void process_input(cont_state_t *cont);
     void on_notify(const std::string &event);
+    Rectangle get_rectangle() const override { return r; }
 
  private:
     void draw() const;
@@ -33,6 +34,7 @@ class Game : public IGame, public IObserver {
     std::vector<std::unique_ptr<IActor>> m_dead_actors;
     bool m_updating_actors = false;
     GameState m_state = GameState::TITLE;
+    Rectangle r;
     double last_update_time = 0.0;
 };
 

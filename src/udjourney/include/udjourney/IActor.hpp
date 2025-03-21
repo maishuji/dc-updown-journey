@@ -19,6 +19,7 @@ class IActor {
     virtual Rectangle get_rectangle() const = 0;
     virtual bool check_collision(const IActor &other) const = 0;
     virtual constexpr uint8_t get_group_id() const = 0;
+    virtual const IGame &get_game() const { return *m_game; }
 
  private:
     const IGame *m_game = nullptr;
