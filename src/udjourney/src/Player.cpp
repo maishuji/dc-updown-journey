@@ -13,7 +13,14 @@ std::vector<IObserver *> observers;
 
 Player::Player(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 
-void Player::draw() const { DrawRectangleRec(r, RED); }
+void Player::draw() const { 
+    auto rect = r;
+    auto& game = get_game();
+    // Convert to screen coordinates
+    rect.x -= game.get_rectangle().x;
+    rect.y -= game.get_rectangle().y;
+    DrawRectangleRec(r, m_colliding? RED : GREEN); 
+}
 
 void Player::update(float delta) {
     // Gravity
@@ -66,10 +73,12 @@ void Player::resolve_collision(const IActor &platform) noexcept {
 void Player::handle_collision(
     const std::vector<std::unique_ptr<IActor>> &platforms) noexcept {
     const uint8_t BONUS_TYPE_ID = 2;
+    m_colliding = false;
     for (const auto &platform : platforms) {
         if (check_collision(*platform)) {
             if (platform->get_group_id() == BONUS_TYPE_ID) notify("1;1");
             resolve_collision(*platform);
+            m_colliding = true;
         }
     }
 }

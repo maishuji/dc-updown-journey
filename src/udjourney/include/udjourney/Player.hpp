@@ -37,6 +37,7 @@ class Player : public IActor {
 
  private:
     Rectangle r;
+    bool m_colliding = false;
 };
 
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_
