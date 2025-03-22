@@ -15,7 +15,14 @@ Player::Player(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 
 void Player::draw() const { DrawRectangleRec(r, RED); }
 
-void Player::update(float delta) {}
+void Player::update(float delta) {
+    // Gravity
+    r.y += 1;
+    if(r.y > get_game().get_rectangle().height) {
+        r.y = 0;
+        notify("12"); // Game over
+    }
+}
 
 void Player::process_input(cont_state_t *cont) {
     if (cont->buttons & CONT_DPAD_LEFT) {
@@ -61,7 +68,7 @@ void Player::handle_collision(
     const uint8_t BONUS_TYPE_ID = 2;
     for (const auto &platform : platforms) {
         if (check_collision(*platform)) {
-            if (platform->get_group_id() == BONUS_TYPE_ID) notify("1");
+            if (platform->get_group_id() == BONUS_TYPE_ID) notify("1;1");
             resolve_collision(*platform);
         }
     }

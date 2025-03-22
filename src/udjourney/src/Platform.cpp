@@ -13,7 +13,7 @@ void Platform::draw() const {
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
 
-    DrawRectangleRec(rect, BLUE); 
+    DrawRectangleRec(rect, BLUE);
 }
 
 void Platform::update(float delta) {

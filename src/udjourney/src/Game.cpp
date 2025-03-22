@@ -6,7 +6,10 @@
 #include <raylib/rlgl.h>
 
 #include <algorithm>
+#include <iostream>
 #include <memory>
+#include <optional>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,7 +19,7 @@
 #include "udjourney/Platform.hpp"
 #include "udjourney/Player.hpp"
 
-const double kUpdateInterval = 0.06;
+const double kUpdateInterval = 0.16;
 std::unique_ptr<Player> player = nullptr;
 int64_t score = 0;
 
@@ -147,6 +150,8 @@ void Game::update() {
                 process_input(cont);
             }
         }
+        r.y += 1;
+
         for (auto &p : m_actors) {
             p->update(0.0f);
         }
@@ -159,7 +164,62 @@ void Game::update() {
     draw();
 }
 
+// Function definition for extract_number_
+std::optional<int16_t> extract_number_(const std::string_view &s) {
+    std::string number;
+    for (char c : s) {
+        if (std::isdigit(c)) {
+            number += c;
+        }
+    }
+    try {
+        return std::stoi(number);  // Convert each token to integer
+    } catch (const std::invalid_argument &e) {
+        std::cerr << "Invalid number: " << number << std::endl;
+    } catch (const std::out_of_range &e) {
+        std::cerr << "Number out of range: " << number << std::endl;
+    }
+    return {};
+}
+
 void Game::on_notify(const std::string &event) {
+    std::stringstream ss(event);
+    std::string token;
+    uint8_t line_idx = 0;
+    int mode = 0;
+    while (std::getline(ss, token, ';')) {  // Split by ';'
+        if (line_idx == 0) {
+            auto mode_opt = extract_number_(token);
+            if (mode_opt.has_value()) {
+                mode = mode_opt.value();
+                if (mode == 12) {
+                    // Game Over event
+                    m_state = GameState::GAMEOVER;
+                }
+            } else {
+                // Invalid mode, nothing to do
+                break;
+            }
+
+        } else {
+            switch (mode) {
+                case 1:
+                    {
+                        // Parsing scoring event
+                        std::optional<int16_t> score_inc_opt = extract_number_(token);
+                        if (score_inc_opt.has_value()) {
+                            score += score_inc_opt.value();
+                        }
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        line_idx++;
+    }
+
     int v = std::stoi(event);
     score += v;
 }
