@@ -20,6 +20,7 @@
 #include "udjourney/Player.hpp"
 
 const double kUpdateInterval = 0.16;
+bool is_running = true;
 std::unique_ptr<Player> player = nullptr;
 int64_t score = 0;
 
@@ -58,7 +59,7 @@ void Game::run() {
     last_update_time = GetTime();
     m_state = GameState::PLAY;
 
-    while (true) {
+    while (is_running) {
         update();
     }
 }
@@ -84,6 +85,14 @@ void Game::remove_actor(IActor *actor) {
 }
 
 void Game::process_input(cont_state_t *cont) {
+    if (IsGamepadAvailable(0)) {
+        bool bPressed = IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+        if (bPressed) {
+            // Press b to quit
+            is_running = false;
+        }
+    }
+
     for (auto &a : m_actors) {
         a->process_input(cont);
     }
@@ -107,6 +116,7 @@ void Game::draw() const {
     } else {
         DrawText("Hello, World. Press START to break.\n", 10, 10, 20, RED);
     }
+    DrawText("Press B button to quit\n", 300, 40, 20, RED);
 
     DrawFPS(10, 50);  // Draw FPS counter
 
@@ -203,15 +213,14 @@ void Game::on_notify(const std::string &event) {
 
         } else {
             switch (mode) {
-                case 1:
-                    {
-                        // Parsing scoring event
-                        std::optional<int16_t> score_inc_opt = extract_number_(token);
-                        if (score_inc_opt.has_value()) {
-                            score += score_inc_opt.value();
-                        }
+                case 1: {
+                    // Parsing scoring event
+                    std::optional<int16_t> score_inc_opt =
+                        extract_number_(token);
+                    if (score_inc_opt.has_value()) {
+                        score += score_inc_opt.value();
                     }
-                    break;
+                } break;
 
                 default:
                     break;
