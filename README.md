@@ -84,3 +84,33 @@ DHCPACK ...
 ```
 
 The IP address offered (e.g., `192.168.0.85`) is the one you’ll use with tools like `dc-tool-ip`.
+
+
+
+
+## Debugging cmake
+
+```bash
+source /opt/toolchains/dc/kos/environ.sh
+cmake -S . -B build/build-test -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
+cmake --build build/build-test/  -- -j 4
+
+export CMAKE_CXX_COMPILER_LAUNCHER=gdb
+cmake --build build/build-test/ --config Debug --target all --verbose
+```
+```bash
+cmake --build build --target updown -- -j 4
+```
+```bash
+cmake --build build --target updown -- -j 4 -- VERBOSE=1
+```
+
+### Hints
+
+- kos toolchains seems to have issues with ninja (floating-point exception)
+Need to put in settings.json Makefile as generator:
+```json
+{
+    "cmake.generator": "Unix Makefiles"
+}
+```
