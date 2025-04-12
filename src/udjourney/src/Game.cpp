@@ -19,7 +19,7 @@
 #include "udjourney/Platform.hpp"
 #include "udjourney/Player.hpp"
 
-const double kUpdateInterval = 0.16;
+const double kUpdateInterval = 0.06;
 bool is_running = true;
 std::unique_ptr<Player> player = nullptr;
 int64_t score = 0;
@@ -101,7 +101,7 @@ void Game::process_input(cont_state_t *cont) {
 
 void Game::draw() const {
     BeginDrawing();
-    ClearBackground(RAYWHITE);  // Clear the background with a color
+    ClearBackground(BLACK);  // Clear the background with a color
 
     // Draw the rectangle
     // DrawRectangleRec(r, BLUE);
@@ -142,6 +142,12 @@ void Game::update() {
 
         // TODO(QCR): Remove dead actors
     }  // GameState::PLAY
+
+    for(auto & p : m_actors) {
+        if (p->get_state() == ActorState::CONSUMED) {
+            remove_actor(p.get());
+        }
+    }
 
     double cur_update_time = GetTime();
     if (cur_update_time - last_update_time > kUpdateInterval) {

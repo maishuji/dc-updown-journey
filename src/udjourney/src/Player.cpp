@@ -76,7 +76,10 @@ void Player::handle_collision(
     m_colliding = false;
     for (const auto &platform : platforms) {
         if (check_collision(*platform)) {
-            if (platform->get_group_id() == BONUS_TYPE_ID) notify("1;1");
+            if (platform->get_group_id() == BONUS_TYPE_ID) {
+                notify("1;1");
+                platform->set_state(ActorState::CONSUMED);
+            }
             resolve_collision(*platform);
             m_colliding = true;
         }
