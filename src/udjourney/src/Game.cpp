@@ -19,7 +19,7 @@
 #include "udjourney/Platform.hpp"
 #include "udjourney/Player.hpp"
 
-const double kUpdateInterval = 0.06;
+const double kUpdateInterval = 0.0001;
 bool is_running = true;
 std::unique_ptr<Player> player = nullptr;
 int64_t score = 0;
@@ -149,23 +149,26 @@ void Game::update() {
         }
     }
 
+    maple_device_t *controller = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
+    if (controller) {
+        cont_state_t *cont =
+            reinterpret_cast<cont_state_t *>(maple_dev_status(controller));
+        if (cont) {
+            // Preprocessing of input
+            auto startPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+            if (startPressed) {
+                if (m_state == GameState::PLAY)
+                    m_state = GameState::PAUSE;
+                else
+                    m_state = GameState::PLAY;
+            }
+            process_input(cont);
+        }
+    }
+
     double cur_update_time = GetTime();
     if (cur_update_time - last_update_time > kUpdateInterval) {
-        maple_device_t *controller = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
-        if (controller) {
-            cont_state_t *cont =
-                reinterpret_cast<cont_state_t *>(maple_dev_status(controller));
-            if (cont) {
-                // Preprocessing of input
-                if (cont->buttons & CONT_START) {
-                    if (m_state == GameState::PLAY)
-                        m_state = GameState::PAUSE;
-                    else
-                        m_state = GameState::PLAY;
-                }
-                process_input(cont);
-            }
-        }
+        
         r.y += 1;
 
         for (auto &p : m_actors) {
