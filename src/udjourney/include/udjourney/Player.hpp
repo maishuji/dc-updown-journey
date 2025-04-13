@@ -23,6 +23,7 @@ class Player : public IActor {
     void resolve_collision(const IActor &platform) noexcept;
     void handle_collision(
         const std::vector<std::unique_ptr<IActor>> &platforms) noexcept;
+    void set_rectangle(Rectangle r) override { this->r = r; }
     Rectangle get_rectangle() const override { return r; }
     bool check_collision(const IActor &other) const override {
         return CheckCollisionRecs(r, other.get_rectangle());
