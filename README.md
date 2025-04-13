@@ -12,7 +12,7 @@ We assume the IP address of the Dreamcast is `10.42.0.80`
 The dreamcast is connected to the network via a BBA (Broadband Adapter) through the ethernet port of the host machine.
 
 ```shell
-make run-dc-remote
+make run-dc
 ```
 
 
@@ -91,7 +91,7 @@ dcload-ip is not receiving an IP address
 If your Dreamcast isn’t being assigned an IP address, you can check what's going wrong by inspecting the system journal:
 
 ```bash
-sudo journalctl -u dnsmasq -f`
+sudo journalctl -u dnsmasq -f
 ```
 
 If you see a message like this:

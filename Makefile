@@ -1,6 +1,6 @@
-DC_IP ?= 192.168.0.84
+DC_IP ?= 192.168.0.85
 
-run-dc-remote:
+run-dc:
 	dc-tool-ip -t $(DC_IP) -x build/Debug/src/udjourney/upown-journey.elf
 
 lint:
