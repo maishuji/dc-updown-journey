@@ -13,21 +13,21 @@ std::vector<IObserver *> observers;
 
 Player::Player(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 
-void Player::draw() const { 
+void Player::draw() const {
     auto rect = r;
-    auto& game = get_game();
+    auto &game = get_game();
     // Convert to screen coordinates
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
-    DrawRectangleRec(r, m_colliding? RED : GREEN); 
+    DrawRectangleRec(r, m_colliding ? RED : GREEN);
 }
 
 void Player::update(float delta) {
     // Gravity
     r.y += 1;
-    if(r.y > get_game().get_rectangle().height) {
+    if (r.y > get_game().get_rectangle().height) {
         r.y = 0;
-        notify("12"); // Game over
+        notify("12");  // Game over
     }
 }
 

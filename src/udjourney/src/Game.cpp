@@ -143,7 +143,7 @@ void Game::update() {
         // TODO(QCR): Remove dead actors
     }  // GameState::PLAY
 
-    for(auto & p : m_actors) {
+    for (auto &p : m_actors) {
         if (p->get_state() == ActorState::CONSUMED) {
             remove_actor(p.get());
         }
@@ -155,7 +155,8 @@ void Game::update() {
             reinterpret_cast<cont_state_t *>(maple_dev_status(controller));
         if (cont) {
             // Preprocessing of input
-            auto startPressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+            auto startPressed =
+                IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
             if (startPressed) {
                 if (m_state == GameState::PLAY)
                     m_state = GameState::PAUSE;
@@ -168,7 +169,6 @@ void Game::update() {
 
     double cur_update_time = GetTime();
     if (cur_update_time - last_update_time > kUpdateInterval) {
-        
         r.y += 1;
 
         for (auto &p : m_actors) {

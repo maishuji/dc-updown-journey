@@ -6,9 +6,9 @@
 
 Platform::Platform(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 
-void Platform::draw() const { 
+void Platform::draw() const {
     auto rect = r;
-    auto& game = get_game();
+    auto &game = get_game();
     // Convert to screen coordinates
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
