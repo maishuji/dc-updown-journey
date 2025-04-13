@@ -19,6 +19,12 @@
 #include "udjourney/Platform.hpp"
 #include "udjourney/Player.hpp"
 
+enum class ActorType : uint8_t {
+    PLAYER = 0,
+    PLATFORM = 1,
+    BONUS = 2,
+};
+
 const double kUpdateInterval = 0.0001;
 bool is_running = true;
 std::unique_ptr<Player> player = nullptr;
@@ -145,7 +151,26 @@ void Game::update() {
     // Removing CONSUMED actors (DEAD and ready for removing)
     for (auto &p : m_actors) {
         if (p->get_state() == ActorState::CONSUMED) {
-            remove_actor(p.get());
+            switch (p->get_group_id()) {
+                {
+                    case static_cast<uint8_t>(ActorType::PLATFORM): {
+                        // Instead of removing the platform, we can reuse it
+                        const auto origin_rect = p->get_rectangle();
+                        const auto game_rect = get_rectangle();
+                        p->set_rectangle(
+                            Rectangle(origin_rect.x,
+                                      game_rect.y + game_rect.height,
+                                      origin_rect.width,
+                                      origin_rect.height));
+                        p->set_state(ActorState::ONGOING);
+                    } break;
+                    case static_cast<uint8_t>(ActorType::BONUS): {
+                        remove_actor(p.get());
+                    } break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 

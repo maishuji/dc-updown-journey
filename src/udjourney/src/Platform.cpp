@@ -17,7 +17,10 @@ void Platform::draw() const {
 }
 
 void Platform::update(float delta) {
-    // Do nothing
+    const auto &gameRect = get_game().get_rectangle();
+    if (r.y < gameRect.y) {
+        set_state(ActorState::CONSUMED);
+    }
 }
 
 void Platform::process_input(cont_state_t *t) {
