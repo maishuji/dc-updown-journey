@@ -86,6 +86,7 @@ void Game::remove_actor(IActor *actor) {
 
 void Game::process_input(cont_state_t *cont) {
     if (IsGamepadAvailable(0)) {
+        // Press 'B' to quit
         bool bPressed = IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
         if (bPressed) {
             // Press b to quit
@@ -139,10 +140,9 @@ void Game::update() {
             m_actors.push_back(std::move(pa));
         }
         m_pending_actors.clear();
-
-        // TODO(QCR): Remove dead actors
     }  // GameState::PLAY
 
+    // Removing CONSUMED actors (DEAD and ready for removing)
     for (auto &p : m_actors) {
         if (p->get_state() == ActorState::CONSUMED) {
             remove_actor(p.get());

@@ -19,14 +19,18 @@ void Player::draw() const {
     // Convert to screen coordinates
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
-    DrawRectangleRec(r, m_colliding ? RED : GREEN);
+    DrawRectangleRec(rect, m_colliding ? RED : GREEN);
 }
 
 void Player::update(float delta) {
     // Gravity
     r.y += 1;
-    if (r.y > get_game().get_rectangle().height) {
-        r.y = 0;
+
+    const auto &gameRect = get_game().get_rectangle();
+
+    // Gameover it the player is out of the screen at the bottom
+    if (r.y > gameRect.y + gameRect.height) {
+        r.y = gameRect.y + r.height;
         notify("12");  // Game over
     }
 }
@@ -38,9 +42,9 @@ void Player::process_input(cont_state_t *cont) {
     if (cont->buttons & CONT_DPAD_RIGHT) {
         r.x += 5;
     }
-    if (cont->buttons & CONT_DPAD_UP) {
-        r.y -= 5;
-    }
+    // if (cont->buttons & CONT_DPAD_UP) {
+    //     r.y -= 5;
+    // }
     if (cont->buttons & CONT_DPAD_DOWN) {
         r.y += 5;
     }
@@ -48,30 +52,34 @@ void Player::process_input(cont_state_t *cont) {
 
 void Player::resolve_collision(const IActor &platform) noexcept {
     auto platformRect = platform.get_rectangle();
-    if (CheckCollisionRecs(r, platformRect)) {
-        float overlapLeft = r.x + r.width - platformRect.x;
-        float overlapRight = platformRect.x + platformRect.width - r.x;
-        float overlapTop = r.y + r.height - platformRect.y;
-        float overlapBottom = platformRect.y + platformRect.height - r.y;
+    Rectangle intersect = GetCollisionRec(r, platformRect);
 
-        // Resolve the smallest overlap (to avoid diagonal teleportation)
-        if (overlapLeft < overlapRight && overlapLeft < overlapTop &&
-            overlapLeft < overlapBottom) {
-            r.x = platformRect.x - r.width;  // Adjust left
-        } else if (overlapRight < overlapLeft && overlapRight < overlapTop &&
-                   overlapRight < overlapBottom) {
-            r.x = platformRect.x + platformRect.width;  // Adjust right
-        } else if (overlapTop < overlapLeft && overlapTop < overlapRight &&
-                   overlapTop < overlapBottom) {
-            r.y = platformRect.y - r.height;  // Adjust top
+    if (intersect.width < intersect.height) {
+        // Horizontal resolution
+        if (r.x < platformRect.x) {
+            r.x -= intersect.width;  // Move player to the left
         } else {
-            r.y = platformRect.y + platformRect.height;  // Adjust bottom
+            r.x += intersect.width;  // Move player to the right
+        }
+    } else {
+        // Vertical resolution
+        if (r.y < platformRect.y) {
+            r.y -= intersect.height;  // Move player up
+        } else {
+            r.y += intersect.height;  // Move player down
         }
     }
 }
 
 void Player::handle_collision(
     const std::vector<std::unique_ptr<IActor>> &platforms) noexcept {
+    const auto &gameRect = get_game().get_rectangle();
+
+    // Dont check collision if the player is out of the screen at the top
+    if (this->get_rectangle().y < gameRect.y) {
+        return;
+    }
+
     const uint8_t BONUS_TYPE_ID = 2;
     m_colliding = false;
     for (const auto &platform : platforms) {
