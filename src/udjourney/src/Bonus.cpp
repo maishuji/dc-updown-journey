@@ -5,7 +5,12 @@
 Bonus::Bonus(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 
 void Bonus::draw() const {
-    DrawRectangleRec(r, YELLOW);
+    auto rect = r;
+    auto &game = get_game();
+    // Convert to screen coordinates
+    rect.x -= game.get_rectangle().x;
+    rect.y -= game.get_rectangle().y;
+    DrawRectangleRec(rect, YELLOW);
 }
 
 void Bonus::update(float delta) {

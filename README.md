@@ -86,7 +86,7 @@ DHCPACK ...
 The IP address offered (e.g., `192.168.0.85`) is the one you’ll use with tools like `dc-tool-ip`.
 
 #### Connection Troubleshooting
-dcload-ip is not receiving an IP address
+##### dcload-ip is not receiving an IP address
 
 If your Dreamcast isn’t being assigned an IP address, you can check what's going wrong by inspecting the system journal:
 
@@ -117,6 +117,27 @@ Finally, verify that the IP address has been correctly assigned:
 ```bash
 ip addr show <your-dreamcast-interface>
 ```
+
+##### dnsmasq: unknown interface <your-dreamcast-interface>
+When running `sudo journalctl -u dnsmasq -f`, if you see an error like this:
+
+```text
+dnsmasq: unknown interface <your-dreamcast-interface>
+```
+
+That means dnsmasq is trying to bind to your Dreamcast Ethernet interface before it’s fully ready, 
+or the interface wasn’t configured properly when dnsmasq started.
+
+```bash
+sudo ip link set enxa0cec85e02d8 up
+sudo ip addr flush dev enxa0cec85e02d8
+sudo ip addr add 192.168.0.1/24 dev enxa0cec85e02d8 # replace with your interface
+```
+and then restart `dnsmasq`:
+```bash
+sudo systemctl restart dnsmasq
+```
+
 
 ## Debugging cmake
 

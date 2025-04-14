@@ -65,6 +65,8 @@ void Game::run() {
     last_update_time = GetTime();
     m_state = GameState::PLAY;
 
+    bonus_manager.add_observer(static_cast<IObserver *>(this));
+
     while (is_running) {
         update();
     }
@@ -193,6 +195,8 @@ void Game::update() {
     }
 
     double cur_update_time = GetTime();
+    float delta = static_cast<float>(cur_update_time - last_update_time);
+    bonus_manager.update(delta);
     if (cur_update_time - last_update_time > kUpdateInterval) {
         r.y += 1;
 
@@ -253,6 +257,24 @@ void Game::on_notify(const std::string &event) {
                         extract_number_(token);
                     if (score_inc_opt.has_value()) {
                         score += score_inc_opt.value();
+                    }
+                } break;
+
+                case 2: {
+                    std::optional<int16_t> idx_opt = extract_number_(token);
+                    if (idx_opt.has_value()) {
+                        // Parsing bonus event
+
+                        auto x =
+                            get_rectangle().x +
+                            (get_rectangle().width / 100.0) * idx_opt.value();
+                        auto y =
+                            get_rectangle().y + get_rectangle().height / 2.0f +
+                            (get_rectangle().height / 200.0) * idx_opt.value();
+
+                        auto bonus = std::make_unique<Bonus>(
+                            *this, Rectangle(x, y, 20, 20));
+                        m_actors.push_back(std::move(bonus));
                     }
                 } break;
 
