@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "udjourney/BonusManager.hpp"
 #include "udjourney/IActor.hpp"
 #include "udjourney/IGame.hpp"
 #include "udjourney/IObserver.hpp"
@@ -36,6 +37,6 @@ class Game : public IGame, public IObserver {
     GameState m_state = GameState::TITLE;
     Rectangle r;
     double last_update_time = 0.0;
+    BonusManager bonus_manager;
 };
-
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_GAME_HPP_
