@@ -4,7 +4,7 @@
 #define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_HPP_
 
 #include <kos.h>  // maple_device_t, cont_state_t
-#include <raylib/raylib.h>
+#include "raylib/raylib.h"
 #include <raylib/raymath.h>
 #include <raylib/rlgl.h>
 

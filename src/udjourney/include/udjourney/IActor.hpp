@@ -8,6 +8,8 @@
 #include <concepts>
 #include <memory>
 
+#include <raylib/raylib.h>  // Rectangle
+
 class IGame;
 
 enum class ActorState {

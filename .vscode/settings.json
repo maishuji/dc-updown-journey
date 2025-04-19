@@ -60,5 +60,5 @@
         "cstdarg": "cpp",
         "cinttypes": "cpp"
     },
-    "C_Cpp.default.compilerPath": "/opt/toolchains/dc/kos/utils/build_wrappers/kos-c++",
+    "C_Cpp.default.compilerPath": "",
   }

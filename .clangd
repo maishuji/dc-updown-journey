@@ -1,0 +1,2 @@
+CompileFlags:
+  Add: [-I/opt/toolchains/dc/sh-elf/sh-elf/include, -I/opt/toolchains/dc/kos/include, "-I/usr/include",  -DDEBUG, -D_arch_dreamcast, -D__SH4__]

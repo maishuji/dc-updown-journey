@@ -2,6 +2,12 @@
 
 #include "udjourney/Bonus.hpp"
 
+#include <kos.h>  // maple_device_t, cont_state_t
+#include <raylib/raylib.h>
+#include <raylib/raymath.h>
+#include <raylib/rlgl.h>
+
+
 Bonus::Bonus(const IGame &game, Rectangle r) : IActor(game), r(r) {}
 
 void Bonus::draw() const {

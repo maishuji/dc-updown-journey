@@ -4,11 +4,11 @@
 #define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_
 
 #include <kos.h>  // maple_device_t, cont_state_t
-#include <raylib/raylib.h>
+#include "raylib/raylib.h"
 
-#include <memory>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "udjourney/IActor.hpp"
 #include "udjourney/IGame.hpp"

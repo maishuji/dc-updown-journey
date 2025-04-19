@@ -10,11 +10,48 @@
                 "/usr/include/c++/14.2.0/x86_64-alpine-linux-musl/"
             ],
             "defines": [],
+            "compilerPath": "",
+            "cStandard": "gnu17",
+            "cppStandard": "c++20",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "intelliSenseMode": "linux-gcc-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "/opt/toolchains/dc/kos-ports/include",
+                    "/opt/toolchains/dc/kos/include",
+                    "/opt/toolchains/dc/sh-elf/sh-elf/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "compileCommands": [
+                "${workspaceFolder}/build/Debug/compile_commands.json"
+            ]
+        },
+        {
+            "name": "ABC",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/toolchains/dc/kos-ports/include/",
+                "/opt/toolchains/dc/kos/kernel/arch/dreamcast/include/",
+                "/usr/include/c++/14.2.0/",
+                "/usr/include/c++/14.2.0/x86_64-alpine-linux-musl/"
+            ],
+            "defines": [],
             "compilerPath": "/opt/toolchains/dc/kos/utils/build_wrappers/kos-c++",
             "cStandard": "gnu17",
             "cppStandard": "c++20",
             "configurationProvider": "ms-vscode.cmake-tools",
-            "intelliSenseMode": "linux-gcc-x86"
+            "intelliSenseMode": "linux-gcc-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "/opt/toolchains/dc/kos-ports/include",
+                    "/opt/toolchains/dc/kos/include",
+                    "/opt/toolchains/dc/sh-elf/sh-elf/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
         }
     ],
     "version": 4
