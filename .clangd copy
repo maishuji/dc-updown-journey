@@ -1,5 +1,6 @@
 CompileFlags:
-  CompilationDatabase: "build/Debug/compile_commands.json"
+  Compiler: /opt/toolchains/dc/kos/utils/build_wrappers/kos-c++
+  #Add: [-I/opt/toolchains/dc/sh-elf/sh-elf/include, -I/opt/toolchains/dc/kos/include, "-I/usr/include",  -DDEBUG, -D_arch_dreamcast, -D__SH4__]
   Add: [
     "-DDEBUG",
     "-D__SH4__",

@@ -5,3 +5,6 @@ run-dc:
 
 lint:
 	cpplint --recursive src/
+
+clangd:
+	clangd --compile-commands-dir=/build/Debug --header-insertion=never
