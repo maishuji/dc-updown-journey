@@ -1,0 +1,23 @@
+CompileFlags:
+  Compiler: /opt/toolchains/dc/kos/utils/build_wrappers/kos-c++
+  #Add: [-I/opt/toolchains/dc/sh-elf/sh-elf/include, -I/opt/toolchains/dc/kos/include, "-I/usr/include",  -DDEBUG, -D_arch_dreamcast, -D__SH4__]
+  Add: [
+    "-DDEBUG",
+    "-D__SH4__",
+    "-D__KOS__",
+    "-D_arch_dreamcast",
+    "--gcc-toolchain=/opt/toolchains/dc/sh-elf",
+    "-I/src/udjourney/include",
+        "-isystem", "/opt/toolchains/dc/kos/kernel/arch/dreamcast/include",
+    "-isystem", "/opt/toolchains/dc/kos/addons/include",
+    "-isystem", "/opt/toolchains/dc/kos-ports/include",
+    "-isystem", "/opt/toolchains/dc/kos/include",
+    "-isystem", "/opt/toolchains/dc/sh-elf/sh-elf/include",                     # First, add the basic C headers
+    "-isystem", "/opt/toolchains/dc/sh-elf/lib/gcc/sh-elf/14.2.1/include",      # Then, add the C target-specific overrides
+    "-isystem", "/opt/toolchains/dc/sh-elf/sh-elf/include/c++/14.2.1/sh-elf",  # Then, add the c++ target-specific overrides
+    "-isystem", "/opt/toolchains/dc/sh-elf/sh-elf/include/c++/14.2.1",          # And only after, add the generic C++ standard library headers
+    "-isystem", "/opt/toolchains/dc/sh-elf/sh-elf/include/c++/14.2.1/tr1",
+    "-nostdinc++",  # prevent clangd from trying to use system C++ headers
+    "-nostdinc"    # prevent clangd from using system C headers
+  ]
+

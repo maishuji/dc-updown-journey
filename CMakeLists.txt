@@ -7,7 +7,6 @@ endif()
 project(dc-template CXX)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(NoInSourceBuilds)
 include(GenerateCdiImage)

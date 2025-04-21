@@ -7,7 +7,6 @@
 #include <raylib/raylib.h>  // Rectangle
 
 #include <memory>  // unique_ptr
-#include <vector>  // vector
 
 class IActor;
 
