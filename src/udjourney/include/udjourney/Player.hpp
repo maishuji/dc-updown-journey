@@ -17,6 +17,7 @@
 class Player : public IActor {
  public:
     Player(const IGame &game, Rectangle r);
+    ~Player();
     void draw() const override;
     void update(float delta) override;
     void process_input(cont_state_t *cont) override;
@@ -37,8 +38,10 @@ class Player : public IActor {
     inline constexpr uint8_t get_group_id() const override { return 0; }
 
  private:
+    void _reset_jump() noexcept;
     Rectangle r;
-    bool m_colliding = false;
+    struct PImpl;
+    std::unique_ptr<struct PImpl> m_pimpl;
 };
 
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_
