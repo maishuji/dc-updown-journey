@@ -6,6 +6,7 @@
 #include <raylib/rlgl.h>
 
 #include <algorithm>
+#include <array>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -42,6 +43,37 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
         lastx = (ra % 10) * 50;
         lastx2 = ra % 100 + 50;
     }
+
+    // Create borders
+    const int border_width = 5;
+    const int border_height = 100;
+    auto game_rect = game.get_rectangle();
+
+    constexpr int cpool_size = 5;
+    std::array<Color, cpool_size> color_pool = {
+        GRAY, PINK, BROWN, YELLOW, PURPLE};
+
+    int color_idx = 0;
+    // The left and right borders
+    // Note that they are repeated when running out of the screen
+    for (auto border_top = 0; border_top <= game_rect.height + border_height;
+         border_top += border_height) {
+        res.emplace_back(std::make_unique<Platform>(
+            game,
+            Rectangle(0, border_top, border_width, border_height),
+            color_pool[color_idx],
+            true));
+        res.emplace_back(
+            std::make_unique<Platform>(game,
+                                       Rectangle(game_rect.width - border_width,
+                                                 border_top,
+                                                 border_width,
+                                                 border_height),
+                                       color_pool[color_idx],
+                                       true));
+        color_idx = (color_idx + 1) % cpool_size;
+    }
+
     return res;
 }
 
@@ -114,7 +146,11 @@ void Game::draw() const {
 
     // Draw the rectangle
     // DrawRectangleRec(r, BLUE);
-    DrawText(std::to_string(score).c_str(), 10, 30, 20, BLUE);
+    std::stringstream ss;
+    ss << "Score: ";
+    ss << std::to_string(score);
+
+    DrawText(ss.str().c_str(), 10, 30, 20, BLUE);
     if (m_state == GameState::PLAY) {
         for (const auto &p : m_actors) {
             p->draw();
@@ -123,7 +159,7 @@ void Game::draw() const {
     } else if (m_state == GameState::PAUSE) {
         DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
     } else {
-        DrawText("Hello, World. Press START to break.\n", 10, 10, 20, RED);
+        DrawText("GAME OVER - Press START to start over.\n", 10, 10, 20, RED);
     }
     DrawText("Press B button to quit\n", 300, 40, 20, RED);
 
@@ -159,11 +195,26 @@ void Game::update() {
                         // Instead of removing the platform, we can reuse it
                         const auto origin_rect = p->get_rectangle();
                         const auto game_rect = get_rectangle();
-                        p->set_rectangle(
-                            Rectangle(origin_rect.x,
-                                      game_rect.y + game_rect.height,
-                                      origin_rect.width,
-                                      origin_rect.height));
+                        bool is_y_repeated =
+                            static_cast<Platform *>(p.get())->is_y_repeated();
+                        if (is_y_repeated) {
+                            // In this case, y is repeated like a circular
+                            // buffer Used for borders
+                            p->set_rectangle(Rectangle(origin_rect.x,
+                                                       origin_rect.y +
+                                                           game_rect.height +
+                                                           origin_rect.height,
+                                                       origin_rect.width,
+                                                       origin_rect.height));
+                        } else {
+                            // TODO(QCA): Add strategy to place the reused
+                            // platform
+                            p->set_rectangle(
+                                Rectangle(origin_rect.x,
+                                          game_rect.y + game_rect.height,
+                                          origin_rect.width,
+                                          origin_rect.height));
+                        }
                         p->set_state(ActorState::ONGOING);
                     } break;
                     case static_cast<uint8_t>(ActorType::BONUS): {
@@ -243,6 +294,7 @@ void Game::on_notify(const std::string &event) {
                 if (mode == 12) {
                     // Game Over event
                     m_state = GameState::GAMEOVER;
+                    score = 0;  // Reset score
                 }
             } else {
                 // Invalid mode, nothing to do

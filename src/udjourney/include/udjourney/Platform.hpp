@@ -13,7 +13,8 @@
 
 class Platform : public IActor {
  public:
-    Platform(const IGame &game, Rectangle r);
+    Platform(const IGame &game, Rectangle r, Color c = BLUE,
+             bool y_repeated = false);
     void draw() const override;
     void update(float delta) override;
     void process_input(cont_state_t *t) override;
@@ -23,9 +24,12 @@ class Platform : public IActor {
         return CheckCollisionRecs(r, other.get_rectangle());
     }
     inline constexpr uint8_t get_group_id() const override { return 1; }
+    bool constexpr is_y_repeated() { return y_repeated; }
 
  private:
     Rectangle r;
+    Color color = BLUE;
+    bool y_repeated = false;
 };
 
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_HPP_
