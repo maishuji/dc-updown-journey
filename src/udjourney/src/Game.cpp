@@ -146,7 +146,11 @@ void Game::draw() const {
 
     // Draw the rectangle
     // DrawRectangleRec(r, BLUE);
-    DrawText(std::to_string(score).c_str(), 10, 30, 20, BLUE);
+    std::stringstream ss;
+    ss << "Score: ";
+    ss << std::to_string(score);
+
+    DrawText(ss.str().c_str(), 10, 30, 20, BLUE);
     if (m_state == GameState::PLAY) {
         for (const auto &p : m_actors) {
             p->draw();
@@ -155,7 +159,7 @@ void Game::draw() const {
     } else if (m_state == GameState::PAUSE) {
         DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
     } else {
-        DrawText("Hello, World. Press START to break.\n", 10, 10, 20, RED);
+        DrawText("GAME OVER - Press START to start over.\n", 10, 10, 20, RED);
     }
     DrawText("Press B button to quit\n", 300, 40, 20, RED);
 
@@ -290,6 +294,7 @@ void Game::on_notify(const std::string &event) {
                 if (mode == 12) {
                     // Game Over event
                     m_state = GameState::GAMEOVER;
+                    score = 0;  // Reset score
                 }
             } else {
                 // Invalid mode, nothing to do
