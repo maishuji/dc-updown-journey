@@ -66,7 +66,7 @@ void Player::process_input(cont_state_t *cont) {
     if (cont->buttons & CONT_DPAD_RIGHT) {
         r.x += 5;
     }
-    if (cont->buttons & CONT_DPAD_UP) {
+    if (cont->buttons & CONT_A) {
         if (!m_pimpl->jumping && m_pimpl->grounded) {
             m_pimpl->jumping = true;
             r.y -= 5;
