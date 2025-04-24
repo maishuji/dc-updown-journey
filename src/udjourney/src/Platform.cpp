@@ -4,7 +4,8 @@
 
 #include "udjourney/IGame.hpp"
 
-Platform::Platform(const IGame &game, Rectangle r) : IActor(game), r(r) {}
+Platform::Platform(const IGame &game, Rectangle r, Color c, bool y_repeated) :
+    IActor(game), r(r), color(c), y_repeated(y_repeated) {}
 
 void Platform::draw() const {
     auto rect = r;
@@ -13,12 +14,13 @@ void Platform::draw() const {
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
 
-    DrawRectangleRec(rect, BLUE);
+    DrawRectangleRec(rect, color);
 }
 
 void Platform::update(float delta) {
     const auto &gameRect = get_game().get_rectangle();
-    if (r.y < gameRect.y) {
+    // Mark the platform as consummed if it goes out of the screen
+    if (r.y + r.height < gameRect.y) {
         set_state(ActorState::CONSUMED);
     }
 }
