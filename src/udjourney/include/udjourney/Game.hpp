@@ -14,6 +14,7 @@
 #include "udjourney/IActor.hpp"
 #include "udjourney/IGame.hpp"
 #include "udjourney/IObserver.hpp"
+#include "udjourney/ScoreHistory.hpp"
 
 enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER };
 
@@ -38,5 +39,7 @@ class Game : public IGame, public IObserver {
     Rectangle r;
     double last_update_time = 0.0;
     BonusManager bonus_manager;
+    ScoreHistory<int64_t> m_score_history;
+    int64_t m_score = 0;
 };
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_GAME_HPP_
