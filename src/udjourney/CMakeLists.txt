@@ -12,6 +12,7 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Bonus.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/BonusManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ScoreHistory.cpp
 )
 set_target_properties(${TARGET_NAME} PROPERTIES
                       CMAKE_CXX_STANDARD 20

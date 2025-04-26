@@ -19,6 +19,7 @@
 #include "udjourney/IActor.hpp"
 #include "udjourney/Platform.hpp"
 #include "udjourney/Player.hpp"
+#include "udjourney/ScoreHistory.hpp"
 
 enum class ActorType : uint8_t {
     PLAYER = 0,
@@ -140,6 +141,30 @@ void Game::process_input(cont_state_t *cont) {
     player->process_input(cont);
 }
 
+void _draw_title() {
+    DrawText(" -- UP-DOWN JOURNEY -- \n", 10, 10, 20, RED);
+    DrawText("Press START to start the game\n", 300, 40, 20, RED);
+    DrawText("Press B button to quit\n", 300, 70, 20, RED);
+}
+
+void _draw_game_over(ScoreHistory score_history) {
+    DrawText("GAME OVER - Press START to start over.\n", 10, 10, 20, RED);
+    DrawText("Press B button to quit\n", 300, 40, 20, RED);
+
+    std::stringstream ss;
+    DrawText("Scores: ", 10, 30, 20, BLUE);
+    int idx = 0;
+    for (const auto &score : score_history.get_scores()) {
+        ss << std::to_string(score);
+        DrawText(ss.str().c_str(), 10, 50 + idx * 20, 20, WHITE);
+    }
+}
+
+void _draw_pause() {
+    DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
+    DrawText("Press B button to quit\n", 300, 40, 20, RED);
+}
+
 void Game::draw() const {
     BeginDrawing();
     ClearBackground(BLACK);  // Clear the background with a color
@@ -147,24 +172,29 @@ void Game::draw() const {
     // Draw the rectangle
     // DrawRectangleRec(r, BLUE);
     std::stringstream ss;
-    ss << "Score: ";
-    ss << std::to_string(score);
 
-    DrawText(ss.str().c_str(), 10, 30, 20, BLUE);
-    if (m_state == GameState::PLAY) {
-        for (const auto &p : m_actors) {
-            p->draw();
+    switch (m_state) {
+        case GameState::TITLE:
+            _draw_title();
+            break;
+        case GameState::PLAY: {
+            for (const auto &p : m_actors) {
+                p->draw();
+            }
+            player->draw();
         }
-        player->draw();
-    } else if (m_state == GameState::PAUSE) {
-        DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
-    } else {
-        DrawText("GAME OVER - Press START to start over.\n", 10, 10, 20, RED);
+            DrawFPS(10, 50);  // Draw FPS counter
+            ss << "Score: ";
+            ss << std::to_string(score);
+            DrawText(ss.str().c_str(), 10, 30, 20, BLUE);  // Draw current score
+            break;
+        case GameState::PAUSE:
+            _draw_pause();
+            break;
+        case GameState::GAMEOVER:
+            _draw_game_over(score_history);
+            break;
     }
-    DrawText("Press B button to quit\n", 300, 40, 20, RED);
-
-    DrawFPS(10, 50);  // Draw FPS counter
-
     EndDrawing();
 }
 
@@ -294,6 +324,7 @@ void Game::on_notify(const std::string &event) {
                 if (mode == 12) {
                     // Game Over event
                     m_state = GameState::GAMEOVER;
+                    std::cout << "Game Over" << std::endl;
                     score = 0;  // Reset score
                 }
             } else {

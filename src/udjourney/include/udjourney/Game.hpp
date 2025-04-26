@@ -38,5 +38,6 @@ class Game : public IGame, public IObserver {
     Rectangle r;
     double last_update_time = 0.0;
     BonusManager bonus_manager;
+    ScoreHistory score_history;
 };
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_GAME_HPP_
