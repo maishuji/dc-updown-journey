@@ -19,6 +19,7 @@
 #include "udjourney/IActor.hpp"
 #include "udjourney/Platform.hpp"
 #include "udjourney/Player.hpp"
+#include "udjourney/ScoreHistory.hpp"
 
 enum class ActorType : uint8_t {
     PLAYER = 0,
@@ -29,7 +30,6 @@ enum class ActorType : uint8_t {
 const double kUpdateInterval = 0.0001;
 bool is_running = true;
 std::unique_ptr<Player> player = nullptr;
-int64_t score = 0;
 
 std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
     std::vector<std::unique_ptr<IActor>> res;
@@ -140,6 +140,47 @@ void Game::process_input(cont_state_t *cont) {
     player->process_input(cont);
 }
 
+void _draw_title() {
+    DrawText(" -- UP-DOWN JOURNEY -- \n", 10, 10, 20, RED);
+    DrawText("Press START to start the game\n", 300, 40, 20, RED);
+    DrawText("Press B button to quit\n", 300, 70, 20, RED);
+}
+
+void _draw_game_over(auto score_history) {
+    DrawText("GAME OVER - Press START to start over.\n", 10, 10, 20, RED);
+    DrawText("Press B button to quit\n", 300, 40, 20, RED);
+
+    const int kScoreX = 300;
+    const int kScoreOffsetX =
+        50;  // Offset for the score conpared to the header
+    const int kScoreStartY = 70;
+    const int kScoreSize = 20;
+    const int kScoreYStep = kScoreSize + 2;
+    const int kScoreMaxLines = 10;
+
+    std::stringstream ss;
+    DrawText("Scores: ", kScoreX, kScoreStartY, kScoreSize, YELLOW);
+    int idx = 1;
+    auto scores = score_history.get_scores();
+    for (auto it = scores.rbegin(); it != scores.rend(); ++it) {
+        auto s = std::to_string(*it);
+        DrawText(s.c_str(),
+                 kScoreX + kScoreOffsetX,
+                 kScoreStartY + idx * kScoreYStep,
+                 kScoreSize,
+                 WHITE);
+        ++idx;
+        if (idx > kScoreMaxLines) {
+            break;  // Limit to 10 scores
+        }
+    }
+}
+
+void _draw_pause() {
+    DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
+    DrawText("Press B button to quit\n", 300, 40, 20, RED);
+}
+
 void Game::draw() const {
     BeginDrawing();
     ClearBackground(BLACK);  // Clear the background with a color
@@ -147,24 +188,29 @@ void Game::draw() const {
     // Draw the rectangle
     // DrawRectangleRec(r, BLUE);
     std::stringstream ss;
-    ss << "Score: ";
-    ss << std::to_string(score);
 
-    DrawText(ss.str().c_str(), 10, 30, 20, BLUE);
-    if (m_state == GameState::PLAY) {
-        for (const auto &p : m_actors) {
-            p->draw();
+    switch (m_state) {
+        case GameState::TITLE:
+            _draw_title();
+            break;
+        case GameState::PLAY: {
+            for (const auto &p : m_actors) {
+                p->draw();
+            }
+            player->draw();
         }
-        player->draw();
-    } else if (m_state == GameState::PAUSE) {
-        DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
-    } else {
-        DrawText("GAME OVER - Press START to start over.\n", 10, 10, 20, RED);
+            DrawFPS(10, 50);  // Draw FPS counter
+            ss << "Score: ";
+            ss << std::to_string(m_score);
+            DrawText(ss.str().c_str(), 10, 30, 20, BLUE);  // Draw current score
+            break;
+        case GameState::PAUSE:
+            _draw_pause();
+            break;
+        case GameState::GAMEOVER:
+            _draw_game_over(m_score_history);
+            break;
     }
-    DrawText("Press B button to quit\n", 300, 40, 20, RED);
-
-    DrawFPS(10, 50);  // Draw FPS counter
-
     EndDrawing();
 }
 
@@ -281,62 +327,62 @@ std::optional<int16_t> extract_number_(const std::string_view &s) {
     return {};
 }
 
+void _process_bonus(IGame &game, int16_t v1) {
+    auto x = game.get_rectangle().x + (game.get_rectangle().width / 100.0) * v1;
+    auto y = game.get_rectangle().y + game.get_rectangle().height / 2.0f +
+             (game.get_rectangle().height / 200.0) * v1;
+
+    auto bonus = std::make_unique<Bonus>(game, Rectangle(x, y, 20, 20));
+    game.add_actor(std::move(bonus));
+}
+
 void Game::on_notify(const std::string &event) {
     std::stringstream ss(event);
     std::string token;
-    uint8_t line_idx = 0;
     int mode = 0;
-    while (std::getline(ss, token, ';')) {  // Split by ';'
-        if (line_idx == 0) {
-            auto mode_opt = extract_number_(token);
-            if (mode_opt.has_value()) {
-                mode = mode_opt.value();
-                if (mode == 12) {
-                    // Game Over event
-                    m_state = GameState::GAMEOVER;
-                    score = 0;  // Reset score
-                }
-            } else {
-                // Invalid mode, nothing to do
-                break;
-            }
 
+    const int16_t kModeGameOuver = 12;
+    const int16_t kModeScoring = 1;
+    const int16_t kModeBonus = 2;
+
+    // Parse event mode
+    if (std::getline(ss, token, ';')) {
+        // First token is the mode
+        auto mode_opt = extract_number_(token);
+        if (mode_opt.has_value()) {
+            mode = mode_opt.value();
         } else {
-            switch (mode) {
-                case 1: {
-                    // Parsing scoring event
-                    std::optional<int16_t> score_inc_opt =
-                        extract_number_(token);
-                    if (score_inc_opt.has_value()) {
-                        score += score_inc_opt.value();
-                    }
-                } break;
-
-                case 2: {
-                    std::optional<int16_t> idx_opt = extract_number_(token);
-                    if (idx_opt.has_value()) {
-                        // Parsing bonus event
-
-                        auto x =
-                            get_rectangle().x +
-                            (get_rectangle().width / 100.0) * idx_opt.value();
-                        auto y =
-                            get_rectangle().y + get_rectangle().height / 2.0f +
-                            (get_rectangle().height / 200.0) * idx_opt.value();
-
-                        auto bonus = std::make_unique<Bonus>(
-                            *this, Rectangle(x, y, 20, 20));
-                        m_actors.push_back(std::move(bonus));
-                    }
-                } break;
-
-                default:
-                    break;
-            }
+            std::cerr << "Invalid mode: " << token << std::endl;
+            return;
         }
-        line_idx++;
-    }
+    }  // Split by ';'
 
-    int v = std::stoi(event);
-    score += v;
+    switch (mode) {
+        case kModeGameOuver:
+            m_state = GameState::GAMEOVER;
+            std::cout << "Game Over" << std::endl;
+            m_score_history.add_score(m_score);
+            m_score = 0;  // Reset score
+            break;
+        case kModeScoring:
+            // Parsing scoring event
+            if (std::optional<int16_t> score_inc_opt = extract_number_(token);
+                score_inc_opt.has_value()) {
+                m_score += score_inc_opt.value();
+            }
+            break;
+        case kModeBonus:
+            // Parsing bonus event
+
+            if (std::optional<int16_t> idx_opt = extract_number_(token);
+                idx_opt.has_value()) {
+                _process_bonus(*this, idx_opt.value());
+            } else {
+                std::cerr << "Invalid bonus index: " << token << std::endl;
+            }
+
+            break;
+        default:
+            break;
+    }
 }
