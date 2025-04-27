@@ -10,7 +10,15 @@ void Bonus::draw() const {
     // Convert to screen coordinates
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
-    DrawRectangleRec(rect, YELLOW);
+
+    // Center of rotation: center of the rectangle
+    Vector2 origin = {rect.width / 2.0f, rect.height / 2.0f};
+
+    // Define rotation angle (you probably want it to increase over time)
+    float rotation = GetTime() * 30.0f;  // for example, 90 degrees per second
+
+    // Draw rotated rectangle
+    DrawRectanglePro(rect, origin, rotation, YELLOW);
 }
 
 void Bonus::update(float delta) {
