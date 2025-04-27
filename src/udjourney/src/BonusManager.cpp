@@ -19,13 +19,14 @@ void BonusManager::update(float delta) {
         static std::mt19937 gen(static_cast<unsigned int>(seed));
         static std::uniform_int_distribution<> dist(0, 99);
         if (dist(gen) < 50) {
-            // Notify observers
+            // Notify observers to spawn a bonus
 
             int16_t x = dist(gen);
-            // int16_t y = dist(gen);
+            int16_t y = dist(gen);
 
             for (auto *listener : observers) {
-                listener->on_notify("2;" + std::to_string(x));
+                listener->on_notify("2;" + std::to_string(x) + "+" +
+                                    std::to_string(y));
             }
         }
     }
