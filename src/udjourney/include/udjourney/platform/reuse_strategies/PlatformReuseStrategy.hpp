@@ -1,0 +1,11 @@
+// Copyright 2025 Quentin Cartier
+#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_REUSE_STRATEGIES_PLATFORMREUSESTRATEGY_HPP_
+#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_REUSE_STRATEGIES_PLATFORMREUSESTRATEGY_HPP_
+
+class PlatformReuseStrategy {
+ public:
+    virtual ~PlatformReuseStrategy() = default;
+    virtual void reuse(class Platform& platform) = 0;
+};
+
+#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_REUSE_STRATEGIES_PLATFORMREUSESTRATEGY_HPP_
