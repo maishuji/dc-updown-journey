@@ -327,12 +327,33 @@ std::optional<int16_t> extract_number_(const std::string_view &s) {
     return {};
 }
 
-void _process_bonus(IGame &game, int16_t v1) {
-    auto x = game.get_rectangle().x + (game.get_rectangle().width / 100.0) * v1;
-    auto y = game.get_rectangle().y + game.get_rectangle().height / 2.0f +
-             (game.get_rectangle().height / 200.0) * v1;
+void _process_bonus(IGame &game, std::stringstream &token_stream) {
+    std::string str_v1, str_v2;
+    int16_t v1 = 0;
+    int16_t v2 = 0;
 
-    auto bonus = std::make_unique<Bonus>(game, Rectangle(x, y, 20, 20));
+    std::getline(token_stream, str_v1, '+');
+    std::getline(token_stream, str_v2, '+');
+
+    // Currently numbers extracted are bounded [0-100)
+    if (std::optional<int16_t> v1_opt = extract_number_(str_v1);
+        v1_opt.has_value()) {
+        v1 = v1_opt.value();
+    }
+    if (std::optional<int16_t> v2_opt = extract_number_(str_v2);
+        v2_opt.has_value()) {
+        v2 = v2_opt.value();
+    }
+
+    const auto kRectSize = 20;
+
+    auto x = game.get_rectangle().x +
+             ((game.get_rectangle().width - kRectSize) / 100.0) * v1;
+    auto y = game.get_rectangle().y + game.get_rectangle().height / 2.0f +
+             (game.get_rectangle().height / 200.0) * v2;
+
+    auto bonus =
+        std::make_unique<Bonus>(game, Rectangle(x, y, kRectSize, kRectSize));
     game.add_actor(std::move(bonus));
 }
 
@@ -357,6 +378,7 @@ void Game::on_notify(const std::string &event) {
         }
     }  // Split by ';'
 
+    std::cout << "Event: " << ss.str() << std::endl;
     switch (mode) {
         case kModeGameOuver:
             m_state = GameState::GAMEOVER;
@@ -373,13 +395,7 @@ void Game::on_notify(const std::string &event) {
             break;
         case kModeBonus:
             // Parsing bonus event
-
-            if (std::optional<int16_t> idx_opt = extract_number_(token);
-                idx_opt.has_value()) {
-                _process_bonus(*this, idx_opt.value());
-            } else {
-                std::cerr << "Invalid bonus index: " << token << std::endl;
-            }
+            _process_bonus(*this, ss);
 
             break;
         default:
