@@ -1,6 +1,6 @@
 // Copyright 2025 Quentin Cartier
 
-#include "udjourney/Platform.hpp"
+#include "udjourney/platform/Platform.hpp"
 
 #include "udjourney/IGame.hpp"
 

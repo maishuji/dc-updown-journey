@@ -1,7 +1,7 @@
 // Copyright 2025 Quentin Cartier
 
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_HPP_
+#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_PLATFORM_HPP_
+#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_PLATFORM_HPP_
 
 #include <kos.h>  // maple_device_t, cont_state_t
 #include <raylib/raylib.h>
@@ -10,6 +10,7 @@
 
 #include "udjourney/IActor.hpp"
 #include "udjourney/IGame.hpp"
+#include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 
 class Platform : public IActor {
  public:
@@ -25,6 +26,9 @@ class Platform : public IActor {
     }
     inline constexpr uint8_t get_group_id() const override { return 1; }
     bool constexpr is_y_repeated() { return y_repeated; }
+    inline void reuse(PlatformReuseStrategy &strategy) noexcept {
+        strategy.reuse(*this);
+    }
 
  private:
     Rectangle r;
@@ -32,4 +36,4 @@ class Platform : public IActor {
     bool y_repeated = false;
 };
 
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_HPP_
+#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_PLATFORM_HPP_

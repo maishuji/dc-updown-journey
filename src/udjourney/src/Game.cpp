@@ -17,9 +17,11 @@
 
 #include "udjourney/Bonus.hpp"
 #include "udjourney/IActor.hpp"
-#include "udjourney/Platform.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/ScoreHistory.hpp"
+#include "udjourney/platform/Platform.hpp"
+#include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
+#include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
 
 enum class ActorType : uint8_t {
     PLAYER = 0,
@@ -30,6 +32,8 @@ enum class ActorType : uint8_t {
 const double kUpdateInterval = 0.0001;
 bool is_running = true;
 std::unique_ptr<Player> player = nullptr;
+std::unique_ptr<PlatformReuseStrategy> reuse_strategy =
+    std::make_unique<RandomizePositionStrategy>();
 
 std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
     std::vector<std::unique_ptr<IActor>> res;
@@ -239,29 +243,9 @@ void Game::update() {
                 {
                     case static_cast<uint8_t>(ActorType::PLATFORM): {
                         // Instead of removing the platform, we can reuse it
-                        const auto origin_rect = p->get_rectangle();
-                        const auto game_rect = get_rectangle();
-                        bool is_y_repeated =
-                            static_cast<Platform *>(p.get())->is_y_repeated();
-                        if (is_y_repeated) {
-                            // In this case, y is repeated like a circular
-                            // buffer Used for borders
-                            p->set_rectangle(Rectangle(origin_rect.x,
-                                                       origin_rect.y +
-                                                           game_rect.height +
-                                                           origin_rect.height,
-                                                       origin_rect.width,
-                                                       origin_rect.height));
-                        } else {
-                            // TODO(QCA): Add strategy to place the reused
-                            // platform
-                            p->set_rectangle(
-                                Rectangle(origin_rect.x,
-                                          game_rect.y + game_rect.height,
-                                          origin_rect.width,
-                                          origin_rect.height));
-                        }
-                        p->set_state(ActorState::ONGOING);
+                        reuse_strategy->reuse(static_cast<Platform &>(*p));
+                        /*
+                         */
                     } break;
                     case static_cast<uint8_t>(ActorType::BONUS): {
                         remove_actor(p.get());

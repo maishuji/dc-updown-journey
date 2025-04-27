@@ -7,7 +7,8 @@ endif()
 set(TARGET_NAME "upown-journey")
 add_executable(${TARGET_NAME} 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/Platform.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/reuse_strategies/RandomizePositionStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Game.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Bonus.cpp
