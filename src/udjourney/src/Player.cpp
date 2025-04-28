@@ -17,6 +17,7 @@ struct Player::PImpl {
     bool colliding = false;
     bool jumping = false;
     bool dashing = false;
+    bool dashable = true;
     float vy = 0.0f;
     float dash_timer = 0.0f;
     float dash_cooldown = 0.0f;
@@ -60,8 +61,13 @@ void Player::update(float delta) {
             m_pimpl->dashing = false;
         }
     }
-    if (m_pimpl->dash_cooldown > 0.0f) {
-        m_pimpl->dash_cooldown -= delta;
+    if (!m_pimpl->dashing && !m_pimpl->dashable) {
+        if (m_pimpl->dash_cooldown > 0.0f) {
+            m_pimpl->dash_cooldown -= delta;
+        } else {
+            m_pimpl->dashable = true;
+            notify("4;1");
+        }
     }
 
     const auto &gameRect = get_game().get_rectangle();
@@ -98,6 +104,9 @@ void Player::process_input(cont_state_t *cont) {
         m_pimpl->dashing = true;
         m_pimpl->dash_timer = 0.2f;     // Dash lasts 0.2 seconds
         m_pimpl->dash_cooldown = 1.0f;  // Then 1 second cooldown
+        m_pimpl->dashable =
+            false;  // Player can't dash again until cooldown is over
+        notify("4;0");
     }
 }
 
