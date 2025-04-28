@@ -219,6 +219,8 @@ void Game::draw() const {
 }
 
 void Game::update() {
+    static double last_update_time = 0.0;
+
     // Update actors
     if (m_state == GameState::PLAY) {
         m_updating_actors = true;
@@ -280,11 +282,10 @@ void Game::update() {
     bonus_manager.update(delta);
     if (cur_update_time - last_update_time > kUpdateInterval) {
         r.y += 1;
-
         for (auto &p : m_actors) {
-            p->update(0.0f);
+            p->update(delta);
         }
-        player->update(0.0f);
+        player->update(delta);
         last_update_time = cur_update_time;
     }
 

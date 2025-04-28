@@ -16,7 +16,10 @@ struct Player::PImpl {
     bool grounded = false;
     bool colliding = false;
     bool jumping = false;
+    bool dashing = false;
     float vy = 0.0f;
+    float dash_timer = 0.0f;
+    float dash_cooldown = 0.0f;
 };
 
 std::vector<IObserver *> observers;
@@ -50,6 +53,17 @@ void Player::update(float delta) {
         }
     }
 
+    // Dash timers
+    if (m_pimpl->dashing) {
+        m_pimpl->dash_timer -= delta;
+        if (m_pimpl->dash_timer <= 0.0f) {
+            m_pimpl->dashing = false;
+        }
+    }
+    if (m_pimpl->dash_cooldown > 0.0f) {
+        m_pimpl->dash_cooldown -= delta;
+    }
+
     const auto &gameRect = get_game().get_rectangle();
 
     // Gameover it the player is out of the screen at the bottom
@@ -61,10 +75,10 @@ void Player::update(float delta) {
 
 void Player::process_input(cont_state_t *cont) {
     if (cont->buttons & CONT_DPAD_LEFT) {
-        r.x -= 5;
+        r.x -= m_pimpl->dashing ? 12 : 5;
     }
     if (cont->buttons & CONT_DPAD_RIGHT) {
-        r.x += 5;
+        r.x += m_pimpl->dashing ? 12 : 5;
     }
     if (cont->buttons & CONT_A) {
         if (!m_pimpl->jumping && m_pimpl->grounded) {
@@ -77,6 +91,13 @@ void Player::process_input(cont_state_t *cont) {
     }
     if (cont->buttons & CONT_DPAD_DOWN) {
         r.y += 5;
+    }
+
+    // Dash input
+    if ((cont->buttons & CONT_X) && m_pimpl->dash_cooldown <= 0.0f) {
+        m_pimpl->dashing = true;
+        m_pimpl->dash_timer = 0.2f;     // Dash lasts 0.2 seconds
+        m_pimpl->dash_cooldown = 1.0f;  // Then 1 second cooldown
     }
 }
 
