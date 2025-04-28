@@ -35,6 +35,10 @@ std::unique_ptr<Player> player = nullptr;
 std::unique_ptr<PlatformReuseStrategy> reuse_strategy =
     std::make_unique<RandomizePositionStrategy>();
 
+struct DashFud {
+    int16_t dashable = true;
+} dash_fud;
+
 std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
     std::vector<std::unique_ptr<IActor>> res;
     int lastx = 0;
@@ -207,6 +211,13 @@ void Game::draw() const {
             ss << "Score: ";
             ss << std::to_string(m_score);
             DrawText(ss.str().c_str(), 10, 30, 20, BLUE);  // Draw current score
+
+            // Draw dash status
+            DrawCircle(get_rectangle().width - 50,
+                       45,
+                       17,
+                       dash_fud.dashable ? GREEN : RED);
+
             break;
         case GameState::PAUSE:
             _draw_pause();
@@ -219,6 +230,8 @@ void Game::draw() const {
 }
 
 void Game::update() {
+    static double last_update_time = 0.0;
+
     // Update actors
     if (m_state == GameState::PLAY) {
         m_updating_actors = true;
@@ -280,11 +293,10 @@ void Game::update() {
     bonus_manager.update(delta);
     if (cur_update_time - last_update_time > kUpdateInterval) {
         r.y += 1;
-
         for (auto &p : m_actors) {
-            p->update(0.0f);
+            p->update(delta);
         }
-        player->update(0.0f);
+        player->update(delta);
         last_update_time = cur_update_time;
     }
 
@@ -349,6 +361,7 @@ void Game::on_notify(const std::string &event) {
     const int16_t kModeGameOuver = 12;
     const int16_t kModeScoring = 1;
     const int16_t kModeBonus = 2;
+    const int16_t kModeDash = 4;
 
     // Parse event mode
     if (std::getline(ss, token, ';')) {
@@ -372,6 +385,7 @@ void Game::on_notify(const std::string &event) {
             break;
         case kModeScoring:
             // Parsing scoring event
+            std::getline(ss, token, ';');
             if (std::optional<int16_t> score_inc_opt = extract_number_(token);
                 score_inc_opt.has_value()) {
                 m_score += score_inc_opt.value();
@@ -380,7 +394,14 @@ void Game::on_notify(const std::string &event) {
         case kModeBonus:
             // Parsing bonus event
             _process_bonus(*this, ss);
-
+            break;
+        case kModeDash:
+            // Parsing dash event
+            std::getline(ss, token, ';');
+            if (std::optional<int16_t> dash_opt = extract_number_(token);
+                dash_opt.has_value()) {
+                dash_fud.dashable = dash_opt.value() == 0 ? false : true;
+            }
             break;
         default:
             break;

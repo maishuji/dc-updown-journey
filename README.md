@@ -181,6 +181,28 @@ sudo ip addr add 192.168.0.1/24 dev enxa0cec85e02d8 # replace with your interfac
 sudo systemctl restart dnsmasq
 ```
 
+4. If this problem persists, you can use a `udev` rule to automatically assign an IP address to the interface when it is connected. 
+Create a file in `/etc/udev/rules.d/` with the following content:
+
+```bash
+sudo nano /etc/udev/rules.d/99-ethernet-static.rules
+```
+
+Inside put:
+
+```bash
+ACTION=="add", SUBSYSTEM=="net", ATTR{address}=="a0:ce:c8:5e:02:d8", NAME="enxa0cec85e02d8", RUN+="/sbin/ip addr flush dev enxa0cec85e02d8", RUN+="/sbin/ip addr add 192.168.0.1/24 dev enxa0cec85e02d8", RUN+="/sbin/ip link set enxa0cec85e02d8 up"
+```
+
+Replace `a0:ce:c8:5e:02:d8` with the MAC address of your interface. You can find it using:
+
+```bash
+ip link show <your-dreamcast-interface>
+```
+
+Then restart the udev service:
+
+```bash
 
 ## Debugging cmake
 
