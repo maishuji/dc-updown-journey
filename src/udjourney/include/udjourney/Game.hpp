@@ -25,7 +25,7 @@ class Game : public IGame, public IObserver {
     void update() override;
     void add_actor(std::unique_ptr<IActor> actor) override;
     void remove_actor(IActor *actor) override;
-    void process_input(cont_state_t *cont);
+    void process_input();
     void on_notify(const std::string &event);
     Rectangle get_rectangle() const override { return r; }
 

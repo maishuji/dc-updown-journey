@@ -20,7 +20,7 @@ class Player : public IActor {
     ~Player();
     void draw() const override;
     void update(float delta) override;
-    void process_input(cont_state_t *cont) override;
+    void process_input() override;
     void resolve_collision(const IActor &platform) noexcept;
     void handle_collision(
         const std::vector<std::unique_ptr<IActor>> &platforms) noexcept;

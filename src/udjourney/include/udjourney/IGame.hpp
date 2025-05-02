@@ -15,7 +15,7 @@ class IGame {
  public:
     virtual void run() = 0;
     virtual void update() = 0;
-    virtual void process_input(cont_state_t *cont) = 0;
+    virtual void process_input() = 0;
     virtual void add_actor(std::unique_ptr<IActor> actor) = 0;
     virtual void remove_actor(IActor *actor) = 0;
     virtual Rectangle get_rectangle() const = 0;

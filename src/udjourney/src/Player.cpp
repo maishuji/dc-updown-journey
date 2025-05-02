@@ -79,14 +79,16 @@ void Player::update(float delta) {
     }
 }
 
-void Player::process_input(cont_state_t *cont) {
-    if (cont->buttons & CONT_DPAD_LEFT) {
+void Player::process_input() {
+    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT)) {
         r.x -= m_pimpl->dashing ? 12 : 5;
     }
-    if (cont->buttons & CONT_DPAD_RIGHT) {
+    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) {
         r.x += m_pimpl->dashing ? 12 : 5;
     }
-    if (cont->buttons & CONT_A) {
+
+    // A to Jump
+    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) {
         if (!m_pimpl->jumping && m_pimpl->grounded) {
             m_pimpl->jumping = true;
             r.y -= 5;
@@ -95,12 +97,15 @@ void Player::process_input(cont_state_t *cont) {
     } else {
         m_pimpl->jumping = false;
     }
-    if (cont->buttons & CONT_DPAD_DOWN) {
+
+    // DPAD down
+    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN)) {
         r.y += 5;
     }
 
     // Dash input
-    if ((cont->buttons & CONT_X) && m_pimpl->dash_cooldown <= 0.0f) {
+    if ((IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT)) &&
+        m_pimpl->dash_cooldown <= 0.0f) {
         m_pimpl->dashing = true;
         m_pimpl->dash_timer = 0.2f;     // Dash lasts 0.2 seconds
         m_pimpl->dash_cooldown = 1.0f;  // Then 1 second cooldown

@@ -1,7 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/Game.hpp"
-
+#ifdef PLATFORM_DREAMCAST
 #include <kos.h>
+#endif
 #include <raylib/raymath.h>
 #include <raylib/rlgl.h>
 
@@ -132,7 +133,7 @@ void Game::remove_actor(IActor *actor) {
     }
 }
 
-void Game::process_input(cont_state_t *cont) {
+void Game::process_input() {
     if (IsGamepadAvailable(0)) {
         // Press 'B' to quit
         bool bPressed = IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
@@ -140,12 +141,23 @@ void Game::process_input(cont_state_t *cont) {
             // Press b to quit
             is_running = false;
         }
-    }
 
-    for (auto &a : m_actors) {
-        a->process_input(cont);
+        // Pause / Unpause the game
+        auto startPressed =
+            IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+        if (startPressed) {
+            if (m_state == GameState::PLAY)
+                m_state = GameState::PAUSE;
+            else
+                m_state = GameState::PLAY;
+        }
     }
-    player->process_input(cont);
+    if (m_state == GameState::PLAY) {
+        for (auto &a : m_actors) {
+            a->process_input();
+        }
+        player->process_input();
+    }
 }
 
 void _draw_title() {
@@ -270,23 +282,7 @@ void Game::update() {
         }
     }
 
-    maple_device_t *controller = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
-    if (controller) {
-        cont_state_t *cont =
-            reinterpret_cast<cont_state_t *>(maple_dev_status(controller));
-        if (cont) {
-            // Preprocessing of input
-            auto startPressed =
-                IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
-            if (startPressed) {
-                if (m_state == GameState::PLAY)
-                    m_state = GameState::PAUSE;
-                else
-                    m_state = GameState::PLAY;
-            }
-            process_input(cont);
-        }
-    }
+    process_input();
 
     double cur_update_time = GetTime();
     float delta = static_cast<float>(cur_update_time - last_update_time);

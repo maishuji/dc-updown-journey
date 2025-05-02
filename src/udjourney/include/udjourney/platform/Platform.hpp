@@ -18,7 +18,7 @@ class Platform : public IActor {
              bool y_repeated = false);
     void draw() const override;
     void update(float delta) override;
-    void process_input(cont_state_t *t) override;
+    void process_input() override;
     void set_rectangle(Rectangle r) override { this->r = r; }
     Rectangle get_rectangle() const override { return r; }
     bool check_collision(const IActor &other) const override {
