@@ -3,7 +3,6 @@
 #ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IGAME_HPP_
 #define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IGAME_HPP_
 
-#include <kos.h>  // maple_device_t, cont_state_t
 #include <raylib/raylib.h>  // Rectangle
 
 #include <memory>  // unique_ptr

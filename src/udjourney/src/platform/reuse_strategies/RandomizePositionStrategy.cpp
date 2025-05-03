@@ -28,16 +28,16 @@ void RandomizePositionStrategy::reuse(Platform& platform) {
         // behavior In this case, y is repeated like a circular buffer Used for
         // borders
         platform.set_rectangle(
-            Rectangle(origin_rect.x,
+            Rectangle{origin_rect.x,
                       origin_rect.y + game_rect.height + origin_rect.height,
                       origin_rect.width,
-                      origin_rect.height));
+                      origin_rect.height});
     } else {
         // platform
-        platform.set_rectangle(Rectangle(random_x,
+        platform.set_rectangle(Rectangle{static_cast<float>(random_x),
                                          game_rect.y + game_rect.height,
                                          origin_rect.width,
-                                         origin_rect.height));
+                                         origin_rect.height});
     }
     platform.set_state(ActorState::ONGOING);
 }

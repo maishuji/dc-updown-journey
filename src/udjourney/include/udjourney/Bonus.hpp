@@ -3,7 +3,6 @@
 #ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_BONUS_HPP_
 #define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_BONUS_HPP_
 
-#include <kos.h>  // maple_device_t, cont_state_t
 #include <raylib/raylib.h>
 #include <raylib/raymath.h>
 #include <raylib/rlgl.h>

@@ -2,8 +2,9 @@
 
 #ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_GAME_HPP_
 #define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_GAME_HPP_
-
+#ifdef PLATFORM_DREAMCAST
 #include <kos.h>            // maple_device_t, cont_state_t
+#endif
 #include <raylib/raylib.h>  // Rectangle
 
 #include <memory>
@@ -25,8 +26,8 @@ class Game : public IGame, public IObserver {
     void update() override;
     void add_actor(std::unique_ptr<IActor> actor) override;
     void remove_actor(IActor *actor) override;
-    void process_input();
-    void on_notify(const std::string &event);
+    void process_input() override;
+    void on_notify(const std::string &event) override;
     Rectangle get_rectangle() const override { return r; }
 
  private:
