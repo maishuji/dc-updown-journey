@@ -271,6 +271,7 @@ void Game::update() {
     }  // GameState::PLAY
 
     // Removing CONSUMED actors (DEAD and ready for removing)
+    std::vector<IActor *> to_remove;  // Gathering actors to remove
     for (auto &p : m_actors) {
         if (p->get_state() == ActorState::CONSUMED) {
             switch (p->get_group_id()) {
@@ -282,12 +283,17 @@ void Game::update() {
                          */
                     } break;
                     case static_cast<uint8_t>(ActorType::BONUS): {
-                        remove_actor(p.get());
+                        to_remove.push_back(p.get());
                     } break;
                     default:
                         break;
                 }
             }
+        }
+    }
+    if (!to_remove.empty()) {
+        for (auto* p : to_remove) {
+            remove_actor(p);
         }
     }
 
