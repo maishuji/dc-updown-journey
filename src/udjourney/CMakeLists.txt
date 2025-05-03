@@ -14,11 +14,16 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Bonus.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/BonusManager.cpp
 )
-set_target_properties(${TARGET_NAME} PROPERTIES
-                      CMAKE_CXX_STANDARD 20
-                      CXX_EXTENSIONS OFF
-                      CXX_INCLUDE_WHAT_YOU_USE ${IWYU_PATH}
-                      )
+set_target_properties(${TARGET_NAME} 
+    PROPERTIES
+        CMAKE_CXX_STANDARD 20
+        CXX_EXTENSIONS OFF
+)
+
+if (NOT PLATFORM_DREAMCAST)
+    set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE ${IWYU_PATH})
+endif()
+                  
 
 target_include_directories(${TARGET_NAME}
     PUBLIC
@@ -28,6 +33,7 @@ target_include_directories(${TARGET_NAME}
 
 # Note: GL must be linked after raylib
 if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
+    message(STATUS "Building for Dreamcast")
     target_link_libraries(${TARGET_NAME} 
         PUBLIC 
             dcplib raylib GL
