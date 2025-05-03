@@ -24,13 +24,21 @@ target_include_directories(${TARGET_NAME}
     PUBLIC
         include)
 
-# GL must be linked after raylib
-target_link_libraries(${TARGET_NAME} 
-    PUBLIC 
-        dcplib raylib GL)
 
-# ---- ROMDISK generation ----
-set(ROMDISK_DIR "romdisk")
-kos_add_romdisk(${TARGET_NAME} ${ROMDISK_DIR})
 
-add_generate_cdi_image_for_target(${TARGET_NAME})
+# Note: GL must be linked after raylib
+if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
+    target_link_libraries(${TARGET_NAME} 
+        PUBLIC 
+            dcplib raylib GL
+    )
+    # ---- ROMDISK generation ----
+    set(ROMDISK_DIR "romdisk")
+    kos_add_romdisk(${TARGET_NAME} ${ROMDISK_DIR})
+    add_generate_cdi_image_for_target(${TARGET_NAME})
+else()
+    target_link_libraries(${TARGET_NAME} 
+        PUBLIC 
+            raylib GL
+    )
+endif()

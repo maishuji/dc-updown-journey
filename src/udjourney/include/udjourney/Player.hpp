@@ -3,7 +3,6 @@
 #ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_
 #define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_
 
-#include <kos.h>  // maple_device_t, cont_state_t
 #include <raylib/raylib.h>
 
 #include <memory>
@@ -20,7 +19,7 @@ class Player : public IActor {
     ~Player();
     void draw() const override;
     void update(float delta) override;
-    void process_input(cont_state_t *cont) override;
+    void process_input() override;
     void resolve_collision(const IActor &platform) noexcept;
     void handle_collision(
         const std::vector<std::unique_ptr<IActor>> &platforms) noexcept;

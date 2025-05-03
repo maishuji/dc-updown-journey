@@ -1,7 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/Game.hpp"
-
+#ifdef PLATFORM_DREAMCAST
 #include <kos.h>
+#endif
 #include <raylib/raymath.h>
 #include <raylib/rlgl.h>
 
@@ -45,7 +46,10 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
     int lastx2 = 100;
 
     for (int i = 0; i < 800; i += 100) {
-        auto r = Rectangle(lastx, i, lastx2, 5);
+        Rectangle r{static_cast<float>(lastx),
+                    static_cast<float>(i),
+                    static_cast<float>(lastx2),
+                    5};
         res.emplace_back(std::make_unique<Platform>(game, r));
         int ra = std::rand();
         lastx = (ra % 10) * 50;
@@ -68,17 +72,20 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
          border_top += border_height) {
         res.emplace_back(std::make_unique<Platform>(
             game,
-            Rectangle(0, border_top, border_width, border_height),
+            Rectangle{0,
+                      static_cast<float>(border_top),
+                      static_cast<float>(border_width),
+                      static_cast<float>(border_height)},
             color_pool[color_idx],
             true));
-        res.emplace_back(
-            std::make_unique<Platform>(game,
-                                       Rectangle(game_rect.width - border_width,
-                                                 border_top,
-                                                 border_width,
-                                                 border_height),
-                                       color_pool[color_idx],
-                                       true));
+        res.emplace_back(std::make_unique<Platform>(
+            game,
+            Rectangle{game_rect.width - border_width,
+                      static_cast<float>(border_top),
+                      static_cast<float>(border_width),
+                      static_cast<float>(border_height)},
+            color_pool[color_idx],
+            true));
         color_idx = (color_idx + 1) % cpool_size;
     }
 
@@ -86,19 +93,19 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
 }
 
 Game::Game(int w, int h) : IGame(), m_state(GameState::TITLE) {
-    r = Rectangle(0, 0, w, h);
+    r = Rectangle{0, 0, static_cast<float>(w), static_cast<float>(h)};
     m_actors.reserve(10);
 }
 
 void Game::run() {
     m_actors = init_platforms(*this);
-    player = std::make_unique<Player>(*this, Rectangle(320, 240, 20, 20));
+    player = std::make_unique<Player>(*this, Rectangle{320, 240, 20, 20});
     player->add_observer(static_cast<IObserver *>(this));
     // m_actors.push_back(std::move(player));
     //  m_actors.emplace_back(std::make_unique<Player>(*this, Rectangle(320,
     //  240, 20, 20)));
     m_actors.emplace_back(
-        std::make_unique<Bonus>(*this, Rectangle(300, 300, 20, 20)));
+        std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
 
     InitWindow(r.width, r.height, "Up-Down Journey");
     SetTargetFPS(60);
@@ -132,7 +139,11 @@ void Game::remove_actor(IActor *actor) {
     }
 }
 
-void Game::process_input(cont_state_t *cont) {
+void Game::process_input() {
+    if (WindowShouldClose()) {
+        is_running = false;
+        return;
+    }
     if (IsGamepadAvailable(0)) {
         // Press 'B' to quit
         bool bPressed = IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
@@ -140,12 +151,23 @@ void Game::process_input(cont_state_t *cont) {
             // Press b to quit
             is_running = false;
         }
-    }
 
-    for (auto &a : m_actors) {
-        a->process_input(cont);
+        // Pause / Unpause the game
+        auto startPressed =
+            IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+        if (startPressed) {
+            if (m_state == GameState::PLAY)
+                m_state = GameState::PAUSE;
+            else
+                m_state = GameState::PLAY;
+        }
     }
-    player->process_input(cont);
+    if (m_state == GameState::PLAY) {
+        for (auto &a : m_actors) {
+            a->process_input();
+        }
+        player->process_input();
+    }
 }
 
 void _draw_title() {
@@ -194,7 +216,6 @@ void Game::draw() const {
     ClearBackground(BLACK);  // Clear the background with a color
 
     // Draw the rectangle
-    // DrawRectangleRec(r, BLUE);
     std::stringstream ss;
 
     switch (m_state) {
@@ -270,23 +291,7 @@ void Game::update() {
         }
     }
 
-    maple_device_t *controller = maple_enum_type(0, MAPLE_FUNC_CONTROLLER);
-    if (controller) {
-        cont_state_t *cont =
-            reinterpret_cast<cont_state_t *>(maple_dev_status(controller));
-        if (cont) {
-            // Preprocessing of input
-            auto startPressed =
-                IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
-            if (startPressed) {
-                if (m_state == GameState::PLAY)
-                    m_state = GameState::PAUSE;
-                else
-                    m_state = GameState::PLAY;
-            }
-            process_input(cont);
-        }
-    }
+    process_input();
 
     double cur_update_time = GetTime();
     float delta = static_cast<float>(cur_update_time - last_update_time);
@@ -349,7 +354,11 @@ void _process_bonus(IGame &game, std::stringstream &token_stream) {
              (game.get_rectangle().height / 200.0) * v2;
 
     auto bonus =
-        std::make_unique<Bonus>(game, Rectangle(x, y, kRectSize, kRectSize));
+        std::make_unique<Bonus>(game,
+                                Rectangle{static_cast<float>(x),
+                                          static_cast<float>(y),
+                                          static_cast<float>(kRectSize),
+                                          static_cast<float>(kRectSize)});
     game.add_actor(std::move(bonus));
 }
 

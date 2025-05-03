@@ -25,6 +25,6 @@ void Platform::update(float delta) {
     }
 }
 
-void Platform::process_input(cont_state_t *t) {
+void Platform::process_input() {
     // Do nothing
 }

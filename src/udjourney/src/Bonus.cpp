@@ -29,6 +29,6 @@ void Bonus::update(float delta) {
     }
 }
 
-void Bonus::process_input(cont_state_t *t) {
+void Bonus::process_input() {
     // Do nothing
 }
