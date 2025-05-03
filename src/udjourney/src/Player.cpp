@@ -3,6 +3,7 @@
 #include "udjourney/Player.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -11,6 +12,49 @@
 #include "udjourney/CoreUtils.hpp"
 
 Player::~Player() = default;
+
+namespace {
+struct InputMapping {
+    std::function<bool()> leftPressed;
+    std::function<bool()> rightPressed;
+    std::function<bool()> upPressed;
+    std::function<bool()> downPressed;
+    std::function<bool()> jumpPressed;
+    std::function<bool()> dashPressed;
+    std::function<bool()> shootPressed;
+
+    InputMapping() {
+#ifdef PLATFORM_DREAMCAST
+        leftPressed = []() {
+            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
+        };
+        rightPressed = []() {
+            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
+        };
+        upPressed = []() { return IsKeyPressed(KEY_UP); };
+        downPressed = []() {
+            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
+        };
+        jumpPressed = []() {
+            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+        };
+        dashPressed = []() {
+            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
+        };
+        shootPressed = []() { return IsMouseButtonDown(MOUSE_LEFT_BUTTON); };
+#else
+        leftPressed = []() { return IsKeyDown(KEY_LEFT); };
+        rightPressed = []() { return IsKeyDown(KEY_RIGHT); };
+        upPressed = []() { return IsKeyDown(KEY_UP); };
+        downPressed = []() { return IsKeyDown(KEY_DOWN); };
+        jumpPressed = []() { return IsKeyDown(KEY_SPACE); };
+        dashPressed = []() { return IsKeyDown(KEY_LEFT_SHIFT); };
+        shootPressed = []() { return IsMouseButtonPressed(MOUSE_LEFT_BUTTON); };
+
+#endif
+    }
+} input_mapping;
+}  // namespace
 
 struct Player::PImpl {
     bool grounded = false;
@@ -80,15 +124,15 @@ void Player::update(float delta) {
 }
 
 void Player::process_input() {
-    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT)) {
+    if (input_mapping.leftPressed()) {
         r.x -= m_pimpl->dashing ? 12 : 5;
     }
-    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT)) {
+    if (input_mapping.rightPressed()) {
         r.x += m_pimpl->dashing ? 12 : 5;
     }
 
     // A to Jump
-    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) {
+    if (input_mapping.jumpPressed()) {
         if (!m_pimpl->jumping && m_pimpl->grounded) {
             m_pimpl->jumping = true;
             r.y -= 5;
@@ -99,13 +143,12 @@ void Player::process_input() {
     }
 
     // DPAD down
-    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN)) {
+    if (input_mapping.downPressed()) {
         r.y += 5;
     }
 
     // Dash input
-    if ((IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT)) &&
-        m_pimpl->dash_cooldown <= 0.0f) {
+    if ((input_mapping.dashPressed()) && m_pimpl->dash_cooldown <= 0.0f) {
         m_pimpl->dashing = true;
         m_pimpl->dash_timer = 0.2f;     // Dash lasts 0.2 seconds
         m_pimpl->dash_cooldown = 1.0f;  // Then 1 second cooldown
