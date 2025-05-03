@@ -36,12 +36,17 @@ struct InputMapping {
     std::function<bool()> pressed_start;
     std::function<bool()> pressed_B;
     InputMapping() {
+#ifdef PLATFORM_DREAMCAST
         pressed_start = []() {
             return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
         };
         pressed_B = []() {
             return IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
         };
+#else
+        pressed_start = []() { return IsKeyPressed(KEY_ENTER); };
+        pressed_B = []() { return IsKeyPressed(KEY_P); };
+#endif
     }
 } input_mapping;
 }  // namespace
@@ -160,22 +165,20 @@ void Game::process_input() {
         is_running = false;
         return;
     }
-    if (IsGamepadAvailable(0)) {
-        // Press 'B' to quit
-        bool bPressed = input_mapping.pressed_B();
-        if (bPressed) {
-            // Press b to quit
-            is_running = false;
-        }
+    // Press 'B' to quit
+    bool bPressed = input_mapping.pressed_B();
+    if (bPressed) {
+        // Press b to quit
+        is_running = false;
+    }
 
-        // Pause / Unpause the game
-        auto startPressed = input_mapping.pressed_start();
-        if (startPressed) {
-            if (m_state == GameState::PLAY)
-                m_state = GameState::PAUSE;
-            else
-                m_state = GameState::PLAY;
-        }
+    // Pause / Unpause the game
+    auto startPressed = input_mapping.pressed_start();
+    if (startPressed) {
+        if (m_state == GameState::PLAY)
+            m_state = GameState::PAUSE;
+        else
+            m_state = GameState::PLAY;
     }
     if (m_state == GameState::PLAY) {
         for (auto &a : m_actors) {
