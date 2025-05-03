@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <array>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -29,6 +30,21 @@ enum class ActorType : uint8_t {
     PLATFORM = 1,
     BONUS = 2,
 };
+
+namespace {
+struct InputMapping {
+    std::function<bool()> pressed_start;
+    std::function<bool()> pressed_B;
+    InputMapping() {
+        pressed_start = []() {
+            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+        };
+        pressed_B = []() {
+            return IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+        };
+    }
+} input_mapping;
+}  // namespace
 
 const double kUpdateInterval = 0.0001;
 bool is_running = true;
@@ -146,15 +162,14 @@ void Game::process_input() {
     }
     if (IsGamepadAvailable(0)) {
         // Press 'B' to quit
-        bool bPressed = IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+        bool bPressed = input_mapping.pressed_B();
         if (bPressed) {
             // Press b to quit
             is_running = false;
         }
 
         // Pause / Unpause the game
-        auto startPressed =
-            IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_RIGHT);
+        auto startPressed = input_mapping.pressed_start();
         if (startPressed) {
             if (m_state == GameState::PLAY)
                 m_state = GameState::PAUSE;
@@ -292,7 +307,7 @@ void Game::update() {
         }
     }
     if (!to_remove.empty()) {
-        for (auto* p : to_remove) {
+        for (auto *p : to_remove) {
             remove_actor(p);
         }
     }
