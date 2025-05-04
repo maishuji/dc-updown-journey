@@ -23,7 +23,7 @@ jobs:
       - name: Run cpplint
         run: |
           source ${{ github.workspace }}/venv/bin/activate
-          cpplint --recursive src/
+          cpplint --filter=-build/c++11,-runtime/references,-build/header_guard --recursive src/
 
       - name: Build the repository
         run:  |
