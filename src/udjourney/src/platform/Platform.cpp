@@ -5,7 +5,11 @@
 #include "udjourney/IGame.hpp"
 
 Platform::Platform(const IGame &game, Rectangle r, Color c, bool y_repeated) :
-    IActor(game), r(r), color(c), y_repeated(y_repeated) {}
+    IActor(game),
+    r(r),
+    color(c),
+    y_repeated(y_repeated),
+    behavior(std::make_unique<StaticPlatformBehaviorStrategy>()) {}
 
 void Platform::draw() const {
     auto rect = r;
@@ -17,14 +21,13 @@ void Platform::draw() const {
     DrawRectangleRec(rect, color);
 }
 
-void Platform::update(float delta) {
-    const auto &gameRect = get_game().get_rectangle();
-    // Mark the platform as consummed if it goes out of the screen
-    if (r.y + r.height < gameRect.y) {
-        set_state(ActorState::CONSUMED);
-    }
-}
+void Platform::update(float delta) { behavior->update(*this, delta); }
 
 void Platform::process_input() {
     // Do nothing
+}
+
+void Platform::move(float x, float y) noexcept {
+    r.x += x;
+    r.y += y;
 }

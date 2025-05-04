@@ -7,8 +7,12 @@
 #include <raylib/raymath.h>
 #include <raylib/rlgl.h>
 
+#include <memory>
+#include <utility>
+
 #include "udjourney/IActor.hpp"
 #include "udjourney/IGame.hpp"
+#include "udjourney/platform/behavior_strategies/PlatformBehaviorStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 
 class Platform : public IActor {
@@ -29,10 +33,17 @@ class Platform : public IActor {
         strategy.reuse(*this);
     }
 
+    void set_behavior(std::unique_ptr<PlatformBehaviorStrategy> b) {
+        behavior = std::move(b);
+    }
+
+    void move(float x, float y) noexcept;
+
  private:
     Rectangle r;
     Color color = BLUE;
     bool y_repeated = false;
+    std::unique_ptr<PlatformBehaviorStrategy> behavior;
 };
 
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_PLATFORM_HPP_

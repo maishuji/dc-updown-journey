@@ -75,6 +75,14 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
         int ra = std::rand();
         lastx = (ra % 10) * 50;
         lastx2 = ra % 100 + 50;
+
+        auto ra2 = std::rand();
+        if (ra2 % 100 < 20) {
+            // 20% of moving platforms
+            static_cast<Platform *>(res.back().get())
+                ->set_behavior(
+                    std::make_unique<HorizontalPlatformBehaviorStrategy>());
+        }
     }
 
     // Create borders

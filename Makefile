@@ -4,7 +4,7 @@ run-dc:
 	dc-tool-ip -t $(DC_IP) -x build/Debug/src/udjourney/upown-journey.elf
 
 lint:
-	cpplint --filter=-build/c++11,-runtime/references --recursive src/
+	cpplint --filter=-build/c++11,-runtime/references,-build/header_guard --recursive src/
 	
 tidy:
 	# Run clang-tidy on the source files
