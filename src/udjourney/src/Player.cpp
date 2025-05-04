@@ -26,20 +26,20 @@ struct InputMapping {
     InputMapping() {
 #ifdef PLATFORM_DREAMCAST
         left_pressed = []() {
-            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
+            return IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT);
         };
         right_pressed = []() {
-            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
+            return IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT);
         };
         up_pressed = []() { return IsKeyPressed(KEY_UP); };
         down_pressed = []() {
-            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
+            return IsGamepadButtonDown(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
         };
         jump_pressed = []() {
-            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+            return IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
         };
         dash_pressed = []() {
-            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
+            return IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
         };
         shoot_pressed = []() { return IsMouseButtonDown(MOUSE_LEFT_BUTTON); };
 #else
@@ -83,6 +83,7 @@ void Player::draw() const {
     DrawRectangleRec(rect,
                      m_pimpl->grounded    ? BLUE
                      : m_pimpl->colliding ? RED
+                     : m_pimpl->dashing ? ORANGE
                                           : GREEN);
 }
 

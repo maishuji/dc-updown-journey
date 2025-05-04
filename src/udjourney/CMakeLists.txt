@@ -34,6 +34,7 @@ target_include_directories(${TARGET_NAME}
 # Note: GL must be linked after raylib
 if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
     message(STATUS "Building for Dreamcast")
+    target_compile_definitions(${TARGET_NAME}  PRIVATE PLATFORM_DREAMCAST=TRUE)
     target_link_libraries(${TARGET_NAME} 
         PUBLIC 
             dcplib raylib GL
