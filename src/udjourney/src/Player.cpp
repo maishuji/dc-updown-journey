@@ -10,6 +10,7 @@
 #include "raylib/raymath.h"
 #include "raylib/rlgl.h"
 #include "udjourney/CoreUtils.hpp"
+#include "udjourney/platform/Platform.hpp"
 
 Player::~Player() = default;
 
@@ -67,6 +68,7 @@ struct Player::PImpl {
     float vy = 0.0f;
     float dash_timer = 0.0f;
     float dash_cooldown = 0.0f;
+    Platform *grounded_src = nullptr;
 };
 
 std::vector<IObserver *> observers;
@@ -83,13 +85,16 @@ void Player::draw() const {
     DrawRectangleRec(rect,
                      m_pimpl->grounded    ? BLUE
                      : m_pimpl->colliding ? RED
-                     : m_pimpl->dashing ? ORANGE
+                     : m_pimpl->dashing   ? ORANGE
                                           : GREEN);
 }
 
 void Player::update(float delta) {
     // Gravity
     r.y += 1;
+    if (m_pimpl->grounded && m_pimpl->grounded_src) {
+        r.x += m_pimpl->grounded_src->get_dx();
+    }
     if (m_pimpl->jumping) {
         using udjourney::coreutils::math::is_near_zero;
         using udjourney::coreutils::math::is_same_sign;
@@ -206,6 +211,7 @@ void Player::handle_collision(
 
     bool tmp_colliding = false;
     bool tmp_grounded = false;
+    Platform *tmp_grounded_src = nullptr;
 
     for (const auto &platform : platforms) {
         if (check_collision(*platform)) {
@@ -215,6 +221,7 @@ void Player::handle_collision(
             } else if (platform->get_group_id() == PLATFORM_TYPE_ID) {
                 // Check grounded
                 if (r.y < platform->get_rectangle().y) {
+                    tmp_grounded_src = static_cast<Platform *>(platform.get());
                     tmp_grounded = true;
                 }
             }
@@ -228,6 +235,7 @@ void Player::handle_collision(
     }
     m_pimpl->colliding = tmp_colliding;
     m_pimpl->grounded = tmp_grounded;
+    m_pimpl->grounded_src = tmp_grounded_src;
 }
 
 // Observable
