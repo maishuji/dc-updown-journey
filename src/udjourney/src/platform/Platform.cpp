@@ -6,10 +6,11 @@
 
 Platform::Platform(const IGame &game, Rectangle r, Color c, bool y_repeated) :
     IActor(game),
+    dx(0.0F),
     r(r),
     color(c),
     y_repeated(y_repeated),
-    behavior(std::make_unique<StaticPlatformBehaviorStrategy>()) {}
+    behavior(std::make_unique<StaticBehaviorStrategy>()) {}
 
 void Platform::draw() const {
     auto rect = r;
@@ -21,7 +22,11 @@ void Platform::draw() const {
     DrawRectangleRec(rect, color);
 }
 
-void Platform::update(float delta) { behavior->update(*this, delta); }
+void Platform::update(float delta) {
+    auto r1 = r;
+    behavior->update(*this, delta);
+    dx = r.x - r1.x;
+}
 
 void Platform::process_input() {
     // Do nothing

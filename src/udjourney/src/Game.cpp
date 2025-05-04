@@ -22,6 +22,7 @@
 #include "udjourney/Player.hpp"
 #include "udjourney/ScoreHistory.hpp"
 #include "udjourney/platform/Platform.hpp"
+#include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
 
@@ -78,10 +79,13 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
 
         auto ra2 = std::rand();
         if (ra2 % 100 < 20) {
+            float speed_x = std::max(5, ra % 30);
+            float max_offset = std::max(50, ra % 100);
+
             // 20% of moving platforms
             static_cast<Platform *>(res.back().get())
-                ->set_behavior(
-                    std::make_unique<HorizontalPlatformBehaviorStrategy>());
+                ->set_behavior(std::make_unique<HorizontalBehaviorStrategy>(
+                    speed_x, max_offset));
         }
     }
 
