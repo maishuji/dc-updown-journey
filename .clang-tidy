@@ -4,7 +4,9 @@ Checks: >
   performance-*,
   readability-*,
   bugprone-*,
-  -google-runtime-references
+  -google-runtime-references,
+  -modernize-use-trailing-return-type,
+  -bugprone-easily-swappable-parameters
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 FormatStyle: file

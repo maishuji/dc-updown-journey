@@ -4,35 +4,35 @@
 
 #include "udjourney/IGame.hpp"
 
-Platform::Platform(const IGame &game, Rectangle r, Color c, bool y_repeated) :
-    IActor(game),
-    dx(0.0F),
-    r(r),
-    color(c),
-    y_repeated(y_repeated),
-    behavior(std::make_unique<StaticBehaviorStrategy>()) {}
+Platform::Platform(const IGame &iGame, Rectangle iRect, Color iColor,
+                   bool iIsRepeatedY) :
+    IActor(iGame),
+    m_rect(iRect),
+    m_color(iColor),
+    m_repeated_y(iIsRepeatedY),
+    m_behavior(std::make_unique<StaticBehaviorStrategy>()) {}
 
 void Platform::draw() const {
-    auto rect = r;
-    auto &game = get_game();
+    auto rect = m_rect;
+    const auto &game = get_game();
     // Convert to screen coordinates
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
 
-    DrawRectangleRec(rect, color);
+    DrawRectangleRec(rect, m_color);
 }
 
-void Platform::update(float delta) {
-    auto r1 = r;
-    behavior->update(*this, delta);
-    dx = r.x - r1.x;
+void Platform::update(float iDelta) {
+    auto original_rect = m_rect;
+    m_behavior->update(*this, iDelta);
+    m_delta_x = m_rect.x - original_rect.x;
 }
 
 void Platform::process_input() {
     // Do nothing
 }
 
-void Platform::move(float x, float y) noexcept {
-    r.x += x;
-    r.y += y;
+void Platform::move(float iValX, float iValY) noexcept {
+    m_rect.x += iValX;
+    m_rect.y += iValY;
 }

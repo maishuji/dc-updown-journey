@@ -17,7 +17,7 @@ class IGame {
     virtual void process_input() = 0;
     virtual void add_actor(std::unique_ptr<IActor> actor) = 0;
     virtual void remove_actor(IActor *actor) = 0;
-    virtual Rectangle get_rectangle() const = 0;
+    [[nodiscard]] virtual Rectangle get_rectangle() const = 0;
 };
 
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IGAME_HPP_

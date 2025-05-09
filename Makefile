@@ -9,4 +9,4 @@ lint:
 tidy:
 	# Run clang-tidy on the source files
 	# It requires a compile_commands.json file to be generated
-	find src/ -name '*.cpp' -o -name '*.hpp' | xargs clang-tidy -p build/Debug  -header-filter=.* -quiet
+	find src/udjourney/src/ -name '*.cpp' -o -name '*.hpp' | xargs clang-tidy -p build/Debug  -header-filter=.* -quiet

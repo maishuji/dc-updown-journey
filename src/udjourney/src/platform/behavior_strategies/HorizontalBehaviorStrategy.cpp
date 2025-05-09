@@ -10,7 +10,7 @@ struct HorizontalBehaviorStrategy::PImpl {
     float pivot_x = std::nanf("");  // Will be updated
     float max_offset = 100.0F;
     float factor = 1.0F;
-    float speed_x = 10.0F;
+    float speed_x = kDefaultSpeed;
 };
 
 HorizontalBehaviorStrategy::~HorizontalBehaviorStrategy() = default;
@@ -26,22 +26,22 @@ HorizontalBehaviorStrategy::HorizontalBehaviorStrategy(float speed_x,
 void HorizontalBehaviorStrategy::update(Platform &platform, float delta) {
     // No movement
     const auto &gameRect = platform.get_game().get_rectangle();
-    const auto &r = platform.get_rectangle();
+    const auto &rect = platform.get_rectangle();
 
     if (std::isnan(m_pimpl->pivot_x)) {
         // Init the pivot
-        m_pimpl->pivot_x = r.x;
+        m_pimpl->pivot_x = rect.x;
     }
 
-    if (r.x < m_pimpl->pivot_x - m_pimpl->max_offset) {
+    if (rect.x < m_pimpl->pivot_x - m_pimpl->max_offset) {
         m_pimpl->factor = 1.0F;
-    } else if (r.x > m_pimpl->pivot_x + m_pimpl->max_offset) {
+    } else if (rect.x > m_pimpl->pivot_x + m_pimpl->max_offset) {
         m_pimpl->factor = -1.0F;
     }
 
     platform.move(delta * m_pimpl->speed_x * m_pimpl->factor, 0.0F);
 
-    if (r.y + r.height < gameRect.y) {
+    if (rect.y + rect.height < gameRect.y) {
         platform.set_state(ActorState::CONSUMED);
     }
 }
