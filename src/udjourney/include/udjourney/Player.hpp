@@ -15,30 +15,31 @@
 
 class Player : public IActor {
  public:
-    Player(const IGame &game, Rectangle r);
+    Player(const IGame &iGame, Rectangle iRect);
     ~Player();
     void draw() const override;
-    void update(float delta) override;
+    void update(float iDelta) override;
     void process_input() override;
-    void resolve_collision(const IActor &platform) noexcept;
+    void resolve_collision(const IActor &iActor) noexcept;
     void handle_collision(
-        const std::vector<std::unique_ptr<IActor>> &platforms) noexcept;
-    void set_rectangle(Rectangle r) override { this->r = r; }
-    Rectangle get_rectangle() const override { return r; }
-    bool check_collision(const IActor &other) const override {
-        return CheckCollisionRecs(r, other.get_rectangle());
+        const std::vector<std::unique_ptr<IActor>> &iPlatforms) noexcept;
+    void set_rectangle(Rectangle iRect) override { this->r = iRect; }
+    [[nodiscard]] Rectangle get_rectangle() const override { return r; }
+    [[nodiscard]] bool check_collision(const IActor &iOtherActor) const override {
+        return CheckCollisionRecs(r, iOtherActor.get_rectangle());
     }
 
     // Observable
-    void add_observer(IObserver *observer);
-    void remove_observer(IObserver *observer);
-    void notify(const std::string &event);
+    void add_observer(IObserver *ioObserver);
+    void remove_observer(IObserver *ioObserver);
+    void notify(const std::string &iEvent);
 
-    inline constexpr uint8_t get_group_id() const override { return 0; }
+    [[nodiscard]] inline constexpr uint8_t get_group_id() const override { return 0; }
 
  private:
     void _reset_jump() noexcept;
     Rectangle r;
+    std::vector<IObserver *> observers;
     struct PImpl;
     std::unique_ptr<struct PImpl> m_pimpl;
 };

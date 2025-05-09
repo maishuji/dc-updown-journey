@@ -15,6 +15,14 @@
 Player::~Player() = default;
 
 namespace {
+
+const float kDashTimerDefault = 0.2F;
+const float kDashCooldownDefault = 1.0F;
+const float kMoveSpeedYDefault = 5.0F;
+const float kMoveSpeedXDefault = 5.0F;
+const float kDashSpeed = 15.0F;
+const float kJumpExhaustion = 0.1F;
+
 struct InputMapping {
     std::function<bool()> left_pressed;
     std::function<bool()> right_pressed;
@@ -65,20 +73,18 @@ struct Player::PImpl {
     bool jumping = false;
     bool dashing = false;
     bool dashable = true;
-    float vy = 0.0f;
-    float dash_timer = 0.0f;
-    float dash_cooldown = 0.0f;
+    float vy = 0.0F;
+    float dash_timer = 0.0F;
+    float dash_cooldown = 0.0F;
     Platform *grounded_src = nullptr;
 };
 
-std::vector<IObserver *> observers;
-
-Player::Player(const IGame &game, Rectangle r) :
-    IActor(game), r(r), m_pimpl(std::make_unique<Player::PImpl>()) {}
+Player::Player(const IGame &iGame, Rectangle iRect) :
+    IActor(iGame), r(iRect), m_pimpl(std::make_unique<Player::PImpl>()) {}
 
 void Player::draw() const {
     auto rect = r;
-    auto &game = get_game();
+    const auto &game = get_game();
     // Convert to screen coordinates
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
@@ -89,10 +95,10 @@ void Player::draw() const {
                                           : GREEN);
 }
 
-void Player::update(float delta) {
+void Player::update(float iDelta) {
     // Gravity
     r.y += 1;
-    if (m_pimpl->grounded && m_pimpl->grounded_src) {
+    if (m_pimpl->grounded && m_pimpl->grounded_src != nullptr) {
         r.x += m_pimpl->grounded_src->get_dx();
     }
     if (m_pimpl->jumping) {
@@ -100,7 +106,7 @@ void Player::update(float delta) {
         using udjourney::coreutils::math::is_same_sign;
         r.y += m_pimpl->vy;
         float old_vy = m_pimpl->vy;
-        m_pimpl->vy += 0.1f;  // exhaustion
+        m_pimpl->vy += kJumpExhaustion;  // exhaustion
         if (!is_same_sign(old_vy, m_pimpl->vy) || is_near_zero(m_pimpl->vy)) {
             _reset_jump();
         }
@@ -108,14 +114,14 @@ void Player::update(float delta) {
 
     // Dash timers
     if (m_pimpl->dashing) {
-        m_pimpl->dash_timer -= delta;
-        if (m_pimpl->dash_timer <= 0.0f) {
+        m_pimpl->dash_timer -= iDelta;
+        if (m_pimpl->dash_timer <= 0.0F) {
             m_pimpl->dashing = false;
         }
     }
     if (!m_pimpl->dashing && !m_pimpl->dashable) {
-        if (m_pimpl->dash_cooldown > 0.0f) {
-            m_pimpl->dash_cooldown -= delta;
+        if (m_pimpl->dash_cooldown > 0.0F) {
+            m_pimpl->dash_cooldown -= iDelta;
         } else {
             m_pimpl->dashable = true;
             notify("4;1");
@@ -133,18 +139,18 @@ void Player::update(float delta) {
 
 void Player::process_input() {
     if (input_mapping.left_pressed()) {
-        r.x -= m_pimpl->dashing ? 12 : 5;
+        r.x -= m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
     }
     if (input_mapping.right_pressed()) {
-        r.x += m_pimpl->dashing ? 12 : 5;
+        r.x += m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
     }
 
     // A to Jump
     if (input_mapping.jump_pressed()) {
         if (!m_pimpl->jumping && m_pimpl->grounded) {
             m_pimpl->jumping = true;
-            r.y -= 5;
-            m_pimpl->vy = -5.0f;
+            r.y -= kMoveSpeedYDefault;
+            m_pimpl->vy = -kMoveSpeedYDefault;
         }
     } else {
         m_pimpl->jumping = false;
@@ -152,14 +158,15 @@ void Player::process_input() {
 
     // DPAD down
     if (input_mapping.down_pressed()) {
-        r.y += 5;
+        r.y += kMoveSpeedYDefault;
     }
 
     // Dash input
-    if ((input_mapping.dash_pressed()) && m_pimpl->dash_cooldown <= 0.0f) {
+    if ((input_mapping.dash_pressed()) && m_pimpl->dash_cooldown <= 0.0F) {
         m_pimpl->dashing = true;
-        m_pimpl->dash_timer = 0.2f;     // Dash lasts 0.2 seconds
-        m_pimpl->dash_cooldown = 1.0f;  // Then 1 second cooldown
+        m_pimpl->dash_timer = kDashTimerDefault;  // Dash lasts 0.2 seconds
+        m_pimpl->dash_cooldown =
+            kDashCooldownDefault;  // Then 1 second cooldown
         m_pimpl->dashable =
             false;  // Player can't dash again until cooldown is over
         notify("4;0");
@@ -254,5 +261,5 @@ void Player::notify(const std::string &event) {
 
 void Player::_reset_jump() noexcept {
     m_pimpl->jumping = false;
-    m_pimpl->vy = 0.0f;
+    m_pimpl->vy = 0.0F;
 }

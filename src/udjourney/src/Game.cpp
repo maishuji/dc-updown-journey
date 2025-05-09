@@ -125,8 +125,8 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
     return res;
 }
 
-Game::Game(int w, int h) : IGame(), m_state(GameState::TITLE) {
-    r = Rectangle{0, 0, static_cast<float>(w), static_cast<float>(h)};
+Game::Game(int iWidth, int iHeight) : IGame(), m_state(GameState::TITLE) {
+    r = Rectangle{0, 0, static_cast<float>(iWidth), static_cast<float>(iHeight)};
     m_actors.reserve(10);
 }
 
@@ -140,7 +140,7 @@ void Game::run() {
     m_actors.emplace_back(
         std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
 
-    InitWindow(r.width, r.height, "Up-Down Journey");
+    InitWindow(static_cast<int>(r.width), static_cast<int>(r.height), "Up-Down Journey");
     SetTargetFPS(60);
     last_update_time = GetTime();
     m_state = GameState::PLAY;
@@ -286,16 +286,16 @@ void Game::update() {
     // Update actors
     if (m_state == GameState::PLAY) {
         m_updating_actors = true;
-        for (auto &p : m_actors) {
-            p->update(0.0f);
+        for (auto &actor : m_actors) {
+            actor->update(0.0F);
         }
-        player->update(0.0f);
+        player->update(0.0F);
 
         m_updating_actors = false;
 
         // Move pending actors to actors
-        for (auto &pa : m_pending_actors) {
-            m_actors.push_back(std::move(pa));
+        for (auto &pending_actor : m_pending_actors) {
+            m_actors.push_back(std::move(pending_actor));
         }
         m_pending_actors.clear();
     }  // GameState::PLAY
@@ -322,20 +322,20 @@ void Game::update() {
         }
     }
     if (!to_remove.empty()) {
-        for (auto *p : to_remove) {
-            remove_actor(p);
+        for (auto *actor : to_remove) {
+            remove_actor(actor);
         }
     }
 
     process_input();
 
     double cur_update_time = GetTime();
-    float delta = static_cast<float>(cur_update_time - last_update_time);
+    auto delta = static_cast<float>(cur_update_time - last_update_time);
     bonus_manager.update(delta);
     if (cur_update_time - last_update_time > kUpdateInterval) {
         r.y += 1;
-        for (auto &p : m_actors) {
-            p->update(delta);
+        for (auto &actor : m_actors) {
+            actor->update(delta);
         }
         player->update(delta);
         last_update_time = cur_update_time;
@@ -347,11 +347,11 @@ void Game::update() {
 }
 
 // Function definition for extract_number_
-std::optional<int16_t> extract_number_(const std::string_view &s) {
+std::optional<int16_t> extract_number_(const std::string_view &iStrView) {
     std::string number;
-    for (char c : s) {
-        if (std::isdigit(c)) {
-            number += c;
+    for (char letter : iStrView) {
+        if (std::isdigit(letter)) {
+            number += letter;
         }
     }
     try {
@@ -364,10 +364,11 @@ std::optional<int16_t> extract_number_(const std::string_view &s) {
     return {};
 }
 
-void _process_bonus(IGame &game, std::stringstream &token_stream) {
-    std::string str_v1, str_v2;
-    int16_t v1 = 0;
-    int16_t v2 = 0;
+void process_bonus_(IGame &game, std::stringstream &token_stream) {
+    std::string str_v1;
+    std::string str_v2;
+    int16_t value_1 = 0;
+    int16_t value_2 = 0;
 
     std::getline(token_stream, str_v1, '+');
     std::getline(token_stream, str_v2, '+');
@@ -375,31 +376,31 @@ void _process_bonus(IGame &game, std::stringstream &token_stream) {
     // Currently numbers extracted are bounded [0-100)
     if (std::optional<int16_t> v1_opt = extract_number_(str_v1);
         v1_opt.has_value()) {
-        v1 = v1_opt.value();
+        value_1 = v1_opt.value();
     }
     if (std::optional<int16_t> v2_opt = extract_number_(str_v2);
         v2_opt.has_value()) {
-        v2 = v2_opt.value();
+        value_2 = v2_opt.value();
     }
 
     const auto kRectSize = 20;
 
-    auto x = game.get_rectangle().x +
-             ((game.get_rectangle().width - kRectSize) / 100.0) * v1;
-    auto y = game.get_rectangle().y + game.get_rectangle().height / 2.0f +
-             (game.get_rectangle().height / 200.0) * v2;
+    auto pos_x = game.get_rectangle().x +
+             ((game.get_rectangle().width - kRectSize) / 100.0) * value_1;
+    auto pos_y = game.get_rectangle().y + game.get_rectangle().height / 2.0F +
+             (game.get_rectangle().height / 200.0) * value_2;
 
     auto bonus =
         std::make_unique<Bonus>(game,
-                                Rectangle{static_cast<float>(x),
-                                          static_cast<float>(y),
+                                Rectangle{static_cast<float>(pos_x),
+                                          static_cast<float>(pos_y),
                                           static_cast<float>(kRectSize),
                                           static_cast<float>(kRectSize)});
     game.add_actor(std::move(bonus));
 }
 
-void Game::on_notify(const std::string &event) {
-    std::stringstream ss(event);
+void Game::on_notify(const std::string &iEvent) {
+    std::stringstream ss(iEvent);
     std::string token;
     int mode = 0;
 
@@ -438,7 +439,7 @@ void Game::on_notify(const std::string &event) {
             break;
         case kModeBonus:
             // Parsing bonus event
-            _process_bonus(*this, ss);
+            process_bonus_(*this, ss);
             break;
         case kModeDash:
             // Parsing dash event

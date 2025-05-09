@@ -15,7 +15,7 @@ class BonusManager {
     void remove_observer(IObserver *observer);
 
  private:
-    float timeSinceLastBonus = 0.0f;
+    float timeSinceLastBonus = 0.0F;
     std::vector<IObserver *> observers;
 };
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_BONUSMANAGER_HPP_
