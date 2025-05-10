@@ -10,7 +10,7 @@ struct HorizontalBehaviorStrategy::PImpl {
     float pivot_x = std::nanf("");  // Will be updated
     float max_offset = 100.0F;
     float factor = 1.0F;
-    float speed_x = kDefaultSpeed;
+    float speed_x = internal::kDefaultSpeed;
 };
 
 HorizontalBehaviorStrategy::~HorizontalBehaviorStrategy() = default;
