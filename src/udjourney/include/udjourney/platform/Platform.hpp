@@ -17,40 +17,46 @@
 
 class Platform : public IActor {
  public:
-    Platform(const IGame &game, Rectangle r, Color c = BLUE,
-             bool y_repeated = false);
+    Platform(const IGame &iGame, Rectangle iRect, Color iColor = BLUE,
+             bool iIsRepeatedY = false);
     void draw() const override;
     void update(float delta) override;
 
-    [[nodiscard]] float get_dx() const noexcept { return dx; }
+    [[nodiscard]] float get_dx() const noexcept { return m_delta_x; }
     void process_input() override;
-    void set_rectangle(Rectangle r) override { this->r = r; }
-    Rectangle get_rectangle() const override { return r; }
-    bool check_collision(const IActor &other) const override {
-        return CheckCollisionRecs(r, other.get_rectangle());
+    void set_rectangle(Rectangle iRect) override { this->m_rect = iRect; }
+    [[nodiscard]] Rectangle get_rectangle() const override { return m_rect; }
+    [[nodiscard]] bool check_collision(
+        const IActor &iOtherActor) const override {
+        return CheckCollisionRecs(m_rect, iOtherActor.get_rectangle());
     }
-    inline constexpr uint8_t get_group_id() const override { return 1; }
-    bool constexpr is_y_repeated() { return y_repeated; }
-    inline void reuse(PlatformReuseStrategy &strategy) noexcept {
-        strategy.reuse(*this);
+    [[nodiscard]] inline constexpr uint8_t get_group_id() const override {
+        return 1;
     }
-
-    void set_behavior(std::unique_ptr<PlatformBehaviorStrategy> b) {
-        behavior = std::move(b);
+    [[nodiscard]] inline constexpr auto is_y_repeated() const noexcept -> bool {
+        return m_repeated_y;
     }
-
-    [[nodiscard]] inline const PlatformBehaviorStrategy *get_behavior() {
-        return behavior.get();
+    inline void reuse(PlatformReuseStrategy &ioStrategy) noexcept {
+        ioStrategy.reuse(*this);
     }
 
-    void move(float x, float y) noexcept;
+    void set_behavior(std::unique_ptr<PlatformBehaviorStrategy> ioBehavior) {
+        m_behavior = std::move(ioBehavior);
+    }
+
+    [[nodiscard]] inline auto get_behavior()
+        -> const PlatformBehaviorStrategy * {
+        return m_behavior.get();
+    }
+
+    void move(float iValX, float iValY) noexcept;
 
  private:
-    float dx;
-    Rectangle r;
-    Color color = BLUE;
-    bool y_repeated = false;
-    std::unique_ptr<PlatformBehaviorStrategy> behavior;
+    float m_delta_x = 0.0F;
+    Rectangle m_rect;
+    Color m_color = BLUE;
+    bool m_repeated_y = false;
+    std::unique_ptr<PlatformBehaviorStrategy> m_behavior;
 };
 
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_PLATFORM_HPP_

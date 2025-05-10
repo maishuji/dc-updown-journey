@@ -7,6 +7,5 @@ lint:
 	cpplint --filter=-build/c++11,-runtime/references,-build/header_guard --recursive src/
 	
 tidy:
-	# Run clang-tidy on the source files
-	# It requires a compile_commands.json file to be generated
-	find src/ -name '*.cpp' -o -name '*.hpp' | xargs clang-tidy -p build/Debug  -header-filter=.* -quiet
+	@echo "Run clang-tidy on the source files"
+	find src/udjourney/ -name '*.cpp' -o -name '*.hpp' | xargs clang-tidy -p build/Debug  -header-filter=.* -quiet

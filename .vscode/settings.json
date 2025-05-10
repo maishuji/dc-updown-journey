@@ -58,7 +58,15 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "cstdarg": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "chrono": "cpp",
+        "cstring": "cpp",
+        "ratio": "cpp",
+        "iomanip": "cpp",
+        "iostream": "cpp",
+        "istream": "cpp",
+        "ranges": "cpp",
+        "sstream": "cpp"
     },
     "C_Cpp.default.compilerPath": "/opt/toolchains/dc/kos/utils/build_wrappers/kos-c++",
   }

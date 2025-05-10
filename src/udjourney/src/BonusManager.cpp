@@ -8,13 +8,13 @@
 
 #include "udjourney/IObserver.hpp"
 
-const float kMinBonusInterval = 2.0f;  // Minimum time between bonus spawns
+const float kMinBonusInterval = 2.0F;  // Minimum time between bonus spawns
 
 void BonusManager::update(float delta) {
     // Update the bonus spawner
     timeSinceLastBonus += delta;
     if (timeSinceLastBonus >= kMinBonusInterval) {
-        timeSinceLastBonus = 0.0f;
+        timeSinceLastBonus = 0.0F;
         static auto seed =
             std::chrono::steady_clock::now().time_since_epoch().count();
         static std::mt19937 gen(static_cast<unsigned int>(seed));
@@ -22,12 +22,12 @@ void BonusManager::update(float delta) {
         if (dist(gen) < 50) {
             // Notify observers to spawn a bonus
 
-            int16_t x = dist(gen);
-            int16_t y = dist(gen);
+            auto pos_x = dist(gen);
+            auto pos_y = dist(gen);
 
             for (auto *listener : observers) {
-                listener->on_notify("2;" + std::to_string(x) + "+" +
-                                    std::to_string(y));
+                listener->on_notify("2;" + std::to_string(pos_x) + "+" +
+                                    std::to_string(pos_y));
             }
         }
     }

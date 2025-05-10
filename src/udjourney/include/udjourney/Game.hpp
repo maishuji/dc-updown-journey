@@ -21,14 +21,14 @@ enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER };
 
 class Game : public IGame, public IObserver {
  public:
-    Game(int w, int h);
+    Game(int iWidth, int iHeight);
     void run() override;
     void update() override;
     void add_actor(std::unique_ptr<IActor> actor) override;
     void remove_actor(IActor *actor) override;
     void process_input() override;
     void on_notify(const std::string &event) override;
-    Rectangle get_rectangle() const override { return r; }
+    [[nodiscard]] Rectangle get_rectangle() const override { return m_rect; }
 
  private:
     void draw() const;
@@ -37,9 +37,9 @@ class Game : public IGame, public IObserver {
     std::vector<std::unique_ptr<IActor>> m_dead_actors;
     bool m_updating_actors = false;
     GameState m_state = GameState::TITLE;
-    Rectangle r;
-    double last_update_time = 0.0;
-    BonusManager bonus_manager;
+    Rectangle m_rect;
+    double m_last_update_time = 0.0;
+    BonusManager m_bonus_manager;
     ScoreHistory<int64_t> m_score_history;
     int64_t m_score = 0;
 };

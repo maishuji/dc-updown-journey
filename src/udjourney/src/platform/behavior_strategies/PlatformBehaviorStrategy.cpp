@@ -9,9 +9,9 @@
 void StaticBehaviorStrategy::update(Platform &platform, float delta) {
     // No movement
     const auto &gameRect = platform.get_game().get_rectangle();
-    const auto &r = platform.get_rectangle();
+    const auto &rect = platform.get_rectangle();
     // Mark the platform as consummed if it goes out of the screen
-    if (r.y + r.height < gameRect.y) {
+    if (rect.y + rect.height < gameRect.y) {
         platform.set_state(ActorState::CONSUMED);
     }
 }
