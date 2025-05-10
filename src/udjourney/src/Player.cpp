@@ -173,8 +173,8 @@ void Player::process_input() {
     }
 }
 
-void Player::resolve_collision(const IActor &platform) noexcept {
-    auto platformRect = platform.get_rectangle();
+void Player::resolve_collision(const IActor &iActor) noexcept {
+    auto platformRect = iActor.get_rectangle();
     Rectangle intersect = GetCollisionRec(r, platformRect);
 
     if (intersect.width < intersect.height) {

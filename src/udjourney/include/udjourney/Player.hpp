@@ -25,7 +25,8 @@ class Player : public IActor {
         const std::vector<std::unique_ptr<IActor>> &iPlatforms) noexcept;
     void set_rectangle(Rectangle iRect) override { this->r = iRect; }
     [[nodiscard]] Rectangle get_rectangle() const override { return r; }
-    [[nodiscard]] bool check_collision(const IActor &iOtherActor) const override {
+    [[nodiscard]] bool check_collision(
+        const IActor &iOtherActor) const override {
         return CheckCollisionRecs(r, iOtherActor.get_rectangle());
     }
 
@@ -34,7 +35,9 @@ class Player : public IActor {
     void remove_observer(IObserver *ioObserver);
     void notify(const std::string &iEvent);
 
-    [[nodiscard]] inline constexpr uint8_t get_group_id() const override { return 0; }
+    [[nodiscard]] inline constexpr uint8_t get_group_id() const override {
+        return 0;
+    }
 
  private:
     void _reset_jump() noexcept;

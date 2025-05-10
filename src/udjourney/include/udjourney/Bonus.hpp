@@ -21,7 +21,9 @@ class Bonus : public IActor {
     [[nodiscard]] bool check_collision(const IActor &other) const override {
         return CheckCollisionRecs(m_rect, other.get_rectangle());
     }
-    [[nodiscard]] inline constexpr uint8_t get_group_id() const override { return 2; }
+    [[nodiscard]] inline constexpr uint8_t get_group_id() const override {
+        return 2;
+    }
 
  private:
     Rectangle m_rect;

@@ -22,8 +22,8 @@ void BonusManager::update(float delta) {
         if (dist(gen) < 50) {
             // Notify observers to spawn a bonus
 
-            int16_t pos_x = dist(gen);
-            int16_t pos_y = dist(gen);
+            auto pos_x = dist(gen);
+            auto pos_y = dist(gen);
 
             for (auto *listener : observers) {
                 listener->on_notify("2;" + std::to_string(pos_x) + "+" +

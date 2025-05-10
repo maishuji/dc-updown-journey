@@ -6,7 +6,8 @@ Checks: >
   bugprone-*,
   -google-runtime-references,
   -modernize-use-trailing-return-type,
-  -bugprone-easily-swappable-parameters
+  -bugprone-easily-swappable-parameters,
+  -readability-magic-numbers
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 FormatStyle: file

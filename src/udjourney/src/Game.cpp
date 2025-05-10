@@ -59,28 +59,35 @@ std::unique_ptr<PlatformReuseStrategy> reuse_strategy =
     std::make_unique<RandomizePositionStrategy>();
 
 struct DashFud {
-    int16_t dashable = true;
+    int16_t dashable = 1;
 } dash_fud;
 
-std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
+std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
     std::vector<std::unique_ptr<IActor>> res;
     int lastx = 0;
     int lastx2 = 100;
 
-    for (int i = 0; i < 800; i += 100) {
-        Rectangle r{static_cast<float>(lastx),
-                    static_cast<float>(i),
-                    static_cast<float>(lastx2),
-                    5};
-        res.emplace_back(std::make_unique<Platform>(game, r));
-        int ra = std::rand();
-        lastx = (ra % 10) * 50;
-        lastx2 = ra % 100 + 50;
+    const int kOffsetPosXMin = 50;
+    const int kMaxWidth = 100;
+
+    const int kStepY = 100;
+    const int kMaxY = 800;
+
+    for (int cur_pos_y = 0; cur_pos_y < kMaxY; cur_pos_y += kStepY) {
+        Rectangle rect{static_cast<float>(lastx),
+                       static_cast<float>(cur_pos_y),
+                       static_cast<float>(lastx2),
+                       5};
+        res.emplace_back(std::make_unique<Platform>(iGame, rect));
+        int random_number = std::rand();
+        lastx = (random_number % 10) * kOffsetPosXMin;
+        lastx2 = random_number % kMaxWidth + kOffsetPosXMin;
 
         auto ra2 = std::rand();
         if (ra2 % 100 < 20) {
-            float speed_x = std::max(5, ra % 30);
-            float max_offset = std::max(50, ra % 100);
+            float speed_x = static_cast<float>(std::max(5, random_number % 30));
+            float max_offset = static_cast<float>(
+                std::max(kOffsetPosXMin, random_number % kMaxWidth));
 
             // 20% of moving platforms
             static_cast<Platform *>(res.back().get())
@@ -92,7 +99,7 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
     // Create borders
     const int border_width = 5;
     const int border_height = 100;
-    auto game_rect = game.get_rectangle();
+    auto game_rect = iGame.get_rectangle();
 
     constexpr int cpool_size = 5;
     std::array<Color, cpool_size> color_pool = {
@@ -101,10 +108,11 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
     int color_idx = 0;
     // The left and right borders
     // Note that they are repeated when running out of the screen
-    for (auto border_top = 0; border_top <= game_rect.height + border_height;
+    for (auto border_top = 0;
+         border_top <= static_cast<int>(game_rect.height + border_height);
          border_top += border_height) {
         res.emplace_back(std::make_unique<Platform>(
-            game,
+            iGame,
             Rectangle{0,
                       static_cast<float>(border_top),
                       static_cast<float>(border_width),
@@ -112,7 +120,7 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
             color_pool[color_idx],
             true));
         res.emplace_back(std::make_unique<Platform>(
-            game,
+            iGame,
             Rectangle{game_rect.width - border_width,
                       static_cast<float>(border_top),
                       static_cast<float>(border_width),
@@ -125,8 +133,9 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &game) {
     return res;
 }
 
-Game::Game(int iWidth, int iHeight) : IGame(), m_state(GameState::TITLE) {
-    r = Rectangle{0, 0, static_cast<float>(iWidth), static_cast<float>(iHeight)};
+Game::Game(int iWidth, int iHeight) : IGame() {
+    m_rect = Rectangle{
+        0, 0, static_cast<float>(iWidth), static_cast<float>(iHeight)};
     m_actors.reserve(10);
 }
 
@@ -140,12 +149,14 @@ void Game::run() {
     m_actors.emplace_back(
         std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
 
-    InitWindow(static_cast<int>(r.width), static_cast<int>(r.height), "Up-Down Journey");
+    InitWindow(static_cast<int>(m_rect.width),
+               static_cast<int>(m_rect.height),
+               "Up-Down Journey");
     SetTargetFPS(60);
-    last_update_time = GetTime();
+    m_last_update_time = GetTime();
     m_state = GameState::PLAY;
 
-    bonus_manager.add_observer(static_cast<IObserver *>(this));
+    m_bonus_manager.add_observer(static_cast<IObserver *>(this));
 
     while (is_running) {
         update();
@@ -161,14 +172,16 @@ void Game::add_actor(std::unique_ptr<IActor> actor) {
 }
 
 void Game::remove_actor(IActor *actor) {
-    if (actor == nullptr) return;
-    auto iter = std::find_if(m_actors.begin(),
-                             m_actors.end(),
-                             [&actor](const std::unique_ptr<IActor> &p) {
-                                 return p.get() == actor;
-                             });
-    if (iter != m_actors.end()) {
-        m_actors.erase(iter);
+    if (actor != nullptr) {
+        auto iter =
+            std::find_if(m_actors.begin(),
+                         m_actors.end(),
+                         [&actor](const std::unique_ptr<IActor> &actor2) {
+                             return actor2.get() == actor;
+                         });
+        if (iter != m_actors.end()) {
+            m_actors.erase(iter);
+        }
     }
 }
 
@@ -187,26 +200,27 @@ void Game::process_input() {
     // Pause / Unpause the game
     auto startPressed = input_mapping.pressed_start();
     if (startPressed) {
-        if (m_state == GameState::PLAY)
+        if (m_state == GameState::PLAY) {
             m_state = GameState::PAUSE;
-        else
+        } else {
             m_state = GameState::PLAY;
+        }
     }
     if (m_state == GameState::PLAY) {
-        for (auto &a : m_actors) {
-            a->process_input();
+        for (auto &actor : m_actors) {
+            actor->process_input();
         }
         player->process_input();
     }
 }
 
-void _draw_title() {
+void draw_title_() {
     DrawText(" -- UP-DOWN JOURNEY -- \n", 10, 10, 20, RED);
     DrawText("Press START to start the game\n", 300, 40, 20, RED);
     DrawText("Press B button to quit\n", 300, 70, 20, RED);
 }
 
-void _draw_game_over(auto score_history) {
+void draw_game_over_(auto score_history) {
     DrawText("GAME OVER - Press START to start over.\n", 10, 10, 20, RED);
     DrawText("Press B button to quit\n", 300, 40, 20, RED);
 
@@ -218,13 +232,13 @@ void _draw_game_over(auto score_history) {
     const int kScoreYStep = kScoreSize + 2;
     const int kScoreMaxLines = 10;
 
-    std::stringstream ss;
+    std::stringstream str_stream;
     DrawText("Scores: ", kScoreX, kScoreStartY, kScoreSize, YELLOW);
     int idx = 1;
     auto scores = score_history.get_scores();
-    for (auto it = scores.rbegin(); it != scores.rend(); ++it) {
-        auto s = std::to_string(*it);
-        DrawText(s.c_str(),
+    for (auto iter = scores.rbegin(); iter != scores.rend(); ++iter) {
+        auto str_token = std::to_string(*iter);
+        DrawText(str_token.c_str(),
                  kScoreX + kScoreOffsetX,
                  kScoreStartY + idx * kScoreYStep,
                  kScoreSize,
@@ -236,7 +250,7 @@ void _draw_game_over(auto score_history) {
     }
 }
 
-void _draw_pause() {
+void draw_pause_() {
     DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
     DrawText("Press B button to quit\n", 300, 40, 20, RED);
 }
@@ -246,35 +260,39 @@ void Game::draw() const {
     ClearBackground(BLACK);  // Clear the background with a color
 
     // Draw the rectangle
-    std::stringstream ss;
+    std::stringstream str_stream;
 
     switch (m_state) {
         case GameState::TITLE:
-            _draw_title();
+            draw_title_();
             break;
         case GameState::PLAY: {
-            for (const auto &p : m_actors) {
-                p->draw();
+            for (const auto &actor : m_actors) {
+                actor->draw();
             }
             player->draw();
         }
             DrawFPS(10, 50);  // Draw FPS counter
-            ss << "Score: ";
-            ss << std::to_string(m_score);
-            DrawText(ss.str().c_str(), 10, 30, 20, BLUE);  // Draw current score
+            str_stream << "Score: ";
+            str_stream << std::to_string(m_score);
+            DrawText(str_stream.str().c_str(),
+                     10,
+                     30,
+                     20,
+                     BLUE);  // Draw current score
 
             // Draw dash status
-            DrawCircle(get_rectangle().width - 50,
+            DrawCircle(static_cast<int>(get_rectangle().width) - 50,
                        45,
                        17,
-                       dash_fud.dashable ? GREEN : RED);
+                       dash_fud.dashable == 1 ? GREEN : RED);
 
             break;
         case GameState::PAUSE:
-            _draw_pause();
+            draw_pause_();
             break;
         case GameState::GAMEOVER:
-            _draw_game_over(m_score_history);
+            draw_game_over_(m_score_history);
             break;
     }
     EndDrawing();
@@ -302,18 +320,18 @@ void Game::update() {
 
     // Removing CONSUMED actors (DEAD and ready for removing)
     std::vector<IActor *> to_remove;  // Gathering actors to remove
-    for (auto &p : m_actors) {
-        if (p->get_state() == ActorState::CONSUMED) {
-            switch (p->get_group_id()) {
+    for (auto &actor : m_actors) {
+        if (actor->get_state() == ActorState::CONSUMED) {
+            switch (actor->get_group_id()) {
                 {
                     case static_cast<uint8_t>(ActorType::PLATFORM): {
                         // Instead of removing the platform, we can reuse it
-                        reuse_strategy->reuse(static_cast<Platform &>(*p));
+                        reuse_strategy->reuse(static_cast<Platform &>(*actor));
                         /*
                          */
                     } break;
                     case static_cast<uint8_t>(ActorType::BONUS): {
-                        to_remove.push_back(p.get());
+                        to_remove.push_back(actor.get());
                     } break;
                     default:
                         break;
@@ -331,9 +349,9 @@ void Game::update() {
 
     double cur_update_time = GetTime();
     auto delta = static_cast<float>(cur_update_time - last_update_time);
-    bonus_manager.update(delta);
+    m_bonus_manager.update(delta);
     if (cur_update_time - last_update_time > kUpdateInterval) {
-        r.y += 1;
+        m_rect.y += 1;
         for (auto &actor : m_actors) {
             actor->update(delta);
         }
@@ -350,7 +368,7 @@ void Game::update() {
 std::optional<int16_t> extract_number_(const std::string_view &iStrView) {
     std::string number;
     for (char letter : iStrView) {
-        if (std::isdigit(letter)) {
+        if (std::isdigit(letter) == 1) {
             number += letter;
         }
     }
@@ -386,9 +404,9 @@ void process_bonus_(IGame &game, std::stringstream &token_stream) {
     const auto kRectSize = 20;
 
     auto pos_x = game.get_rectangle().x +
-             ((game.get_rectangle().width - kRectSize) / 100.0) * value_1;
+                 ((game.get_rectangle().width - kRectSize) / 100.0) * value_1;
     auto pos_y = game.get_rectangle().y + game.get_rectangle().height / 2.0F +
-             (game.get_rectangle().height / 200.0) * value_2;
+                 (game.get_rectangle().height / 200.0) * value_2;
 
     auto bonus =
         std::make_unique<Bonus>(game,
@@ -400,7 +418,7 @@ void process_bonus_(IGame &game, std::stringstream &token_stream) {
 }
 
 void Game::on_notify(const std::string &iEvent) {
-    std::stringstream ss(iEvent);
+    std::stringstream str_stream(iEvent);
     std::string token;
     int mode = 0;
 
@@ -410,7 +428,7 @@ void Game::on_notify(const std::string &iEvent) {
     const int16_t kModeDash = 4;
 
     // Parse event mode
-    if (std::getline(ss, token, ';')) {
+    if (std::getline(str_stream, token, ';')) {
         // First token is the mode
         auto mode_opt = extract_number_(token);
         if (mode_opt.has_value()) {
@@ -421,7 +439,7 @@ void Game::on_notify(const std::string &iEvent) {
         }
     }  // Split by ';'
 
-    std::cout << "Event: " << ss.str() << std::endl;
+    std::cout << "Event: " << str_stream.str() << std::endl;
     switch (mode) {
         case kModeGameOuver:
             m_state = GameState::GAMEOVER;
@@ -431,7 +449,7 @@ void Game::on_notify(const std::string &iEvent) {
             break;
         case kModeScoring:
             // Parsing scoring event
-            std::getline(ss, token, ';');
+            std::getline(str_stream, token, ';');
             if (std::optional<int16_t> score_inc_opt = extract_number_(token);
                 score_inc_opt.has_value()) {
                 m_score += score_inc_opt.value();
@@ -439,14 +457,14 @@ void Game::on_notify(const std::string &iEvent) {
             break;
         case kModeBonus:
             // Parsing bonus event
-            process_bonus_(*this, ss);
+            process_bonus_(*this, str_stream);
             break;
         case kModeDash:
             // Parsing dash event
-            std::getline(ss, token, ';');
+            std::getline(str_stream, token, ';');
             if (std::optional<int16_t> dash_opt = extract_number_(token);
                 dash_opt.has_value()) {
-                dash_fud.dashable = dash_opt.value() == 0 ? false : true;
+                dash_fud.dashable = dash_opt.value();
             }
             break;
         default:

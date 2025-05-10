@@ -7,14 +7,14 @@
 #include "udjourney/platform/behavior_strategies/PlatformBehaviorStrategy.hpp"
 
 class Platform;
-namespace{
+namespace internal {
 inline const float kDefaultSpeed = 10.0F;
 inline const float kDefaultOffset = 100.0F;
-} // namespace
+}  // namespace internal
 class HorizontalBehaviorStrategy : public PlatformBehaviorStrategy {
  public:
-    HorizontalBehaviorStrategy(float speed_x = kDefaultSpeed,
-                               float max_offset = 100.0F);
+    HorizontalBehaviorStrategy(float speed_x = internal::kDefaultSpeed,
+                               float max_offset = internal::kDefaultOffset);
     ~HorizontalBehaviorStrategy() override;
     void update(Platform& platform, float delta) override;
 

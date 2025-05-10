@@ -8,4 +8,4 @@ lint:
 	
 tidy:
 	@echo "Run clang-tidy on the source files"
-	find src/udjourney/src/ -name '*.cpp' -o -name '*.hpp' | xargs clang-tidy -p build/Debug  -header-filter=.* -quiet
+	find src/udjourney/ -name '*.cpp' -o -name '*.hpp' | xargs clang-tidy -p build/Debug  -header-filter=.* -quiet
