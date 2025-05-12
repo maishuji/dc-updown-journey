@@ -1,0 +1,25 @@
+// Copyright 2025 Quentin Cartier
+#include "udjourney/managers/TextureManager.hpp"
+
+TextureManager& TextureManager::get_instance() {
+    static TextureManager instance;
+    return instance;
+}
+
+Texture2D TextureManager::get_texture(const std::string& path) {
+    auto it = textures.find(path);
+    if (it != textures.end()) return it->second;
+
+    Texture2D tex = LoadTexture(path.c_str());
+    textures[path] = tex;
+    return tex;
+}
+
+void TextureManager::unload_all() {
+    for (auto& [_, tex] : textures) {
+        UnloadTexture(tex);
+    }
+    textures.clear();
+}
+
+TextureManager::~TextureManager() { unload_all(); }
