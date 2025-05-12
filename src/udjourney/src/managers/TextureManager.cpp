@@ -1,6 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/managers/TextureManager.hpp"
 
+#include <string>
+
 TextureManager& TextureManager::get_instance() {
     static TextureManager instance;
     return instance;
