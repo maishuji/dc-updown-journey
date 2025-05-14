@@ -11,6 +11,7 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/reuse_strategies/RandomizePositionStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/PlatformBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/HorizontalBehaviorStrategy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/ShrinkingBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/TextureManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Game.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp

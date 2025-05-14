@@ -23,6 +23,7 @@
 #include "udjourney/ScoreHistory.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
+#include "udjourney/platform/behavior_strategies/ShrinkingBehaviorStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
 
@@ -92,6 +93,14 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
             // 20% of moving platforms
             static_cast<Platform *>(res.back().get())
                 ->set_behavior(std::make_unique<HorizontalBehaviorStrategy>(
+                    speed_x, max_offset));
+        } else if (ra2 % 100 < 40) {
+            float speed_x = static_cast<float>(std::max(5, random_number % 30));
+            float max_offset = static_cast<float>(
+                std::max(kOffsetPosXMin, random_number % kMaxWidth));
+
+            static_cast<Platform *>(res.back().get())
+                ->set_behavior(std::make_unique<ShrinkingBehaviorStrategy>(
                     speed_x, max_offset));
         }
     }
@@ -370,7 +379,7 @@ std::optional<int16_t> extract_number_(const std::string_view &iStrView) {
     std::string number;
     for (char letter : iStrView) {
         auto is_digit = std::isdigit(letter);
-        if (std::isdigit(letter) != 0) {
+        if (is_digit != 0) {
             number += letter;
         }
     }

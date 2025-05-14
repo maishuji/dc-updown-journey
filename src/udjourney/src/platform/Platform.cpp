@@ -36,3 +36,10 @@ void Platform::move(float iValX, float iValY) noexcept {
     m_rect.x += iValX;
     m_rect.y += iValY;
 }
+
+void Platform::resize(float iNewWidth, float iNewHeight) noexcept {
+    if (iNewHeight > 0 && iNewWidth > 0) {
+        m_rect.width = iNewWidth;
+        m_rect.height = iNewHeight;
+    }
+}

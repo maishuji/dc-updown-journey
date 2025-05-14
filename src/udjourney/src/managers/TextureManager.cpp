@@ -9,8 +9,10 @@ TextureManager& TextureManager::get_instance() {
 }
 
 Texture2D TextureManager::get_texture(const std::string& path) {
-    auto it = textures.find(path);
-    if (it != textures.end()) return it->second;
+    auto iter = textures.find(path);
+    if (iter != textures.end()) {
+        return iter->second;
+    }
 
     Texture2D tex = LoadTexture(path.c_str());
     textures[path] = tex;
