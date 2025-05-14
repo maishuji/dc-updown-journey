@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "udjourney/CoreUtils.hpp"
+
 TextureManager& TextureManager::get_instance() {
     static TextureManager instance;
     return instance;
@@ -14,7 +16,8 @@ Texture2D TextureManager::get_texture(const std::string& path) {
         return iter->second;
     }
 
-    Texture2D tex = LoadTexture(path.c_str());
+    Texture2D tex =
+        LoadTexture(udjourney::coreutils::get_assets_path(path).c_str());
     textures[path] = tex;
     return tex;
 }

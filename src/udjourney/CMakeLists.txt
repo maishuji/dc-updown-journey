@@ -4,6 +4,7 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
     cmake_policy(SET CMP0135 NEW)
 endif()
 
+
 set(TARGET_NAME "upown-journey")
 add_executable(${TARGET_NAME} 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
@@ -18,6 +19,18 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Bonus.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/BonusManager.cpp
 )
+
+if (NOT PLATFORM_DREAMCAST)
+    message(STATUS "🎭 \t\tCopying assets from ${CMAKE_CURRENT_SOURCE_DIR}/romdisk to binary dir: ${CMAKE_CURRENT_BINARY_DIR}/assets")
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/romdisk/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/assets/)
+endif()
+
+if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
+    target_compile_definitions(${TARGET_NAME} PRIVATE ASSETS_BASE_PATH=\"/rd/\")
+else()
+    target_compile_definitions(${TARGET_NAME} PRIVATE ASSETS_BASE_PATH=\"assets/\")
+endif()
+
 set_target_properties(${TARGET_NAME} 
     PROPERTIES
         CMAKE_CXX_STANDARD 20
