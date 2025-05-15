@@ -23,7 +23,7 @@
 #include "udjourney/ScoreHistory.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
-#include "udjourney/platform/behavior_strategies/ShrinkingBehaviorStrategy.hpp"
+#include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
 
@@ -96,12 +96,21 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
                     speed_x, max_offset));
         } else if (ra2 % 100 < 40) {
             float speed_x = static_cast<float>(std::max(5, random_number % 30));
-            float max_offset = static_cast<float>(
-                std::max(kOffsetPosXMin, random_number % kMaxWidth));
+
+            const int kShrinkMinOffset = -100;
+            const int kShrinkMaxOffset = 150;
+
+            int min_offset =
+                kShrinkMinOffset +
+                (std::rand() % (1 + std::abs(kShrinkMinOffset)));   // -100 to 0
+            int max_offset = std::rand() % (kShrinkMaxOffset + 1);  // 0 to 150
 
             static_cast<Platform *>(res.back().get())
-                ->set_behavior(std::make_unique<ShrinkingBehaviorStrategy>(
-                    speed_x, max_offset));
+                ->set_behavior(
+                    std::make_unique<OscillatingSizeBehaviorStrategy>(
+                        speed_x,
+                        static_cast<float>(min_offset),
+                        static_cast<float>(max_offset)));
         }
     }
 

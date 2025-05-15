@@ -8,11 +8,12 @@
 
 class Platform;
 
-class ShrinkingBehaviorStrategy : public PlatformBehaviorStrategy {
+class OscillatingSizeBehaviorStrategy : public PlatformBehaviorStrategy {
  public:
-    ShrinkingBehaviorStrategy(float iSpeedX, float iMaxOffset);
-    ~ShrinkingBehaviorStrategy() override;
-    void update(Platform& platform, float delta) override;
+    OscillatingSizeBehaviorStrategy(float iSpeedX, float iMinOffset,
+                                    float iMaxOffset);
+    ~OscillatingSizeBehaviorStrategy() override;
+    void update(Platform& ioPlatform, float iDelta) override;
 
  private:
     struct PImpl;
