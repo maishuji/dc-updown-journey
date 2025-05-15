@@ -50,6 +50,7 @@ class Platform : public IActor {
     }
 
     void move(float iValX, float iValY) noexcept;
+    void resize(float iNewWidth, float iNewHeight) noexcept;
 
  private:
     float m_delta_x = 0.0F;

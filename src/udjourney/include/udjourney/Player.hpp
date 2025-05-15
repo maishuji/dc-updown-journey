@@ -45,6 +45,7 @@ class Player : public IActor {
     std::vector<IObserver *> observers;
     struct PImpl;
     std::unique_ptr<struct PImpl> m_pimpl;
+    Texture2D m_texture = {};
 };
 
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_

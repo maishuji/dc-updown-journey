@@ -23,6 +23,7 @@
 #include "udjourney/ScoreHistory.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
+#include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
 
@@ -93,6 +94,23 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
             static_cast<Platform *>(res.back().get())
                 ->set_behavior(std::make_unique<HorizontalBehaviorStrategy>(
                     speed_x, max_offset));
+        } else if (ra2 % 100 < 40) {
+            float speed_x = static_cast<float>(std::max(5, random_number % 30));
+
+            const int kShrinkMinOffset = -100;
+            const int kShrinkMaxOffset = 150;
+
+            int min_offset =
+                kShrinkMinOffset +
+                (std::rand() % (1 + std::abs(kShrinkMinOffset)));   // -100 to 0
+            int max_offset = std::rand() % (kShrinkMaxOffset + 1);  // 0 to 150
+
+            static_cast<Platform *>(res.back().get())
+                ->set_behavior(
+                    std::make_unique<OscillatingSizeBehaviorStrategy>(
+                        speed_x,
+                        static_cast<float>(min_offset),
+                        static_cast<float>(max_offset)));
         }
     }
 
@@ -140,6 +158,10 @@ Game::Game(int iWidth, int iHeight) : IGame() {
 }
 
 void Game::run() {
+    InitWindow(static_cast<int>(m_rect.width),
+               static_cast<int>(m_rect.height),
+               "Up-Down Journey");
+
     m_actors = init_platforms(*this);
     player = std::make_unique<Player>(*this, Rectangle{320, 240, 20, 20});
     player->add_observer(static_cast<IObserver *>(this));
@@ -149,9 +171,6 @@ void Game::run() {
     m_actors.emplace_back(
         std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
 
-    InitWindow(static_cast<int>(m_rect.width),
-               static_cast<int>(m_rect.height),
-               "Up-Down Journey");
     SetTargetFPS(60);
     m_last_update_time = GetTime();
     m_state = GameState::PLAY;
@@ -368,7 +387,8 @@ void Game::update() {
 std::optional<int16_t> extract_number_(const std::string_view &iStrView) {
     std::string number;
     for (char letter : iStrView) {
-        if (std::isdigit(letter) == 1) {
+        auto is_digit = std::isdigit(letter);
+        if (is_digit != 0) {
             number += letter;
         }
     }
@@ -460,8 +480,10 @@ void Game::on_notify(const std::string &iEvent) {
             process_bonus_(*this, str_stream);
             break;
         case kModeDash:
+
             // Parsing dash event
             std::getline(str_stream, token, ';');
+            std::cout << " dash event : " << token << std::endl;
             if (std::optional<int16_t> dash_opt = extract_number_(token);
                 dash_opt.has_value()) {
                 dash_fud.dashable = dash_opt.value();

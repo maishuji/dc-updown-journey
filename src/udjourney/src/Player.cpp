@@ -10,6 +10,7 @@
 #include "raylib/raymath.h"
 #include "raylib/rlgl.h"
 #include "udjourney/CoreUtils.hpp"
+#include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/platform/Platform.hpp"
 
 Player::~Player() = default;
@@ -80,7 +81,12 @@ struct Player::PImpl {
 };
 
 Player::Player(const IGame &iGame, Rectangle iRect) :
-    IActor(iGame), r(iRect), m_pimpl(std::make_unique<Player::PImpl>()) {}
+    IActor(iGame), r(iRect), m_pimpl(std::make_unique<Player::PImpl>()) {
+    if (m_texture.id == 0) {
+        auto &texture_manager = TextureManager::get_instance();
+        m_texture = texture_manager.get_texture("placeholder.png");
+    }
+}
 
 void Player::draw() const {
     auto rect = r;
@@ -93,6 +99,16 @@ void Player::draw() const {
                      : m_pimpl->colliding ? RED
                      : m_pimpl->dashing   ? ORANGE
                                           : GREEN);
+    if (m_texture.id > 0) {
+        auto src_rect = Rectangle{
+            0,
+            0,
+            static_cast<float>(m_texture.width),  // full width
+            static_cast<float>(m_texture.height)  // full height};
+        };
+        DrawTexturePro(
+            m_texture, src_rect, rect, Vector2{0.0F, 0.0F}, 0, WHITE);
+    }
 }
 
 void Player::update(float iDelta) {
@@ -199,8 +215,8 @@ void Player::resolve_collision(const IActor &iActor) noexcept {
  *
  * This function is called from the main game loop to handle collision
  *
- * @param platforms A vector of unique pointers to IActor objects representing
- * the platforms
+ * @param platforms A vector of unique pointers to IActor objects
+ * representing the platforms
  * @return void
  * @throws none
  */
