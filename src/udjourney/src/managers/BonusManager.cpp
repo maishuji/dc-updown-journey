@@ -1,12 +1,12 @@
 // Copyright 2025 Quentin Cartier
-#include "udjourney/BonusManager.hpp"
+#include "udjourney/managers/BonusManager.hpp"
 
 #include <chrono>
 #include <iostream>
 #include <algorithm>
 #include <random>
 
-#include "udjourney/IObserver.hpp"
+#include "udjourney/interfaces/IObserver.hpp"
 
 const float kMinBonusInterval = 2.0F;  // Minimum time between bonus spawns
 

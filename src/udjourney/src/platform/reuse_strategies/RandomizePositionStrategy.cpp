@@ -4,7 +4,7 @@
 #include <chrono>
 #include <random>
 
-#include "udjourney/IGame.hpp"
+#include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/platform/Platform.hpp"
 
 void RandomizePositionStrategy::reuse(Platform& platform) {

@@ -9,11 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "udjourney/IActor.hpp"
-#include "udjourney/IGame.hpp"
-#include "udjourney/IObserver.hpp"
+#include "udjourney/interfaces/IActor.hpp"
+#include "udjourney/interfaces/IGame.hpp"
+#include "udjourney/interfaces/IObserver.hpp"
+#include "udjourney/interfaces/IObservable.hpp"
 
-class Player : public IActor {
+class Player : public IActor, public IObservable {
  public:
     Player(const IGame &iGame, Rectangle iRect);
     ~Player();
@@ -31,9 +32,9 @@ class Player : public IActor {
     }
 
     // Observable
-    void add_observer(IObserver *ioObserver);
-    void remove_observer(IObserver *ioObserver);
-    void notify(const std::string &iEvent);
+    void add_observer(IObserver *ioObserver) override;
+    void remove_observer(IObserver *ioObserver) override;
+    void notify(const std::string &iEvent) override;
 
     [[nodiscard]] inline constexpr uint8_t get_group_id() const override {
         return 0;

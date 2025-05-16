@@ -1,5 +1,4 @@
 // Copyright 2025 Quentin Cartier
-
 #ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_BONUS_HPP_
 #define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_BONUS_HPP_
 
@@ -7,8 +6,8 @@
 #include <raylib/raymath.h>
 #include <raylib/rlgl.h>
 
-#include "udjourney/IActor.hpp"
-#include "udjourney/IGame.hpp"
+#include "udjourney/interfaces/IActor.hpp"
+#include "udjourney/interfaces/IGame.hpp"
 
 class Bonus : public IActor {
  public:

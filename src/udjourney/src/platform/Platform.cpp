@@ -2,7 +2,7 @@
 
 #include "udjourney/platform/Platform.hpp"
 
-#include "udjourney/IGame.hpp"
+#include "udjourney/interfaces/IGame.hpp"
 
 Platform::Platform(const IGame &iGame, Rectangle iRect, Color iColor,
                    bool iIsRepeatedY) :

@@ -1,10 +1,8 @@
 // Copyright 2025 Quentin Cartier
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_BONUSMANAGER_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_BONUSMANAGER_HPP_
-
+#pragma once
 
 #include <vector>
-#include "udjourney/IObserver.hpp"
+#include "udjourney/interfaces/IObserver.hpp"
 
 class BonusManager {
  public:
@@ -18,4 +16,3 @@ class BonusManager {
     float timeSinceLastBonus = 0.0F;
     std::vector<IObserver *> observers;
 };
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_BONUSMANAGER_HPP_
