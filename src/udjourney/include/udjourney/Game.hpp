@@ -1,9 +1,8 @@
 // Copyright 2025 Quentin Cartier
 
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_GAME_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_GAME_HPP_
+#pragma once
 #ifdef PLATFORM_DREAMCAST
-#include <kos.h>            // maple_device_t, cont_state_t
+#include <kos.h>  // maple_device_t, cont_state_t
 #endif
 #include <raylib/raylib.h>  // Rectangle
 
@@ -11,11 +10,12 @@
 #include <string>
 #include <vector>
 
-#include "udjourney/BonusManager.hpp"
-#include "udjourney/IActor.hpp"
-#include "udjourney/IGame.hpp"
-#include "udjourney/IObserver.hpp"
 #include "udjourney/ScoreHistory.hpp"
+#include "udjourney/interfaces/IActor.hpp"
+#include "udjourney/interfaces/IGame.hpp"
+#include "udjourney/interfaces/IObserver.hpp"
+#include "udjourney/managers/BonusManager.hpp"
+#include "udjourney/managers/HUDManager.hpp"
 
 enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER };
 
@@ -32,6 +32,7 @@ class Game : public IGame, public IObserver {
 
  private:
     void draw() const;
+
     std::vector<std::unique_ptr<IActor>> m_pending_actors;
     std::vector<std::unique_ptr<IActor>> m_actors;
     std::vector<std::unique_ptr<IActor>> m_dead_actors;
@@ -41,6 +42,6 @@ class Game : public IGame, public IObserver {
     double m_last_update_time = 0.0;
     BonusManager m_bonus_manager;
     ScoreHistory<int64_t> m_score_history;
-    int64_t m_score = 0;
+    int m_score = 0;
+    HUDManager m_hud_manager;
 };
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_GAME_HPP_

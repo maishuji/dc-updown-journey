@@ -1,7 +1,5 @@
 // Copyright 2025 Quentin Cartier
-
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_PLATFORM_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_PLATFORM_HPP_
+#pragma once
 
 #include <raylib/raylib.h>
 #include <raylib/raymath.h>
@@ -10,8 +8,8 @@
 #include <memory>
 #include <utility>
 
-#include "udjourney/IActor.hpp"
-#include "udjourney/IGame.hpp"
+#include "udjourney/interfaces/IActor.hpp"
+#include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/platform/behavior_strategies/PlatformBehaviorStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 
@@ -60,4 +58,3 @@ class Platform : public IActor {
     std::unique_ptr<PlatformBehaviorStrategy> m_behavior;
 };
 
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_PLATFORM_HPP_

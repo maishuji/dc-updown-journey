@@ -18,9 +18,11 @@
 #include <vector>
 
 #include "udjourney/Bonus.hpp"
-#include "udjourney/IActor.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/ScoreHistory.hpp"
+#include "udjourney/hud/HUDComponent.hpp"
+#include "udjourney/hud/ScoreHUD.hpp"
+#include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
@@ -165,9 +167,7 @@ void Game::run() {
     m_actors = init_platforms(*this);
     player = std::make_unique<Player>(*this, Rectangle{320, 240, 20, 20});
     player->add_observer(static_cast<IObserver *>(this));
-    // m_actors.push_back(std::move(player));
-    //  m_actors.emplace_back(std::make_unique<Player>(*this, Rectangle(320,
-    //  240, 20, 20)));
+
     m_actors.emplace_back(
         std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
 
@@ -176,6 +176,9 @@ void Game::run() {
     m_state = GameState::PLAY;
 
     m_bonus_manager.add_observer(static_cast<IObserver *>(this));
+
+    auto score_hud = std::make_unique<ScoreHUD>(Vector2{10, 50}, player.get());
+    m_hud_manager.add(std::move(score_hud));
 
     while (is_running) {
         update();
@@ -291,14 +294,6 @@ void Game::draw() const {
             }
             player->draw();
         }
-            DrawFPS(10, 50);  // Draw FPS counter
-            str_stream << "Score: ";
-            str_stream << std::to_string(m_score);
-            DrawText(str_stream.str().c_str(),
-                     10,
-                     30,
-                     20,
-                     BLUE);  // Draw current score
 
             // Draw dash status
             DrawCircle(static_cast<int>(get_rectangle().width) - 50,
@@ -314,6 +309,7 @@ void Game::draw() const {
             draw_game_over_(m_score_history);
             break;
     }
+    m_hud_manager.draw();
     EndDrawing();
 }
 
@@ -379,6 +375,8 @@ void Game::update() {
     }
 
     player->handle_collision(m_actors);
+
+    m_hud_manager.update(delta);
 
     draw();
 }

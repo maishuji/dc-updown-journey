@@ -1,7 +1,5 @@
 // Copyright 2025 Quentin Cartier
-
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IGAME_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IGAME_HPP_
+#pragma once
 
 #include <raylib/raylib.h>  // Rectangle
 
@@ -19,5 +17,3 @@ class IGame {
     virtual void remove_actor(IActor *actor) = 0;
     [[nodiscard]] virtual Rectangle get_rectangle() const = 0;
 };
-
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IGAME_HPP_

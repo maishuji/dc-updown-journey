@@ -1,8 +1,5 @@
 // Copyright 2025 Quentin Cartier
-
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IOBSERVER_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IOBSERVER_HPP_
-
+#pragma once
 #include <string>
 
 class IObserver {
@@ -10,5 +7,3 @@ class IObserver {
     virtual ~IObserver() = default;
     virtual void on_notify(const std::string &event) = 0;
 };
-
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IOBSERVER_HPP_
