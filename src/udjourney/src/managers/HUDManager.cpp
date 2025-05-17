@@ -3,17 +3,18 @@
 
 #include <utility>
 
-void HUDManager::add(std::unique_ptr<HUDComponent> ioComponent) {
-    m_components.push_back(std::move(ioComponent));
+void HUDManager::add(std::unique_ptr<HUDComponent> ioHudComponent) {
+    m_components.push_back(std::move(ioHudComponent));
 }
 
 void HUDManager::update(float deltaTime) {
-    for (auto& component : m_components)
+    for (auto& component : m_components) {
         component->update(deltaTime);
+    }
 }
 
 void HUDManager::draw() const {
-    for (const auto& component : m_components)
+    for (const auto& component : m_components) {
         component->draw();
+    }
 }
-

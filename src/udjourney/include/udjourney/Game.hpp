@@ -16,6 +16,7 @@
 #include "udjourney/interfaces/IObserver.hpp"
 #include "udjourney/managers/BonusManager.hpp"
 #include "udjourney/managers/HUDManager.hpp"
+#include "udjourney/core/events/EventDispatcher.hpp"
 
 enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER };
 
@@ -44,4 +45,5 @@ class Game : public IGame, public IObserver {
     ScoreHistory<int64_t> m_score_history;
     int m_score = 0;
     HUDManager m_hud_manager;
+    udjourney::core::events::EventDispatcher m_event_dispatcher;
 };

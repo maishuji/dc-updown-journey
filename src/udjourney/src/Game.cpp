@@ -165,7 +165,8 @@ void Game::run() {
                "Up-Down Journey");
 
     m_actors = init_platforms(*this);
-    player = std::make_unique<Player>(*this, Rectangle{320, 240, 20, 20});
+    player = std::make_unique<Player>(
+        *this, Rectangle{320, 240, 20, 20}, m_event_dispatcher);
     player->add_observer(static_cast<IObserver *>(this));
 
     m_actors.emplace_back(
@@ -177,7 +178,8 @@ void Game::run() {
 
     m_bonus_manager.add_observer(static_cast<IObserver *>(this));
 
-    auto score_hud = std::make_unique<ScoreHUD>(Vector2{10, 50}, player.get());
+    auto score_hud = std::make_unique<ScoreHUD>(
+        Vector2{10, 50}, m_event_dispatcher);
     m_hud_manager.add(std::move(score_hud));
 
     while (is_running) {
