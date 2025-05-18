@@ -178,8 +178,8 @@ void Game::run() {
 
     m_bonus_manager.add_observer(static_cast<IObserver *>(this));
 
-    auto score_hud = std::make_unique<ScoreHUD>(
-        Vector2{10, 50}, m_event_dispatcher);
+    auto score_hud =
+        std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
     m_hud_manager.add(std::move(score_hud));
 
     while (is_running) {
@@ -461,12 +461,15 @@ void Game::on_notify(const std::string &iEvent) {
 
     std::cout << "Event: " << str_stream.str() << std::endl;
     switch (mode) {
-        case kModeGameOuver:
+        case kModeGameOuver: {
             m_state = GameState::GAMEOVER;
-            std::cout << "Game Over" << std::endl;
-            m_score_history.add_score(m_score);
-            m_score = 0;  // Reset score
-            break;
+            auto *comp = m_hud_manager.get_component_by_type("ScoreHUD");
+            if (comp != nullptr) {
+                auto *score_hud = static_cast<ScoreHUD *>(comp);
+                m_score_history.add_score(score_hud->get_score());
+                score_hud->set_score(0);  // Reset HUD
+            }
+        } break;
         case kModeScoring:
             // Parsing scoring event
             std::getline(str_stream, token, ';');

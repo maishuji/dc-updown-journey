@@ -16,6 +16,8 @@ class ScoreHUD : public HUDComponent {
         Vector2 position,
         udjourney::core::events::EventDispatcher& ioEventDispatcher);
 
+    std::string get_type() const override { return "ScoreHUD"; }
+
     void update(float deltaTime) override {
         // Optional animation/logic
     }
@@ -28,7 +30,8 @@ class ScoreHUD : public HUDComponent {
                  WHITE);
     }
 
-    void setScore(int newScore) { m_score = newScore; }
+    void set_score(int newScore) { m_score = newScore; }
+    [[nodiscard]] int get_score() { return m_score; }
 
  private:
     void update_score_display(int value);
