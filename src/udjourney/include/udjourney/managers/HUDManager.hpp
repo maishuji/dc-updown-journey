@@ -12,12 +12,15 @@
 
 class HUDManager {
  public:
-    void add(std::unique_ptr<HUDComponent> ioHudComponent);
+    void add_background_hud(std::unique_ptr<HUDComponent> ioHudComponent);
+    void push_foreground_hud(std::unique_ptr<HUDComponent> ioHudComponent);
+    void pop_foreground_hud();
     void update(float deltaTime);
     void draw() const;
 
     HUDComponent* get_component_by_type(const std::string& type_str);
 
  private:
-    std::vector<std::unique_ptr<HUDComponent>> m_components;
+    std::vector<std::unique_ptr<HUDComponent>> m_background_components;
+    std::vector<std::unique_ptr<HUDComponent>> m_focus_stacks;
 };
