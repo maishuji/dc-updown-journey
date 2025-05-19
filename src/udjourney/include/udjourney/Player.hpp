@@ -9,15 +9,17 @@
 #include <string>
 #include <vector>
 
+#include "udjourney/core/events/EventDispatcher.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/interfaces/IGame.hpp"
-#include "udjourney/interfaces/IObserver.hpp"
 #include "udjourney/interfaces/IObservable.hpp"
+#include "udjourney/interfaces/IObserver.hpp"
 
 class Player : public IActor, public IObservable {
  public:
-    Player(const IGame &iGame, Rectangle iRect);
-    ~Player();
+    Player(const IGame &iGame, Rectangle iRect,
+           udjourney::core::events::EventDispatcher &ioDispatcher);
+    ~Player() override;
     void draw() const override;
     void update(float iDelta) override;
     void process_input() override;
@@ -47,6 +49,7 @@ class Player : public IActor, public IObservable {
     struct PImpl;
     std::unique_ptr<struct PImpl> m_pimpl;
     Texture2D m_texture = {};
+    udjourney::core::events::EventDispatcher &m_dispatcher;
 };
 
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_

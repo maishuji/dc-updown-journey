@@ -1,5 +1,4 @@
 // Copyright 2025 Quentin Cartier
-
 #include "udjourney/Player.hpp"
 
 #include <algorithm>
@@ -10,6 +9,7 @@
 #include "raylib/raymath.h"
 #include "raylib/rlgl.h"
 #include "udjourney/CoreUtils.hpp"
+#include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/platform/Platform.hpp"
 
@@ -80,8 +80,12 @@ struct Player::PImpl {
     Platform *grounded_src = nullptr;
 };
 
-Player::Player(const IGame &iGame, Rectangle iRect) :
-    IActor(iGame), r(iRect), m_pimpl(std::make_unique<Player::PImpl>()) {
+Player::Player(const IGame &iGame, Rectangle iRect,
+               udjourney::core::events::EventDispatcher &ioDispatcher) :
+    IActor(iGame),
+    r(iRect),
+    m_pimpl(std::make_unique<Player::PImpl>()),
+    m_dispatcher(ioDispatcher) {
     if (m_texture.id == 0) {
         auto &texture_manager = TextureManager::get_instance();
         m_texture = texture_manager.get_texture("placeholder.png");
@@ -239,7 +243,9 @@ void Player::handle_collision(
     for (const auto &platform : platforms) {
         if (check_collision(*platform)) {
             if (platform->get_group_id() == BONUS_TYPE_ID) {
-                notify("1;1");
+                // ScoreEvent
+                udjourney::core::events::ScoreEvent score_event{1};
+                m_dispatcher.dispatch(score_event);
                 platform->set_state(ActorState::CONSUMED);
             } else if (platform->get_group_id() == PLATFORM_TYPE_ID) {
                 // Check grounded
