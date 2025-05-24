@@ -20,9 +20,9 @@
 #include "udjourney/Bonus.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/ScoreHistory.hpp"
+#include "udjourney/hud/DialogBoxHUD.hpp"
 #include "udjourney/hud/HUDComponent.hpp"
 #include "udjourney/hud/ScoreHUD.hpp"
-#include "udjourney/hud/DialogBoxHUD.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
@@ -183,7 +183,8 @@ void Game::run() {
         std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
     m_hud_manager.add_background_hud(std::move(score_hud));
 
-    auto dialog_hud = std::make_unique<DialogBoxHUD>(Rectangle{300, 400, 200, 80});
+    auto dialog_hud =
+        std::make_unique<DialogBoxHUD>(Rectangle{300, 400, 200, 80});
     m_hud_manager.push_foreground_hud(std::move(dialog_hud));
 
     while (is_running) {
