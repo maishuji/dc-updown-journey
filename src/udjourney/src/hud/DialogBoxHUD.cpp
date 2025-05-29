@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <utility>
+#include <functional>
 
 DialogBoxHUD::DialogBoxHUD(Rectangle iRect) : m_rect(iRect) {
     // Initialize the dialog box with a default message
@@ -24,14 +25,14 @@ void DialogBoxHUD::update(float deltaTime) {
     std::string line;
 
     while (stream >> word) {
-        std::string testLine = line.empty() ? word : line + " " + word;
-        int line_width = MeasureText(testLine.c_str(), font_size);
+        std::string test_line = line.empty() ? word : line + " " + word;
+        int line_width = MeasureText(test_line.c_str(), font_size);
 
         if (line_width > static_cast<int>(max_width)) {
             m_wrapped_lines.push_back(line);
             line = word;
         } else {
-            line = testLine;
+            line = test_line;
         }
     }
 
@@ -56,4 +57,9 @@ void DialogBoxHUD::draw() const {
                  WHITE);
         pos_y += fontSize + 4;
     }
+}
+
+void DialogBoxHUD::set_on_finished_callback(
+    std::function<void()> callback) {
+    m_on_finished_callback = std::move(callback);
 }

@@ -185,6 +185,11 @@ void Game::run() {
 
     auto dialog_hud =
         std::make_unique<DialogBoxHUD>(Rectangle{300, 400, 200, 80});
+    dialog_hud->set_on_finished_callback([this]() {
+        m_state = GameState::PLAY;
+        m_hud_manager.pop_foreground_hud();
+    });
+
     m_hud_manager.push_foreground_hud(std::move(dialog_hud));
 
     while (is_running) {
@@ -227,14 +232,22 @@ void Game::process_input() {
     }
 
     // Pause / Unpause the game
-    auto startPressed = input_mapping.pressed_start();
-    if (startPressed) {
+    auto start_pressed = input_mapping.pressed_start();
+    if (start_pressed) {
         if (m_state == GameState::PLAY) {
             m_state = GameState::PAUSE;
         } else {
             m_state = GameState::PLAY;
         }
     }
+
+    if (m_hud_manager.has_focus()) {
+        m_state = GameState::PAUSE;  // Pause the game if HUD has focus
+        // If the HUD has focus, handle input there
+        m_hud_manager.handle_input();
+        return;  // Skip further input processing
+    }
+
     if (m_state == GameState::PLAY) {
         for (auto &actor : m_actors) {
             actor->process_input();
