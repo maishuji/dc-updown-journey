@@ -1,6 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/managers/HUDManager.hpp"
 
+#include <memory>
 #include <string>
 #include <utility>
 
