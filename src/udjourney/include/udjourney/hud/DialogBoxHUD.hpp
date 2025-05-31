@@ -26,12 +26,22 @@ class DialogBoxHUD : public HUDComponent {
     [[nodiscard]] std::string get_type() const override {
         return "DialogBoxHUD";
     }
+    void set_text(const std::string& text);
+    void set_text(std::string&& text);
+
+    [[nodiscard]] const std::vector<std::string>& get_wrapped_lines() const {
+        return m_wrapped_lines;
+    }
+
+    [[nodiscard]] const std::string& get_text() const { return m_text; }
 
     void set_on_finished_callback(std::function<void()> callback);
+    void set_on_next_callback(std::function<void()> callback);
 
  private:
     Rectangle m_rect;
     std::vector<std::string> m_wrapped_lines;
     std::string m_text;
     std::function<void()> m_on_finished_callback = []() {};
+    std::function<void()> m_on_next_callback = []() {};
 };
