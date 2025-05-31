@@ -53,10 +53,10 @@ struct InputMapping {
         };
         shoot_pressed = []() { return IsMouseButtonDown(MOUSE_LEFT_BUTTON); };
 #else
-        left_pressed = []() { return IsKeyDown(KEY_LEFT); };
-        right_pressed = []() { return IsKeyDown(KEY_RIGHT); };
-        up_pressed = []() { return IsKeyDown(KEY_UP); };
-        down_pressed = []() { return IsKeyDown(KEY_DOWN); };
+        left_pressed = []() { return IsKeyDown(KEY_A); };
+        right_pressed = []() { return IsKeyDown(KEY_D); };
+        up_pressed = []() { return IsKeyDown(KEY_W); };
+        down_pressed = []() { return IsKeyDown(KEY_S); };
         jump_pressed = []() { return IsKeyDown(KEY_SPACE); };
         dash_pressed = []() { return IsKeyDown(KEY_LEFT_SHIFT); };
         shoot_pressed = []() {
