@@ -16,6 +16,7 @@ enum class ActorState {
 class IActor {
  public:
     explicit IActor(const IGame &game) : m_game(&game) {}
+    virtual ~IActor() = default;
     virtual void draw() const = 0;
     virtual void update(float delta) = 0;
     virtual void process_input() = 0;
