@@ -35,8 +35,46 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Hello from ImGui!");
-        ImGui::Text("This is a Raylib + ImGui example.");
+                ImGui::Begin("Tiles Panel", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Text("Tile Picker");
+        ImGui::Separator();
+
+        // Example tiles (3 dummy buttons for now)
+        if (ImGui::Button("🧱 Brick")) { /* select brick */ }
+        if (ImGui::Button("🌱 Grass")) { /* select grass */ }
+        if (ImGui::Button("🌊 Water")) { /* select water */ }
+
+        ImGui::End();
+
+        // Set up the main scene view
+        ImGui::SetNextWindowPos(ImVec2(150, 0), ImGuiCond_Always); // adjust offset
+        ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x - 150, io.DisplaySize.y), ImGuiCond_Always);
+
+        ImGui::Begin("Scene View", nullptr,
+                     ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoResize |
+                     ImGuiWindowFlags_NoCollapse);
+
+        // Get draw list inside the ImGui scene view window
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        ImVec2 origin = ImGui::GetCursorScreenPos();
+
+        // Example canvas grid (draw with ImGui)
+        const float tile_size = 32.0f;
+        const int rows = 10;
+        const int cols = 10;
+
+        for (int y = 0; y < rows; ++y) {
+            for (int x = 0; x < cols; ++x) {
+                ImVec2 top_left = ImVec2(origin.x + x * tile_size, origin.y + y * tile_size);
+                ImVec2 bottom_right = ImVec2(top_left.x + tile_size, top_left.y + tile_size);
+                draw_list->AddRect(top_left, bottom_right, IM_COL32(200, 200, 200, 255));
+            }
+        }
+
+        // Reserve space so ImGui knows where we've "drawn"
+        ImGui::Dummy(ImVec2(cols * tile_size, rows * tile_size));
+
         ImGui::End();
 
         ImGui::Render();
