@@ -21,7 +21,7 @@ set(IMGUI_BACKEND_DIR ${imgui_SOURCE_DIR}/backends)
 include_directories(${imgui_SOURCE_DIR} ${IMGUI_BACKEND_DIR})
 
 add_executable(udjourney_editor
-  main.cpp
+  src/main.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
