@@ -22,6 +22,7 @@ include_directories(${imgui_SOURCE_DIR} ${IMGUI_BACKEND_DIR})
 
 add_executable(udjourney_editor
   src/main.cpp
+  src/Editor.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
@@ -32,6 +33,8 @@ add_executable(udjourney_editor
   # Official OpenGL3 backend for ImGui rendering
   ${IMGUI_BACKEND_DIR}/imgui_impl_opengl3.cpp
 )
+
+target_include_directories(udjourney_editor PUBLIC include)
 
 target_link_libraries(udjourney_editor PRIVATE raylib)
 
