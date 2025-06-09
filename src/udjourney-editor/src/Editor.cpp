@@ -7,8 +7,13 @@
 #include <cmath>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "raylib/raylib.h"
+
+struct Cell {
+    ImU32 color = IM_COL32(2550, 255, 255, 255);  // Default color for the cell
+};
 
 struct Editor::PImpl {
     bool running = true;
@@ -16,6 +21,9 @@ struct Editor::PImpl {
     bool selection_done = false;
     ImVec2 selection_start;
     ImVec2 selection_end;
+    size_t row_cnt = 20;
+    size_t col_cnt = 20;
+    std::vector<Cell> tiles;
 };
 
 Editor::Editor() : pimpl(std::make_unique<PImpl>()) { pimpl->running = true; }
@@ -39,6 +47,11 @@ void Editor::init() {
 
     // Initialize OpenGL3 backend
     ImGui_ImplOpenGL3_Init("#version 330");
+
+    pimpl->tiles.reserve(pimpl->row_cnt * pimpl->col_cnt);
+    for (size_t i = 0; i < pimpl->row_cnt * pimpl->col_cnt; ++i) {
+        pimpl->tiles.push_back(Cell());
+    }
 }
 
 void Editor::run() {
@@ -74,15 +87,20 @@ void Editor::run() {
 
         // Example canvas grid (draw with ImGui)
         const float tile_size = 32.0f;
-        const int rows = 15;
-        const int cols = 15;
 
-        for (int y = 0; y < rows; ++y) {
-            for (int x = 0; x < cols; ++x) {
+        for (int y = 0; y < pimpl->row_cnt; ++y) {
+            for (int x = 0; x < pimpl->col_cnt; ++x) {
                 ImVec2 top_left =
                     ImVec2(origin.x + x * tile_size, origin.y + y * tile_size);
                 ImVec2 bottom_right =
                     ImVec2(top_left.x + tile_size, top_left.y + tile_size);
+                // draw_list->AddRect(
+                //     top_left, bottom_right, IM_COL32(200, 200, 200, 255));
+
+                draw_list->AddRectFilled(
+                    top_left,
+                    bottom_right,
+                    pimpl->tiles[y * pimpl->col_cnt + x].color);
                 draw_list->AddRect(
                     top_left, bottom_right, IM_COL32(200, 200, 200, 255));
             }
@@ -132,8 +150,8 @@ void Editor::run() {
                 ImVec2(fmaxf(pimpl->selection_start.x, pimpl->selection_end.x),
                        fmaxf(pimpl->selection_start.y, pimpl->selection_end.y));
 
-            for (int y = 0; y < rows; ++y) {
-                for (int x = 0; x < cols; ++x) {
+            for (int y = 0; y < pimpl->row_cnt; ++y) {
+                for (int x = 0; x < pimpl->col_cnt; ++x) {
                     ImVec2 tile_top_left = ImVec2(origin.x + x * tile_size,
                                                   origin.y + y * tile_size);
                     ImVec2 tile_bottom_right =
@@ -154,7 +172,8 @@ void Editor::run() {
         }
 
         // Reserve space so ImGui knows where we've "drawn"
-        ImGui::Dummy(ImVec2(cols * tile_size, rows * tile_size));
+        ImGui::Dummy(
+            ImVec2(pimpl->col_cnt * tile_size, pimpl->row_cnt * tile_size));
 
         ImGui::End();
 
