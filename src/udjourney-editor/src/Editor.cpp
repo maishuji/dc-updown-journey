@@ -163,7 +163,11 @@ void Editor::run() {
                         tile_bottom_right.x <= p_max.x &&
                         tile_top_left.y >= p_min.y &&
                         tile_bottom_right.y <= p_max.y) {
-                        draw_list->AddRectFilled(tile_top_left,
+                        pimpl->tiles[y * pimpl->col_cnt + x].color =
+                            IM_COL32(0, 0, 255, 255);  // Highlight color
+
+                        // Selected tile rectangle
+                        draw_list->AddRect(tile_top_left,
                                                  tile_bottom_right,
                                                  IM_COL32(255, 0, 0, 100));
                     }
