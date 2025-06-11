@@ -23,7 +23,9 @@ struct Editor::PImpl {
     ImVec2 selection_end;
     size_t row_cnt = 20;
     size_t col_cnt = 20;
+    ImU32 cur_color = IM_COL32(255, 255, 255, 255);  // Default color for the current selection
     std::vector<Cell> tiles;
+
 };
 
 Editor::Editor() : pimpl(std::make_unique<PImpl>()) { pimpl->running = true; }
@@ -164,7 +166,7 @@ void Editor::run() {
                         tile_top_left.y >= p_min.y &&
                         tile_bottom_right.y <= p_max.y) {
                         pimpl->tiles[y * pimpl->col_cnt + x].color =
-                            IM_COL32(0, 0, 255, 255);  // Highlight color
+                            pimpl->cur_color;  // Highlight color
 
                         // Selected tile rectangle
                         draw_list->AddRect(tile_top_left,
@@ -276,23 +278,37 @@ void Editor::draw_tiles_panel() {
     ImGui::Text("Tile Picker");
     ImGui::Separator();
 
+    // Set custom color for the button (red background)
+    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 0, 0, 255));       // Normal
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(200, 0, 0, 255)); // Hover
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(150, 0, 0, 255));  // Clicked
+    ImVec2 button_size(32, 32); // Set a fixed size for the buttons
+
     // Example tiles
-    if (ImGui::Button("Brick")) { /* select brick */
+    if (ImGui::Button("Brick", button_size)) { /* select brick */
+        pimpl->cur_color = IM_COL32(255, 0, 0, 255); // Set current color to red
     }
     ImGui::SameLine();
-    if (ImGui::Button("Grass")) { /* select grass */
+    if (ImGui::Button("Grass", button_size)) { /* select grass */
+        pimpl->cur_color = IM_COL32(0, 255, 0, 255); // Set current color to green
     }
     ImGui::SameLine();
-    if (ImGui::Button("Water")) { /* select water */
+    if (ImGui::Button("Water", button_size)) { /* select water */
+        pimpl->cur_color = IM_COL32(0, 0, 255, 255); // Set current color to blue
     }
-    if (ImGui::Button("Brick2")) { /* select brick */
+    if (ImGui::Button("Brick2", button_size)) { /* select brick */
+        pimpl->cur_color = IM_COL32(255, 128, 0, 255); // Set current color to orange
     }
     ImGui::SameLine();
-    if (ImGui::Button("Grass2")) { /* select grass */
+    if (ImGui::Button("Grass2", button_size)) { /* select grass */
+        pimpl->cur_color = IM_COL32(0, 255, 128, 255); // Set current color to light green
     }
     ImGui::SameLine();
-    if (ImGui::Button("Water2")) { /* select water */
+    if (ImGui::Button("Water2", button_size)) { /* select water */
+        pimpl->cur_color = IM_COL32(128, 0, 255, 255); // Set current color to purple
     }
+    ImGui::PopStyleColor(3); // Restore the 3 pushed colors
 
     ImGui::End();
+    
 }
