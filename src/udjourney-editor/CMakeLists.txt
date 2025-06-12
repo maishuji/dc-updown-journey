@@ -23,6 +23,7 @@ include_directories(${imgui_SOURCE_DIR} ${IMGUI_BACKEND_DIR})
 add_executable(udjourney_editor
   src/main.cpp
   src/Editor.cpp
+  src/TilePanel.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
