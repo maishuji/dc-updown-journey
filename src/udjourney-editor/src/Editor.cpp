@@ -106,12 +106,7 @@ void Editor::run() {
                     auto config = IGFD::FileDialogConfig();
                     config.fileName = "export_tilemap.json";
                     ImGuiFileDialog::Instance()->OpenDialog(
-                        "ChooseFileDlgKey",
-                        "Choose File",
-                        ".txt,.csv",
-                        config);  // Set a reasonable default size);
-
-                    export_tilemap_json("tilemap_export.json");
+                        "ChooseFileDlgKey", "Choose File", ".txt,.csv", config);
                 }
                 ImGui::EndMenu();
             }
@@ -124,7 +119,7 @@ void Editor::run() {
             if (ImGuiFileDialog::Instance()->IsOk()) {
                 std::string filePath =
                     ImGuiFileDialog::Instance()->GetFilePathName();
-                    export_tilemap_json(filePath);
+                export_tilemap_json(filePath);
                 // Use filePath to export
             }
             ImGuiFileDialog::Instance()->Close();
