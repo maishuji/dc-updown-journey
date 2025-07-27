@@ -57,6 +57,38 @@ void Editor::export_tilemap_json(const std::string &export_path) {
     pimpl->last_export_path = export_path;
 }
 
+void Editor::import_tilemap_json(const std::string &import_path) {
+    std::ifstream in(import_path);
+    std::cout << "Importing tilemap from: " << import_path << std::endl;
+    if (!in.is_open()) {
+        std::cerr << "Failed to open file: " << import_path << std::endl;
+        return;
+    }
+    nlohmann::json jmap;
+    in >> jmap;
+    in.close();
+
+    pimpl->row_cnt = jmap["rows"].get<size_t>();
+    pimpl->col_cnt = jmap["cols"].get<size_t>();
+    pimpl->tiles.clear();
+    pimpl->tiles.reserve(pimpl->row_cnt * pimpl->col_cnt);
+
+    for (const auto &tile : jmap["tiles"]) {
+        size_t row = tile["row"].get<size_t>();
+        size_t col = tile["col"].get<size_t>();
+        ImU32 color = tile["color"].get<ImU32>();
+        std::cout << "Importing tile at (" << row << ", " << col
+                  << ") with color: " << color << std::endl;
+        if (row < pimpl->row_cnt && col < pimpl->col_cnt) {
+            std::cout << "Adding tile at (" << row << ", " << col
+                      << ") with color: " << color << std::endl;
+            Cell cell;
+            cell.color = color;
+            pimpl->tiles.push_back(cell);
+        }
+    }
+}
+
 void Editor::init() {
     InitWindow(800, 600, "UDJourney Editor");
     SetWindowState(FLAG_WINDOW_RESIZABLE);
@@ -106,13 +138,39 @@ void Editor::run() {
                     auto config = IGFD::FileDialogConfig();
                     config.fileName = "export_tilemap.json";
                     ImGuiFileDialog::Instance()->OpenDialog(
-                        "ChooseFileDlgKey", "Choose File", ".txt,.csv", config);
+                        "ChooseFileToExportJsonKey",
+                        "Choose File",
+                        ".json",
+                        config);
+                }
+                if (ImGui::MenuItem("Import Tilemap from JSON", "Ctrl+I")) {
+                    std::cout << "Opening file dialog..." << std::endl;
+                    auto config = IGFD::FileDialogConfig();
+                    config.fileName = "export_tilemap.json";
+                    ImGuiFileDialog::Instance()->OpenDialog(
+                        "ChooseFileToImportJsonKey",
+                        "Choose File",
+                        ".json",
+                        config);
                 }
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
         }
-        if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey",
+
+        if (ImGuiFileDialog::Instance()->Display("ChooseFileToImportJsonKey",
+                                                 ImGuiWindowFlags_NoCollapse,
+                                                 ImVec2(600, 400),
+                                                 ImVec2(FLT_MAX, FLT_MAX))) {
+            if (ImGuiFileDialog::Instance()->IsOk()) {
+                std::string filePath =
+                    ImGuiFileDialog::Instance()->GetFilePathName();
+                import_tilemap_json(filePath);
+            }
+            ImGuiFileDialog::Instance()->Close();
+        }
+
+        if (ImGuiFileDialog::Instance()->Display("ChooseFileToExportJsonKey",
                                                  ImGuiWindowFlags_NoCollapse,
                                                  ImVec2(600, 400),
                                                  ImVec2(FLT_MAX, FLT_MAX))) {
@@ -120,7 +178,6 @@ void Editor::run() {
                 std::string filePath =
                     ImGuiFileDialog::Instance()->GetFilePathName();
                 export_tilemap_json(filePath);
-                // Use filePath to export
             }
             ImGuiFileDialog::Instance()->Close();
         }
