@@ -63,18 +63,13 @@ void OscillatingSizeBehaviorStrategy::update(Platform &ioPlatform,
             m_pimpl->max_offset =
                 (kMaxSizeAcceptable - m_pimpl->original_width) / 2.0F;
         }
-        //std::cout << "min_offset " << m_pimpl->min_offset
-        //          << " , max_offset: " << m_pimpl->max_offset << std::endl;
     }
 
     // Compute bounds
     const float max_width = m_pimpl->original_width + m_pimpl->max_offset;
     const float min_width = m_pimpl->original_width + m_pimpl->min_offset;
 
-    //std::cout << "min_width " << min_width << " , max_width: " << max_width
-    //          << " , speed_x: " << m_pimpl->factor << std::endl;
-    //std::cout << "\t rect_width = " << rect.width << std::endl;
-    // If bounds are hit, reverse direction
+    //  If bounds are hit, reverse direction
     if (rect.width >= max_width) {
         m_pimpl->factor = -1.0F;  // Start shrinking
     } else if (rect.width <= min_width) {

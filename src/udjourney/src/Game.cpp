@@ -185,9 +185,14 @@ void Game::run() {
 
     auto dialog_hud =
         std::make_unique<DialogBoxHUD>(Rectangle{300, 400, 200, 80});
+
     dialog_hud->set_on_finished_callback([this]() {
         m_state = GameState::PLAY;
         m_hud_manager.pop_foreground_hud();
+    });
+
+    dialog_hud->set_on_next_callback([this]() {
+        std::cout << "Next page in dialog box" << std::endl;
     });
 
     m_hud_manager.push_foreground_hud(std::move(dialog_hud));
@@ -231,6 +236,14 @@ void Game::process_input() {
         is_running = false;
     }
 
+
+    if (m_hud_manager.has_focus()) {
+        m_state = GameState::PAUSE;  // Pause the game if HUD has focus
+        // If the HUD has focus, handle input there
+        m_hud_manager.handle_input();
+        return;  // Skip further input processing
+    }
+
     // Pause / Unpause the game
     auto start_pressed = input_mapping.pressed_start();
     if (start_pressed) {
@@ -239,13 +252,6 @@ void Game::process_input() {
         } else {
             m_state = GameState::PLAY;
         }
-    }
-
-    if (m_hud_manager.has_focus()) {
-        m_state = GameState::PAUSE;  // Pause the game if HUD has focus
-        // If the HUD has focus, handle input there
-        m_hud_manager.handle_input();
-        return;  // Skip further input processing
     }
 
     if (m_state == GameState::PLAY) {
@@ -477,7 +483,6 @@ void Game::on_notify(const std::string &iEvent) {
         }
     }  // Split by ';'
 
-    std::cout << "Event: " << str_stream.str() << std::endl;
     switch (mode) {
         case kModeGameOuver: {
             m_state = GameState::GAMEOVER;
