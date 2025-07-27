@@ -38,6 +38,7 @@ Editor::~Editor() {
 
 void Editor::init() {
     InitWindow(800, 600, "UDJourney Editor");
+    SetWindowState(FLAG_WINDOW_RESIZABLE);
     SetTargetFPS(60);
 
     // Setup Dear ImGui context
