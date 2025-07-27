@@ -5,12 +5,15 @@
 #include <imgui_impl_opengl3.h>
 
 #include <cmath>
+#include <fstream>
+#include <iostream>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <utility>
 #include <vector>
 
+#include "ImGuiFileDialog.h"
 #include "raylib/raylib.h"
-
 #include "udjourney-editor/TilePanel.hpp"
 
 struct Cell {
@@ -27,6 +30,7 @@ struct Editor::PImpl {
     size_t col_cnt = 20;
     std::vector<Cell> tiles;
     TilePanel tile_panel;
+    std::string last_export_path;
 };
 
 Editor::Editor() : pimpl(std::make_unique<PImpl>()) { pimpl->running = true; }
@@ -34,6 +38,23 @@ Editor::Editor() : pimpl(std::make_unique<PImpl>()) { pimpl->running = true; }
 Editor::~Editor() {
     // Cleanup resources if needed
     shutdown();
+}
+
+void Editor::export_tilemap_json(const std::string &export_path) {
+    nlohmann::json jmap;
+    jmap["rows"] = pimpl->row_cnt;
+    jmap["cols"] = pimpl->col_cnt;
+    jmap["tiles"] = nlohmann::json::array();
+    for (size_t i = 0; i < pimpl->tiles.size(); ++i) {
+        size_t row = i / pimpl->col_cnt;
+        size_t col = i % pimpl->col_cnt;
+        ImU32 color = pimpl->tiles[i].color;
+        jmap["tiles"].push_back({{"row", row}, {"col", col}, {"color", color}});
+    }
+    std::ofstream out(export_path);
+    out << jmap.dump(2);
+    out.close();
+    pimpl->last_export_path = export_path;
 }
 
 void Editor::init() {
@@ -60,6 +81,11 @@ void Editor::init() {
 
 void Editor::run() {
     while (!WindowShouldClose()) {
+        // Export as JSON shortcut (Ctrl+E)
+        if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) &&
+            IsKeyPressed(KEY_E)) {
+            export_tilemap_json("tilemap_export.json");
+        }
         ImGuiIO &io = ImGui::GetIO();
 
         // Set display size each frame (fixes your crash)
@@ -71,6 +97,38 @@ void Editor::run() {
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui::NewFrame();
+
+        // --- Menu Bar ---
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if (ImGui::MenuItem("Export Tilemap as JSON", "Ctrl+E")) {
+                    std::cout << "Opening file dialog..." << std::endl;
+                    auto config = IGFD::FileDialogConfig();
+                    config.fileName = "export_tilemap.json";
+                    ImGuiFileDialog::Instance()->OpenDialog(
+                        "ChooseFileDlgKey",
+                        "Choose File",
+                        ".txt,.csv",
+                        config);  // Set a reasonable default size);
+
+                    export_tilemap_json("tilemap_export.json");
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+        if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey",
+                                                 ImGuiWindowFlags_NoCollapse,
+                                                 ImVec2(600, 400),
+                                                 ImVec2(FLT_MAX, FLT_MAX))) {
+            if (ImGuiFileDialog::Instance()->IsOk()) {
+                std::string filePath =
+                    ImGuiFileDialog::Instance()->GetFilePathName();
+                    export_tilemap_json(filePath);
+                // Use filePath to export
+            }
+            ImGuiFileDialog::Instance()->Close();
+        }
 
         pimpl->tile_panel.draw();
 
@@ -168,12 +226,13 @@ void Editor::run() {
                         tile_top_left.y >= p_min.y &&
                         tile_bottom_right.y <= p_max.y) {
                         pimpl->tiles[y * pimpl->col_cnt + x].color =
-                            pimpl->tile_panel.get_current_color();  // Highlight color
+                            pimpl->tile_panel
+                                .get_current_color();  // Highlight color
 
                         // Selected tile rectangle
                         draw_list->AddRect(tile_top_left,
-                                                 tile_bottom_right,
-                                                 IM_COL32(255, 0, 0, 100));
+                                           tile_bottom_right,
+                                           IM_COL32(255, 0, 0, 100));
                     }
                 }
             }
@@ -274,4 +333,3 @@ void Editor::update_imgui_input() {
         }
     }
 }
-

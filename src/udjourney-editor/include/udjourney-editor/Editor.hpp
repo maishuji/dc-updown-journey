@@ -11,6 +11,7 @@ class Editor {
     void shutdown();
 
  private:
+    void export_tilemap_json(const std::string& export_path);
     void draw_tiles_panel();
     void update_imgui_input();
 
