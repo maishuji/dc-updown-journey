@@ -88,10 +88,11 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
         lastx2 = random_number % kMaxWidth + kOffsetPosXMin;
 
         auto ra2 = std::rand();
-        if (ra2 % 100 < 5) {
+        if (ra2 % 100 < 20) {
             // 5% EightTurnHorizontalBehaviorStrategy, use ORANGE color
             res.emplace_back(std::make_unique<Platform>(iGame, rect, ORANGE));
-            float speed = static_cast<float>(std::max(1, random_number % 10));
+            float speed =
+                static_cast<float>(std::max(1, random_number % 11) / 10.0F);
             float amplitude =
                 static_cast<float>(std::max(100, random_number % 220));
             static_cast<Platform *>(res.back().get())

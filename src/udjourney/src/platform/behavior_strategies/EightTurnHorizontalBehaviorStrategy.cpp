@@ -31,8 +31,6 @@ void EightTurnHorizontalBehaviorStrategy::update(Platform &platform,
                                                  float delta) {
     const auto &gameRect = platform.get_game().get_rectangle();
     const auto &rect = platform.get_rectangle();
-    std::cout << "EightTurnHorizontalBehaviorStrategy::update called" << delta
-              << std::endl;
     if (std::isnan(m_pimpl->center_x)) {
         m_pimpl->center_x = rect.x;
         m_pimpl->center_y = rect.y;
