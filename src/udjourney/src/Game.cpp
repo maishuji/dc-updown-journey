@@ -25,6 +25,7 @@
 #include "udjourney/hud/ScoreHUD.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/platform/Platform.hpp"
+#include "udjourney/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
@@ -82,38 +83,52 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
                        static_cast<float>(cur_pos_y),
                        static_cast<float>(lastx2),
                        5};
-        res.emplace_back(std::make_unique<Platform>(iGame, rect));
         int random_number = std::rand();
         lastx = (random_number % 10) * kOffsetPosXMin;
         lastx2 = random_number % kMaxWidth + kOffsetPosXMin;
 
         auto ra2 = std::rand();
         if (ra2 % 100 < 20) {
-            float speed_x = static_cast<float>(std::max(5, random_number % 30));
-            float max_offset = static_cast<float>(
-                std::max(kOffsetPosXMin, random_number % kMaxWidth));
-
-            // 20% of moving platforms
-            static_cast<Platform *>(res.back().get())
-                ->set_behavior(std::make_unique<HorizontalBehaviorStrategy>(
-                    speed_x, max_offset));
-        } else if (ra2 % 100 < 40) {
-            float speed_x = static_cast<float>(std::max(5, random_number % 30));
-
-            const int kShrinkMinOffset = -100;
-            const int kShrinkMaxOffset = 150;
-
-            int min_offset =
-                kShrinkMinOffset +
-                (std::rand() % (1 + std::abs(kShrinkMinOffset)));   // -100 to 0
-            int max_offset = std::rand() % (kShrinkMaxOffset + 1);  // 0 to 150
-
+            // 5% EightTurnHorizontalBehaviorStrategy, use ORANGE color
+            res.emplace_back(std::make_unique<Platform>(iGame, rect, ORANGE));
+            float speed =
+                static_cast<float>(std::max(1, random_number % 11) / 10.0F);
+            float amplitude =
+                static_cast<float>(std::max(100, random_number % 220));
             static_cast<Platform *>(res.back().get())
                 ->set_behavior(
-                    std::make_unique<OscillatingSizeBehaviorStrategy>(
-                        speed_x,
-                        static_cast<float>(min_offset),
-                        static_cast<float>(max_offset)));
+                    std::make_unique<EightTurnHorizontalBehaviorStrategy>(
+                        speed, amplitude));
+        } else {
+            res.emplace_back(std::make_unique<Platform>(iGame, rect));
+            if (ra2 % 100 < 25) {
+                // 20% HorizontalBehaviorStrategy
+                float speed_x =
+                    static_cast<float>(std::max(5, random_number % 30));
+                float max_offset = static_cast<float>(
+                    std::max(kOffsetPosXMin, random_number % kMaxWidth));
+                static_cast<Platform *>(res.back().get())
+                    ->set_behavior(std::make_unique<HorizontalBehaviorStrategy>(
+                        speed_x, max_offset));
+            } else if (ra2 % 100 < 45) {
+                // 20% OscillatingSizeBehaviorStrategy
+                float speed_x =
+                    static_cast<float>(std::max(5, random_number % 30));
+                const int kShrinkMinOffset = -100;
+                const int kShrinkMaxOffset = 150;
+                int min_offset =
+                    kShrinkMinOffset +
+                    (std::rand() %
+                     (1 + std::abs(kShrinkMinOffset)));  // -100 to 0
+                int max_offset =
+                    std::rand() % (kShrinkMaxOffset + 1);  // 0 to 150
+                static_cast<Platform *>(res.back().get())
+                    ->set_behavior(
+                        std::make_unique<OscillatingSizeBehaviorStrategy>(
+                            speed_x,
+                            static_cast<float>(min_offset),
+                            static_cast<float>(max_offset)));
+            }
         }
     }
 
@@ -191,9 +206,8 @@ void Game::run() {
         m_hud_manager.pop_foreground_hud();
     });
 
-    dialog_hud->set_on_next_callback([this]() {
-        std::cout << "Next page in dialog box" << std::endl;
-    });
+    dialog_hud->set_on_next_callback(
+        [this]() { std::cout << "Next page in dialog box" << std::endl; });
 
     m_hud_manager.push_foreground_hud(std::move(dialog_hud));
 
@@ -235,7 +249,6 @@ void Game::process_input() {
         // Press b to quit
         is_running = false;
     }
-
 
     if (m_hud_manager.has_focus()) {
         m_state = GameState::PAUSE;  // Pause the game if HUD has focus
