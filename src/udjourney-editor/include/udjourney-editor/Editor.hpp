@@ -12,6 +12,7 @@ class Editor {
 
  private:
     void export_tilemap_json(const std::string& export_path);
+    void import_tilemap_json(const std::string &import_path);
     void draw_tiles_panel();
     void update_imgui_input();
 
