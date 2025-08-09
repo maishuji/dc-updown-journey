@@ -40,6 +40,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
+FetchContent_Declare(
+  catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG v3.5.2
+)
+FetchContent_MakeAvailable(catch2)
+
 add_executable(udjourney_editor
   src/main.cpp
   src/Editor.cpp
@@ -64,3 +71,18 @@ target_link_libraries(udjourney_editor PRIVATE raylib nlohmann_json::nlohmann_js
 if(UNIX AND NOT APPLE)
   target_link_libraries(udjourney_editor PRIVATE pthread m dl)
 endif()
+
+enable_testing()
+
+add_executable(tilepanel_tests
+  tests/test_tilepanel.cpp
+  src/TilePanel.cpp
+  ${imgui_SOURCE_DIR}/imgui.cpp
+  ${imgui_SOURCE_DIR}/imgui_draw.cpp
+  ${imgui_SOURCE_DIR}/imgui_tables.cpp
+  ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+)
+target_include_directories(tilepanel_tests PRIVATE include src ${imgui_SOURCE_DIR})
+target_link_libraries(tilepanel_tests PRIVATE Catch2::Catch2WithMain)
+
+add_test(NAME TilePanelTests COMMAND tilepanel_tests)
