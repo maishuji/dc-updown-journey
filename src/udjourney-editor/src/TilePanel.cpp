@@ -8,18 +8,18 @@
 #include <vector>
 
 namespace color {
-const auto kColorRed = IM_COL32(255, 0, 0, 255);
-const auto kColorGreen = IM_COL32(0, 255, 0, 255);
-const auto kColorBlue = IM_COL32(0, 0, 255, 255);
-const auto kColorOrange = IM_COL32(255, 128, 0, 255);
-const auto kColorLightGreen = IM_COL32(0, 255, 128, 255);
-const auto kColorPurple = IM_COL32(128, 0, 255, 255);
+const ImU32 kColorRed = IM_COL32(255, 0, 0, 255);
+const ImU32 kColorGreen = IM_COL32(0, 255, 0, 255);
+const ImU32 kColorBlue = IM_COL32(0, 0, 255, 255);
+const ImU32 kColorOrange = IM_COL32(255, 128, 0, 255);
+const ImU32 kColorLightGreen = IM_COL32(0, 255, 128, 255);
+const ImU32 kColorPurple = IM_COL32(128, 0, 255, 255);
 }  // namespace color
 
 struct TileInfp {
     ImU32 color;
     const std::string name;
-};
+};s
 
 void TilePanel::set_button(const std::string& iId, ImU32 color) {
     ImGui::PushStyleColor(ImGuiCol_Button, color);         // Normal
@@ -28,7 +28,7 @@ void TilePanel::set_button(const std::string& iId, ImU32 color) {
     ImVec2 button_size(32, 32);  // Set a fixed size for the buttons
 
     if (ImGui::Button(iId.c_str(), button_size)) { /* select brick */
-        cur_color = color;      // Set current color to red
+        cur_color = color;                         // Set current color to red
     }
     ImGui::PopStyleColor(3);  // Restore the 3 pushed colors
 }
