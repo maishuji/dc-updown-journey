@@ -24,6 +24,7 @@ struct Editor::PImpl {
     bool running = true;
     bool selecting = false;
     bool selection_done = false;
+    float ui_scale = 2.0f;
     ImVec2 selection_start;
     ImVec2 selection_end;
     size_t row_cnt = 20;
@@ -31,6 +32,7 @@ struct Editor::PImpl {
     std::vector<Cell> tiles;
     TilePanel tile_panel;
     std::string last_export_path;
+    ImGuiStyle original_style;
 };
 
 Editor::Editor() : pimpl(std::make_unique<PImpl>()) { pimpl->running = true; }
@@ -89,6 +91,13 @@ void Editor::import_tilemap_json(const std::string &import_path) {
     }
 }
 
+void Editor::new_tilemap(int rows, int cols) noexcept {
+    pimpl->row_cnt = static_cast<size_t>(rows);
+    pimpl->col_cnt = static_cast<size_t>(cols);
+    pimpl->tiles.clear();
+    pimpl->tiles.resize(pimpl->row_cnt * pimpl->col_cnt);
+}
+
 void Editor::init() {
     InitWindow(800, 600, "UDJourney Editor");
     SetWindowState(FLAG_WINDOW_RESIZABLE);
@@ -98,12 +107,15 @@ void Editor::init() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
-    (void)io;
+
+    io.FontGlobalScale = 2.0f;  // Set global font scale
+    pimpl->original_style = ImGui::GetStyle();
 
     ImGui::StyleColorsDark();
 
     // Initialize OpenGL3 backend
     ImGui_ImplOpenGL3_Init("#version 330");
+    ImGui::GetStyle().ScaleAllSizes(pimpl->ui_scale);
 
     pimpl->tiles.reserve(pimpl->row_cnt * pimpl->col_cnt);
     for (size_t i = 0; i < pimpl->row_cnt * pimpl->col_cnt; ++i) {
@@ -153,8 +165,36 @@ void Editor::run() {
                         ".json",
                         config);
                 }
+                if (ImGui::MenuItem("New", "Ctrl+N")) {
+                    std::cout << "Opening file dialog..." << std::endl;
+                }
                 ImGui::EndMenu();
             }
+
+            if (ImGui::BeginMenu("Settings")) {
+                // ...inside ImGui::BeginMenu("File")...
+                if (ImGui::BeginMenu("UI Scale")) {
+                    float scales[] = {1.0f, 1.5f, 2.0f, 2.5f, 3.0f};
+                    for (float scale : scales) {
+                        char label[16];
+                        snprintf(label, sizeof(label), "x%.1f", scale);
+                        if (ImGui::MenuItem(
+                                label, nullptr, pimpl->ui_scale == scale)) {
+                            pimpl->ui_scale = scale;
+                            ImGuiIO &io = ImGui::GetIO();
+                            io.FontGlobalScale = scale;
+                            ImGui::GetStyle() =
+                                pimpl->original_style;  // Reset to original
+                                                        // before scaling
+                            ImGui::GetStyle().ScaleAllSizes(scale);
+                            pimpl->tile_panel.set_scale(scale);
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenu();
+            }
+
             ImGui::EndMainMenuBar();
         }
 
