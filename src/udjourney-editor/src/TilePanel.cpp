@@ -19,7 +19,7 @@ const ImU32 kColorPurple = IM_COL32(128, 0, 255, 255);
 struct TileInfp {
     ImU32 color;
     const std::string name;
-};s
+};
 
 void TilePanel::set_button(const std::string& iId, ImU32 color) {
     ImGui::PushStyleColor(ImGuiCol_Button, color);         // Normal
@@ -27,8 +27,10 @@ void TilePanel::set_button(const std::string& iId, ImU32 color) {
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, color);   // Clicked
     ImVec2 button_size(32, 32);  // Set a fixed size for the buttons
 
-    if (ImGui::Button(iId.c_str(), button_size)) { /* select brick */
-        cur_color = color;                         // Set current color to red
+    if (ImGui::Button(iId.c_str(),
+                      ImVec2(button_size.x * scale,
+                             button_size.y * scale))) { /* select brick */
+        cur_color = color;  // Set current color to red
     }
     ImGui::PopStyleColor(3);  // Restore the 3 pushed colors
 }
