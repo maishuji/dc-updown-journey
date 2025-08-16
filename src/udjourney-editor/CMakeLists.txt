@@ -51,7 +51,7 @@ add_executable(udjourney_editor
   src/main.cpp
   src/Editor.cpp
   src/TilePanel.cpp
-
+  src/strategies/level/BlankLevelStrategy.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -77,6 +77,7 @@ enable_testing()
 add_executable(tilepanel_tests
   tests/test_tilepanel.cpp
   src/TilePanel.cpp
+  src/strategies/level/BlankLevelStrategy.cpp
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
   ${imgui_SOURCE_DIR}/imgui_tables.cpp
