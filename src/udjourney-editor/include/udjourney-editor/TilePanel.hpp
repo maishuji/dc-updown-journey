@@ -1,4 +1,5 @@
 // Copyright 2025 Quentin Cartier
+#pragma once+
 #include <imgui.h>
 
 #include <string>

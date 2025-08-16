@@ -14,11 +14,9 @@
 
 #include "ImGuiFileDialog.h"
 #include "raylib/raylib.h"
+#include "udjourney-editor/Level.hpp"
 #include "udjourney-editor/TilePanel.hpp"
-
-struct Cell {
-    ImU32 color = IM_COL32(2550, 255, 255, 255);  // Default color for the cell
-};
+#include "udjourney-editor/strategies/level/LevelCreationStrategy.hpp"
 
 struct Editor::PImpl {
     bool running = true;
@@ -29,10 +27,11 @@ struct Editor::PImpl {
     ImVec2 selection_end;
     size_t row_cnt = 20;
     size_t col_cnt = 20;
-    std::vector<Cell> tiles;
+    Level level;
     TilePanel tile_panel;
     std::string last_export_path;
     ImGuiStyle original_style;
+    std::unique_ptr<LevelCreationStrategy> level_creation_strategy = nullptr;
 };
 
 Editor::Editor() : pimpl(std::make_unique<PImpl>()) { pimpl->running = true; }
@@ -42,15 +41,20 @@ Editor::~Editor() {
     shutdown();
 }
 
+void Editor::set_level_creation_strategy(
+    std::unique_ptr<LevelCreationStrategy> strategy) {
+    pimpl->level_creation_strategy = std::move(strategy);
+}
+
 void Editor::export_tilemap_json(const std::string &export_path) {
     nlohmann::json jmap;
     jmap["rows"] = pimpl->row_cnt;
     jmap["cols"] = pimpl->col_cnt;
     jmap["tiles"] = nlohmann::json::array();
-    for (size_t i = 0; i < pimpl->tiles.size(); ++i) {
+    for (size_t i = 0; i < pimpl->level.tiles.size(); ++i) {
         size_t row = i / pimpl->col_cnt;
         size_t col = i % pimpl->col_cnt;
-        ImU32 color = pimpl->tiles[i].color;
+        ImU32 color = pimpl->level.tiles[i].color;
         jmap["tiles"].push_back({{"row", row}, {"col", col}, {"color", color}});
     }
     std::ofstream out(export_path);
@@ -72,8 +76,8 @@ void Editor::import_tilemap_json(const std::string &import_path) {
 
     pimpl->row_cnt = jmap["rows"].get<size_t>();
     pimpl->col_cnt = jmap["cols"].get<size_t>();
-    pimpl->tiles.clear();
-    pimpl->tiles.reserve(pimpl->row_cnt * pimpl->col_cnt);
+    pimpl->level.clear();
+    pimpl->level.reserve(pimpl->row_cnt * pimpl->col_cnt);
 
     for (const auto &tile : jmap["tiles"]) {
         size_t row = tile["row"].get<size_t>();
@@ -86,7 +90,7 @@ void Editor::import_tilemap_json(const std::string &import_path) {
                       << ") with color: " << color << std::endl;
             Cell cell;
             cell.color = color;
-            pimpl->tiles.push_back(cell);
+            pimpl->level.push_back(cell);
         }
     }
 }
@@ -94,12 +98,12 @@ void Editor::import_tilemap_json(const std::string &import_path) {
 void Editor::new_tilemap(int rows, int cols) noexcept {
     pimpl->row_cnt = static_cast<size_t>(rows);
     pimpl->col_cnt = static_cast<size_t>(cols);
-    pimpl->tiles.clear();
-    pimpl->tiles.resize(pimpl->row_cnt * pimpl->col_cnt);
+    pimpl->level.clear();
+    pimpl->level.resize(pimpl->row_cnt, pimpl->col_cnt);
 }
 
 void Editor::init() {
-    InitWindow(800, 600, "UDJourney Editor");
+    InitWindow(1200, 800, "UDJourney Editor");
     SetWindowState(FLAG_WINDOW_RESIZABLE);
     SetTargetFPS(60);
 
@@ -117,9 +121,9 @@ void Editor::init() {
     ImGui_ImplOpenGL3_Init("#version 330");
     ImGui::GetStyle().ScaleAllSizes(pimpl->ui_scale);
 
-    pimpl->tiles.reserve(pimpl->row_cnt * pimpl->col_cnt);
+    pimpl->level.reserve(pimpl->row_cnt * pimpl->col_cnt);
     for (size_t i = 0; i < pimpl->row_cnt * pimpl->col_cnt; ++i) {
-        pimpl->tiles.push_back(Cell());
+        pimpl->level.push_back(Cell());
     }
 }
 
@@ -167,6 +171,14 @@ void Editor::run() {
                 }
                 if (ImGui::MenuItem("New", "Ctrl+N")) {
                     std::cout << "Opening file dialog..." << std::endl;
+
+                    if (pimpl->level_creation_strategy) {
+                        pimpl->level_creation_strategy->create(
+                            pimpl->level, pimpl->col_cnt, pimpl->row_cnt);
+                    } else {
+                        new_tilemap(20,
+                                    20);  // Default to 20x20 if no strategy set
+                    }
                 }
                 ImGui::EndMenu();
             }
@@ -225,10 +237,15 @@ void Editor::run() {
         pimpl->tile_panel.draw();
 
         // Set up the main scene view
-        ImGui::SetNextWindowPos(ImVec2(150, 0),
+
+        auto offsetX = +300.0f;  // Offset for the scene view
+        auto offsetY = ImGui::GetFrameHeight();
+
+        ImGui::SetNextWindowPos(ImVec2(offsetX, offsetY),
                                 ImGuiCond_Always);  // adjust offset
         ImGui::SetNextWindowSize(
-            ImVec2(io.DisplaySize.x - 150, io.DisplaySize.y), ImGuiCond_Always);
+            ImVec2(io.DisplaySize.x - offsetX, io.DisplaySize.y - offsetY),
+            ImGuiCond_Always);
 
         ImGui::Begin("Scene View",
                      nullptr,
@@ -254,7 +271,7 @@ void Editor::run() {
                 draw_list->AddRectFilled(
                     top_left,
                     bottom_right,
-                    pimpl->tiles[y * pimpl->col_cnt + x].color);
+                    pimpl->level.tiles[y * pimpl->col_cnt + x].color);
                 draw_list->AddRect(
                     top_left, bottom_right, IM_COL32(200, 200, 200, 255));
             }
@@ -317,7 +334,7 @@ void Editor::run() {
                         tile_bottom_right.x <= p_max.x &&
                         tile_top_left.y >= p_min.y &&
                         tile_bottom_right.y <= p_max.y) {
-                        pimpl->tiles[y * pimpl->col_cnt + x].color =
+                        pimpl->level.tiles[y * pimpl->col_cnt + x].color =
                             pimpl->tile_panel
                                 .get_current_color();  // Highlight color
 
