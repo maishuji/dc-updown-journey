@@ -1,3 +1,4 @@
+// Copyright 2025 Quentin Cartier
 #pragma once
 
 #include <imgui.h>
@@ -11,23 +12,23 @@ struct Cell {
 
 struct Level {
     std::vector<Cell> tiles;
-    size_t rows = 0;
-    size_t cols = 0;
+    size_t row_cnt = 0;
+    size_t col_cnt = 0;
 
     void clear() {
         tiles.clear();
-        rows = 0;
-        cols = 0;
+        row_cnt = 0;
+        col_cnt = 0;
     }
 
     void resize(size_t new_rows, size_t new_cols) {
-        rows = new_rows;
-        cols = new_cols;
-        tiles.resize(rows * cols);
+        row_cnt = new_rows;
+        col_cnt = new_cols;
+        tiles.resize(row_cnt * col_cnt);
     }
 
     void push_back(const Cell& cell) {
-        if (tiles.size() < rows * cols) {
+        if (tiles.size() < row_cnt * col_cnt) {
             tiles.push_back(cell);
         } else {
             std::cerr << "Cannot add more cells than the defined size."

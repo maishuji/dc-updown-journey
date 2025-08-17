@@ -1,5 +1,5 @@
 // Copyright 2025 Quentin Cartier
-#pragma once+
+#pragma once
 #include <imgui.h>
 
 #include <string>
