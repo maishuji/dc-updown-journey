@@ -1,3 +1,4 @@
+// Copyright 2025 Quentin Cartier
 #pragma once
 #include "udjourney-editor/strategies/level/LevelCreationStrategy.hpp"
 
