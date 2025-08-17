@@ -1,6 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 #include <memory>
+
 #include "udjourney-editor/strategies/level/LevelCreationStrategy.hpp"
 
 class Editor {
@@ -14,7 +15,8 @@ class Editor {
 
     void new_tilemap(int rows, int cols) noexcept;
 
-    void set_level_creation_strategy(std::unique_ptr<LevelCreationStrategy> strategy);
+    void set_level_creation_strategy(
+        std::unique_ptr<LevelCreationStrategy> strategy);
 
  private:
     void export_tilemap_json(const std::string& export_path);
