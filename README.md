@@ -1,4 +1,7 @@
 # Updown Journey Project
+
+![Project Logo](logo.png)
+
 An independent 2D game currently in development for the Sega Dreamcast, following the journey of a human character traveling from top to bottom. 
 
 ## Project Structure Diagram
