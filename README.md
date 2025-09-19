@@ -1,6 +1,26 @@
 # Updown Journey Project
 An independent 2D game currently in development for the Sega Dreamcast, following the journey of a human character traveling from top to bottom. 
 
+## Project Structure Diagram
+
+```mermaid
+%%{init: {"theme": "forest"}}%%
+flowchart LR
+    main[main.cpp] --> Game
+
+    Game --> Player
+    Game --> Platform
+    Game --> Bonus
+    Game --> ScoreHistory
+    Game --> CoreUtils
+
+    Game --> HUD
+    Game --> Managers
+    Game --> Events
+    Game --> Interfaces
+    Game --> Assets
+```
+
 ## Known issues
 
 ##### Ninja generator issue
