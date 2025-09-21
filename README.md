@@ -4,6 +4,11 @@
 
 An independent 2D game currently in development for the Sega Dreamcast, following the journey of a human character traveling from top to bottom. 
 
+
+## Status
+
+![CI](https://github.com/maishuji/dc-updown-journey/blob/main/.github/workflows/github-actions.yml/badge.svg)
+
 ## Project Structure Diagram
 
 ```mermaid
