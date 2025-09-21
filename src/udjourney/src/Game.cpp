@@ -31,6 +31,25 @@
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
 
+struct Resolution {
+    int width;
+    int height;
+    const char *label;
+};
+
+// Add these at the top or in your Game class
+const int kBaseWidth = 640;
+const int kBaseHeight = 480;
+
+const std::vector<Resolution> kResolutions = {{640, 480, "640x480"},
+                                              {800, 600, "800x600"},
+                                              {1280, 720, "1280x720"},
+                                              {1920, 1080, "1920x1080"},
+                                              {2560, 1440, "2560x1440"},
+                                              {3840, 2160, "4K"}};
+
+int current_resolution_idx = 0;  // Default to first resolution
+
 enum class ActorType : uint8_t {
     PLAYER = 0,
     PLATFORM = 1,
@@ -176,6 +195,9 @@ Game::Game(int iWidth, int iHeight) : IGame() {
 }
 
 void Game::run() {
+#ifndef PLATFORM_DREAMCAST
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+#endif
     InitWindow(static_cast<int>(m_rect.width),
                static_cast<int>(m_rect.height),
                "Up-Down Journey");
@@ -243,6 +265,23 @@ void Game::process_input() {
         is_running = false;
         return;
     }
+    #ifndef PLATFORM_DREAMCAST
+    // Press F1/F2 to cycle through resolutions
+    if (IsKeyPressed(KEY_F1)) {
+        current_resolution_idx =
+            (current_resolution_idx + 1) % kResolutions.size();
+        SetWindowSize(kResolutions[current_resolution_idx].width,
+                      kResolutions[current_resolution_idx].height);
+    }
+    if (IsKeyPressed(KEY_F2)) {
+        current_resolution_idx =
+            (current_resolution_idx - 1 + kResolutions.size()) %
+            kResolutions.size();
+        SetWindowSize(kResolutions[current_resolution_idx].width,
+                      kResolutions[current_resolution_idx].height);
+    }
+    #endif
+
     // Press 'B' to quit
     bool bPressed = input_mapping.pressed_B();
     if (bPressed) {
@@ -320,6 +359,19 @@ void Game::draw() const {
     BeginDrawing();
     ClearBackground(BLACK);  // Clear the background with a color
 
+    // Calculate scale factor
+    float scale_x = GetScreenWidth() / static_cast<float>(kBaseWidth);
+    float scale_y = GetScreenHeight() / static_cast<float>(kBaseHeight);
+    float scale = std::min(scale_x, scale_y);  // Uniform scaling
+
+    // Center the scene if window is not proportional
+    float offset_x = (GetScreenWidth() - kBaseWidth * scale) * 0.5F;
+    float offset_y = (GetScreenHeight() - kBaseHeight * scale) * 0.5F;
+
+    rlPushMatrix();
+    rlTranslatef(offset_x, offset_y, 0);
+    rlScalef(scale, scale, 1.0F);
+
     // Draw the rectangle
     std::stringstream str_stream;
 
@@ -349,6 +401,10 @@ void Game::draw() const {
             break;
     }
     m_hud_manager.draw();
+
+    rlPopMatrix();
+    DrawText(kResolutions[current_resolution_idx].label, 10, 10, 20, YELLOW);
+
     EndDrawing();
 }
 
