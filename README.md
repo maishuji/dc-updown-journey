@@ -7,7 +7,7 @@ An independent 2D game currently in development for the Sega Dreamcast, followin
 
 ## Status
 
-![CI](https://github.com/maishuji/dc-updown-journey/blob/main/.github/workflows/github-actions.yml/badge.svg)
+![CI](https://github.com/maishuji/dc-updown-journey/workflows/github-actions.yml/badge.svg)
 
 ## Project Structure Diagram
 
