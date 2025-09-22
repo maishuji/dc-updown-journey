@@ -7,11 +7,18 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/platform/behavior_strategies/PlatformBehaviorStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
+
+enum class PlatformFeature : uint8_t {
+    NONE = 0,
+    SPIKES = 1,
+    // Add more features here
+};
 
 class Platform : public IActor {
  public:
@@ -50,11 +57,14 @@ class Platform : public IActor {
     void move(float iValX, float iValY) noexcept;
     void resize(float iNewWidth, float iNewHeight) noexcept;
 
+    void add_feature(PlatformFeature feature);
+    bool has_feature(PlatformFeature feature) const;
+
  private:
     float m_delta_x = 0.0F;
     Rectangle m_rect;
     Color m_color = BLUE;
     bool m_repeated_y = false;
     std::unique_ptr<PlatformBehaviorStrategy> m_behavior;
+    std::vector<PlatformFeature> m_features;
 };
-

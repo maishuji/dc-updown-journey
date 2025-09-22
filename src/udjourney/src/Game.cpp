@@ -129,6 +129,10 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
                 static_cast<Platform *>(res.back().get())
                     ->set_behavior(std::make_unique<HorizontalBehaviorStrategy>(
                         speed_x, max_offset));
+                if (std::rand() % 100 < 80) {
+                    static_cast<Platform *>(res.back().get())
+                        ->add_feature(PlatformFeature::SPIKES);
+                }
             } else if (ra2 % 100 < 45) {
                 // 20% OscillatingSizeBehaviorStrategy
                 float speed_x =
@@ -265,7 +269,7 @@ void Game::process_input() {
         is_running = false;
         return;
     }
-    #ifndef PLATFORM_DREAMCAST
+#ifndef PLATFORM_DREAMCAST
     // Press F1/F2 to cycle through resolutions
     if (IsKeyPressed(KEY_F1)) {
         current_resolution_idx =
@@ -280,7 +284,7 @@ void Game::process_input() {
         SetWindowSize(kResolutions[current_resolution_idx].width,
                       kResolutions[current_resolution_idx].height);
     }
-    #endif
+#endif
 
     // Press 'B' to quit
     bool bPressed = input_mapping.pressed_B();

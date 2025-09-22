@@ -2,6 +2,8 @@
 
 #include "udjourney/platform/Platform.hpp"
 
+#include <algorithm>
+
 #include "udjourney/interfaces/IGame.hpp"
 
 Platform::Platform(const IGame &iGame, Rectangle iRect, Color iColor,
@@ -20,6 +22,22 @@ void Platform::draw() const {
     rect.y -= game.get_rectangle().y;
 
     DrawRectangleRec(rect, m_color);
+    Color color_red = RED;
+
+    if (has_feature(PlatformFeature::SPIKES)) {
+        DrawRectangleLinesEx(rect, 1.0F, color_red);
+
+        // Draw spikes on top of the platform
+        float spike_width = rect.width / 8.0f;
+        for (int i = 0; i < 8; ++i) {
+            float x = rect.x + i * spike_width;
+            DrawTriangle(Vector2{x, rect.y},
+
+                         Vector2{x + spike_width, rect.y},
+                         Vector2{x + spike_width / 2, rect.y - 20},
+                         RED);
+        }
+    }
 }
 
 void Platform::update(float iDelta) {
@@ -42,4 +60,15 @@ void Platform::resize(float iNewWidth, float iNewHeight) noexcept {
         m_rect.width = iNewWidth;
         m_rect.height = iNewHeight;
     }
+}
+
+void Platform::add_feature(PlatformFeature feature) {
+    if (std::find(m_features.begin(), m_features.end(), feature) ==
+        m_features.end())
+        m_features.push_back(feature);
+}
+
+bool Platform::has_feature(PlatformFeature feature) const {
+    return std::find(m_features.begin(), m_features.end(), feature) !=
+           m_features.end();
 }
