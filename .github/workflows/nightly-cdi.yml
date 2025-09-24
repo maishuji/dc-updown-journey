@@ -1,0 +1,64 @@
+name: Nightly CDI
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write  # required to create/update releases
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    container:
+      image: maishuji/dc-kos-image:14.2.1-dev-01mar25-kp01mar25-gl01mar25
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the repository
+        shell: bash
+        run: |
+          echo " 🫣 Building..."
+          source /opt/toolchains/dc/kos/environ.sh
+          mkdir -p build
+          cd build
+          cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/dreamcast.cmake
+          make
+          echo " 👏 Build completed"
+
+      # out/ is at repo root; prefer that over build/**
+      - name: Locate CDI artifact
+        id: find_cdi
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s globstar nullglob
+          # Prefer ./out/**, then ./out, then ./build/**, then anywhere (depth-limited)
+          candidates=(out/**/*.cdi out/*.cdi build/**/*.cdi **/*.cdi)
+          cdi_path=""
+          for f in "${candidates[@]}"; do
+            if [[ -f "$f" ]]; then cdi_path="$f"; break; fi
+          done
+          if [[ -z "$cdi_path" ]]; then
+            # As a last resort, try find with a sane depth
+            cdi_path=$(find . -maxdepth 5 -type f -name "*.cdi" | head -n1 || true)
+          fi
+          if [[ -z "$cdi_path" ]]; then
+            echo "No .cdi file found. Expected something like out/updown-journey.cdi." >&2
+            exit 1
+          fi
+          echo "cdi=$cdi_path" >> "$GITHUB_OUTPUT"
+          echo "Found CDI at: $cdi_path"
+
+      - name: Publish/overwrite Nightly release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly
+          name: Nightly
+          prerelease: true
+          body: Auto-updated on merge to main
+          files: ${{ steps.find_cdi.outputs.cdi }}
+          overwrite: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

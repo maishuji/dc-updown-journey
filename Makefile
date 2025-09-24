@@ -1,7 +1,7 @@
 DC_IP ?= 192.168.0.85
 
 run-dc:
-	dc-tool-ip -t $(DC_IP) -x build/Debug/src/udjourney/upown-journey.elf
+	dc-tool-ip -t $(DC_IP) -x build/Debug/src/udjourney/updown-journey.elf
 
 lint:
 	cpplint --filter=-build/c++11,-runtime/references,-build/header_guard --recursive src/

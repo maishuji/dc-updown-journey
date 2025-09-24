@@ -5,7 +5,7 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
 endif()
 
 
-set(TARGET_NAME "upown-journey")
+set(TARGET_NAME "updown-journey")
 add_executable(${TARGET_NAME} 
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/Platform.cpp
