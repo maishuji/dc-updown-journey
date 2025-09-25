@@ -3,6 +3,8 @@
 #include "udjourney/platform/Platform.hpp"
 
 #include <algorithm>
+#include <any>
+#include <map>
 
 #include "udjourney/interfaces/IGame.hpp"
 
@@ -14,6 +16,15 @@ Platform::Platform(const IGame &iGame, Rectangle iRect, Color iColor,
     m_repeated_y(iIsRepeatedY),
     m_behavior(std::make_unique<StaticBehaviorStrategy>()) {}
 
+Rectangle Platform::get_drawing_rect() const {
+    auto rect = m_rect;
+    const auto &game = get_game();
+    // Convert to screen coordinates
+    rect.x -= game.get_rectangle().x;
+    rect.y -= game.get_rectangle().y;
+    return rect;
+}
+
 void Platform::draw() const {
     auto rect = m_rect;
     const auto &game = get_game();
@@ -24,19 +35,8 @@ void Platform::draw() const {
     DrawRectangleRec(rect, m_color);
     Color color_red = RED;
 
-    if (has_feature(PlatformFeature::SPIKES)) {
-        DrawRectangleLinesEx(rect, 1.0F, color_red);
-
-        // Draw spikes on top of the platform
-        float spike_width = rect.width / 8.0f;
-        for (int i = 0; i < 8; ++i) {
-            float x = rect.x + i * spike_width;
-            DrawTriangle(Vector2{x, rect.y},
-
-                         Vector2{x + spike_width, rect.y},
-                         Vector2{x + spike_width / 2, rect.y - 20},
-                         RED);
-        }
+    for (const auto &feature : m_features) {
+        feature->draw(*this);
     }
 }
 
@@ -62,13 +62,15 @@ void Platform::resize(float iNewWidth, float iNewHeight) noexcept {
     }
 }
 
-void Platform::add_feature(PlatformFeature feature) {
-    if (std::find(m_features.begin(), m_features.end(), feature) ==
-        m_features.end())
-        m_features.push_back(feature);
-}
-
-bool Platform::has_feature(PlatformFeature feature) const {
-    return std::find(m_features.begin(), m_features.end(), feature) !=
-           m_features.end();
+void Platform::add_feature(std::unique_ptr<PlatformFeatureBase> feature) {
+    int_fast8_t new_type = feature->get_type();
+    auto it =
+        std::find_if(m_features.begin(),
+                     m_features.end(),
+                     [new_type](const std::unique_ptr<PlatformFeatureBase> &f) {
+                         return f->get_type() == new_type;
+                     });
+    if (it == m_features.end()) {
+        m_features.push_back(std::move(feature));
+    }
 }

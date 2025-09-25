@@ -5,6 +5,8 @@
 #include <raylib/raymath.h>
 #include <raylib/rlgl.h>
 
+#include <any>
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -12,13 +14,8 @@
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/platform/behavior_strategies/PlatformBehaviorStrategy.hpp"
+#include "udjourney/platform/features/PlatformFeatureBase.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
-
-enum class PlatformFeature : uint8_t {
-    NONE = 0,
-    SPIKES = 1,
-    // Add more features here
-};
 
 class Platform : public IActor {
  public:
@@ -26,6 +23,7 @@ class Platform : public IActor {
              bool iIsRepeatedY = false);
     void draw() const override;
     void update(float delta) override;
+    Rectangle get_drawing_rect() const;
 
     [[nodiscard]] float get_dx() const noexcept { return m_delta_x; }
     void process_input() override;
@@ -57,8 +55,7 @@ class Platform : public IActor {
     void move(float iValX, float iValY) noexcept;
     void resize(float iNewWidth, float iNewHeight) noexcept;
 
-    void add_feature(PlatformFeature feature);
-    bool has_feature(PlatformFeature feature) const;
+    void add_feature(std::unique_ptr<PlatformFeatureBase> feature);
 
  private:
     float m_delta_x = 0.0F;
@@ -66,5 +63,5 @@ class Platform : public IActor {
     Color m_color = BLUE;
     bool m_repeated_y = false;
     std::unique_ptr<PlatformBehaviorStrategy> m_behavior;
-    std::vector<PlatformFeature> m_features;
+    std::vector<std::unique_ptr<PlatformFeatureBase>> m_features;
 };

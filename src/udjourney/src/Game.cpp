@@ -28,6 +28,8 @@
 #include "udjourney/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
+#include "udjourney/platform/features/PlatformFeatureBase.hpp"
+#include "udjourney/platform/features/SpikeFeature.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
 
@@ -131,7 +133,8 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
                         speed_x, max_offset));
                 if (std::rand() % 100 < 80) {
                     static_cast<Platform *>(res.back().get())
-                        ->add_feature(PlatformFeature::SPIKES);
+                        ->add_feature(
+                            std::move(std::make_unique<SpikeFeature>()));
                 }
             } else if (ra2 % 100 < 45) {
                 // 20% OscillatingSizeBehaviorStrategy
