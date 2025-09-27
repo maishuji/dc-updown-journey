@@ -57,7 +57,20 @@ class Platform : public IActor {
 
     void add_feature(std::unique_ptr<PlatformFeatureBase> feature);
 
+    auto get_features() const
+        -> const std::vector<std::unique_ptr<PlatformFeatureBase>> & {
+        return m_features;
+    }
+
+    auto set_collidable(bool iCollidable) noexcept -> void {
+        m_collidable = iCollidable;
+    }
+    [[nodiscard]] auto is_collidable() const noexcept -> bool {
+        return m_collidable;
+    }
+
  private:
+    bool m_collidable = true;
     float m_delta_x = 0.0F;
     Rectangle m_rect;
     Color m_color = BLUE;

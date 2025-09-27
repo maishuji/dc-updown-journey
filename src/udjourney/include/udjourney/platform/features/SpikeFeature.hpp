@@ -3,12 +3,15 @@
 #include <raylib/raylib.h>
 
 #include "udjourney/interfaces/IActor.hpp"
+#include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/platform/features/PlatformFeatureBase.hpp"
 
 struct SpikeFeature : public PlatformFeatureBase {
     float height = 20.0f;  // Default spike height
     int damage = 1;        // Default damage
+    Rectangle collision_rect;
+    Color c = ORANGE;
 
     int_fast8_t get_type() const override {
         return 1;
@@ -28,9 +31,25 @@ struct SpikeFeature : public PlatformFeatureBase {
                          Vector2{x + spike_width / 2, rect.y - 20},
                          RED);
         }
+
+        DrawRectangleLinesEx(collision_rect, 1.0F, c);
     }
 
-    void handle_collision(Platform&,
-                          IActor&) const override { /* damage player */
+    void handle_collision(Platform& platform, IActor& actor) override {
+        /* damage player */
+
+        auto rect = platform.get_drawing_rect();
+        // Handle collision logic here, e.g., reduce player health
+        this->collision_rect =
+            Rectangle{rect.x, rect.y - height, rect.width, height};
+
+        auto r2 = platform.get_rectangle();
+        r2.y -= height;
+        if (CheckCollisionRecs(r2, actor.get_rectangle())) {
+            static_cast<Player&>(actor).notify("12;1");
+            c = GREEN;
+        } else {
+            c = ORANGE;
+        }
     }
 };
