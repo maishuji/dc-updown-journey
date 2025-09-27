@@ -25,6 +25,7 @@ class Player : public IActor, public IObservable {
     void process_input() override;
     void resolve_collision(const IActor &iActor) noexcept;
     void handle_collision(
+
         const std::vector<std::unique_ptr<IActor>> &iPlatforms) noexcept;
     void set_rectangle(Rectangle iRect) override { this->r = iRect; }
     [[nodiscard]] Rectangle get_rectangle() const override { return r; }
@@ -42,7 +43,16 @@ class Player : public IActor, public IObservable {
         return 0;
     }
 
+    void set_invicibility(float iDuration) noexcept {
+        m_invincibility_timer = iDuration;
+    }
+    [[nodiscard]] inline constexpr bool is_invincible() const noexcept {
+        return m_invincibility_timer > 0.0F;
+    }
+
  private:
+    float m_invincibility_timer = 0.0F;
+
     void _reset_jump() noexcept;
     Rectangle r;
     std::vector<IObserver *> observers;

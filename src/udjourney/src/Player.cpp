@@ -113,9 +113,20 @@ void Player::draw() const {
         DrawTexturePro(
             m_texture, src_rect, rect, Vector2{0.0F, 0.0F}, 0, WHITE);
     }
+
+    if (is_invincible()) {
+        // Draw a yellow border around the player when invincible
+        DrawRectangleLinesEx(rect, 3.0F, YELLOW);
+    }
 }
 
 void Player::update(float iDelta) {
+    if (m_invincibility_timer > 0.0F) {
+        m_invincibility_timer -= iDelta;
+    } else {
+        m_invincibility_timer = 0.0F;
+    }
+
     // Gravity
     r.y += 1;
     if (m_pimpl->grounded && m_pimpl->grounded_src != nullptr) {
@@ -256,6 +267,19 @@ void Player::handle_collision(
             }
             resolve_collision(*platform);
             tmp_colliding = true;
+        }
+
+        Platform *plat = dynamic_cast<Platform *>(platform.get());
+
+        if (plat) {
+            if (is_invincible()) {
+                // No collision when invincible
+                return;
+            }
+
+            for (const auto &feature : plat->get_features()) {
+                feature->handle_collision(*plat, *this);
+            }
         }
     }
     if (tmp_colliding) {

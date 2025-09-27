@@ -28,6 +28,8 @@
 #include "udjourney/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
+#include "udjourney/platform/features/PlatformFeatureBase.hpp"
+#include "udjourney/platform/features/SpikeFeature.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
 
@@ -129,6 +131,11 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
                 static_cast<Platform *>(res.back().get())
                     ->set_behavior(std::make_unique<HorizontalBehaviorStrategy>(
                         speed_x, max_offset));
+                if (std::rand() % 100 < 80) {
+                    static_cast<Platform *>(res.back().get())
+                        ->add_feature(
+                            std::move(std::make_unique<SpikeFeature>()));
+                }
             } else if (ra2 % 100 < 45) {
                 // 20% OscillatingSizeBehaviorStrategy
                 float speed_x =
@@ -265,7 +272,7 @@ void Game::process_input() {
         is_running = false;
         return;
     }
-    #ifndef PLATFORM_DREAMCAST
+#ifndef PLATFORM_DREAMCAST
     // Press F1/F2 to cycle through resolutions
     if (IsKeyPressed(KEY_F1)) {
         current_resolution_idx =
@@ -280,7 +287,7 @@ void Game::process_input() {
         SetWindowSize(kResolutions[current_resolution_idx].width,
                       kResolutions[current_resolution_idx].height);
     }
-    #endif
+#endif
 
     // Press 'B' to quit
     bool bPressed = input_mapping.pressed_B();
@@ -299,6 +306,14 @@ void Game::process_input() {
     // Pause / Unpause the game
     auto start_pressed = input_mapping.pressed_start();
     if (start_pressed) {
+        if (m_state == GameState::GAMEOVER) {
+            // Set a counter of invicibility for the player when starting a new
+            // game
+            player->set_invicibility(1.8F);
+            m_state = GameState::PLAY;
+            return;
+        }
+
         if (m_state == GameState::PLAY) {
             m_state = GameState::PAUSE;
         } else {
@@ -459,17 +474,19 @@ void Game::update() {
 
     double cur_update_time = GetTime();
     auto delta = static_cast<float>(cur_update_time - last_update_time);
-    m_bonus_manager.update(delta);
-    if (cur_update_time - last_update_time > kUpdateInterval) {
-        m_rect.y += 1;
-        for (auto &actor : m_actors) {
-            actor->update(delta);
-        }
-        player->update(delta);
-        last_update_time = cur_update_time;
-    }
 
-    player->handle_collision(m_actors);
+    if (m_state == GameState::PLAY) {
+        m_bonus_manager.update(delta);
+        if (cur_update_time - last_update_time > kUpdateInterval) {
+            m_rect.y += 1;
+            for (auto &actor : m_actors) {
+                actor->update(delta);
+            }
+            player->update(delta);
+            last_update_time = cur_update_time;
+        }
+        player->handle_collision(m_actors);
+    }
 
     m_hud_manager.update(delta);
 
@@ -554,6 +571,9 @@ void Game::on_notify(const std::string &iEvent) {
 
     switch (mode) {
         case kModeGameOuver: {
+            if (m_state == GameState::GAMEOVER) {
+                return;
+            }
             m_state = GameState::GAMEOVER;
             auto *comp = m_hud_manager.get_component_by_type("ScoreHUD");
             if (comp != nullptr) {
