@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <any>
 #include <map>
+#include <memory>
+#include <utility>
 
 #include "udjourney/interfaces/IGame.hpp"
 
