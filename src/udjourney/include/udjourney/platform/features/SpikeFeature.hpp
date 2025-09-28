@@ -3,6 +3,7 @@
 
 #include <raylib/raylib.h>
 
+#include "udjourney/core/Logger.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/platform/Platform.hpp"
@@ -37,8 +38,6 @@ struct SpikeFeature : public PlatformFeatureBase {
     }
 
     void handle_collision(Platform& platform, IActor& actor) override {
-        /* damage player */
-
         auto rect = platform.get_drawing_rect();
         // Handle collision logic here, e.g., reduce player health
         this->collision_rect =
