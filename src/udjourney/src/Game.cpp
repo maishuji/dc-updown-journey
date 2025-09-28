@@ -20,6 +20,7 @@
 #include "udjourney/Bonus.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/ScoreHistory.hpp"
+#include "udjourney/core/Logger.hpp"
 #include "udjourney/hud/DialogBoxHUD.hpp"
 #include "udjourney/hud/HUDComponent.hpp"
 #include "udjourney/hud/ScoreHUD.hpp"
@@ -236,7 +237,7 @@ void Game::run() {
     });
 
     dialog_hud->set_on_next_callback(
-        [this]() { std::cout << "Next page in dialog box" << std::endl; });
+        [this]() { Logger::info("Next page in dialog box"); });
 
     m_hud_manager.push_foreground_hud(std::move(dialog_hud));
 
@@ -598,7 +599,7 @@ void Game::on_notify(const std::string &iEvent) {
 
             // Parsing dash event
             std::getline(str_stream, token, ';');
-            std::cout << " dash event : " << token << std::endl;
+            Logger::debug(" dash event : %", token);
             if (std::optional<int16_t> dash_opt = extract_number_(token);
                 dash_opt.has_value()) {
                 dash_fud.dashable = dash_opt.value();
