@@ -14,12 +14,12 @@ namespace scene {
 
 Scene::Scene(const std::string& filename) { load_from_file(filename); }
 
-Rectangle Scene::tile_to_world_rect(int tile_x, int tile_y, int width_tiles,
-                                    int height_tiles) {
+Rectangle Scene::tile_to_world_rect(int tile_x, int tile_y, float width_tiles,
+                                    float height_tiles) {
     return Rectangle{static_cast<float>(tile_x) * kTileSize,
                      static_cast<float>(tile_y) * kTileSize,
-                     static_cast<float>(width_tiles) * kTileSize,
-                     static_cast<float>(height_tiles) * kTileSize};
+                     width_tiles * kTileSize,
+                     height_tiles * kTileSize};
 }
 
 Vector2 Scene::tile_to_world_pos(int tile_x, int tile_y) {
@@ -56,8 +56,8 @@ bool Scene::load_from_file(const std::string& filename) {
 
                 platform.tile_x = platform_json.value("x", 0);
                 platform.tile_y = platform_json.value("y", 0);
-                platform.width_tiles = platform_json.value("width", 1);
-                platform.height_tiles = platform_json.value("height", 1);
+                platform.width_tiles = platform_json.value("width", 1.0f);
+                platform.height_tiles = platform_json.value("height", 1.0f);
 
                 // Load behavior
                 std::string behavior_str =

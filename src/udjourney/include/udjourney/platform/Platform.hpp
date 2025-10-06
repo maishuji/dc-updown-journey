@@ -20,7 +20,8 @@
 class Platform : public IActor {
  public:
     Platform(const IGame &iGame, Rectangle iRect, Color iColor = BLUE,
-             bool iIsRepeatedY = false);
+             bool iIsRepeatedY = false, 
+             std::unique_ptr<PlatformReuseStrategy> reuseStrategy = nullptr);
     void draw() const override;
     void update(float delta) override;
     Rectangle get_drawing_rect() const;
@@ -39,8 +40,21 @@ class Platform : public IActor {
     [[nodiscard]] inline constexpr auto is_y_repeated() const noexcept -> bool {
         return m_repeated_y;
     }
-    inline void reuse(PlatformReuseStrategy &ioStrategy) noexcept {
-        ioStrategy.reuse(*this);
+    void reuse() noexcept {
+        if (m_reuse_strategy) {
+            m_reuse_strategy->reuse(*this);
+        } else {
+            // Default behavior: no reuse (level-based platform)
+            set_state(ActorState::CONSUMED);
+        }
+    }
+
+    void set_reuse_strategy(std::unique_ptr<PlatformReuseStrategy> strategy) {
+        m_reuse_strategy = std::move(strategy);
+    }
+
+    [[nodiscard]] auto has_reuse_strategy() const noexcept -> bool {
+        return m_reuse_strategy != nullptr;
     }
 
     void set_behavior(std::unique_ptr<PlatformBehaviorStrategy> ioBehavior) {
@@ -72,6 +86,7 @@ class Platform : public IActor {
  private:
     bool m_collidable = true;
     float m_delta_x = 0.0F;
+    std::unique_ptr<PlatformReuseStrategy> m_reuse_strategy;
     Rectangle m_rect;
     Color m_color = BLUE;
     bool m_repeated_y = false;

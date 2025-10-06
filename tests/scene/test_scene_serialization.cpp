@@ -82,6 +82,15 @@ class SceneSerializationTest : public ::testing::Test {
         spike_platform.features.push_back(PlatformFeatureType::Spikes);
         spike_platform.feature_params["damage"] = 2.7f;
         scene.add_platform(spike_platform);
+        
+        // Add platform with fractional dimensions
+        PlatformData fractional_platform;
+        fractional_platform.tile_x = 26;
+        fractional_platform.tile_y = 6;
+        fractional_platform.width_tiles = 2.5f;  // Fractional width
+        fractional_platform.height_tiles = 0.3f; // Fractional height
+        fractional_platform.behavior_type = PlatformBehaviorType::Static;
+        scene.add_platform(fractional_platform);
 
         return scene;
     }

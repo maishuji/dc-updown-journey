@@ -183,3 +183,62 @@ TEST_F(CoordinateConversionTest, PlayerSpawnScenarios) {
             << "World Y failed for: " << test.description;
     }
 }
+
+// Test fractional tile dimensions
+TEST_F(CoordinateConversionTest, FractionalTileDimensions) {
+    // Test 0.3 height platform (thin platform)
+    Rectangle thin_platform = Scene::tile_to_world_rect(5, 10, 4.0f, 0.3f);
+    EXPECT_FLOAT_EQ(thin_platform.x, 160.0f);      // 5 * 32
+    EXPECT_FLOAT_EQ(thin_platform.y, 320.0f);      // 10 * 32
+    EXPECT_FLOAT_EQ(thin_platform.width, 128.0f);  // 4 * 32
+    EXPECT_FLOAT_EQ(thin_platform.height, 9.6f);   // 0.3 * 32
+    
+    // Test 0.5 width platform (half-width)
+    Rectangle narrow_platform = Scene::tile_to_world_rect(2, 8, 0.5f, 2.0f);
+    EXPECT_FLOAT_EQ(narrow_platform.x, 64.0f);      // 2 * 32
+    EXPECT_FLOAT_EQ(narrow_platform.y, 256.0f);     // 8 * 32
+    EXPECT_FLOAT_EQ(narrow_platform.width, 16.0f);  // 0.5 * 32
+    EXPECT_FLOAT_EQ(narrow_platform.height, 64.0f); // 2 * 32
+    
+    // Test fractional dimensions for both width and height
+    Rectangle small_platform = Scene::tile_to_world_rect(0, 0, 1.5f, 0.25f);
+    EXPECT_FLOAT_EQ(small_platform.x, 0.0f);
+    EXPECT_FLOAT_EQ(small_platform.y, 0.0f);
+    EXPECT_FLOAT_EQ(small_platform.width, 48.0f);   // 1.5 * 32
+    EXPECT_FLOAT_EQ(small_platform.height, 8.0f);   // 0.25 * 32
+    
+    // Test larger fractional values
+    Rectangle large_fractional = Scene::tile_to_world_rect(3, 5, 2.75f, 1.8f);
+    EXPECT_FLOAT_EQ(large_fractional.x, 96.0f);      // 3 * 32
+    EXPECT_FLOAT_EQ(large_fractional.y, 160.0f);     // 5 * 32
+    EXPECT_FLOAT_EQ(large_fractional.width, 88.0f);  // 2.75 * 32
+    EXPECT_FLOAT_EQ(large_fractional.height, 57.6f); // 1.8 * 32
+}
+
+// Test win condition calculations for level design
+TEST_F(CoordinateConversionTest, WinConditionCalculations) {
+    // Test level1.json scenario: final platform at y=33, height=2
+    // Level height should be (33 + 2) * 32 = 1120 pixels
+    float final_platform_tile_y = 33.0f;
+    float final_platform_height_tiles = 2.0f;
+    float level_height_world = (final_platform_tile_y + final_platform_height_tiles) * kExpectedTileSize;
+    EXPECT_FLOAT_EQ(level_height_world, 1120.0f);
+    
+    // Test win condition thresholds
+    float win_threshold_98_percent = level_height_world * 0.98f;
+    float win_threshold_90_percent = level_height_world * 0.90f;
+    
+    EXPECT_FLOAT_EQ(win_threshold_98_percent, 1097.6f);  // New improved threshold
+    EXPECT_FLOAT_EQ(win_threshold_90_percent, 1008.0f);  // Old problematic threshold
+    
+    // Final platform starts at y=33*32=1056
+    float final_platform_start = final_platform_tile_y * kExpectedTileSize;
+    EXPECT_FLOAT_EQ(final_platform_start, 1056.0f);
+    
+    // Verify that 98% threshold requires player to be well onto the final platform
+    EXPECT_GT(win_threshold_98_percent, final_platform_start);  // Must be past platform start
+    EXPECT_LT(win_threshold_98_percent, level_height_world);    // But before very end
+    
+    // Verify that old 90% threshold was too early (before final platform)
+    EXPECT_LT(win_threshold_90_percent, final_platform_start);  // This was the problem!
+}

@@ -40,6 +40,9 @@ add_executable(${TARGET_NAME}
 if (NOT PLATFORM_DREAMCAST)
     message(STATUS "🎭 \t\tCopying assets from ${CMAKE_CURRENT_SOURCE_DIR}/romdisk to binary dir: ${CMAKE_CURRENT_BINARY_DIR}/assets")
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/romdisk/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/assets/)
+    
+    message(STATUS "🎮 \t\tCopying levels from ${CMAKE_SOURCE_DIR}/levels to binary dir: ${CMAKE_CURRENT_BINARY_DIR}/levels")
+    file(COPY ${CMAKE_SOURCE_DIR}/levels/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/levels/)
 endif()
 
 if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)

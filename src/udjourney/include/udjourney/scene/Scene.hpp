@@ -24,9 +24,9 @@ struct PlatformData {
     int tile_x;
     int tile_y;
 
-    // Size in tiles
-    int width_tiles = 1;
-    int height_tiles = 1;
+    // Size in tiles (supports fractional values like 0.3)
+    float width_tiles = 1.0f;
+    float height_tiles = 1.0f;
 
     // Behavior configuration
     PlatformBehaviorType behavior_type = PlatformBehaviorType::Static;
@@ -74,8 +74,8 @@ class Scene {
     }
 
     // Tile conversion
-    static Rectangle tile_to_world_rect(int tile_x, int tile_y, int width_tiles,
-                                        int height_tiles);
+    static Rectangle tile_to_world_rect(int tile_x, int tile_y,
+                                        float width_tiles, float height_tiles);
     static Vector2 tile_to_world_pos(int tile_x, int tile_y);
 
     // Constants

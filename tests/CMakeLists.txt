@@ -5,6 +5,7 @@ add_executable(updown_journey_tests
     scene/test_scene.cpp
     scene/test_scene_serialization.cpp
     scene/test_coordinate_conversion.cpp
+    scene/test_platform_reuse.cpp
     test_main.cpp
 )
 
@@ -28,6 +29,10 @@ target_include_directories(updown_journey_tests
 target_sources(updown_journey_tests
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src/udjourney/src/scene/Scene.cpp
+        ${CMAKE_SOURCE_DIR}/src/udjourney/src/platform/Platform.cpp
+        ${CMAKE_SOURCE_DIR}/src/udjourney/src/platform/reuse_strategies/RandomizePositionStrategy.cpp
+        ${CMAKE_SOURCE_DIR}/src/udjourney/src/platform/reuse_strategies/NoReuseStrategy.cpp
+        ${CMAKE_SOURCE_DIR}/src/udjourney/src/platform/behavior_strategies/PlatformBehaviorStrategy.cpp
 )
 
 # Set C++ standard

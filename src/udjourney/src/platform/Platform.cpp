@@ -11,11 +11,13 @@
 #include "udjourney/interfaces/IGame.hpp"
 
 Platform::Platform(const IGame &iGame, Rectangle iRect, Color iColor,
-                   bool iIsRepeatedY) :
+                   bool iIsRepeatedY, 
+                   std::unique_ptr<PlatformReuseStrategy> reuseStrategy) :
     IActor(iGame),
     m_rect(iRect),
     m_color(iColor),
     m_repeated_y(iIsRepeatedY),
+    m_reuse_strategy(std::move(reuseStrategy)),
     m_behavior(std::make_unique<StaticBehaviorStrategy>()) {}
 
 Rectangle Platform::get_drawing_rect() const {

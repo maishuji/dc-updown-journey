@@ -19,7 +19,7 @@
 #include "udjourney/managers/HUDManager.hpp"
 #include "udjourney/scene/Scene.hpp"
 
-enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER };
+enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER, WIN };
 
 class Game : public IGame, public IObserver {
  public:
@@ -35,9 +35,11 @@ class Game : public IGame, public IObserver {
     // Scene management
     bool load_scene(const std::string &filename);
     void create_platforms_from_scene();
+    void restart_level();
 
  private:
     void draw() const;
+    void draw_finish_line_() const;
 
     std::vector<std::unique_ptr<IActor>> m_pending_actors;
     std::vector<std::unique_ptr<IActor>> m_actors;
@@ -52,4 +54,5 @@ class Game : public IGame, public IObserver {
     HUDManager m_hud_manager;
     udjourney::core::events::EventDispatcher m_event_dispatcher;
     std::unique_ptr<udjourney::scene::Scene> m_current_scene;
+    float m_level_height = 0.0f;  // Track level height for win condition
 };
