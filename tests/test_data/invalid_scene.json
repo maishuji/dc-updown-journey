@@ -1,0 +1,19 @@
+{
+  "name": "Invalid Test Scene",
+  "player_spawn": {
+    "x": "not_a_number",
+    "y": 10
+  },
+  "platforms": [
+    {
+      "x": 5,
+      "y": 10,
+      "width": -1,
+      "height": 1,
+      "behavior": "unknown_behavior"
+    },
+    {
+      "missing_required_fields": true
+    }
+  ]
+}
