@@ -11,12 +11,13 @@
 #include <vector>
 
 #include "udjourney/ScoreHistory.hpp"
+#include "udjourney/core/events/EventDispatcher.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/interfaces/IObserver.hpp"
 #include "udjourney/managers/BonusManager.hpp"
 #include "udjourney/managers/HUDManager.hpp"
-#include "udjourney/core/events/EventDispatcher.hpp"
+#include "udjourney/scene/Scene.hpp"
 
 enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER };
 
@@ -30,6 +31,10 @@ class Game : public IGame, public IObserver {
     void process_input() override;
     void on_notify(const std::string &event) override;
     [[nodiscard]] Rectangle get_rectangle() const override { return m_rect; }
+
+    // Scene management
+    bool load_scene(const std::string &filename);
+    void create_platforms_from_scene();
 
  private:
     void draw() const;
@@ -46,4 +51,5 @@ class Game : public IGame, public IObserver {
     int m_score = 0;
     HUDManager m_hud_manager;
     udjourney::core::events::EventDispatcher m_event_dispatcher;
+    std::unique_ptr<udjourney::scene::Scene> m_current_scene;
 };

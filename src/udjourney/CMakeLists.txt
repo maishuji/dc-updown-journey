@@ -4,6 +4,18 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
     cmake_policy(SET CMP0135 NEW)
 endif()
 
+include(FetchContent)
+
+# Add nlohmann/json library
+if (NOT PLATFORM_DREAMCAST)
+    FetchContent_Declare(
+        nlohmann_json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG v3.11.3
+    )
+    FetchContent_MakeAvailable(nlohmann_json)
+endif()
+
 
 set(TARGET_NAME "updown-journey")
 add_executable(${TARGET_NAME} 
@@ -14,6 +26,7 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/HorizontalBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/scene/Scene.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/TextureManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/HUDManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/BonusManager.cpp
@@ -67,6 +80,6 @@ if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
 else()
     target_link_libraries(${TARGET_NAME} 
         PUBLIC 
-            raylib GL
+            raylib GL nlohmann_json::nlohmann_json
     )
 endif()
