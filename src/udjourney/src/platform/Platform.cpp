@@ -11,7 +11,7 @@
 #include "udjourney/interfaces/IGame.hpp"
 
 Platform::Platform(const IGame &iGame, Rectangle iRect, Color iColor,
-                   bool iIsRepeatedY, 
+                   bool iIsRepeatedY,
                    std::unique_ptr<PlatformReuseStrategy> reuseStrategy) :
     IActor(iGame),
     m_rect(iRect),

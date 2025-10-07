@@ -430,7 +430,7 @@ void draw_win_screen_() {
             255,
             0,
             (unsigned char)(128 + 127 * sin(celebration_timer * 2 + i))};
-        DrawText("*", (int)x, (int)y, 20, star_color);
+        DrawText("*", static_cast<int>(x), static_cast<int>(y), 20, star_color);
     }
 }
 
@@ -468,8 +468,8 @@ void Game::draw_finish_line_() const {
             const char *finish_text = "FINISH LINE";
             int text_width = MeasureText(finish_text, 16);
             DrawText(finish_text,
-                     (int)(game_rect.width - text_width - 10),
-                     (int)(line_y - 25),
+                     static_cast<int>(game_rect.width - text_width - 10),
+                     static_cast<int>(line_y - 25),
                      16,
                      MAGENTA);
         }
