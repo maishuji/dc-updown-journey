@@ -1,13 +1,14 @@
+// Copyright 2025 Quentin Cartier
 #pragma once
 
 #ifdef PLATFORM_DREAMCAST
 
-#include <cstdlib>
 #include <cerrno>
-#include <cstring>
 #include <climits>
 #include <cstdarg>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 // Provide missing C library functions for Dreamcast/KallistiOS
 
@@ -19,37 +20,41 @@ inline long double strtold(const char* str, char** endptr) noexcept {
 }
 
 // Fallback implementation of strtoull using strtoul
-inline unsigned long long strtoull(const char* str, char** endptr, int base) noexcept {
-    // For Dreamcast, we'll use the available strtoul and handle overflow gracefully
+inline unsigned long long strtoull(const char* str, char** endptr,
+                                   int base) noexcept {
+    // For Dreamcast, we'll use the available strtoul and handle overflow
+    // gracefully
     errno = 0;
     unsigned long result = strtoul(str, endptr, base);
-    
+
     // If we hit the limit of unsigned long, we've likely overflowed
     if (result == ULONG_MAX && errno == ERANGE) {
         // Return the max value we can represent
         return static_cast<unsigned long long>(result);
     }
-    
+
     return static_cast<unsigned long long>(result);
 }
 
-// Fallback implementation of strtoll using strtol  
+// Fallback implementation of strtoll using strtol
 inline long long strtoll(const char* str, char** endptr, int base) noexcept {
-    // For Dreamcast, we'll use the available strtol and handle overflow gracefully
+    // For Dreamcast, we'll use the available strtol and handle overflow
+    // gracefully
     errno = 0;
     long result = strtol(str, endptr, base);
-    
+
     // If we hit the limits of long, we've likely overflowed
     if ((result == LONG_MAX || result == LONG_MIN) && errno == ERANGE) {
         // Return the max/min value we can represent
         return static_cast<long long>(result);
     }
-    
+
     return static_cast<long long>(result);
 }
 
 // Fallback implementation for snprintf
-inline int snprintf(char* buffer, size_t count, const char* format, ...) noexcept {
+inline int snprintf(char* buffer, size_t count, const char* format,
+                    ...) noexcept {
     va_list args;
     va_start(args, format);
     int result = vsnprintf(buffer, count, format, args);
@@ -57,6 +62,6 @@ inline int snprintf(char* buffer, size_t count, const char* format, ...) noexcep
     return result;
 }
 
-} // namespace std
+}  // namespace std
 
-#endif // PLATFORM_DREAMCAST
+#endif  // PLATFORM_DREAMCAST
