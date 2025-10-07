@@ -6,15 +6,13 @@ endif()
 
 include(FetchContent)
 
-# Add nlohmann/json library
-if (NOT PLATFORM_DREAMCAST)
-    FetchContent_Declare(
-        nlohmann_json
-        GIT_REPOSITORY https://github.com/nlohmann/json.git
-        GIT_TAG v3.11.3
-    )
-    FetchContent_MakeAvailable(nlohmann_json)
-endif()
+# Add nlohmann/json library for all platforms (including Dreamcast)
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+)
+FetchContent_MakeAvailable(nlohmann_json)
 
 
 set(TARGET_NAME "updown-journey")
@@ -22,6 +20,7 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/Platform.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/reuse_strategies/RandomizePositionStrategy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/reuse_strategies/NoReuseStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/PlatformBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/HorizontalBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.cpp
@@ -74,10 +73,15 @@ if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
     target_compile_definitions(${TARGET_NAME}  PRIVATE PLATFORM_DREAMCAST=TRUE)
     target_link_libraries(${TARGET_NAME} 
         PUBLIC 
-            dcplib raylib GL
+            dcplib raylib GL nlohmann_json::nlohmann_json
     )
     # ---- ROMDISK generation ----
     set(ROMDISK_DIR "romdisk")
+    
+    # Copy levels to ROMDISK for Dreamcast
+    message(STATUS "🎮 \t\tCopying levels to ROMDISK for Dreamcast: ${CMAKE_SOURCE_DIR}/levels -> ${CMAKE_CURRENT_SOURCE_DIR}/${ROMDISK_DIR}/levels")
+    file(COPY ${CMAKE_SOURCE_DIR}/levels/ DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/${ROMDISK_DIR}/levels/)
+    
     kos_add_romdisk(${TARGET_NAME} ${ROMDISK_DIR})
     add_generate_cdi_image_for_target(${TARGET_NAME})
 else()
