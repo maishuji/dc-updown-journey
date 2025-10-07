@@ -7,7 +7,7 @@
 
 // Include Dreamcast compatibility functions before nlohmann/json
 #ifdef PLATFORM_DREAMCAST
-#include "dreamcast_json_compat.h"
+#include "udjourney/dreamcast_json_compat.h"
 #endif
 
 #include <nlohmann/json.hpp>
