@@ -5,6 +5,11 @@
 #include <fstream>
 #include <string>
 
+// Include Dreamcast compatibility functions before nlohmann/json
+#ifdef PLATFORM_DREAMCAST
+#include "dreamcast_json_compat.h"
+#endif
+
 #include <nlohmann/json.hpp>
 #include "udjourney/core/Logger.hpp"
 
