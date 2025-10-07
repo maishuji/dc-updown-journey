@@ -20,7 +20,7 @@
 class Platform : public IActor {
  public:
     Platform(const IGame &iGame, Rectangle iRect, Color iColor = BLUE,
-             bool iIsRepeatedY = false, 
+             bool iIsRepeatedY = false,
              std::unique_ptr<PlatformReuseStrategy> reuseStrategy = nullptr);
     void draw() const override;
     void update(float delta) override;

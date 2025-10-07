@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <string>
 
 #include "udjourney/core/Logger.hpp"
 
@@ -106,7 +107,6 @@ bool Scene::load_from_file(const std::string& filename) {
 
         Logger::info("Successfully loaded scene: %", filename);
         return true;
-
     } catch (const std::exception& e) {
         Logger::error("Error loading scene %: %", filename, e.what());
         return false;
@@ -179,7 +179,6 @@ bool Scene::save_to_file(const std::string& filename) const {
         file << scene_data.dump(2);
         Logger::info("Successfully saved scene: %", filename);
         return true;
-
     } catch (const std::exception& e) {
         Logger::error("Error saving scene %: %", filename, e.what());
         return false;

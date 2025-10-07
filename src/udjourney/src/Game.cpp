@@ -31,9 +31,9 @@
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
 #include "udjourney/platform/features/PlatformFeatureBase.hpp"
 #include "udjourney/platform/features/SpikeFeature.hpp"
+#include "udjourney/platform/reuse_strategies/NoReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
-#include "udjourney/platform/reuse_strategies/NoReuseStrategy.hpp"
 
 struct Resolution {
     int width;
@@ -111,8 +111,12 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
         auto ra2 = std::rand();
         if (ra2 % 100 < 20) {
             // 5% EightTurnHorizontalBehaviorStrategy, use ORANGE color
-            res.emplace_back(std::make_unique<Platform>(iGame, rect, ORANGE, false, 
-                                                       std::make_unique<RandomizePositionStrategy>()));
+            res.emplace_back(std::make_unique<Platform>(
+                iGame,
+                rect,
+                ORANGE,
+                false,
+                std::make_unique<RandomizePositionStrategy>()));
             float speed =
                 static_cast<float>(std::max(1, random_number % 11) / 10.0F);
             float amplitude =
@@ -122,8 +126,12 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
                     std::make_unique<EightTurnHorizontalBehaviorStrategy>(
                         speed, amplitude));
         } else {
-            res.emplace_back(std::make_unique<Platform>(iGame, rect, BLUE, false,
-                                                       std::make_unique<RandomizePositionStrategy>()));
+            res.emplace_back(std::make_unique<Platform>(
+                iGame,
+                rect,
+                BLUE,
+                false,
+                std::make_unique<RandomizePositionStrategy>()));
             if (ra2 % 100 < 25) {
                 // 20% HorizontalBehaviorStrategy
                 float speed_x =
@@ -182,7 +190,7 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
                       static_cast<float>(border_width),
                       static_cast<float>(border_height)},
             color_pool[color_idx],
-            true, // Y-repeated
+            true,  // Y-repeated
             std::make_unique<RandomizePositionStrategy>()));
         res.emplace_back(std::make_unique<Platform>(
             iGame,
@@ -191,7 +199,7 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
                       static_cast<float>(border_width),
                       static_cast<float>(border_height)},
             color_pool[color_idx],
-            true, // Y-repeated
+            true,  // Y-repeated
             std::make_unique<RandomizePositionStrategy>()));
         color_idx = (color_idx + 1) % cpool_size;
     }
@@ -430,40 +438,40 @@ void Game::draw_finish_line_() const {
     if (!m_current_scene || m_level_height <= 0) {
         return;  // No level loaded or invalid level height
     }
-    
-    // Calculate the finish line Y position (98% of level height where win triggers)
+
+    // Calculate the finish line Y position (98% of level height where win
+    // triggers)
     float win_threshold = m_level_height * 0.98f;
-    
+
     // Convert world coordinates to screen coordinates relative to game camera
     Rectangle game_rect = get_rectangle();
     float line_y = win_threshold - game_rect.y;
-    
+
     // Only draw if the line is potentially visible on screen
     if (line_y >= -10 && line_y <= game_rect.height + 10) {
         // Draw a thick pink/magenta finish line across the entire width
         float line_thickness = 4.0f;
         Rectangle finish_line = {
-            0,                           // Start from left edge
-            line_y - line_thickness/2,   // Center the line thickness
-            game_rect.width,             // Full width of screen
-            line_thickness
-        };
-        
+            0,                            // Start from left edge
+            line_y - line_thickness / 2,  // Center the line thickness
+            game_rect.width,              // Full width of screen
+            line_thickness};
+
         // Draw the main pink line
         DrawRectangleRec(finish_line, MAGENTA);
-        
+
         // Add some visual flair with a slight glow effect
         DrawRectangleLinesEx(finish_line, 1.0f, PINK);
-        
+
         // Add text label if line is visible in a reasonable area
         if (line_y >= 50 && line_y <= game_rect.height - 50) {
-            const char* finish_text = "FINISH LINE";
+            const char *finish_text = "FINISH LINE";
             int text_width = MeasureText(finish_text, 16);
-            DrawText(finish_text, 
-                    (int)(game_rect.width - text_width - 10), 
-                    (int)(line_y - 25), 
-                    16, 
-                    MAGENTA);
+            DrawText(finish_text,
+                     (int)(game_rect.width - text_width - 10),
+                     (int)(line_y - 25),
+                     16,
+                     MAGENTA);
         }
     }
 }
@@ -499,7 +507,7 @@ void Game::draw() const {
                 actor->draw();
             }
             player->draw();
-            
+
             // Draw finish line for level-based gameplay
             if (m_current_scene && m_level_height > 0) {
                 draw_finish_line_();
@@ -559,13 +567,16 @@ void Game::update() {
                 {
                     case static_cast<uint8_t>(ActorType::PLATFORM): {
                         // Let the platform handle its own reuse strategy
-                        // Scene-based platforms have no reuse strategy (nullptr)
-                        // Random platforms have RandomizePositionStrategy
-                        Platform& platform_ref = static_cast<Platform &>(*actor);
+                        // Scene-based platforms have no reuse strategy
+                        // (nullptr) Random platforms have
+                        // RandomizePositionStrategy
+                        Platform &platform_ref =
+                            static_cast<Platform &>(*actor);
                         platform_ref.reuse();
-                        
-                        // If platform doesn't have a reuse strategy, it will be marked CONSUMED
-                        // and will be removed in the next cleanup cycle
+
+                        // If platform doesn't have a reuse strategy, it will be
+                        // marked CONSUMED and will be removed in the next
+                        // cleanup cycle
                     } break;
                     case static_cast<uint8_t>(ActorType::BONUS): {
                         to_remove.push_back(actor.get());
@@ -798,10 +809,12 @@ void Game::create_platforms_from_scene() {
             }
         }
 
-        // Scene-based platforms should not be reused to avoid cluttering the screen
-        // Default constructor uses nullptr reuse strategy (no reuse)
-        auto platform = std::make_unique<Platform>(*this, world_rect, platform_color, 
-                                                   false); // not Y-repeated
+        // Scene-based platforms should not be reused to avoid cluttering the
+        // screen Default constructor uses nullptr reuse strategy (no reuse)
+        auto platform = std::make_unique<Platform>(*this,
+                                                   world_rect,
+                                                   platform_color,
+                                                   false);  // not Y-repeated
 
         // Set behavior based on platform data
         switch (platform_data.behavior_type) {
@@ -900,7 +913,7 @@ void Game::create_platforms_from_scene() {
                       static_cast<float>(border_width),
                       static_cast<float>(border_height)},
             color_pool[color_idx],
-            true, // Y-repeated
+            true,  // Y-repeated
             std::make_unique<RandomizePositionStrategy>()));
         m_actors.emplace_back(std::make_unique<Platform>(
             *this,
@@ -909,7 +922,7 @@ void Game::create_platforms_from_scene() {
                       static_cast<float>(border_width),
                       static_cast<float>(border_height)},
             color_pool[color_idx],
-            true, // Y-repeated
+            true,  // Y-repeated
             std::make_unique<RandomizePositionStrategy>()));
         color_idx = (color_idx + 1) % cpool_size;
     }
