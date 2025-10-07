@@ -11,7 +11,8 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     container:
-      image: maishuji/dc-kos-image:14.2.1-dev-01mar25-kp01mar25-gl01mar25
+      # image: maishuji/dc-kos-image:14.2.1-dev-01mar25-kp01mar25-gl01mar25
+      image: maishuji/dc-kos-image:14.3.0-28sep25-kp29sep25
       options: --user root
     steps:
       - uses: actions/checkout@v4
