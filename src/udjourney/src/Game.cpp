@@ -267,7 +267,7 @@ void Game::run() {
     });
 
     dialog_hud->set_on_next_callback(
-        [this]() { Logger::info("Next page in dialog box"); });
+        [this]() { udjourney::Logger::info("Next page in dialog box"); });
 
     m_hud_manager.push_foreground_hud(std::move(dialog_hud));
 
@@ -734,7 +734,7 @@ void Game::on_notify(const std::string &iEvent) {
 
             // Parsing dash event
             std::getline(str_stream, token, ';');
-            Logger::debug(" dash event : %", token);
+            udjourney::Logger::debug(" dash event : %", token);
             if (std::optional<int16_t> dash_opt = extract_number_(token);
                 dash_opt.has_value()) {
                 dash_fud.dashable = dash_opt.value();

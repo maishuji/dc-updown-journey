@@ -11,7 +11,7 @@ namespace udjourney {
 
 class Logger {
  public:
-    enum class Level { Info, Warning, Error };
+    enum class Level { Info, Warning, Error, Debug };
 
     template <typename... Args>
     static void info(const std::string& format, Args&&... args) {
@@ -28,6 +28,11 @@ class Logger {
         log(Level::Error, format, std::forward<Args>(args)...);
     }
 
+    template <typename... Args>
+    static void debug(const std::string& format, Args&&... args) {
+        log(Level::Debug, format, std::forward<Args>(args)...);
+    }
+
  private:
     template <typename... Args>
     static void log(Level level, const std::string& format, Args&&... args) {
@@ -41,6 +46,9 @@ class Logger {
                 break;
             case Level::Error:
                 prefix = "[ERROR] ";
+                break;
+            case Level::Debug:
+                prefix = "[DEBUG] ";
                 break;
         }
 
