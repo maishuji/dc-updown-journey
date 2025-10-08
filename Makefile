@@ -4,7 +4,7 @@ run-dc:
 	dc-tool-ip -t $(DC_IP) -x build/Debug/src/udjourney/updown-journey.elf
 
 lint:
-	cpplint --filter=-build/c++11,-runtime/references,-build/header_guard --recursive src/
+	cpplint --filter=-build/c++11,-runtime/references,-build/header_guard --exclude=src/udjourney/include/udjourney/dreamcast_json_compat.h --recursive src/
 	
 tidy:
 	@echo "Run clang-tidy on the source files"

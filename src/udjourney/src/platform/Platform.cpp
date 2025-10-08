@@ -11,8 +11,10 @@
 #include "udjourney/interfaces/IGame.hpp"
 
 Platform::Platform(const IGame &iGame, Rectangle iRect, Color iColor,
-                   bool iIsRepeatedY) :
+                   bool iIsRepeatedY,
+                   std::unique_ptr<PlatformReuseStrategy> reuseStrategy) :
     IActor(iGame),
+    m_reuse_strategy(std::move(reuseStrategy)),
     m_rect(iRect),
     m_color(iColor),
     m_repeated_y(iIsRepeatedY),
@@ -35,7 +37,6 @@ void Platform::draw() const {
     rect.y -= game.get_rectangle().y;
 
     DrawRectangleRec(rect, m_color);
-    Color color_red = RED;
 
     for (const auto &feature : m_features) {
         feature->draw(*this);

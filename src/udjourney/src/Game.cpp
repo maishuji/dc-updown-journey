@@ -31,6 +31,7 @@
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
 #include "udjourney/platform/features/PlatformFeatureBase.hpp"
 #include "udjourney/platform/features/SpikeFeature.hpp"
+#include "udjourney/platform/reuse_strategies/NoReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
 
@@ -82,8 +83,6 @@ struct InputMapping {
 const double kUpdateInterval = 0.0001;
 bool is_running = true;
 std::unique_ptr<Player> player = nullptr;
-std::unique_ptr<PlatformReuseStrategy> reuse_strategy =
-    std::make_unique<RandomizePositionStrategy>();
 
 struct DashFud {
     int16_t dashable = 1;
@@ -112,7 +111,12 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
         auto ra2 = std::rand();
         if (ra2 % 100 < 20) {
             // 5% EightTurnHorizontalBehaviorStrategy, use ORANGE color
-            res.emplace_back(std::make_unique<Platform>(iGame, rect, ORANGE));
+            res.emplace_back(std::make_unique<Platform>(
+                iGame,
+                rect,
+                ORANGE,
+                false,
+                std::make_unique<RandomizePositionStrategy>()));
             float speed =
                 static_cast<float>(std::max(1, random_number % 11) / 10.0F);
             float amplitude =
@@ -122,7 +126,12 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
                     std::make_unique<EightTurnHorizontalBehaviorStrategy>(
                         speed, amplitude));
         } else {
-            res.emplace_back(std::make_unique<Platform>(iGame, rect));
+            res.emplace_back(std::make_unique<Platform>(
+                iGame,
+                rect,
+                BLUE,
+                false,
+                std::make_unique<RandomizePositionStrategy>()));
             if (ra2 % 100 < 25) {
                 // 20% HorizontalBehaviorStrategy
                 float speed_x =
@@ -181,7 +190,8 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
                       static_cast<float>(border_width),
                       static_cast<float>(border_height)},
             color_pool[color_idx],
-            true));
+            true,  // Y-repeated
+            std::make_unique<RandomizePositionStrategy>()));
         res.emplace_back(std::make_unique<Platform>(
             iGame,
             Rectangle{game_rect.width - border_width,
@@ -189,7 +199,8 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
                       static_cast<float>(border_width),
                       static_cast<float>(border_height)},
             color_pool[color_idx],
-            true));
+            true,  // Y-repeated
+            std::make_unique<RandomizePositionStrategy>()));
         color_idx = (color_idx + 1) % cpool_size;
     }
 
@@ -200,6 +211,13 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     m_rect = Rectangle{
         0, 0, static_cast<float>(iWidth), static_cast<float>(iHeight)};
     m_actors.reserve(10);
+
+    // Try to load Level 1, fallback to random generation if it fails
+    if (!load_scene("levels/level1.json")) {
+        std::cout
+            << "Warning: Could not load level1.json, using random generation"
+            << std::endl;
+    }
 }
 
 void Game::run() {
@@ -210,9 +228,21 @@ void Game::run() {
                static_cast<int>(m_rect.height),
                "Up-Down Journey");
 
-    m_actors = init_platforms(*this);
+    // Create platforms from scene or fallback to random generation
+    create_platforms_from_scene();
+
+    // Spawn player at scene-defined location or default position
+    Vector2 player_spawn_pos{320, 240};  // Default position
+    if (m_current_scene) {
+        auto spawn_data = m_current_scene->get_player_spawn();
+        player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
+            spawn_data.tile_x, spawn_data.tile_y);
+    }
+
     player = std::make_unique<Player>(
-        *this, Rectangle{320, 240, 20, 20}, m_event_dispatcher);
+        *this,
+        Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
+        m_event_dispatcher);
     player->add_observer(static_cast<IObserver *>(this));
 
     m_actors.emplace_back(
@@ -237,7 +267,7 @@ void Game::run() {
     });
 
     dialog_hud->set_on_next_callback(
-        [this]() { Logger::info("Next page in dialog box"); });
+        [this]() { udjourney::Logger::info("Next page in dialog box"); });
 
     m_hud_manager.push_foreground_hud(std::move(dialog_hud));
 
@@ -315,6 +345,12 @@ void Game::process_input() {
             return;
         }
 
+        if (m_state == GameState::WIN) {
+            // Restart the level
+            restart_level();
+            return;
+        }
+
         if (m_state == GameState::PLAY) {
             m_state = GameState::PAUSE;
         } else {
@@ -371,6 +407,77 @@ void draw_pause_() {
     DrawText("Press B button to quit\n", 300, 40, 20, RED);
 }
 
+void draw_win_screen_() {
+    // Draw celebratory win screen
+    DrawText("CONGRATULATIONS!", 200, 100, 40, GOLD);
+    DrawText("YOU COMPLETED LEVEL 1!", 180, 150, 25, GREEN);
+    DrawText(
+        "You successfully journeyed from top to bottom!", 120, 200, 20, WHITE);
+
+    DrawText("Press START to play again", 220, 280, 20, YELLOW);
+    DrawText("Press B to quit", 280, 320, 20, RED);
+
+    // Draw some celebratory effects
+    static float celebration_timer = 0.0f;
+    celebration_timer += GetFrameTime();
+
+    // Pulsating stars effect
+    for (int i = 0; i < 20; i++) {
+        float x = 50 + (i * 30) % 600;
+        float y = 50 + ((i * 17) % 300) + sin(celebration_timer * 3 + i) * 10;
+        Color star_color = {
+            255,
+            255,
+            0,
+            (unsigned char)(128 + 127 * sin(celebration_timer * 2 + i))};
+        DrawText("*", static_cast<int>(x), static_cast<int>(y), 20, star_color);
+    }
+}
+
+void Game::draw_finish_line_() const {
+    if (!m_current_scene || m_level_height <= 0) {
+        return;  // No level loaded or invalid level height
+    }
+
+    // Calculate the finish line Y position (98% of level height where win
+    // triggers)
+    float win_threshold = m_level_height * 0.98f;
+
+    // Convert world coordinates to screen coordinates relative to game camera
+    Rectangle game_rect = get_rectangle();
+    float line_y = win_threshold - game_rect.y;
+
+    // Only draw if the line is potentially visible on screen
+    if (line_y >= -10 && line_y <= game_rect.height + 10) {
+        // Draw a thick pink/magenta finish line across the entire width
+        float line_thickness = 4.0f;
+        Rectangle finish_line = {
+            0,                            // Start from left edge
+            line_y - line_thickness / 2,  // Center the line thickness
+            game_rect.width,              // Full width of screen
+            line_thickness};
+
+        // Draw the main pink line
+        DrawRectangleRec(finish_line, MAGENTA);
+
+        // Add some visual flair with a slight glow effect
+        DrawRectangleLinesEx(finish_line, 1.0f, PINK);
+
+        // Add text label if line is visible in a reasonable area
+        if (line_y >= 50 && line_y <= game_rect.height - 50) {
+            const char *finish_text = "FINISH LINE";
+            int text_width = MeasureText(finish_text, 16);
+            DrawText(finish_text,
+                     static_cast<int>(game_rect.width - text_width - 10),
+                     static_cast<int>(line_y - 25),
+                     16,
+                     MAGENTA);
+        }
+    }
+}
+
+// Scene system implementations
+
 void Game::draw() const {
     BeginDrawing();
     ClearBackground(BLACK);  // Clear the background with a color
@@ -400,6 +507,11 @@ void Game::draw() const {
                 actor->draw();
             }
             player->draw();
+
+            // Draw finish line for level-based gameplay
+            if (m_current_scene && m_level_height > 0) {
+                draw_finish_line_();
+            }
         }
 
             // Draw dash status
@@ -414,6 +526,9 @@ void Game::draw() const {
             break;
         case GameState::GAMEOVER:
             draw_game_over_(m_score_history);
+            break;
+        case GameState::WIN:
+            draw_win_screen_();
             break;
     }
     m_hud_manager.draw();
@@ -451,10 +566,17 @@ void Game::update() {
             switch (actor->get_group_id()) {
                 {
                     case static_cast<uint8_t>(ActorType::PLATFORM): {
-                        // Instead of removing the platform, we can reuse it
-                        reuse_strategy->reuse(static_cast<Platform &>(*actor));
-                        /*
-                         */
+                        // Let the platform handle its own reuse strategy
+                        // Scene-based platforms have no reuse strategy
+                        // (nullptr) Random platforms have
+                        // RandomizePositionStrategy
+                        Platform &platform_ref =
+                            static_cast<Platform &>(*actor);
+                        platform_ref.reuse();
+
+                        // If platform doesn't have a reuse strategy, it will be
+                        // marked CONSUMED and will be removed in the next
+                        // cleanup cycle
                     } break;
                     case static_cast<uint8_t>(ActorType::BONUS): {
                         to_remove.push_back(actor.get());
@@ -485,6 +607,19 @@ void Game::update() {
             }
             player->update(delta);
             last_update_time = cur_update_time;
+
+            // Check win condition: player reached bottom of level
+            if (m_current_scene && player) {
+                Rectangle player_rect = player->get_rectangle();
+                float player_bottom = player_rect.y + player_rect.height;
+
+                // Win if player reaches 98% of the level height (very close to
+                // actual bottom) This ensures player actually reaches the final
+                // platform area before winning
+                if (player_bottom >= m_level_height * 0.98f) {
+                    m_state = GameState::WIN;
+                }
+            }
         }
         player->handle_collision(m_actors);
     }
@@ -599,7 +734,7 @@ void Game::on_notify(const std::string &iEvent) {
 
             // Parsing dash event
             std::getline(str_stream, token, ';');
-            Logger::debug(" dash event : %", token);
+            udjourney::Logger::debug(" dash event : %", token);
             if (std::optional<int16_t> dash_opt = extract_number_(token);
                 dash_opt.has_value()) {
                 dash_fud.dashable = dash_opt.value();
@@ -608,4 +743,213 @@ void Game::on_notify(const std::string &iEvent) {
         default:
             break;
     }
+}
+
+// Scene system implementations
+bool Game::load_scene(const std::string &filename) {
+    m_current_scene = std::make_unique<udjourney::scene::Scene>();
+    if (!m_current_scene->load_from_file(filename)) {
+        m_current_scene.reset();
+        return false;
+    }
+    return true;
+}
+
+void Game::create_platforms_from_scene() {
+    if (!m_current_scene) {
+        // Fallback to original random generation if no scene loaded
+        m_actors = init_platforms(*this);
+        return;
+    }
+
+    m_actors.clear();
+    m_level_height = 0.0f;
+
+    const auto &platforms = m_current_scene->get_platforms();
+
+    for (const auto &platform_data : platforms) {
+        // Convert tile coordinates to world coordinates
+        Rectangle world_rect = udjourney::scene::Scene::tile_to_world_rect(
+            platform_data.tile_x,
+            platform_data.tile_y,
+            platform_data.width_tiles,
+            platform_data.height_tiles);
+
+        // Track the lowest platform for win condition
+        float platform_bottom = world_rect.y + world_rect.height;
+        if (platform_bottom > m_level_height) {
+            m_level_height = platform_bottom;
+        }
+
+        // Create platform with appropriate color based on behavior
+        Color platform_color = BLUE;  // Default color
+        switch (platform_data.behavior_type) {
+            case udjourney::scene::PlatformBehaviorType::Horizontal:
+                platform_color = GREEN;
+                break;
+            case udjourney::scene::PlatformBehaviorType::EightTurnHorizontal:
+                platform_color = ORANGE;
+                break;
+            case udjourney::scene::PlatformBehaviorType::OscillatingSize:
+                platform_color = PURPLE;
+                break;
+            case udjourney::scene::PlatformBehaviorType::Static:
+            default:
+                platform_color = BLUE;
+                break;
+        }
+
+        // Add spikes color indication
+        bool has_spikes = false;
+        for (auto feature : platform_data.features) {
+            if (feature == udjourney::scene::PlatformFeatureType::Spikes) {
+                platform_color = RED;
+                has_spikes = true;
+                break;
+            }
+        }
+
+        // Scene-based platforms should not be reused to avoid cluttering the
+        // screen Default constructor uses nullptr reuse strategy (no reuse)
+        auto platform = std::make_unique<Platform>(*this,
+                                                   world_rect,
+                                                   platform_color,
+                                                   false);  // not Y-repeated
+
+        // Set behavior based on platform data
+        switch (platform_data.behavior_type) {
+            case udjourney::scene::PlatformBehaviorType::Horizontal: {
+                float speed = 50.0f;   // Default speed
+                float range = 100.0f;  // Default range
+
+                if (platform_data.behavior_params.count("speed")) {
+                    speed = platform_data.behavior_params.at("speed") *
+                            10.0f;  // Scale for pixels
+                }
+                if (platform_data.behavior_params.count("range")) {
+                    range = platform_data.behavior_params.at("range") *
+                            32.0f;  // Convert tiles to pixels
+                }
+
+                platform->set_behavior(
+                    std::make_unique<HorizontalBehaviorStrategy>(speed, range));
+                break;
+            }
+            case udjourney::scene::PlatformBehaviorType::EightTurnHorizontal: {
+                float speed = 1.0f;        // Default speed
+                float amplitude = 100.0f;  // Default amplitude
+
+                if (platform_data.behavior_params.count("speed")) {
+                    speed = platform_data.behavior_params.at("speed");
+                }
+                if (platform_data.behavior_params.count("amplitude")) {
+                    amplitude = platform_data.behavior_params.at("amplitude") *
+                                32.0f;  // Convert tiles to pixels
+                }
+
+                platform->set_behavior(
+                    std::make_unique<EightTurnHorizontalBehaviorStrategy>(
+                        speed, amplitude));
+                break;
+            }
+            case udjourney::scene::PlatformBehaviorType::OscillatingSize: {
+                float speed = 2.0f;        // Default speed
+                float min_scale = -50.0f;  // Default min scale
+                float max_scale = 50.0f;   // Default max scale
+
+                if (platform_data.behavior_params.count("speed")) {
+                    speed = platform_data.behavior_params.at("speed");
+                }
+                if (platform_data.behavior_params.count("min_scale")) {
+                    min_scale =
+                        (platform_data.behavior_params.at("min_scale") - 1.0f) *
+                        world_rect.width;
+                }
+                if (platform_data.behavior_params.count("max_scale")) {
+                    max_scale =
+                        (platform_data.behavior_params.at("max_scale") - 1.0f) *
+                        world_rect.width;
+                }
+
+                platform->set_behavior(
+                    std::make_unique<OscillatingSizeBehaviorStrategy>(
+                        speed, min_scale, max_scale));
+                break;
+            }
+            case udjourney::scene::PlatformBehaviorType::Static:
+            default:
+                // No behavior needed for static platforms
+                break;
+        }
+
+        // Add features
+        for (auto feature : platform_data.features) {
+            if (feature == udjourney::scene::PlatformFeatureType::Spikes) {
+                platform->add_feature(std::make_unique<SpikeFeature>());
+            }
+        }
+
+        m_actors.emplace_back(std::move(platform));
+    }
+
+    // Add border walls (left and right boundaries)
+    const int border_width = 5;
+    const int border_height = 100;
+    auto game_rect = get_rectangle();
+
+    constexpr int cpool_size = 5;
+    std::array<Color, cpool_size> color_pool = {
+        GRAY, PINK, BROWN, YELLOW, PURPLE};
+    int color_idx = 0;
+
+    // Add borders that extend to the level height
+    for (auto border_top = 0;
+         border_top <= static_cast<int>(m_level_height + border_height);
+         border_top += border_height) {
+        m_actors.emplace_back(std::make_unique<Platform>(
+            *this,
+            Rectangle{0,
+                      static_cast<float>(border_top),
+                      static_cast<float>(border_width),
+                      static_cast<float>(border_height)},
+            color_pool[color_idx],
+            true,  // Y-repeated
+            std::make_unique<RandomizePositionStrategy>()));
+        m_actors.emplace_back(std::make_unique<Platform>(
+            *this,
+            Rectangle{game_rect.width - border_width,
+                      static_cast<float>(border_top),
+                      static_cast<float>(border_width),
+                      static_cast<float>(border_height)},
+            color_pool[color_idx],
+            true,  // Y-repeated
+            std::make_unique<RandomizePositionStrategy>()));
+        color_idx = (color_idx + 1) % cpool_size;
+    }
+}
+
+void Game::restart_level() {
+    // Reset game state
+    m_state = GameState::PLAY;
+
+    // Recreate platforms from scene
+    create_platforms_from_scene();
+
+    // Reset player position
+    Vector2 player_spawn_pos{320, 240};  // Default position
+    if (m_current_scene) {
+        auto spawn_data = m_current_scene->get_player_spawn();
+        player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
+            spawn_data.tile_x, spawn_data.tile_y);
+    }
+
+    // Reset player
+    if (player) {
+        player->set_rectangle(
+            Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20});
+        player->set_invicibility(1.8f);  // Brief invincibility after restart
+    }
+
+    // Reset game rect position
+    m_rect.y = 0;
 }

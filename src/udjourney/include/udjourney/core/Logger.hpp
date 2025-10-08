@@ -1,153 +1,90 @@
 // Copyright 2025 Quentin Cartier
+
 #pragma once
-#include <atomic>
-#include <fstream>
+
 #include <iostream>
-#include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 
-namespace Logger {
+namespace udjourney {
 
-enum class Level { Info, Debug, Warn, Error, Critical, None };
+class Logger {
+ public:
+    enum class Level { Info, Warning, Error, Debug };
 
-inline std::atomic<Level> current_level{Level::Info};
-inline std::unique_ptr<std::ofstream> file_stream = nullptr;
-
-// Log prefixes
-constexpr const char* kLogPrefixInfo = "[INFO] ";
-constexpr const char* kLogPrefixDebug = "[DEBUG] ";
-constexpr const char* kLogPrefixWarn = "[WARN] ";
-constexpr const char* kLogPrefixError = "[ERROR] ";
-constexpr const char* kLogPrefixCritical = "[CRITICAL] ";
-
-inline void set_level(Level level) { current_level.store(level); }
-
-inline void set_output_file(const std::string& filename) {
-    file_stream = std::make_unique<std::ofstream>(filename, std::ios::app);
-}
-
-// Helper to get output stream
-inline std::ostream& get_output_stream(Level level) {
-    if (file_stream && file_stream->is_open()) {
-        return *file_stream;
+    template <typename... Args>
+    static void info(const std::string& format, Args&&... args) {
+        log(Level::Info, format, std::forward<Args>(args)...);
     }
-    return (level == Level::Error || level == Level::Critical) ? std::cerr
-                                                               : std::cout;
-}
 
-// Helper for parameter expansion - corrected version
-template <typename T, typename... Rest>
-static void log_impl(std::ostream& output, const char* msg, T value,
-                     Rest... rest) {
-    while (*msg) {
-        if (*msg == '%' && *(++msg) != '%') {
-            output << value;
-            log_impl(output, msg, rest...);
-            return;
-        }
-        output << *msg++;
+    template <typename... Args>
+    static void warning(const std::string& format, Args&&... args) {
+        log(Level::Warning, format, std::forward<Args>(args)...);
     }
-    output << std::endl;
-}
 
-static void log_impl(std::ostream& output, const char* msg) {
-    while (*msg != '\0') {
-        output << *msg++;
+    template <typename... Args>
+    static void error(const std::string& format, Args&&... args) {
+        log(Level::Error, format, std::forward<Args>(args)...);
     }
-    output << std::endl;
-}
 
-// Main logging function with variadic template
-template <typename T, typename... Rest>
-static void log(Level log_level, const char* msg, T value, Rest... rest) {
-    if (current_level.load() <= log_level) {
-        auto& output = get_output_stream(log_level);
+    template <typename... Args>
+    static void debug(const std::string& format, Args&&... args) {
+        log(Level::Debug, format, std::forward<Args>(args)...);
+    }
 
-        switch (log_level) {
+ private:
+    template <typename... Args>
+    static void log(Level level, const std::string& format, Args&&... args) {
+        std::string prefix;
+        switch (level) {
             case Level::Info:
-                output << kLogPrefixInfo;
+                prefix = "[INFO] ";
                 break;
-            case Level::Debug:
-                output << kLogPrefixDebug;
-                break;
-            case Level::Warn:
-                output << kLogPrefixWarn;
+            case Level::Warning:
+                prefix = "[WARN] ";
                 break;
             case Level::Error:
-                output << kLogPrefixError;
-                break;
-            case Level::Critical:
-                output << kLogPrefixCritical;
-                break;
-            case Level::None:
-                break;
-        }
-
-        while (*msg) {
-            if (*msg == '%' && *(++msg) != '%') {
-                output << value;
-                log_impl(output, msg, rest...);
-                return;
-            }
-            output << *msg++;
-        }
-        output << std::endl;
-    }
-}
-
-// Base case for recursion
-static void log(Level log_level, const char* msg) {
-    if (current_level.load() <= log_level) {
-        auto& output = get_output_stream(log_level);
-
-        switch (log_level) {
-            case Level::Info:
-                output << kLogPrefixInfo;
+                prefix = "[ERROR] ";
                 break;
             case Level::Debug:
-                output << kLogPrefixDebug;
-                break;
-            case Level::Warn:
-                output << kLogPrefixWarn;
-                break;
-            case Level::Error:
-                output << kLogPrefixError;
-                break;
-            case Level::Critical:
-                output << kLogPrefixCritical;
-                break;
-            case Level::None:
+                prefix = "[DEBUG] ";
                 break;
         }
-        output << msg << std::endl;
+
+        std::string message =
+            format_message(format, std::forward<Args>(args)...);
+        std::cout << prefix << message << std::endl;
     }
-}
 
-// String version
-static void log(Level log_level, const std::string& msg) {
-    log(log_level, msg.c_str());
-}
+    template <typename T>
+    static std::string format_message(const std::string& format, T&& arg) {
+        size_t pos = format.find('%');
+        if (pos != std::string::npos) {
+            std::ostringstream oss;
+            oss << format.substr(0, pos) << arg << format.substr(pos + 1);
+            return oss.str();
+        }
+        return format;
+    }
 
-// Convenience functions
-template <typename... Args> inline void info(const char* msg, Args&&... args) {
-    log(Level::Info, msg, std::forward<Args>(args)...);
-}
+    template <typename T, typename... Args>
+    static std::string format_message(const std::string& format, T&& first,
+                                      Args&&... rest) {
+        size_t pos = format.find('%');
+        if (pos != std::string::npos) {
+            std::ostringstream oss;
+            oss << format.substr(0, pos) << first;
+            std::string remaining = format.substr(pos + 1);
+            return oss.str() +
+                   format_message(remaining, std::forward<Args>(rest)...);
+        }
+        return format;
+    }
 
-template <typename... Args> inline void debug(const char* msg, Args&&... args) {
-    log(Level::Debug, msg, std::forward<Args>(args)...);
-}
+    static std::string format_message(const std::string& format) {
+        return format;
+    }
+};
 
-template <typename... Args> inline void warn(const char* msg, Args&&... args) {
-    log(Level::Warn, msg, std::forward<Args>(args)...);
-}
-
-template <typename... Args> inline void error(const char* msg, Args&&... args) {
-    log(Level::Error, msg, std::forward<Args>(args)...);
-}
-
-template <typename... Args>
-inline void critical(const char* msg, Args&&... args) {
-    log(Level::Critical, msg, std::forward<Args>(args)...);
-}
-}  // namespace Logger
+}  // namespace udjourney

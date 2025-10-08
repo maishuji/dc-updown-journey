@@ -1,7 +1,5 @@
 // Copyright 2025 Quentin Cartier
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_BONUS_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_BONUS_HPP_
-
+#pragma once
 #include <raylib/raylib.h>
 #include <raylib/raymath.h>
 #include <raylib/rlgl.h>
@@ -27,5 +25,3 @@ class Bonus : public IActor {
  private:
     Rectangle m_rect;
 };
-
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_BONUS_HPP_
