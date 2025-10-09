@@ -31,6 +31,7 @@
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
 #include "udjourney/platform/features/PlatformFeatureBase.hpp"
 #include "udjourney/platform/features/SpikeFeature.hpp"
+#include "udjourney/platform/features/CheckpointFeature.hpp"
 #include "udjourney/platform/reuse_strategies/NoReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
@@ -409,7 +410,7 @@ void draw_pause_() {
 
 void draw_win_screen_() {
     // Draw celebratory win screen
-    DrawText("CONGRATULATIONS!", 200, 100, 40, GOLD);
+    DrawText("CONGRATULATIONS!", 130, 100, 40, GOLD);
     DrawText("YOU COMPLETED LEVEL 1!", 180, 150, 25, GREEN);
     DrawText(
         "You successfully journeyed from top to bottom!", 120, 200, 20, WHITE);
@@ -769,6 +770,16 @@ void Game::on_notify(const std::string &iEvent) {
     }
 }
 
+void Game::on_checkpoint_reached(float x, float y) const {
+    // Update the last checkpoint position
+    // Note: We need to make m_last_checkpoint mutable for this to work
+    m_last_checkpoint.x = x;
+    m_last_checkpoint.y = y;
+
+    // Optional: Add visual/audio feedback here
+    // udjourney::Logger::info("Checkpoint reached at %, %", x, y);
+}
+
 // Scene system implementations
 bool Game::load_scene(const std::string &filename) {
     m_current_scene = std::make_unique<udjourney::scene::Scene>();
@@ -910,6 +921,11 @@ void Game::create_platforms_from_scene() {
         for (auto feature : platform_data.features) {
             if (feature == udjourney::scene::PlatformFeatureType::Spikes) {
                 platform->add_feature(std::make_unique<SpikeFeature>());
+            } else if (feature ==
+                       udjourney::scene::PlatformFeatureType::Checkpoint) {
+                platform->add_feature(std::make_unique<CheckpointFeature>());
+                // Set checkpoint platform color to distinguish it
+                platform_color = ORANGE;
             }
         }
 
@@ -960,17 +976,19 @@ void Game::restart_level() {
     create_platforms_from_scene();
 
     // Reset player position
-    Vector2 player_spawn_pos{320, 240};  // Default position
+
+
+    // Set initial checkpoint if starting fresh
     if (m_current_scene) {
         auto spawn_data = m_current_scene->get_player_spawn();
-        player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
+        m_last_checkpoint = udjourney::scene::Scene::tile_to_world_pos(
             spawn_data.tile_x, spawn_data.tile_y);
     }
 
-    // Reset player
+    // Reset player at last checkpoint
     if (player) {
         player->set_rectangle(
-            Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20});
+            Rectangle{m_last_checkpoint.x, m_last_checkpoint.y, 20, 20});
         player->set_invicibility(1.8f);  // Brief invincibility after restart
     }
 

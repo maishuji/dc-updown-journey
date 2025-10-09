@@ -21,6 +21,9 @@ class MockGame : public IGame {
     void process_input() override {}
     void add_actor(std::unique_ptr<IActor> actor) override {}
     void remove_actor(IActor *actor) override {}
+    void on_checkpoint_reached(float x, float y) const override {
+        // Mock implementation - do nothing for tests
+    }
     
  private:
     Rectangle m_rect;

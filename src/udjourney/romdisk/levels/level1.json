@@ -55,7 +55,8 @@
       "behavior_params": {
         "speed": 1.2,
         "amplitude": 3.0
-      }
+      },
+      "features": ["checkpoint"]
     },
     {
       "x": 14,

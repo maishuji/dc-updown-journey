@@ -94,6 +94,9 @@ bool Scene::load_from_file(const std::string& filename) {
                         if (feature_str == "spikes") {
                             platform.features.push_back(
                                 PlatformFeatureType::Spikes);
+                        } else if (feature_str == "checkpoint") {
+                            platform.features.push_back(
+                                PlatformFeatureType::Checkpoint);
                         }
                     }
                 }

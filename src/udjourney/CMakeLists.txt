@@ -25,6 +25,7 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/HorizontalBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/features/CheckpointFeature.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scene/Scene.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/TextureManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/HUDManager.cpp
