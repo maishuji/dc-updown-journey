@@ -40,6 +40,7 @@ class Game : public IGame, public IObserver {
  private:
     void draw() const;
     void draw_finish_line_() const;
+    bool should_continue_scrolling_() const noexcept;
 
     std::vector<std::unique_ptr<IActor>> m_pending_actors;
     std::vector<std::unique_ptr<IActor>> m_actors;

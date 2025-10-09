@@ -476,6 +476,27 @@ void Game::draw_finish_line_() const {
     }
 }
 
+bool Game::should_continue_scrolling_() const noexcept {
+    // If no scene is loaded or no level height is set, continue scrolling
+    if (!m_current_scene || m_level_height <= 0) {
+        return true;
+    }
+
+    // Calculate finish line Y position (98% of level height where win triggers)
+    float win_threshold = m_level_height * 0.98f;
+
+    // Convert world coordinates to screen coordinates relative to game camera
+    Rectangle game_rect = get_rectangle();
+    float finish_line_screen_y = win_threshold - game_rect.y;
+
+    // Stop scrolling when finish line would be at middle of screen
+    // (240px for 480px height)
+    float screen_middle = game_rect.height / 2.0f;
+
+    // Continue scrolling if finish line is still above the middle of screen
+    return finish_line_screen_y > screen_middle;
+}
+
 // Scene system implementations
 
 void Game::draw() const {
@@ -601,7 +622,10 @@ void Game::update() {
     if (m_state == GameState::PLAY) {
         m_bonus_manager.update(delta);
         if (cur_update_time - last_update_time > kUpdateInterval) {
-            m_rect.y += 1;
+            // Only scroll if finish line hasn't reached middle of screen
+            if (should_continue_scrolling_()) {
+                m_rect.y += 1;
+            }
             for (auto &actor : m_actors) {
                 actor->update(delta);
             }
