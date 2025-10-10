@@ -18,7 +18,8 @@
       "y": 6,
       "width": 3,
       "height": 1,
-      "behavior": "static"
+      "behavior": "static",
+      "features": ["checkpoint"]
     },
     {
       "x": 5,
@@ -92,16 +93,18 @@
     {
       "x": 3,
       "y": 27,
-      "width": 5,
+      "width": 9,
       "height": 1,
-      "behavior": "static"
+      "behavior": "static",
+      "features": ["checkpoint"]
     },
     {
       "x": 11,
       "y": 30,
-      "width": 4,
+      "width": 30,
       "height": 1,
-      "behavior": "static"
+      "behavior": "static",
+      "features": ["checkpoint", "spikes"]
     },
     {
       "x": 7,

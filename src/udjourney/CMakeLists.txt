@@ -39,10 +39,17 @@ add_executable(${TARGET_NAME}
 
 if (NOT PLATFORM_DREAMCAST)
     message(STATUS "🎭 \t\tCopying assets from ${CMAKE_CURRENT_SOURCE_DIR}/romdisk to binary dir: ${CMAKE_CURRENT_BINARY_DIR}/assets")
+    # Initial copy during configuration
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/romdisk/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/assets/)
     
-    message(STATUS "🎮 \t\tCopying levels from ${CMAKE_SOURCE_DIR}/levels to binary dir: ${CMAKE_CURRENT_BINARY_DIR}/levels")
-    file(COPY ${CMAKE_SOURCE_DIR}/levels/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/levels/)
+    # Add custom target to copy assets during build (to pick up changes)
+    add_custom_target(copy_assets
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/romdisk
+            ${CMAKE_CURRENT_BINARY_DIR}/assets
+        COMMENT "Copying updated assets from romdisk"
+    )
+    add_dependencies(${TARGET_NAME} copy_assets)
 endif()
 
 if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)

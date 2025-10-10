@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "udjourney/Bonus.hpp"
+#include "udjourney/CoreUtils.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/ScoreHistory.hpp"
 #include "udjourney/core/Logger.hpp"
@@ -29,9 +30,9 @@
 #include "udjourney/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
+#include "udjourney/platform/features/CheckpointFeature.hpp"
 #include "udjourney/platform/features/PlatformFeatureBase.hpp"
 #include "udjourney/platform/features/SpikeFeature.hpp"
-#include "udjourney/platform/features/CheckpointFeature.hpp"
 #include "udjourney/platform/reuse_strategies/NoReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
@@ -214,7 +215,8 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     m_actors.reserve(10);
 
     // Try to load Level 1, fallback to random generation if it fails
-    if (!load_scene("levels/level1.json")) {
+    if (!load_scene(
+            udjourney::coreutils::get_assets_path("levels/level1.json"))) {
         std::cout
             << "Warning: Could not load level1.json, using random generation"
             << std::endl;
@@ -777,7 +779,7 @@ void Game::on_checkpoint_reached(float x, float y) const {
     m_last_checkpoint.y = y;
 
     // Optional: Add visual/audio feedback here
-    // udjourney::Logger::info("Checkpoint reached at %, %", x, y);
+    udjourney::Logger::info("Checkpoint reached at %, %", x, y);
 }
 
 // Scene system implementations
@@ -796,7 +798,6 @@ void Game::create_platforms_from_scene() {
         m_actors = init_platforms(*this);
         return;
     }
-
     m_actors.clear();
     m_level_height = 0.0f;
 
@@ -918,11 +919,23 @@ void Game::create_platforms_from_scene() {
         }
 
         // Add features
+        udjourney::Logger::info("Processing platform at (%, %) with % features",
+                                platform_data.tile_x,
+                                platform_data.tile_y,
+                                platform_data.features.size());
         for (auto feature : platform_data.features) {
             if (feature == udjourney::scene::PlatformFeatureType::Spikes) {
                 platform->add_feature(std::make_unique<SpikeFeature>());
+                udjourney::Logger::info(
+                    "Added spikes feature to platform at (%, %)",
+                    platform_data.tile_x,
+                    platform_data.tile_y);
             } else if (feature ==
                        udjourney::scene::PlatformFeatureType::Checkpoint) {
+                udjourney::Logger::info(
+                    "Creating checkpoint platform at tile_x=%, tile_y=%",
+                    platform_data.tile_x,
+                    platform_data.tile_y);
                 platform->add_feature(std::make_unique<CheckpointFeature>());
                 // Set checkpoint platform color to distinguish it
                 platform_color = ORANGE;
@@ -976,7 +989,6 @@ void Game::restart_level() {
     create_platforms_from_scene();
 
     // Reset player position
-
 
     // Set initial checkpoint if starting fresh
     if (m_current_scene) {
