@@ -86,9 +86,8 @@ if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
     # ---- ROMDISK generation ----
     set(ROMDISK_DIR "romdisk")
     
-    # Copy levels to ROMDISK for Dreamcast
-    message(STATUS "🎮 \t\tCopying levels to ROMDISK for Dreamcast: ${CMAKE_SOURCE_DIR}/levels -> ${CMAKE_CURRENT_SOURCE_DIR}/${ROMDISK_DIR}/levels")
-    file(COPY ${CMAKE_SOURCE_DIR}/levels/ DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/${ROMDISK_DIR}/levels/)
+    # Note: Levels are already in romdisk directory - no copying needed
+    # romdisk is the single source of truth for assets and levels
     
     kos_add_romdisk(${TARGET_NAME} ${ROMDISK_DIR})
     add_generate_cdi_image_for_target(${TARGET_NAME})
