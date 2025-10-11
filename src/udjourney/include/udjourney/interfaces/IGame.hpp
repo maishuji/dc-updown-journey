@@ -16,4 +16,5 @@ class IGame {
     virtual void add_actor(std::unique_ptr<IActor> actor) = 0;
     virtual void remove_actor(IActor *actor) = 0;
     [[nodiscard]] virtual Rectangle get_rectangle() const = 0;
+    virtual void on_checkpoint_reached(float x, float y) const = 0;
 };

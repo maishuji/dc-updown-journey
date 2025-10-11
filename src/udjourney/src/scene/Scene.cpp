@@ -11,6 +11,7 @@
 #endif
 
 #include <nlohmann/json.hpp>
+
 #include "udjourney/core/Logger.hpp"
 
 using json = nlohmann::json;
@@ -34,6 +35,7 @@ Vector2 Scene::tile_to_world_pos(int tile_x, int tile_y) {
 }
 
 bool Scene::load_from_file(const std::string& filename) {
+    Logger::info("Loading scene from file: %", filename);
     try {
         std::ifstream file(filename);
         if (!file.is_open()) {
@@ -89,11 +91,27 @@ bool Scene::load_from_file(const std::string& filename) {
                 }
 
                 // Load features
+                Logger::info("Processing features for platform at tile (%, %)",
+                             platform.tile_x,
+                             platform.tile_y);
                 if (platform_json.contains("features")) {
                     for (const auto& feature_str : platform_json["features"]) {
                         if (feature_str == "spikes") {
+                            Logger::info(
+                                "Loading spikes feature for platform at tile "
+                                "(%, %)",
+                                platform.tile_x,
+                                platform.tile_y);
                             platform.features.push_back(
                                 PlatformFeatureType::Spikes);
+                        } else if (feature_str == "checkpoint") {
+                            Logger::info(
+                                "Loading checkpoint feature for platform at "
+                                "tile (%, %)",
+                                platform.tile_x,
+                                platform.tile_y);
+                            platform.features.push_back(
+                                PlatformFeatureType::Checkpoint);
                         }
                     }
                 }
@@ -160,6 +178,8 @@ bool Scene::save_to_file(const std::string& filename) const {
             for (auto feature : platform.features) {
                 if (feature == PlatformFeatureType::Spikes) {
                     features_json.push_back("spikes");
+                } else if (feature == PlatformFeatureType::Checkpoint) {
+                    features_json.push_back("checkpoint");
                 }
             }
             if (!features_json.empty()) {

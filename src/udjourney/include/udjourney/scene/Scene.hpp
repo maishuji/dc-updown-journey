@@ -18,7 +18,7 @@ enum class PlatformBehaviorType {
     OscillatingSize
 };
 
-enum class PlatformFeatureType { None, Spikes };
+enum class PlatformFeatureType { None, Spikes, Checkpoint };
 
 struct PlatformData {
     // Tile-based position (will be converted to world coordinates)

@@ -30,6 +30,7 @@ class Game : public IGame, public IObserver {
     void remove_actor(IActor *actor) override;
     void process_input() override;
     void on_notify(const std::string &event) override;
+    void on_checkpoint_reached(float x, float y) const override;
     [[nodiscard]] Rectangle get_rectangle() const override { return m_rect; }
 
     // Scene management
@@ -40,6 +41,7 @@ class Game : public IGame, public IObserver {
  private:
     void draw() const;
     void draw_finish_line_() const;
+    bool should_continue_scrolling_() const noexcept;
 
     std::vector<std::unique_ptr<IActor>> m_pending_actors;
     std::vector<std::unique_ptr<IActor>> m_actors;
@@ -55,4 +57,5 @@ class Game : public IGame, public IObserver {
     udjourney::core::events::EventDispatcher m_event_dispatcher;
     std::unique_ptr<udjourney::scene::Scene> m_current_scene;
     float m_level_height = 0.0f;  // Track level height for win condition
+    mutable Vector2 m_last_checkpoint{320, 240};  // Last checkpoint position
 };

@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "udjourney/Bonus.hpp"
+#include "udjourney/CoreUtils.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/ScoreHistory.hpp"
 #include "udjourney/core/Logger.hpp"
@@ -29,6 +30,7 @@
 #include "udjourney/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
+#include "udjourney/platform/features/CheckpointFeature.hpp"
 #include "udjourney/platform/features/PlatformFeatureBase.hpp"
 #include "udjourney/platform/features/SpikeFeature.hpp"
 #include "udjourney/platform/reuse_strategies/NoReuseStrategy.hpp"
@@ -213,7 +215,8 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     m_actors.reserve(10);
 
     // Try to load Level 1, fallback to random generation if it fails
-    if (!load_scene("levels/level1.json")) {
+    if (!load_scene(
+            udjourney::coreutils::get_assets_path("levels/level1.json"))) {
         std::cout
             << "Warning: Could not load level1.json, using random generation"
             << std::endl;
@@ -409,7 +412,7 @@ void draw_pause_() {
 
 void draw_win_screen_() {
     // Draw celebratory win screen
-    DrawText("CONGRATULATIONS!", 200, 100, 40, GOLD);
+    DrawText("CONGRATULATIONS!", 130, 100, 40, GOLD);
     DrawText("YOU COMPLETED LEVEL 1!", 180, 150, 25, GREEN);
     DrawText(
         "You successfully journeyed from top to bottom!", 120, 200, 20, WHITE);
@@ -474,6 +477,27 @@ void Game::draw_finish_line_() const {
                      MAGENTA);
         }
     }
+}
+
+bool Game::should_continue_scrolling_() const noexcept {
+    // If no scene is loaded or no level height is set, continue scrolling
+    if (!m_current_scene || m_level_height <= 0) {
+        return true;
+    }
+
+    // Calculate finish line Y position (98% of level height where win triggers)
+    float win_threshold = m_level_height * 0.98f;
+
+    // Convert world coordinates to screen coordinates relative to game camera
+    Rectangle game_rect = get_rectangle();
+    float finish_line_screen_y = win_threshold - game_rect.y;
+
+    // Stop scrolling when finish line would be at middle of screen
+    // (240px for 480px height)
+    float screen_middle = game_rect.height / 2.0f;
+
+    // Continue scrolling if finish line is still above the middle of screen
+    return finish_line_screen_y > screen_middle;
 }
 
 // Scene system implementations
@@ -601,7 +625,10 @@ void Game::update() {
     if (m_state == GameState::PLAY) {
         m_bonus_manager.update(delta);
         if (cur_update_time - last_update_time > kUpdateInterval) {
-            m_rect.y += 1;
+            // Only scroll if finish line hasn't reached middle of screen
+            if (should_continue_scrolling_()) {
+                m_rect.y += 1;
+            }
             for (auto &actor : m_actors) {
                 actor->update(delta);
             }
@@ -745,6 +772,16 @@ void Game::on_notify(const std::string &iEvent) {
     }
 }
 
+void Game::on_checkpoint_reached(float x, float y) const {
+    // Update the last checkpoint position
+    // Note: We need to make m_last_checkpoint mutable for this to work
+    m_last_checkpoint.x = x;
+    m_last_checkpoint.y = y;
+
+    // Optional: Add visual/audio feedback here
+    udjourney::Logger::info("Checkpoint reached at %, %", x, y);
+}
+
 // Scene system implementations
 bool Game::load_scene(const std::string &filename) {
     m_current_scene = std::make_unique<udjourney::scene::Scene>();
@@ -761,7 +798,6 @@ void Game::create_platforms_from_scene() {
         m_actors = init_platforms(*this);
         return;
     }
-
     m_actors.clear();
     m_level_height = 0.0f;
 
@@ -883,9 +919,26 @@ void Game::create_platforms_from_scene() {
         }
 
         // Add features
+        udjourney::Logger::info("Processing platform at (%, %) with % features",
+                                platform_data.tile_x,
+                                platform_data.tile_y,
+                                platform_data.features.size());
         for (auto feature : platform_data.features) {
             if (feature == udjourney::scene::PlatformFeatureType::Spikes) {
                 platform->add_feature(std::make_unique<SpikeFeature>());
+                udjourney::Logger::info(
+                    "Added spikes feature to platform at (%, %)",
+                    platform_data.tile_x,
+                    platform_data.tile_y);
+            } else if (feature ==
+                       udjourney::scene::PlatformFeatureType::Checkpoint) {
+                udjourney::Logger::info(
+                    "Creating checkpoint platform at tile_x=%, tile_y=%",
+                    platform_data.tile_x,
+                    platform_data.tile_y);
+                platform->add_feature(std::make_unique<CheckpointFeature>());
+                // Set checkpoint platform color to distinguish it
+                platform_color = ORANGE;
             }
         }
 
@@ -936,17 +989,18 @@ void Game::restart_level() {
     create_platforms_from_scene();
 
     // Reset player position
-    Vector2 player_spawn_pos{320, 240};  // Default position
+
+    // Set initial checkpoint if starting fresh
     if (m_current_scene) {
         auto spawn_data = m_current_scene->get_player_spawn();
-        player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
+        m_last_checkpoint = udjourney::scene::Scene::tile_to_world_pos(
             spawn_data.tile_x, spawn_data.tile_y);
     }
 
-    // Reset player
+    // Reset player at last checkpoint
     if (player) {
         player->set_rectangle(
-            Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20});
+            Rectangle{m_last_checkpoint.x, m_last_checkpoint.y, 20, 20});
         player->set_invicibility(1.8f);  // Brief invincibility after restart
     }
 

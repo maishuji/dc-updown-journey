@@ -25,6 +25,7 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/HorizontalBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/features/CheckpointFeature.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scene/Scene.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/TextureManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/HUDManager.cpp
@@ -38,10 +39,17 @@ add_executable(${TARGET_NAME}
 
 if (NOT PLATFORM_DREAMCAST)
     message(STATUS "🎭 \t\tCopying assets from ${CMAKE_CURRENT_SOURCE_DIR}/romdisk to binary dir: ${CMAKE_CURRENT_BINARY_DIR}/assets")
+    # Initial copy during configuration
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/romdisk/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/assets/)
     
-    message(STATUS "🎮 \t\tCopying levels from ${CMAKE_SOURCE_DIR}/levels to binary dir: ${CMAKE_CURRENT_BINARY_DIR}/levels")
-    file(COPY ${CMAKE_SOURCE_DIR}/levels/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/levels/)
+    # Add custom target to copy assets during build (to pick up changes)
+    add_custom_target(copy_assets
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/romdisk
+            ${CMAKE_CURRENT_BINARY_DIR}/assets
+        COMMENT "Copying updated assets from romdisk"
+    )
+    add_dependencies(${TARGET_NAME} copy_assets)
 endif()
 
 if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
@@ -78,9 +86,8 @@ if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
     # ---- ROMDISK generation ----
     set(ROMDISK_DIR "romdisk")
     
-    # Copy levels to ROMDISK for Dreamcast
-    message(STATUS "🎮 \t\tCopying levels to ROMDISK for Dreamcast: ${CMAKE_SOURCE_DIR}/levels -> ${CMAKE_CURRENT_SOURCE_DIR}/${ROMDISK_DIR}/levels")
-    file(COPY ${CMAKE_SOURCE_DIR}/levels/ DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/${ROMDISK_DIR}/levels/)
+    # Note: Levels are already in romdisk directory - no copying needed
+    # romdisk is the single source of truth for assets and levels
     
     kos_add_romdisk(${TARGET_NAME} ${ROMDISK_DIR})
     add_generate_cdi_image_for_target(${TARGET_NAME})
