@@ -14,6 +14,7 @@
 
 #include "ImGuiFileDialog.h"
 #include "raylib/raylib.h"
+#include "udjourney-editor/EditorScene.hpp"
 #include "udjourney-editor/Level.hpp"
 #include "udjourney-editor/TilePanel.hpp"
 #include "udjourney-editor/strategies/level/LevelCreationStrategy.hpp"
@@ -21,13 +22,10 @@
 
 struct Editor::PImpl {
     bool running = true;
-    bool selecting = false;
-    bool selection_done = false;
     float ui_scale = 2.0f;
-    ImVec2 selection_start;
-    ImVec2 selection_end;
     Level level;
     TilePanel tile_panel;
+    EditorScene scene;
     std::string last_export_path;
     ImGuiStyle original_style;
     std::unique_ptr<LevelCreationStrategy> level_creation_strategy = nullptr;
@@ -122,10 +120,8 @@ void Editor::init() {
     ImGui_ImplOpenGL3_Init("#version 330");
     ImGui::GetStyle().ScaleAllSizes(pimpl->ui_scale);
 
-    pimpl->level.reserve(pimpl->level.row_cnt * pimpl->level.col_cnt);
-    for (size_t i = 0; i < pimpl->level.row_cnt * pimpl->level.col_cnt; ++i) {
-        pimpl->level.push_back(Cell());
-    }
+    // Initialize with a default level size
+    new_tilemap(20, 20);
 }
 
 void Editor::run() {
@@ -245,123 +241,11 @@ void Editor::run() {
 
         pimpl->tile_panel.draw();
 
-        // Set up the main scene view
-
-        auto offsetX = +300.0f;  // Offset for the scene view
-        auto offsetY = ImGui::GetFrameHeight();
-
-        ImGui::SetNextWindowPos(ImVec2(offsetX, offsetY),
-                                ImGuiCond_Always);  // adjust offset
-        ImGui::SetNextWindowSize(
-            ImVec2(io.DisplaySize.x - offsetX, io.DisplaySize.y - offsetY),
-            ImGuiCond_Always);
-
-        ImGui::Begin("Scene View",
-                     nullptr,
-                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
-                         ImGuiWindowFlags_NoCollapse);
-
-        // Get draw list inside the ImGui scene view window
-        ImDrawList *draw_list = ImGui::GetWindowDrawList();
-        ImVec2 origin = ImGui::GetCursorScreenPos();
-
-        // Example canvas grid (draw with ImGui)
-        const float tile_size = 32.0f;
-
-        for (int y = 0; y < pimpl->level.row_cnt; ++y) {
-            for (int x = 0; x < pimpl->level.col_cnt; ++x) {
-                ImVec2 top_left =
-                    ImVec2(origin.x + x * tile_size, origin.y + y * tile_size);
-                ImVec2 bottom_right =
-                    ImVec2(top_left.x + tile_size, top_left.y + tile_size);
-                // draw_list->AddRect(
-                //     top_left, bottom_right, IM_COL32(200, 200, 200, 255));
-
-                draw_list->AddRectFilled(
-                    top_left,
-                    bottom_right,
-                    pimpl->level.tiles[y * pimpl->level.col_cnt + x].color);
-                draw_list->AddRect(
-                    top_left, bottom_right, IM_COL32(200, 200, 200, 255));
-            }
-        }
-
-        ImVec2 mouse_pos = ImGui::GetMousePos();
-        bool hovered = ImGui::IsWindowHovered();
-        bool clicked = ImGui::IsMouseClicked(0);
-        bool released = ImGui::IsMouseReleased(0);
-
-        // --- Selection logic ---
-        if (hovered && clicked) {
-            pimpl->selecting = true;
-            pimpl->selection_done = false;
-            pimpl->selection_start = mouse_pos;
-            pimpl->selection_end = mouse_pos;
-        }
-        if (pimpl->selecting) {
-            pimpl->selection_end = mouse_pos;
-            if (released) {
-                pimpl->selecting = false;
-                pimpl->selection_done = true;
-            }
-        }
-
-        // --- Draw selection rectangle ---
-        if (pimpl->selecting) {
-            ImU32 col = IM_COL32(0, 120, 255, 100);     // semi-transparent fill
-            ImU32 border = IM_COL32(0, 120, 255, 255);  // solid border
-
-            ImVec2 p_min =
-                ImVec2(fminf(pimpl->selection_start.x, pimpl->selection_end.x),
-                       fminf(pimpl->selection_start.y, pimpl->selection_end.y));
-            ImVec2 p_max =
-                ImVec2(fmaxf(pimpl->selection_start.x, pimpl->selection_end.x),
-                       fmaxf(pimpl->selection_start.y, pimpl->selection_end.y));
-
-            draw_list->AddRectFilled(p_min, p_max, col);
-            draw_list->AddRect(p_min, p_max, border, 0.0f, 0, 2.0f);
-        }
-
-        if (pimpl->selection_done) {
-            ImVec2 p_min =
-                ImVec2(fminf(pimpl->selection_start.x, pimpl->selection_end.x),
-                       fminf(pimpl->selection_start.y, pimpl->selection_end.y));
-            ImVec2 p_max =
-                ImVec2(fmaxf(pimpl->selection_start.x, pimpl->selection_end.x),
-                       fmaxf(pimpl->selection_start.y, pimpl->selection_end.y));
-
-            for (int y = 0; y < pimpl->level.row_cnt; ++y) {
-                for (int x = 0; x < pimpl->level.col_cnt; ++x) {
-                    ImVec2 tile_top_left = ImVec2(origin.x + x * tile_size,
-                                                  origin.y + y * tile_size);
-                    ImVec2 tile_bottom_right =
-                        ImVec2(tile_top_left.x + tile_size,
-                               tile_top_left.y + tile_size);
-
-                    // Check if tile is fully inside the selection rectangle
-                    if (tile_top_left.x >= p_min.x &&
-                        tile_bottom_right.x <= p_max.x &&
-                        tile_top_left.y >= p_min.y &&
-                        tile_bottom_right.y <= p_max.y) {
-                        pimpl->level.tiles[y * pimpl->level.col_cnt + x].color =
-                            pimpl->tile_panel
-                                .get_current_color();  // Highlight color
-
-                        // Selected tile rectangle
-                        draw_list->AddRect(tile_top_left,
-                                           tile_bottom_right,
-                                           IM_COL32(255, 0, 0, 100));
-                    }
-                }
-            }
-        }
+        // Render the main scene view using EditorScene
+        pimpl->scene.render(pimpl->level, pimpl->tile_panel);
+        
+        // Render UI popups after scene
         pimpl->newLevelPopup.render();
-
-        // Reserve space so ImGui knows where we've "drawn"
-        ImGui::Dummy(ImVec2(pimpl->level.col_cnt * tile_size,
-                            pimpl->level.row_cnt * tile_size));
-
-        ImGui::End();
 
         ImGui::Render();
 

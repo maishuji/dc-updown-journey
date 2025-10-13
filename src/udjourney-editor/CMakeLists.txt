@@ -50,6 +50,7 @@ FetchContent_MakeAvailable(catch2)
 add_executable(udjourney_editor
   src/main.cpp
   src/Editor.cpp
+  src/EditorScene.cpp
   src/TilePanel.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/ui/NewLevelPopup.cpp
