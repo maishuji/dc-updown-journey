@@ -95,10 +95,15 @@ void Editor::import_tilemap_json(const std::string &import_path) {
 }
 
 void Editor::new_tilemap(int rows, int cols) noexcept {
-    pimpl->level.row_cnt = static_cast<size_t>(rows);
-    pimpl->level.col_cnt = static_cast<size_t>(cols);
     pimpl->level.clear();
-    pimpl->level.resize(pimpl->level.row_cnt, pimpl->level.col_cnt);
+    pimpl->level.resize(static_cast<size_t>(rows), static_cast<size_t>(cols));
+    
+    // Initialize all tiles with default cells
+    for (size_t i = 0; i < pimpl->level.row_cnt * pimpl->level.col_cnt; ++i) {
+        Cell default_cell;
+        default_cell.color = IM_COL32(240, 240, 240, 255);  // Light gray for visibility
+        pimpl->level.tiles[i] = default_cell;
+    }
 }
 
 void Editor::init() {
@@ -121,11 +126,16 @@ void Editor::init() {
     ImGui::GetStyle().ScaleAllSizes(pimpl->ui_scale);
 
     // Initialize with a default level size
-    new_tilemap(20, 20);
+    new_tilemap(60, 30);
 }
 
 void Editor::run() {
     while (!WindowShouldClose()) {
+        // Global keyboard shortcuts (using raylib for global detection)
+        if (IsKeyPressed(KEY_F1)) {
+            pimpl->tile_panel.request_focus();
+        }
+        
         // Export as JSON shortcut (Ctrl+E)
         if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) &&
             IsKeyPressed(KEY_E)) {
@@ -181,8 +191,8 @@ void Editor::run() {
                             pimpl->level.col_cnt,
                             pimpl->level.row_cnt);
                     } else {
-                        new_tilemap(20,
-                                    20);  // Default to 20x20 if no strategy set
+                        new_tilemap(60,
+                                    30);  // Default to 60x30 if no strategy set
                     }
                 }
                 ImGui::EndMenu();

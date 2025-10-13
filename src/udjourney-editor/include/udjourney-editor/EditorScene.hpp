@@ -42,8 +42,15 @@ private:
     // Internal rendering methods
     void setup_scene_window(const ImGuiIO& io);
     void render_grid(Level& level, ImDrawList* draw_list, const ImVec2& origin);
+    void render_platforms(Level& level, TilePanel& tile_panel, ImDrawList* draw_list, const ImVec2& origin);
+    void render_player_spawn(Level& level, ImDrawList* draw_list, const ImVec2& origin);
     void handle_mouse_input(Level& level, TilePanel& tile_panel, 
                            ImDrawList* draw_list, const ImVec2& origin);
+    void handle_tile_mode_input(Level& level, TilePanel& tile_panel, 
+                               ImDrawList* draw_list, const ImVec2& origin);
+    void handle_platform_mode_input(Level& level, TilePanel& tile_panel, 
+                                   const ImVec2& mouse_pos, const ImVec2& origin);
+    void handle_spawn_mode_input(Level& level, const ImVec2& mouse_pos, const ImVec2& origin);
     void render_selection(ImDrawList* draw_list);
     void apply_selection_to_tiles(Level& level, TilePanel& tile_panel,
                                  ImDrawList* draw_list, const ImVec2& origin);
@@ -53,4 +60,6 @@ private:
                              const ImVec2& tile_bottom_right,
                              const ImVec2& selection_min,
                              const ImVec2& selection_max) const;
+    ImVec2 screen_to_tile_pos(const ImVec2& screen_pos, const ImVec2& origin) const;
+    ImU32 get_platform_color(PlatformBehaviorType behavior, PlatformFeatureType feature) const;
 };
