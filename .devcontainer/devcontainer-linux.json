@@ -1,0 +1,77 @@
+{
+	"name": "UDJourney Linux Development",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": "."
+	},
+	
+	"postCreateCommand": "/home/developer/check-env.sh && echo 'Container ready for UDJourney development!'",
+	
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-vscode.cpptools-extension-pack",
+				"ms-vscode.cmake-tools",
+				"twxs.cmake",
+				"ms-vscode.cpptools",
+				"ms-vscode.cpptools-themes",
+				"donjayamanne.githistory",
+				"eamodio.gitlens",
+				"github.vscode-github-actions",
+				"ms-vscode.hexeditor",
+				"shd101wyy.markdown-preview-enhanced",
+				"gruntfuggly.todo-tree",
+				"streetsidesoftware.code-spell-checker",
+				"vadimcn.vscode-lldb",
+				"ms-vscode.makefile-tools"
+			],
+			"settings": {
+				"terminal.integrated.shell.linux": "/bin/bash",
+				"terminal.integrated.shellArgs.linux": ["--login"],
+				"terminal.integrated.defaultProfile.linux": "bash",
+				"C_Cpp.default.cppStandard": "c++20",
+				"C_Cpp.default.compilerPath": "/usr/bin/g++-12",
+				"C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+				"cmake.configureOnOpen": true,
+				"cmake.buildDirectory": "${workspaceFolder}/build",
+				"cmake.generator": "Ninja",
+				"editor.formatOnSave": true,
+				"editor.tabSize": 4,
+				"editor.insertSpaces": true,
+				"files.associations": {
+					"*.hpp": "cpp",
+					"*.cpp": "cpp",
+					"*.cmake": "cmake",
+					"CMakeLists.txt": "cmake"
+				},
+				"git.enableSmartCommit": true,
+				"git.confirmSync": false
+			}
+		}
+	},
+	
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {
+			"ppa": true,
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {
+			"installDirectlyFromGitHubRelease": true,
+			"version": "latest"
+		}
+	},
+	
+	"forwardPorts": [8080, 3000],
+	
+	"mounts": [
+		"source=${localEnv:HOME}/.ssh,target=/home/developer/.ssh,type=bind,consistency=cached,readonly"
+	],
+	
+	"containerEnv": {
+		"CC": "gcc-12",
+		"CXX": "g++-12"
+	},
+	
+	"remoteUser": "developer",
+	"updateRemoteUserUID": true
+}
