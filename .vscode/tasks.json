@@ -1,0 +1,122 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build UDJourney Editor (Linux)",
+            "type": "shell",
+            "command": "./build-linux.sh",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Build the UDJourney editor using the Linux build script"
+        },
+        {
+            "label": "Clean Build (Linux)",
+            "type": "shell",
+            "command": "rm",
+            "args": [
+                "-rf",
+                "build/editor-linux"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Clean the Linux build directory"
+        },
+        {
+            "label": "Run UDJourney Editor",
+            "type": "shell",
+            "command": "./udjourney_editor",
+            "options": {
+                "cwd": "${workspaceFolder}/build/editor-linux"
+            },
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated"
+            },
+            "dependsOn": "Build UDJourney Editor (Linux)",
+            "detail": "Build and run the UDJourney editor"
+        },
+        {
+            "label": "Run Tests",
+            "type": "shell",
+            "command": "./tilepanel_tests",
+            "options": {
+                "cwd": "${workspaceFolder}/build/editor-linux"
+            },
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "dependsOn": "Build UDJourney Editor (Linux)",
+            "detail": "Build and run the test suite"
+        },
+        {
+            "label": "Configure CMake (Linux)",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "../../src/udjourney-editor",
+                "-DCMAKE_BUILD_TYPE=Debug",
+                "-DCMAKE_CXX_STANDARD=20",
+                "-DCMAKE_C_COMPILER=gcc-12",
+                "-DCMAKE_CXX_COMPILER=g++-12",
+                "-G",
+                "Ninja"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/build/editor-linux"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "detail": "Configure CMake for debug build"
+        },
+        {
+            "label": "Build Debug (Linux)",
+            "type": "shell",
+            "command": "ninja",
+            "options": {
+                "cwd": "${workspaceFolder}/build/editor-linux"
+            },
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "dependsOn": "Configure CMake (Linux)",
+            "detail": "Build debug version with Ninja"
+        }
+    ]
+}

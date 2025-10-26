@@ -1,0 +1,55 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug UDJourney Editor (Linux)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/editor-linux/udjourney_editor",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/editor-linux",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Configure CMake (Linux)",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "logging": {
+                "engineLogging": false
+            }
+        },
+        {
+            "name": "Debug Tests (Linux)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/editor-linux/tilepanel_tests",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build/editor-linux",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "preLaunchTask": "Build Debug (Linux)",
+            "miDebuggerPath": "/usr/bin/gdb"
+        }
+    ]
+}
