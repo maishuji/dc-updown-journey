@@ -1,6 +1,19 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney-editor/EditorScene.hpp"
 
+struct EditorScene::PImpl {
+    // Implementation details can be added here in the future
+    
+
+};
+
+
+EditorScene::EditorScene() : pimpl_(std::make_unique<PImpl>()) {
+
+}
+
+EditorScene::~EditorScene() = default;
+
 void EditorScene::render(Level& level, TilePanel& tile_panel) {
     ImGuiIO& io = ImGui::GetIO();
     
@@ -76,6 +89,15 @@ void EditorScene::handle_mouse_input(Level& level, TilePanel& tile_panel,
             handle_tile_mode_input(level, tile_panel, draw_list, origin);
         }
         return;
+    }
+
+    if(right_clicked) {
+        // No action for right click in current modes except platform mode
+        if (tile_panel.get_edit_mode() != EditMode::Platforms) {
+            // Open context menu
+            ImGui::OpenPopup("MyPopup");
+            return;
+        }
     }
 
     // Handle input based on current edit mode

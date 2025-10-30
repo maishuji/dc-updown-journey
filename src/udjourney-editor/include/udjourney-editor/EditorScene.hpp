@@ -10,11 +10,12 @@
 
 class EditorScene {
 public:
-    EditorScene() = default;
-    ~EditorScene() = default;
-
+    EditorScene();
     // Main rendering function
     void render(Level& level, TilePanel& tile_panel);
+
+
+    virtual ~EditorScene();
 
     // Configuration
     void set_tile_size(float size) noexcept { tile_size_ = size; }
@@ -62,4 +63,7 @@ private:
                              const ImVec2& selection_max) const;
     ImVec2 screen_to_tile_pos(const ImVec2& screen_pos, const ImVec2& origin) const;
     ImU32 get_platform_color(PlatformBehaviorType behavior, PlatformFeatureType feature) const;
+
+    struct PImpl;
+    std::unique_ptr<PImpl> pimpl_;
 };
