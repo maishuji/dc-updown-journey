@@ -182,6 +182,7 @@ void EditorScene::handle_platform_mode_input(Level& level, TilePanel& tile_panel
     }
 
     // Find existing platform at this position
+    // If any do not allow left click to add/replace
     EditorPlatform* existing_platform = nullptr;
     for (auto& platform : level.platforms) {
         if (platform.tile_x == tile_x && platform.tile_y == tile_y) {
@@ -198,14 +199,14 @@ void EditorScene::handle_platform_mode_input(Level& level, TilePanel& tile_panel
         return;
     }
 
-    // Ctrl+Left click edits existing platform
-    if (ImGui::IsMouseClicked(0) && ImGui::GetIO().KeyCtrl && existing_platform) {
+    // Left click edits existing platform
+    if (ImGui::IsMouseClicked(0)  && existing_platform) {
         tile_panel.set_selected_platform(existing_platform);
         return;
     }
 
-    // Left click adds new platform (if no existing platform) or replaces existing
-    if (ImGui::IsMouseClicked(0)) {
+    // Left click adds new platform (if no existing platform)
+    if (ImGui::IsMouseClicked(0) && !existing_platform) {
         EditorPlatform platform;
         platform.tile_x = tile_x;
         platform.tile_y = tile_y;
