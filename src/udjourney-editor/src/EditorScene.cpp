@@ -291,14 +291,31 @@ void EditorScene::apply_selection_to_tiles(Level& level, TilePanel& tile_panel,
 
 void EditorScene::render_platforms(Level& level, TilePanel& tile_panel, ImDrawList* draw_list, const ImVec2& origin) {
     for (const auto& platform : level.platforms) {
-        ImVec2 top_left = ImVec2(origin.x + platform.tile_x * tile_size_, 
-                                origin.y + platform.tile_y * tile_size_);
-        ImVec2 bottom_right = ImVec2(top_left.x + platform.width_tiles * tile_size_, 
-                                    top_left.y + platform.height_tiles * tile_size_);
 
-        // Draw platform with its color
-        draw_list->AddRectFilled(top_left, bottom_right, platform.color);
+
+        ImVec2 center = ImVec2(origin.x + platform.tile_x * tile_size_ + tile_size_ / 2, 
+                              origin.y + platform.tile_y * tile_size_ + tile_size_ / 2);
         
+        // used to draw the center tile (for reference)
+        ImVec2 unit_top_left = ImVec2(center.x - tile_size_ / 2, center.y - tile_size_ / 2);
+        ImVec2 unit_bottom_right = ImVec2(origin.x + (platform.tile_x + 1) * tile_size_, 
+                                       origin.y + (platform.tile_y + 1) * tile_size_);
+
+        // use to draw the preview of the platform size
+        ImVec2 top_left = ImVec2(center.x - platform.width_tiles * tile_size_ / 2, 
+                                center.y - platform.height_tiles * tile_size_ / 2);
+        ImVec2 bottom_right = ImVec2(center.x + platform.width_tiles * tile_size_ / 2, 
+                                    center.y + platform.height_tiles * tile_size_ / 2);
+
+        
+        // Draw platform with its color
+        auto preview_color = platform.color;
+        preview_color &= IM_COL32(255, 255, 255, 100);
+        draw_list->AddRectFilled(top_left, bottom_right, preview_color);
+
+        // Draw unit tile (for reference)
+        draw_list->AddRectFilled(unit_top_left, unit_bottom_right, platform.color);
+
         // Draw platform border (highlighted if selected)
         bool is_selected = (tile_panel.get_selected_platform() == &platform);
         ImU32 border_color = is_selected ? IM_COL32(255, 255, 0, 255) : IM_COL32(0, 0, 0, 255);
