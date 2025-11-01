@@ -45,6 +45,22 @@ void EditorScene::render(Level& level, TilePanel& tile_panel) {
     ImGui::Dummy(ImVec2(level.col_cnt * tile_size_, level.row_cnt * tile_size_));
     
     ImGui::End();
+    
+    // Render platform context popup (must be outside the Scene View window)
+    platform_popup_.render();
+    
+    // Handle platform deletion from popup
+    if (platform_popup_.wants_to_delete_platform()) {
+        EditorPlatform* to_delete = platform_popup_.get_platform_to_delete();
+        if (to_delete) {
+            // Clear selection if we're deleting the selected platform
+            if (tile_panel.get_selected_platform() == to_delete) {
+                tile_panel.set_selected_platform(nullptr);
+            }
+            level.remove_platform_at(to_delete->tile_x, to_delete->tile_y);
+        }
+        platform_popup_.close();
+    }
 }
 
 void EditorScene::setup_scene_window(const ImGuiIO& io) {
@@ -174,14 +190,10 @@ void EditorScene::handle_platform_mode_input(Level& level, TilePanel& tile_panel
         }
     }
 
-    // Right click removes platform
+    // Right click opens context menu for platform
     if (ImGui::IsMouseClicked(1)) {
         if (existing_platform) {
-            level.remove_platform_at(tile_x, tile_y);
-            // Clear selection if we deleted the selected platform
-            if (tile_panel.get_selected_platform() == existing_platform) {
-                tile_panel.set_selected_platform(nullptr);
-            }
+            platform_popup_.open(existing_platform);
         }
         return;
     }

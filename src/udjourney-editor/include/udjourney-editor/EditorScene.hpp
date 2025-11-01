@@ -7,6 +7,7 @@
 
 #include "Level.hpp"
 #include "TilePanel.hpp"
+#include "ui/PlatformContextPopup.hpp"
 
 class EditorScene {
 public:
@@ -66,4 +67,7 @@ private:
 
     struct PImpl;
     std::unique_ptr<PImpl> pimpl_;
+    
+    // Platform context popup
+    PlatformContextPopup platform_popup_;
 };
