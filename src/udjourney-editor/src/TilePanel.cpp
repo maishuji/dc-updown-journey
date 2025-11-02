@@ -43,15 +43,13 @@ void TilePanel::draw() {
         should_focus_ = false;
     }
     
-    // Set window position and size on first frame to avoid overlap with scene
-    ImGui::SetNextWindowPos(ImVec2(10, 30), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(320, 500), ImGuiCond_FirstUseEver);
-    // Set minimum size constraints only - allow unlimited maximum width for resizing
-    ImGui::SetNextWindowSizeConstraints(ImVec2(250, 300), ImVec2(FLT_MAX, 700));
+    // Remove manual positioning - docking handles it automatically
+    // Set minimum size constraints - allow unlimited maximum for docking flexibility
+    ImGui::SetNextWindowSizeConstraints(ImVec2(250, 300), ImVec2(FLT_MAX, FLT_MAX));
     
     bool window_open = true;
-    if (!ImGui::Begin("Editor Panel", &window_open, 
-                      ImGuiWindowFlags_NoCollapse)) {
+    // Enable horizontal scrollbar for text that doesn't fit
+    if (!ImGui::Begin("Editor Panel", &window_open, ImGuiWindowFlags_HorizontalScrollbar)) {
         ImGui::End();
         return;
     }

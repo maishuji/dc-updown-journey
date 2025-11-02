@@ -14,6 +14,7 @@
 
 #include "ImGuiFileDialog.h"
 #include "raylib/raylib.h"
+#include "udjourney-editor/DockingHelper.hpp"
 #include "udjourney-editor/EditorScene.hpp"
 #include "udjourney-editor/Level.hpp"
 #include "udjourney-editor/TilePanel.hpp"
@@ -115,6 +116,9 @@ void Editor::init() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
+    
+    // Enable docking
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     io.FontGlobalScale = 2.0f;  // Set global font scale
     pimpl->original_style = ImGui::GetStyle();
@@ -153,8 +157,38 @@ void Editor::run() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui::NewFrame();
 
+        // --- Create Dockspace ---
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        
+        ImGuiWindowFlags dockspace_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        dockspace_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
+        dockspace_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        dockspace_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        dockspace_flags |= ImGuiWindowFlags_NoBackground;
+        
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        
+        ImGui::Begin("DockSpace", nullptr, dockspace_flags);
+        ImGui::PopStyleVar(3);
+        
+        // Create the dockspace - windows can now be docked
+        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+        
+        // First time setup: create default docking layout using helper
+        static bool first_time = true;
+        if (first_time) {
+            first_time = false;
+            udjourney::DockingHelper::SetupDefaultLayout(dockspace_id, viewport->WorkSize);
+        }
+
         // --- Menu Bar ---
-        if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu("File")) {
                 if (ImGui::MenuItem("Export Tilemap as JSON", "Ctrl+E")) {
                     std::cout << "Opening file dialog..." << std::endl;
@@ -222,8 +256,10 @@ void Editor::run() {
                 ImGui::EndMenu();
             }
 
-            ImGui::EndMainMenuBar();
+            ImGui::EndMenuBar();
         }
+        
+        ImGui::End(); // End DockSpace window
 
         if (ImGuiFileDialog::Instance()->Display("ChooseFileToImportJsonKey",
                                                  ImGuiWindowFlags_NoCollapse,

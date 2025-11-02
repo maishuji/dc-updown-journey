@@ -12,14 +12,11 @@ EditorScene::~EditorScene() = default;
 void EditorScene::render(Level& level, TilePanel& tile_panel) {
     ImGuiIO& io = ImGui::GetIO();
 
-    // Set up the scene window
-    setup_scene_window(io);
-
-    ImGui::Begin("Scene View",
-                 nullptr,
-                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
-                     ImGuiWindowFlags_NoCollapse |
-                     ImGuiWindowFlags_NoBringToFrontOnFocus);
+    // Scene View window - docking system will manage position and size
+    if (!ImGui::Begin("Scene View")) {
+        ImGui::End();
+        return;
+    }
 
     // Get draw list and origin for rendering
     ImDrawList* draw_list = ImGui::GetWindowDrawList();

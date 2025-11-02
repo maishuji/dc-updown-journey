@@ -52,6 +52,7 @@ add_executable(udjourney_editor
   src/Editor.cpp
   src/EditorScene.cpp
   src/TilePanel.cpp
+  src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/ui/NewLevelPopup.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
