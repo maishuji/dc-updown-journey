@@ -308,7 +308,7 @@ void EditorScene::apply_selection_to_tiles(Level& level, TilePanel& tile_panel,
  *
 */
 void render_spikes_(const ImVec2& top_left, const ImVec2& bottom_right,
-                   ImDrawList& draw_list) {
+                    ImDrawList& draw_list) {
     // Placeholder for spike rendering logic
     auto spike_count = 3;
     auto spike_height = bottom_right.y - top_left.y;
@@ -324,6 +324,25 @@ void render_spikes_(const ImVec2& top_left, const ImVec2& bottom_right,
                 IM_COL32(255, 255, 255, 150)  // Semi-transparent red
         );
     }
+}
+
+void render_checkpoint_(const ImVec2& top_left, const ImVec2& bottom_right,
+                        ImDrawList& draw_list) {
+    auto center_x = (top_left.x + bottom_right.x) / 2;
+    auto flag_height = (bottom_right.y - top_left.y) * 1.4F;
+
+    // Draw flag pole
+    draw_list.AddLine(ImVec2(center_x, top_left.y),
+                      ImVec2(center_x, top_left.y - flag_height),
+                      IM_COL32(139, 69, 19, 255) & IM_COL32(255, 255, 255, 150),
+                      4.0f);
+    // Draw flag
+    draw_list.AddRectFilled(
+        ImVec2(center_x + 5, top_left.y - flag_height / 2 + 2),
+        ImVec2(center_x + flag_height, top_left.y - flag_height),
+        IM_COL32(0, 255, 0, 255) &
+            IM_COL32(255, 255, 255, 150)  // Semi-transparent green
+    );
 }
 
 void EditorScene::render_platforms(Level& level, TilePanel& tile_panel,
@@ -368,7 +387,6 @@ void EditorScene::render_platforms(Level& level, TilePanel& tile_panel,
 
         // Draw feature indicators
         if (!platform.features.empty()) {
-            float indicator_offset_x = 5.0f;
             for (const auto& feature : platform.features) {
                 switch (feature) {
                     case PlatformFeatureType::Spikes:
@@ -377,13 +395,7 @@ void EditorScene::render_platforms(Level& level, TilePanel& tile_panel,
                         break;
                     case PlatformFeatureType::Checkpoint:
                         // Draw green flag for checkpoint
-                        draw_list->AddRectFilled(
-                            ImVec2(top_left.x + indicator_offset_x,
-                                   top_left.y + 2),
-                            ImVec2(top_left.x + indicator_offset_x + 10,
-                                   top_left.y + 8),
-                            IM_COL32(0, 255, 0, 255));
-                        indicator_offset_x += 12;
+                        render_checkpoint_(top_left, bottom_right, *draw_list);
                         break;
                     default:
                         break;
