@@ -9,6 +9,17 @@ EditorScene::EditorScene() : pimpl_(std::make_unique<PImpl>()) {}
 
 EditorScene::~EditorScene() = default;
 
+void render_cursor_(Level& level, TilePanel& tile_panel, ImDrawList* draw_list,
+                    const ImVec2& origin) {
+    auto pos = ImGui::GetMousePos();
+    ImVec2 cursor_pos = origin;
+    draw_list->AddRectFilled(
+        ImVec2(pos.x, pos.y),
+        ImVec2(pos.x + tile_panel.get_platform_size().x * 50,
+               pos.y + tile_panel.get_platform_size().y * 50),
+        IM_COL32(255, 255, 0, 255));
+}
+
 void EditorScene::render(Level& level, TilePanel& tile_panel) {
     ImGuiIO& io = ImGui::GetIO();
 
@@ -33,6 +44,8 @@ void EditorScene::render(Level& level, TilePanel& tile_panel) {
 
     // Handle mouse input and selection based on current mode
     handle_mouse_input(level, tile_panel, draw_list, origin);
+
+    render_cursor_(level, tile_panel, draw_list, origin);
 
     // Reserve space for ImGui layout
     ImGui::Dummy(
@@ -209,8 +222,11 @@ void EditorScene::handle_platform_mode_input(Level& level,
         EditorPlatform platform;
         platform.tile_x = tile_x;
         platform.tile_y = tile_y;
-        platform.width_tiles = 1.0f;
-        platform.height_tiles = 1.0f;
+
+        auto [width, height] = tile_panel.get_platform_size();
+
+        platform.width_tiles = width;
+        platform.height_tiles = height;
         platform.behavior_type = tile_panel.get_platform_behavior();
 
         // Get selected features from tile panel
@@ -262,7 +278,7 @@ void EditorScene::render_selection(ImDrawList* draw_list) {
                           fmaxf(selection_start_.y, selection_end_.y));
 
     draw_list->AddRectFilled(p_min, p_max, fill_color);
-    draw_list->AddRect(p_min, p_max, border_color, 0.0f, 0, 2.0f);
+    draw_list->AddRect(p_min, p_max, border_color, 0.0f, 0, 3.0f);
 }
 
 void EditorScene::apply_selection_to_tiles(Level& level, TilePanel& tile_panel,

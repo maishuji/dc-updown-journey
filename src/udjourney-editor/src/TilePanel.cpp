@@ -1,12 +1,13 @@
 
 #include "udjourney-editor/TilePanel.hpp"
-#include "udjourney-editor/Level.hpp"
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 
 #include <string>
 #include <vector>
+
+#include "udjourney-editor/Level.hpp"
 
 namespace color {
 const ImU32 kColorRed = IM_COL32(255, 0, 0, 255);
@@ -42,26 +43,32 @@ void TilePanel::draw() {
         ImGui::SetNextWindowFocus();
         should_focus_ = false;
     }
-    
+
     // Remove manual positioning - docking handles it automatically
-    // Set minimum size constraints - allow unlimited maximum for docking flexibility
-    ImGui::SetNextWindowSizeConstraints(ImVec2(250, 300), ImVec2(FLT_MAX, FLT_MAX));
-    
+    // Set minimum size constraints - allow unlimited maximum for docking
+    // flexibility
+    ImGui::SetNextWindowSizeConstraints(ImVec2(250, 300),
+                                        ImVec2(FLT_MAX, FLT_MAX));
+
     bool window_open = true;
     // Enable horizontal scrollbar for text that doesn't fit
-    if (!ImGui::Begin("Editor Panel", &window_open, ImGuiWindowFlags_HorizontalScrollbar)) {
+    if (!ImGui::Begin("Editor Panel",
+                      &window_open,
+                      ImGuiWindowFlags_HorizontalScrollbar)) {
         ImGui::End();
         return;
     }
-    
+
     // Show help text at the top
     if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootWindow)) {
-        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Panel Focused ✓ (F1: refocus)");
+        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f),
+                           "Panel Focused ✓ (F1: refocus)");
     } else {
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Press F1 to focus this panel");
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
+                           "Press F1 to focus this panel");
     }
     ImGui::Separator();
-    
+
     // Mode selection
     ImGui::Text("Edit Mode:");
     if (ImGui::RadioButton("Tiles", edit_mode == EditMode::Tiles)) {
@@ -72,12 +79,13 @@ void TilePanel::draw() {
         edit_mode = EditMode::Platforms;
     }
     ImGui::SameLine();
-    if (ImGui::RadioButton("Player Spawn", edit_mode == EditMode::PlayerSpawn)) {
+    if (ImGui::RadioButton("Player Spawn",
+                           edit_mode == EditMode::PlayerSpawn)) {
         edit_mode = EditMode::PlayerSpawn;
     }
-    
+
     ImGui::Separator();
-    
+
     // Draw mode-specific UI
     switch (edit_mode) {
         case EditMode::Tiles:
@@ -93,6 +101,8 @@ void TilePanel::draw() {
 
     ImGui::End();
 }
+
+ImVec2 TilePanel::get_platform_size() const noexcept { return platform_size; }
 
 void TilePanel::draw_tile_mode() {
     ImGui::Text("Tile Picker");
@@ -114,120 +124,165 @@ void TilePanel::draw_tile_mode() {
     }
 }
 
+/*
+ * Draw the platform creation UI when no platform is selected
+ */
 void TilePanel::draw_platform_mode() {
     if (selected_platform_) {
         draw_platform_editor();
     } else {
         ImGui::Text("Platform Creator");
         ImGui::Separator();
-        
+
         // Platform behavior selection for new platforms
         ImGui::TextWrapped("Behavior for new platforms:");
-        if (ImGui::RadioButton("Static", platform_behavior == PlatformBehaviorType::Static)) {
+        if (ImGui::RadioButton(
+                "Static", platform_behavior == PlatformBehaviorType::Static)) {
             platform_behavior = PlatformBehaviorType::Static;
         }
-        if (ImGui::RadioButton("Horizontal", platform_behavior == PlatformBehaviorType::Horizontal)) {
+        if (ImGui::RadioButton(
+                "Horizontal",
+                platform_behavior == PlatformBehaviorType::Horizontal)) {
             platform_behavior = PlatformBehaviorType::Horizontal;
         }
-        if (ImGui::RadioButton("Eight Turn", platform_behavior == PlatformBehaviorType::EightTurnHorizontal)) {
+        if (ImGui::RadioButton("Eight Turn",
+                               platform_behavior ==
+                                   PlatformBehaviorType::EightTurnHorizontal)) {
             platform_behavior = PlatformBehaviorType::EightTurnHorizontal;
         }
-        if (ImGui::RadioButton("Oscillating Size", platform_behavior == PlatformBehaviorType::OscillatingSize)) {
+        if (ImGui::RadioButton(
+                "Oscillating Size",
+                platform_behavior == PlatformBehaviorType::OscillatingSize)) {
             platform_behavior = PlatformBehaviorType::OscillatingSize;
         }
-        
+
+        if (ImGui::CollapsingHeader("Size", ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::SliderFloat(
+                "Width", &platform_size.x, 0.5f, 5.0f, "%.1f tiles");
+            ImGui::SliderFloat(
+                "Height", &platform_size.y, 0.5f, 3.0f, "%.1f tiles");
+        }
+
         ImGui::Separator();
         ImGui::TextWrapped("Features for new platforms:");
         ImGui::Checkbox("Spikes", &feature_spikes);
         ImGui::Checkbox("Checkpoint", &feature_checkpoint);
-        
+
         ImGui::Separator();
         ImGui::TextWrapped("Controls:");
         ImGui::BulletText("Left click: Create platform");
-        ImGui::BulletText("Right click: Delete platform"); 
+        ImGui::BulletText("Right click: Delete platform");
         ImGui::BulletText("Ctrl+Left click: Edit platform");
     }
 }
 
+/**
+ * Draw the platform editor UI when a platform is selected
+ */
 void TilePanel::draw_platform_editor() {
     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Platform Editor");
     ImGui::Separator();
-    
+
     if (!selected_platform_) return;
-    
+
     // Show platform position
-    ImGui::Text("Position: (%d, %d)", selected_platform_->tile_x, selected_platform_->tile_y);
-    
+    ImGui::Text("Position: (%d, %d)",
+                selected_platform_->tile_x,
+                selected_platform_->tile_y);
+
     // Edit platform behavior in a collapsible section
     if (ImGui::CollapsingHeader("Behavior", ImGuiTreeNodeFlags_DefaultOpen)) {
-        if (ImGui::RadioButton("Static##edit", selected_platform_->behavior_type == PlatformBehaviorType::Static)) {
+        if (ImGui::RadioButton("Static##edit",
+                               selected_platform_->behavior_type ==
+                                   PlatformBehaviorType::Static)) {
             selected_platform_->behavior_type = PlatformBehaviorType::Static;
         }
-        if (ImGui::RadioButton("Horizontal##edit", selected_platform_->behavior_type == PlatformBehaviorType::Horizontal)) {
-            selected_platform_->behavior_type = PlatformBehaviorType::Horizontal;
+        if (ImGui::RadioButton("Horizontal##edit",
+                               selected_platform_->behavior_type ==
+                                   PlatformBehaviorType::Horizontal)) {
+            selected_platform_->behavior_type =
+                PlatformBehaviorType::Horizontal;
         }
-        if (ImGui::RadioButton("Eight Turn##edit", selected_platform_->behavior_type == PlatformBehaviorType::EightTurnHorizontal)) {
-            selected_platform_->behavior_type = PlatformBehaviorType::EightTurnHorizontal;
+        if (ImGui::RadioButton("Eight Turn##edit",
+                               selected_platform_->behavior_type ==
+                                   PlatformBehaviorType::EightTurnHorizontal)) {
+            selected_platform_->behavior_type =
+                PlatformBehaviorType::EightTurnHorizontal;
         }
-        if (ImGui::RadioButton("Oscillating Size##edit", selected_platform_->behavior_type == PlatformBehaviorType::OscillatingSize)) {
-            selected_platform_->behavior_type = PlatformBehaviorType::OscillatingSize;
+        if (ImGui::RadioButton("Oscillating Size##edit",
+                               selected_platform_->behavior_type ==
+                                   PlatformBehaviorType::OscillatingSize)) {
+            selected_platform_->behavior_type =
+                PlatformBehaviorType::OscillatingSize;
         }
     }
-    
-    
+
     if (ImGui::CollapsingHeader("Size", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::SliderFloat("Width", &selected_platform_->width_tiles, 0.5f, 5.0f, "%.1f tiles");
-        ImGui::SliderFloat("Height", &selected_platform_->height_tiles, 0.5f, 3.0f, "%.1f tiles");
+        ImGui::SliderFloat("Width",
+                           &selected_platform_->width_tiles,
+                           0.5f,
+                           5.0f,
+                           "%.1f tiles");
+        ImGui::SliderFloat("Height",
+                           &selected_platform_->height_tiles,
+                           0.5f,
+                           3.0f,
+                           "%.1f tiles");
     }
-    
+
     if (ImGui::CollapsingHeader("Features", ImGuiTreeNodeFlags_DefaultOpen)) {
-        
         // Check current features
-        bool has_spikes = std::find(selected_platform_->features.begin(), 
-                                   selected_platform_->features.end(), 
-                                   PlatformFeatureType::Spikes) != selected_platform_->features.end();
-        bool has_checkpoint = std::find(selected_platform_->features.begin(), 
-                                       selected_platform_->features.end(), 
-                                       PlatformFeatureType::Checkpoint) != selected_platform_->features.end();
-        
+        bool has_spikes = std::find(selected_platform_->features.begin(),
+                                    selected_platform_->features.end(),
+                                    PlatformFeatureType::Spikes) !=
+                          selected_platform_->features.end();
+        bool has_checkpoint = std::find(selected_platform_->features.begin(),
+                                        selected_platform_->features.end(),
+                                        PlatformFeatureType::Checkpoint) !=
+                              selected_platform_->features.end();
+
         // Feature checkboxes
         if (ImGui::Checkbox("Spikes##edit", &has_spikes)) {
             if (has_spikes) {
                 // Add spikes feature
-                if (std::find(selected_platform_->features.begin(), 
-                             selected_platform_->features.end(), 
-                             PlatformFeatureType::Spikes) == selected_platform_->features.end()) {
-                    selected_platform_->features.push_back(PlatformFeatureType::Spikes);
+                if (std::find(selected_platform_->features.begin(),
+                              selected_platform_->features.end(),
+                              PlatformFeatureType::Spikes) ==
+                    selected_platform_->features.end()) {
+                    selected_platform_->features.push_back(
+                        PlatformFeatureType::Spikes);
                 }
             } else {
                 // Remove spikes feature
                 selected_platform_->features.erase(
-                    std::remove(selected_platform_->features.begin(), 
-                               selected_platform_->features.end(), 
-                               PlatformFeatureType::Spikes), 
+                    std::remove(selected_platform_->features.begin(),
+                                selected_platform_->features.end(),
+                                PlatformFeatureType::Spikes),
                     selected_platform_->features.end());
             }
         }
-        
+
         if (ImGui::Checkbox("Checkpoint##edit", &has_checkpoint)) {
             if (has_checkpoint) {
                 // Add checkpoint feature
-                if (std::find(selected_platform_->features.begin(), 
-                             selected_platform_->features.end(), 
-                             PlatformFeatureType::Checkpoint) == selected_platform_->features.end()) {
-                    selected_platform_->features.push_back(PlatformFeatureType::Checkpoint);
+                if (std::find(selected_platform_->features.begin(),
+                              selected_platform_->features.end(),
+                              PlatformFeatureType::Checkpoint) ==
+                    selected_platform_->features.end()) {
+                    selected_platform_->features.push_back(
+                        PlatformFeatureType::Checkpoint);
                 }
             } else {
                 // Remove checkpoint feature
                 selected_platform_->features.erase(
-                    std::remove(selected_platform_->features.begin(), 
-                               selected_platform_->features.end(), 
-                               PlatformFeatureType::Checkpoint), 
+                    std::remove(selected_platform_->features.begin(),
+                                selected_platform_->features.end(),
+                                PlatformFeatureType::Checkpoint),
                     selected_platform_->features.end());
             }
         }
     }
-    
+
     ImGui::Separator();
     if (ImGui::Button("Done Editing", ImVec2(-1, 0))) {  // Full width button
         selected_platform_ = nullptr;
