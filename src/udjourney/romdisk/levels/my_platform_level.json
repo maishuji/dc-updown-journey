@@ -1,0 +1,135 @@
+{
+  "name": "Untitled Level",
+  "platforms": [
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 3,
+      "y": 8
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 16,
+      "y": 8
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 11,
+      "y": 13
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 4,
+      "y": 15
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 14,
+      "y": 16
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 7,
+      "y": 19
+    },
+    {
+      "behavior": "static",
+      "features": [
+        "spikes"
+      ],
+      "height": 1.0,
+      "width": 3.5,
+      "x": 16,
+      "y": 19
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 11,
+      "y": 24
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 3,
+      "y": 26
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 11,
+      "y": 34
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 9,
+      "y": 28
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 15,
+      "y": 39
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 7,
+      "y": 44
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 3,
+      "y": 49
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 13,
+      "y": 52
+    },
+    {
+      "behavior": "static",
+      "features": [
+        "spikes",
+        "checkpoint"
+      ],
+      "height": 1.0,
+      "width": 3.5,
+      "x": 6,
+      "y": 57
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 26,
+      "y": 26
+    }
+  ],
+  "player_spawn": {
+    "x": 16,
+    "y": 3
+  }
+}

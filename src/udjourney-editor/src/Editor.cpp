@@ -46,9 +46,7 @@ void Editor::set_level_creation_strategy(
 }
 
 #ifdef EDITOR_TESTING
-Level& Editor::get_test_level() {
-    return pimpl->level;
-}
+Level &Editor::get_test_level() { return pimpl->level; }
 #endif
 
 void Editor::export_tilemap_json(const std::string &export_path) {
@@ -104,37 +102,36 @@ void Editor::import_tilemap_json(const std::string &import_path) {
 void Editor::new_tilemap(int rows, int cols) noexcept {
     pimpl->level.clear();
     pimpl->level.resize(static_cast<size_t>(rows), static_cast<size_t>(cols));
-    
+
     // Initialize all tiles with default cells
     for (size_t i = 0; i < pimpl->level.row_cnt * pimpl->level.col_cnt; ++i) {
         Cell default_cell;
-        default_cell.color = IM_COL32(240, 240, 240, 255);  // Light gray for visibility
+        default_cell.color =
+            IM_COL32(240, 240, 240, 255);  // Light gray for visibility
         pimpl->level.tiles[i] = default_cell;
     }
 }
 
 void Editor::export_platform_level_json(const std::string &export_path) {
     nlohmann::json jlevel;
-    
+
     // Level metadata
     jlevel["name"] = "Untitled Level";
-    
+
     // Player spawn position
-    jlevel["player_spawn"] = {
-        {"x", pimpl->level.player_spawn_x},
-        {"y", pimpl->level.player_spawn_y}
-    };
-    
+    jlevel["player_spawn"] = {{"x", pimpl->level.player_spawn_x},
+                              {"y", pimpl->level.player_spawn_y}};
+
     // Platforms array
     jlevel["platforms"] = nlohmann::json::array();
-    
-    for (const auto& platform : pimpl->level.platforms) {
+
+    for (const auto &platform : pimpl->level.platforms) {
         nlohmann::json jplatform;
         jplatform["x"] = platform.tile_x;
         jplatform["y"] = platform.tile_y;
         jplatform["width"] = platform.width_tiles;
         jplatform["height"] = platform.height_tiles;
-        
+
         // Behavior type
         switch (platform.behavior_type) {
             case PlatformBehaviorType::Static:
@@ -150,11 +147,11 @@ void Editor::export_platform_level_json(const std::string &export_path) {
                 jplatform["behavior"] = "oscillating_size";
                 break;
         }
-        
+
         // Features
         if (!platform.features.empty()) {
             jplatform["features"] = nlohmann::json::array();
-            for (const auto& feature : platform.features) {
+            for (const auto &feature : platform.features) {
                 switch (feature) {
                     case PlatformFeatureType::Spikes:
                         jplatform["features"].push_back("spikes");
@@ -167,10 +164,10 @@ void Editor::export_platform_level_json(const std::string &export_path) {
                 }
             }
         }
-        
+
         jlevel["platforms"].push_back(jplatform);
     }
-    
+
     std::ofstream out(export_path);
     out << jlevel.dump(2);
     out.close();
@@ -184,29 +181,29 @@ void Editor::import_platform_level_json(const std::string &import_path) {
         std::cerr << "Failed to open file: " << import_path << std::endl;
         return;
     }
-    
+
     nlohmann::json jlevel;
     in >> jlevel;
     in.close();
-    
+
     // Clear existing platforms
     pimpl->level.platforms.clear();
-    
+
     // Import player spawn position
     if (jlevel.contains("player_spawn")) {
         pimpl->level.player_spawn_x = jlevel["player_spawn"]["x"].get<int>();
         pimpl->level.player_spawn_y = jlevel["player_spawn"]["y"].get<int>();
     }
-    
+
     // Import platforms
     if (jlevel.contains("platforms")) {
-        for (const auto& jplatform : jlevel["platforms"]) {
+        for (const auto &jplatform : jlevel["platforms"]) {
             EditorPlatform platform;
             platform.tile_x = jplatform["x"].get<int>();
             platform.tile_y = jplatform["y"].get<int>();
             platform.width_tiles = jplatform["width"].get<float>();
             platform.height_tiles = jplatform["height"].get<float>();
-            
+
             // Parse behavior type
             std::string behavior = jplatform["behavior"].get<std::string>();
             if (behavior == "static") {
@@ -214,51 +211,56 @@ void Editor::import_platform_level_json(const std::string &import_path) {
             } else if (behavior == "horizontal") {
                 platform.behavior_type = PlatformBehaviorType::Horizontal;
             } else if (behavior == "eight_turn") {
-                platform.behavior_type = PlatformBehaviorType::EightTurnHorizontal;
+                platform.behavior_type =
+                    PlatformBehaviorType::EightTurnHorizontal;
             } else if (behavior == "oscillating_size") {
                 platform.behavior_type = PlatformBehaviorType::OscillatingSize;
             }
-            
+
             // Parse features
             platform.features.clear();
             if (jplatform.contains("features")) {
-                for (const auto& feature_str : jplatform["features"]) {
+                for (const auto &feature_str : jplatform["features"]) {
                     std::string feature = feature_str.get<std::string>();
                     if (feature == "spikes") {
-                        platform.features.push_back(PlatformFeatureType::Spikes);
+                        platform.features.push_back(
+                            PlatformFeatureType::Spikes);
                     } else if (feature == "checkpoint") {
-                        platform.features.push_back(PlatformFeatureType::Checkpoint);
+                        platform.features.push_back(
+                            PlatformFeatureType::Checkpoint);
                     }
                 }
             }
-            
+
             // Set platform color based on behavior and features
-            PlatformFeatureType primary_feature = platform.features.empty() ? 
-                PlatformFeatureType::None : platform.features[0];
-            
+            PlatformFeatureType primary_feature =
+                platform.features.empty() ? PlatformFeatureType::None
+                                          : platform.features[0];
+
             // Simple color assignment based on behavior type
             switch (platform.behavior_type) {
                 case PlatformBehaviorType::Static:
-                    platform.color = IM_COL32(0, 0, 255, 255); // Blue
+                    platform.color = IM_COL32(0, 0, 255, 255);  // Blue
                     break;
                 case PlatformBehaviorType::Horizontal:
-                    platform.color = IM_COL32(255, 128, 0, 255); // Orange
+                    platform.color = IM_COL32(255, 128, 0, 255);  // Orange
                     break;
                 case PlatformBehaviorType::EightTurnHorizontal:
-                    platform.color = IM_COL32(128, 0, 255, 255); // Purple
+                    platform.color = IM_COL32(128, 0, 255, 255);  // Purple
                     break;
                 case PlatformBehaviorType::OscillatingSize:
-                    platform.color = IM_COL32(0, 255, 128, 255); // Light Green
+                    platform.color = IM_COL32(0, 255, 128, 255);  // Light Green
                     break;
             }
-            
+
             // Override with feature colors if present
             if (primary_feature == PlatformFeatureType::Spikes) {
-                platform.color = IM_COL32(255, 0, 0, 255); // Red for spikes
+                platform.color = IM_COL32(255, 0, 0, 255);  // Red for spikes
             } else if (primary_feature == PlatformFeatureType::Checkpoint) {
-                platform.color = IM_COL32(0, 255, 0, 255); // Green for checkpoint
+                platform.color =
+                    IM_COL32(0, 255, 0, 255);  // Green for checkpoint
             }
-            
+
             pimpl->level.platforms.push_back(platform);
         }
     }
@@ -273,7 +275,7 @@ void Editor::init() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
-    
+
     // Enable docking
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
@@ -296,29 +298,31 @@ void Editor::run() {
         if (IsKeyPressed(KEY_F1)) {
             pimpl->tile_panel.request_focus();
         }
-        
+
         // Export as JSON shortcut (Ctrl+E)
         if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) &&
             IsKeyPressed(KEY_E)) {
             export_tilemap_json("tilemap_export.json");
         }
-        
+
         // Export platform level shortcut (Ctrl+Shift+E)
         if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) &&
             (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) &&
             IsKeyPressed(KEY_E)) {
             export_platform_level_json("platform_level_export.json");
         }
-        
+
         // Import platform level shortcut (Ctrl+Shift+I)
         if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) &&
             (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) &&
             IsKeyPressed(KEY_I)) {
-            // This would open the file dialog, but for quick access we'll use a fixed name
-            // Users can still use the menu for file dialog
-            std::cout << "Platform import shortcut - use File menu for file selection" << std::endl;
+            // This would open the file dialog, but for quick access we'll use a
+            // fixed name Users can still use the menu for file dialog
+            std::cout
+                << "Platform import shortcut - use File menu for file selection"
+                << std::endl;
         }
-        
+
         ImGuiIO &io = ImGui::GetIO();
 
         // Set display size each frame (fixes your crash)
@@ -332,33 +336,38 @@ void Editor::run() {
         ImGui::NewFrame();
 
         // --- Create Dockspace ---
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGuiViewport *viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->WorkPos);
         ImGui::SetNextWindowSize(viewport->WorkSize);
         ImGui::SetNextWindowViewport(viewport->ID);
-        
-        ImGuiWindowFlags dockspace_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        dockspace_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
+
+        ImGuiWindowFlags dockspace_flags =
+            ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        dockspace_flags |=
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse;
         dockspace_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-        dockspace_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        dockspace_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus |
+                           ImGuiWindowFlags_NoNavFocus;
         dockspace_flags |= ImGuiWindowFlags_NoBackground;
-        
+
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        
+
         ImGui::Begin("DockSpace", nullptr, dockspace_flags);
         ImGui::PopStyleVar(3);
-        
+
         // Create the dockspace - windows can now be docked
         ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
-        
+        ImGui::DockSpace(
+            dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+
         // First time setup: create default docking layout using helper
         static bool first_time = true;
         if (first_time) {
             first_time = false;
-            udjourney::DockingHelper::SetupDefaultLayout(dockspace_id, viewport->WorkSize);
+            udjourney::DockingHelper::SetupDefaultLayout(dockspace_id,
+                                                         viewport->WorkSize);
         }
 
         // --- Menu Bar ---
@@ -367,41 +376,48 @@ void Editor::run() {
                 if (ImGui::MenuItem("Export Tilemap as JSON", "Ctrl+E")) {
                     std::cout << "Opening file dialog..." << std::endl;
                     auto config = IGFD::FileDialogConfig();
-                    config.fileName = "export_tilemap.json";
+                    config.fileName = "my_tilemap.json";  // Default name but
+                                                          // user can change it
                     ImGuiFileDialog::Instance()->OpenDialog(
                         "ChooseFileToExportJsonKey",
-                        "Choose File",
+                        "Export Tilemap as JSON",
                         ".json",
                         config);
                 }
                 if (ImGui::MenuItem("Import Tilemap from JSON", "Ctrl+I")) {
                     std::cout << "Opening file dialog..." << std::endl;
                     auto config = IGFD::FileDialogConfig();
-                    config.fileName = "export_tilemap.json";
+                    config.fileName =
+                        "";  // No default for import - user browses files
                     ImGuiFileDialog::Instance()->OpenDialog(
                         "ChooseFileToImportJsonKey",
-                        "Choose File",
+                        "Import Tilemap from JSON",
                         ".json",
                         config);
                 }
                 ImGui::Separator();
                 if (ImGui::MenuItem("Export Platform Level", "Ctrl+Shift+E")) {
-                    std::cout << "Opening platform level export dialog..." << std::endl;
+                    std::cout << "Opening platform level export dialog..."
+                              << std::endl;
                     auto config = IGFD::FileDialogConfig();
-                    config.fileName = "platform_level.json";
+                    config.fileName =
+                        "my_platform_level.json";  // Default name but user can
+                                                   // change it
                     ImGuiFileDialog::Instance()->OpenDialog(
                         "ChooseFileToExportPlatformKey",
-                        "Export Platform Level",
+                        "Export Platform Level as JSON",
                         ".json",
                         config);
                 }
                 if (ImGui::MenuItem("Import Platform Level", "Ctrl+Shift+I")) {
-                    std::cout << "Opening platform level import dialog..." << std::endl;
+                    std::cout << "Opening platform level import dialog..."
+                              << std::endl;
                     auto config = IGFD::FileDialogConfig();
-                    config.fileName = "platform_level.json";
+                    config.fileName =
+                        "";  // No default for import - user browses files
                     ImGuiFileDialog::Instance()->OpenDialog(
                         "ChooseFileToImportPlatformKey",
-                        "Import Platform Level",
+                        "Import Platform Level from JSON",
                         ".json",
                         config);
                 }
@@ -454,12 +470,12 @@ void Editor::run() {
 
             ImGui::EndMenuBar();
         }
-        
-        ImGui::End(); // End DockSpace window
+
+        ImGui::End();  // End DockSpace window
 
         if (ImGuiFileDialog::Instance()->Display("ChooseFileToImportJsonKey",
-                                                 ImGuiWindowFlags_NoCollapse,
-                                                 ImVec2(600, 400),
+                                                 ImGuiWindowFlags_None,
+                                                 ImVec2(1000, 700),
                                                  ImVec2(FLT_MAX, FLT_MAX))) {
             if (ImGuiFileDialog::Instance()->IsOk()) {
                 std::string filePath =
@@ -470,8 +486,8 @@ void Editor::run() {
         }
 
         if (ImGuiFileDialog::Instance()->Display("ChooseFileToExportJsonKey",
-                                                 ImGuiWindowFlags_NoCollapse,
-                                                 ImVec2(600, 400),
+                                                 ImGuiWindowFlags_None,
+                                                 ImVec2(1000, 700),
                                                  ImVec2(FLT_MAX, FLT_MAX))) {
             if (ImGuiFileDialog::Instance()->IsOk()) {
                 std::string filePath =
@@ -481,10 +497,11 @@ void Editor::run() {
             ImGuiFileDialog::Instance()->Close();
         }
 
-        if (ImGuiFileDialog::Instance()->Display("ChooseFileToImportPlatformKey",
-                                                 ImGuiWindowFlags_NoCollapse,
-                                                 ImVec2(600, 400),
-                                                 ImVec2(FLT_MAX, FLT_MAX))) {
+        if (ImGuiFileDialog::Instance()->Display(
+                "ChooseFileToImportPlatformKey",
+                ImGuiWindowFlags_None,
+                ImVec2(1000, 700),
+                ImVec2(FLT_MAX, FLT_MAX))) {
             if (ImGuiFileDialog::Instance()->IsOk()) {
                 std::string filePath =
                     ImGuiFileDialog::Instance()->GetFilePathName();
@@ -493,10 +510,11 @@ void Editor::run() {
             ImGuiFileDialog::Instance()->Close();
         }
 
-        if (ImGuiFileDialog::Instance()->Display("ChooseFileToExportPlatformKey",
-                                                 ImGuiWindowFlags_NoCollapse,
-                                                 ImVec2(600, 400),
-                                                 ImVec2(FLT_MAX, FLT_MAX))) {
+        if (ImGuiFileDialog::Instance()->Display(
+                "ChooseFileToExportPlatformKey",
+                ImGuiWindowFlags_None,
+                ImVec2(1000, 700),
+                ImVec2(FLT_MAX, FLT_MAX))) {
             if (ImGuiFileDialog::Instance()->IsOk()) {
                 std::string filePath =
                     ImGuiFileDialog::Instance()->GetFilePathName();
@@ -509,7 +527,7 @@ void Editor::run() {
 
         // Render the main scene view using EditorScene
         pimpl->scene.render(pimpl->level, pimpl->tile_panel);
-        
+
         // Render UI popups after scene
         pimpl->newLevelPopup.render();
 
@@ -544,6 +562,8 @@ void Editor::update_imgui_input() {
                 return ImGuiKey_Tab;
             case KEY_BACKSPACE:
                 return ImGuiKey_Backspace;
+            case KEY_DELETE:
+                return ImGuiKey_Delete;
             case KEY_ESCAPE:
                 return ImGuiKey_Escape;
             case KEY_LEFT:
@@ -554,8 +574,16 @@ void Editor::update_imgui_input() {
                 return ImGuiKey_UpArrow;
             case KEY_DOWN:
                 return ImGuiKey_DownArrow;
+            case KEY_HOME:
+                return ImGuiKey_Home;
+            case KEY_END:
+                return ImGuiKey_End;
+            case KEY_PAGE_UP:
+                return ImGuiKey_PageUp;
+            case KEY_PAGE_DOWN:
+                return ImGuiKey_PageDown;
 
-            // Modifier keys example:
+            // Modifier keys
             case KEY_LEFT_CONTROL:
             case KEY_RIGHT_CONTROL:
                 return ImGuiKey_LeftCtrl;
@@ -568,6 +596,82 @@ void Editor::update_imgui_input() {
             case KEY_LEFT_SUPER:
             case KEY_RIGHT_SUPER:
                 return ImGuiKey_LeftSuper;
+
+            // Letter keys
+            case KEY_A:
+                return ImGuiKey_A;
+            case KEY_B:
+                return ImGuiKey_B;
+            case KEY_C:
+                return ImGuiKey_C;
+            case KEY_D:
+                return ImGuiKey_D;
+            case KEY_E:
+                return ImGuiKey_E;
+            case KEY_F:
+                return ImGuiKey_F;
+            case KEY_G:
+                return ImGuiKey_G;
+            case KEY_H:
+                return ImGuiKey_H;
+            case KEY_I:
+                return ImGuiKey_I;
+            case KEY_J:
+                return ImGuiKey_J;
+            case KEY_K:
+                return ImGuiKey_K;
+            case KEY_L:
+                return ImGuiKey_L;
+            case KEY_M:
+                return ImGuiKey_M;
+            case KEY_N:
+                return ImGuiKey_N;
+            case KEY_O:
+                return ImGuiKey_O;
+            case KEY_P:
+                return ImGuiKey_P;
+            case KEY_Q:
+                return ImGuiKey_Q;
+            case KEY_R:
+                return ImGuiKey_R;
+            case KEY_S:
+                return ImGuiKey_S;
+            case KEY_T:
+                return ImGuiKey_T;
+            case KEY_U:
+                return ImGuiKey_U;
+            case KEY_V:
+                return ImGuiKey_V;
+            case KEY_W:
+                return ImGuiKey_W;
+            case KEY_X:
+                return ImGuiKey_X;
+            case KEY_Y:
+                return ImGuiKey_Y;
+            case KEY_Z:
+                return ImGuiKey_Z;
+
+            // Number keys
+            case KEY_ZERO:
+                return ImGuiKey_0;
+            case KEY_ONE:
+                return ImGuiKey_1;
+            case KEY_TWO:
+                return ImGuiKey_2;
+            case KEY_THREE:
+                return ImGuiKey_3;
+            case KEY_FOUR:
+                return ImGuiKey_4;
+            case KEY_FIVE:
+                return ImGuiKey_5;
+            case KEY_SIX:
+                return ImGuiKey_6;
+            case KEY_SEVEN:
+                return ImGuiKey_7;
+            case KEY_EIGHT:
+                return ImGuiKey_8;
+            case KEY_NINE:
+                return ImGuiKey_9;
 
             default:
                 return ImGuiKey_None;  // Ignore unmapped keys
@@ -585,6 +689,15 @@ void Editor::update_imgui_input() {
 
     // Mouse wheel
     io.MouseWheel += GetMouseWheelMove();
+
+    // Text input for typing in text fields
+    int key = GetCharPressed();
+    while (key > 0) {
+        if (key >= 32 && key < 127) {  // Printable ASCII characters
+            io.AddInputCharacter((unsigned int)key);
+        }
+        key = GetCharPressed();  // Get next character in queue
+    }
 
     // Keyboard input (basic)
     io.KeyCtrl = IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL);
