@@ -32,6 +32,7 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/BonusManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/ScoreHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/DialogBoxHUD.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/LevelSelectHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Game.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Bonus.cpp
