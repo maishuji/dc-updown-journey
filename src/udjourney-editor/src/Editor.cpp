@@ -45,6 +45,12 @@ void Editor::set_level_creation_strategy(
     pimpl->level_creation_strategy = std::move(strategy);
 }
 
+#ifdef EDITOR_TESTING
+Level& Editor::get_test_level() {
+    return pimpl->level;
+}
+#endif
+
 void Editor::export_tilemap_json(const std::string &export_path) {
     nlohmann::json jmap;
     jmap["rows"] = pimpl->level.row_cnt;
@@ -107,6 +113,157 @@ void Editor::new_tilemap(int rows, int cols) noexcept {
     }
 }
 
+void Editor::export_platform_level_json(const std::string &export_path) {
+    nlohmann::json jlevel;
+    
+    // Level metadata
+    jlevel["name"] = "Untitled Level";
+    
+    // Player spawn position
+    jlevel["player_spawn"] = {
+        {"x", pimpl->level.player_spawn_x},
+        {"y", pimpl->level.player_spawn_y}
+    };
+    
+    // Platforms array
+    jlevel["platforms"] = nlohmann::json::array();
+    
+    for (const auto& platform : pimpl->level.platforms) {
+        nlohmann::json jplatform;
+        jplatform["x"] = platform.tile_x;
+        jplatform["y"] = platform.tile_y;
+        jplatform["width"] = platform.width_tiles;
+        jplatform["height"] = platform.height_tiles;
+        
+        // Behavior type
+        switch (platform.behavior_type) {
+            case PlatformBehaviorType::Static:
+                jplatform["behavior"] = "static";
+                break;
+            case PlatformBehaviorType::Horizontal:
+                jplatform["behavior"] = "horizontal";
+                break;
+            case PlatformBehaviorType::EightTurnHorizontal:
+                jplatform["behavior"] = "eight_turn";
+                break;
+            case PlatformBehaviorType::OscillatingSize:
+                jplatform["behavior"] = "oscillating_size";
+                break;
+        }
+        
+        // Features
+        if (!platform.features.empty()) {
+            jplatform["features"] = nlohmann::json::array();
+            for (const auto& feature : platform.features) {
+                switch (feature) {
+                    case PlatformFeatureType::Spikes:
+                        jplatform["features"].push_back("spikes");
+                        break;
+                    case PlatformFeatureType::Checkpoint:
+                        jplatform["features"].push_back("checkpoint");
+                        break;
+                    case PlatformFeatureType::None:
+                        break;
+                }
+            }
+        }
+        
+        jlevel["platforms"].push_back(jplatform);
+    }
+    
+    std::ofstream out(export_path);
+    out << jlevel.dump(2);
+    out.close();
+    pimpl->last_export_path = export_path;
+}
+
+void Editor::import_platform_level_json(const std::string &import_path) {
+    std::ifstream in(import_path);
+    std::cout << "Importing platform level from: " << import_path << std::endl;
+    if (!in.is_open()) {
+        std::cerr << "Failed to open file: " << import_path << std::endl;
+        return;
+    }
+    
+    nlohmann::json jlevel;
+    in >> jlevel;
+    in.close();
+    
+    // Clear existing platforms
+    pimpl->level.platforms.clear();
+    
+    // Import player spawn position
+    if (jlevel.contains("player_spawn")) {
+        pimpl->level.player_spawn_x = jlevel["player_spawn"]["x"].get<int>();
+        pimpl->level.player_spawn_y = jlevel["player_spawn"]["y"].get<int>();
+    }
+    
+    // Import platforms
+    if (jlevel.contains("platforms")) {
+        for (const auto& jplatform : jlevel["platforms"]) {
+            EditorPlatform platform;
+            platform.tile_x = jplatform["x"].get<int>();
+            platform.tile_y = jplatform["y"].get<int>();
+            platform.width_tiles = jplatform["width"].get<float>();
+            platform.height_tiles = jplatform["height"].get<float>();
+            
+            // Parse behavior type
+            std::string behavior = jplatform["behavior"].get<std::string>();
+            if (behavior == "static") {
+                platform.behavior_type = PlatformBehaviorType::Static;
+            } else if (behavior == "horizontal") {
+                platform.behavior_type = PlatformBehaviorType::Horizontal;
+            } else if (behavior == "eight_turn") {
+                platform.behavior_type = PlatformBehaviorType::EightTurnHorizontal;
+            } else if (behavior == "oscillating_size") {
+                platform.behavior_type = PlatformBehaviorType::OscillatingSize;
+            }
+            
+            // Parse features
+            platform.features.clear();
+            if (jplatform.contains("features")) {
+                for (const auto& feature_str : jplatform["features"]) {
+                    std::string feature = feature_str.get<std::string>();
+                    if (feature == "spikes") {
+                        platform.features.push_back(PlatformFeatureType::Spikes);
+                    } else if (feature == "checkpoint") {
+                        platform.features.push_back(PlatformFeatureType::Checkpoint);
+                    }
+                }
+            }
+            
+            // Set platform color based on behavior and features
+            PlatformFeatureType primary_feature = platform.features.empty() ? 
+                PlatformFeatureType::None : platform.features[0];
+            
+            // Simple color assignment based on behavior type
+            switch (platform.behavior_type) {
+                case PlatformBehaviorType::Static:
+                    platform.color = IM_COL32(0, 0, 255, 255); // Blue
+                    break;
+                case PlatformBehaviorType::Horizontal:
+                    platform.color = IM_COL32(255, 128, 0, 255); // Orange
+                    break;
+                case PlatformBehaviorType::EightTurnHorizontal:
+                    platform.color = IM_COL32(128, 0, 255, 255); // Purple
+                    break;
+                case PlatformBehaviorType::OscillatingSize:
+                    platform.color = IM_COL32(0, 255, 128, 255); // Light Green
+                    break;
+            }
+            
+            // Override with feature colors if present
+            if (primary_feature == PlatformFeatureType::Spikes) {
+                platform.color = IM_COL32(255, 0, 0, 255); // Red for spikes
+            } else if (primary_feature == PlatformFeatureType::Checkpoint) {
+                platform.color = IM_COL32(0, 255, 0, 255); // Green for checkpoint
+            }
+            
+            pimpl->level.platforms.push_back(platform);
+        }
+    }
+}
+
 void Editor::init() {
     InitWindow(1200, 800, "UDJourney Editor");
     SetWindowState(FLAG_WINDOW_RESIZABLE);
@@ -145,6 +302,23 @@ void Editor::run() {
             IsKeyPressed(KEY_E)) {
             export_tilemap_json("tilemap_export.json");
         }
+        
+        // Export platform level shortcut (Ctrl+Shift+E)
+        if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) &&
+            (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) &&
+            IsKeyPressed(KEY_E)) {
+            export_platform_level_json("platform_level_export.json");
+        }
+        
+        // Import platform level shortcut (Ctrl+Shift+I)
+        if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) &&
+            (IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)) &&
+            IsKeyPressed(KEY_I)) {
+            // This would open the file dialog, but for quick access we'll use a fixed name
+            // Users can still use the menu for file dialog
+            std::cout << "Platform import shortcut - use File menu for file selection" << std::endl;
+        }
+        
         ImGuiIO &io = ImGui::GetIO();
 
         // Set display size each frame (fixes your crash)
@@ -210,6 +384,28 @@ void Editor::run() {
                         ".json",
                         config);
                 }
+                ImGui::Separator();
+                if (ImGui::MenuItem("Export Platform Level", "Ctrl+Shift+E")) {
+                    std::cout << "Opening platform level export dialog..." << std::endl;
+                    auto config = IGFD::FileDialogConfig();
+                    config.fileName = "platform_level.json";
+                    ImGuiFileDialog::Instance()->OpenDialog(
+                        "ChooseFileToExportPlatformKey",
+                        "Export Platform Level",
+                        ".json",
+                        config);
+                }
+                if (ImGui::MenuItem("Import Platform Level", "Ctrl+Shift+I")) {
+                    std::cout << "Opening platform level import dialog..." << std::endl;
+                    auto config = IGFD::FileDialogConfig();
+                    config.fileName = "platform_level.json";
+                    ImGuiFileDialog::Instance()->OpenDialog(
+                        "ChooseFileToImportPlatformKey",
+                        "Import Platform Level",
+                        ".json",
+                        config);
+                }
+                ImGui::Separator();
                 if (ImGui::MenuItem("New", "Ctrl+N")) {
                     std::cout << "Opening file dialog..." << std::endl;
 
@@ -285,6 +481,30 @@ void Editor::run() {
             ImGuiFileDialog::Instance()->Close();
         }
 
+        if (ImGuiFileDialog::Instance()->Display("ChooseFileToImportPlatformKey",
+                                                 ImGuiWindowFlags_NoCollapse,
+                                                 ImVec2(600, 400),
+                                                 ImVec2(FLT_MAX, FLT_MAX))) {
+            if (ImGuiFileDialog::Instance()->IsOk()) {
+                std::string filePath =
+                    ImGuiFileDialog::Instance()->GetFilePathName();
+                import_platform_level_json(filePath);
+            }
+            ImGuiFileDialog::Instance()->Close();
+        }
+
+        if (ImGuiFileDialog::Instance()->Display("ChooseFileToExportPlatformKey",
+                                                 ImGuiWindowFlags_NoCollapse,
+                                                 ImVec2(600, 400),
+                                                 ImVec2(FLT_MAX, FLT_MAX))) {
+            if (ImGuiFileDialog::Instance()->IsOk()) {
+                std::string filePath =
+                    ImGuiFileDialog::Instance()->GetFilePathName();
+                export_platform_level_json(filePath);
+            }
+            ImGuiFileDialog::Instance()->Close();
+        }
+
         pimpl->tile_panel.draw();
 
         // Render the main scene view using EditorScene
@@ -338,16 +558,16 @@ void Editor::update_imgui_input() {
             // Modifier keys example:
             case KEY_LEFT_CONTROL:
             case KEY_RIGHT_CONTROL:
-                return ImGuiKey_ModCtrl;
+                return ImGuiKey_LeftCtrl;
             case KEY_LEFT_SHIFT:
             case KEY_RIGHT_SHIFT:
-                return ImGuiKey_ModShift;
+                return ImGuiKey_LeftShift;
             case KEY_LEFT_ALT:
             case KEY_RIGHT_ALT:
-                return ImGuiKey_ModAlt;
+                return ImGuiKey_LeftAlt;
             case KEY_LEFT_SUPER:
             case KEY_RIGHT_SUPER:
-                return ImGuiKey_ModSuper;
+                return ImGuiKey_LeftSuper;
 
             default:
                 return ImGuiKey_None;  // Ignore unmapped keys

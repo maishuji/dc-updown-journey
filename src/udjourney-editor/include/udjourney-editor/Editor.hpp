@@ -21,6 +21,8 @@ class Editor {
  private:
     void export_tilemap_json(const std::string& export_path);
     void import_tilemap_json(const std::string& import_path);
+    void export_platform_level_json(const std::string& export_path);
+    void import_platform_level_json(const std::string& import_path);
     void export_udjourney_scene(const std::string& export_path);
     void import_udjourney_scene(const std::string& import_path);
     void draw_tiles_panel();
@@ -28,4 +30,14 @@ class Editor {
 
     struct PImpl;
     std::unique_ptr<PImpl> pimpl;
+
+#ifdef EDITOR_TESTING
+public:
+    // Test-only methods to access internal state
+    Level& get_test_level();
+    void test_export_tilemap_json(const std::string& path) { export_tilemap_json(path); }
+    void test_import_tilemap_json(const std::string& path) { import_tilemap_json(path); }
+    void test_export_platform_level_json(const std::string& path) { export_platform_level_json(path); }
+    void test_import_platform_level_json(const std::string& path) { import_platform_level_json(path); }
+#endif
 };

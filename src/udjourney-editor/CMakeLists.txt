@@ -47,8 +47,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(catch2)
 
-add_executable(udjourney_editor
-  src/main.cpp
+# Create library for shared code between main executable and tests
+# Create the editor library
+add_library(udjourney_editor_lib
   src/Editor.cpp
   src/EditorScene.cpp
   src/TilePanel.cpp
@@ -67,9 +68,48 @@ add_executable(udjourney_editor
   ${IMGUI_BACKEND_DIR}/imgui_impl_opengl3.cpp
 )
 
-target_include_directories(udjourney_editor PUBLIC include)
+target_include_directories(udjourney_editor_lib PUBLIC include)
+target_link_libraries(udjourney_editor_lib PUBLIC raylib nlohmann_json::nlohmann_json)
 
-target_link_libraries(udjourney_editor PRIVATE raylib nlohmann_json::nlohmann_json)
+# Set EDITOR_TESTING flag when building for tests
+option(ENABLE_EDITOR_TESTING "Enable editor testing features" OFF)
+if(ENABLE_EDITOR_TESTING)
+    target_compile_definitions(udjourney_editor_lib PUBLIC EDITOR_TESTING)
+endif()
+
+target_include_directories(udjourney_editor_lib PUBLIC include)
+target_link_libraries(udjourney_editor_lib PUBLIC raylib nlohmann_json::nlohmann_json)
+
+# Create test-enabled version of the library
+add_library(udjourney_editor_lib_test STATIC
+  src/Editor.cpp
+  src/EditorScene.cpp
+  src/TilePanel.cpp
+  src/DockingHelper.cpp
+  src/strategies/level/BlankLevelStrategy.cpp
+  src/ui/NewLevelPopup.cpp
+  ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
+
+  ${imgui_SOURCE_DIR}/imgui.cpp
+  ${imgui_SOURCE_DIR}/imgui_draw.cpp
+  ${imgui_SOURCE_DIR}/imgui_tables.cpp
+  ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+  ${imgui_SOURCE_DIR}/imgui_demo.cpp
+
+  # Official OpenGL3 backend for ImGui rendering
+  ${IMGUI_BACKEND_DIR}/imgui_impl_opengl3.cpp
+)
+
+target_include_directories(udjourney_editor_lib_test PUBLIC include)
+target_link_libraries(udjourney_editor_lib_test PUBLIC raylib nlohmann_json::nlohmann_json)
+target_compile_definitions(udjourney_editor_lib_test PRIVATE EDITOR_TESTING)
+
+# Main executable
+add_executable(udjourney_editor
+  src/main.cpp
+)
+
+target_link_libraries(udjourney_editor PRIVATE udjourney_editor_lib)
 
 if(UNIX AND NOT APPLE)
   target_link_libraries(udjourney_editor PRIVATE pthread m dl)
@@ -90,3 +130,6 @@ target_include_directories(tilepanel_tests PRIVATE include src ${imgui_SOURCE_DI
 target_link_libraries(tilepanel_tests PRIVATE Catch2::Catch2WithMain)
 
 add_test(NAME TilePanelTests COMMAND tilepanel_tests)
+
+# Add the tests subdirectory
+add_subdirectory(tests)
