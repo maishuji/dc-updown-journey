@@ -1,10 +1,11 @@
 // Copyright 2025 Quentin Cartier
-#include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
+
+#include <catch2/catch_test_macros.hpp>
 #include <nlohmann/json.hpp>
 
-#include "test_helpers.hpp"
+#include "udjourney-editor/tests/test_helpers.hpp"
 #include "udjourney-editor/Editor.hpp"
 #include "udjourney-editor/Level.hpp"
 

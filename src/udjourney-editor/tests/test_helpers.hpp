@@ -6,8 +6,9 @@
 
 // Helper function to create a temporary test file
 inline std::string create_temp_file(const std::string& content) {
+    static unsigned int seed = 1;
     std::string temp_path = std::filesystem::temp_directory_path() /
-                            ("test_" + std::to_string(rand()) + ".json");
+                            ("test_" + std::to_string(rand_r(&seed)) + ".json");
     std::ofstream file(temp_path);
     file << content;
     file.close();

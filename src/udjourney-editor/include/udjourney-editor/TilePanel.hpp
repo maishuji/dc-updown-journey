@@ -3,9 +3,10 @@
 #include <imgui.h>
 
 #include <string>
+#include <vector>
 
 // Include Level.hpp to get enum definitions
-#include "Level.hpp"
+#include "udjourney-editor/Level.hpp"
 
 namespace color {
 extern const ImU32 kColorRed;

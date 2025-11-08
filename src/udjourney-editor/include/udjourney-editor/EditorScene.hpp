@@ -6,9 +6,9 @@
 #include <cmath>
 #include <memory>
 
-#include "Level.hpp"
-#include "TilePanel.hpp"
-#include "ui/PlatformContextPopup.hpp"
+#include "udjourney-editor/Level.hpp"
+#include "udjourney-editor/TilePanel.hpp"
+#include "udjourney-editor/ui/PlatformContextPopup.hpp"
 
 class EditorScene {
  public:

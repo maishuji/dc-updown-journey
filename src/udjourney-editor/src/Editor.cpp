@@ -8,9 +8,10 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <utility>
 #include <vector>
+
+#include <nlohmann/json.hpp>
 
 #include "ImGuiFileDialog.h"
 #include "raylib/raylib.h"

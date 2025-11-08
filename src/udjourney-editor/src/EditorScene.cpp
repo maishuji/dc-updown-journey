@@ -334,8 +334,7 @@ void render_spikes_(const ImVec2& top_left, const ImVec2& bottom_right,
             ImVec2(top_left.x + i * indicator_offset_x + indicator_offset_x / 2,
                    top_left.y - spike_height),
             IM_COL32(255, 0, 0, 255) &
-                IM_COL32(255, 255, 255, 150)  // Semi-transparent red
-        );
+                IM_COL32(255, 255, 255, 150));  // Semi-transparent red
     }
 }
 
@@ -354,8 +353,7 @@ void render_checkpoint_(const ImVec2& top_left, const ImVec2& bottom_right,
         ImVec2(center_x + 5, top_left.y - flag_height / 2 + 2),
         ImVec2(center_x + flag_height, top_left.y - flag_height),
         IM_COL32(0, 255, 0, 255) &
-            IM_COL32(255, 255, 255, 150)  // Semi-transparent green
-    );
+            IM_COL32(255, 255, 255, 150));  // Semi-transparent green
 }
 
 void EditorScene::render_platforms(Level& level, TilePanel& tile_panel,

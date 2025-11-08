@@ -33,6 +33,7 @@ class Editor {
     std::unique_ptr<PImpl> pimpl;
 
 #ifdef EDITOR_TESTING
+
  public:
     // Test-only methods to access internal state
     Level& get_test_level();
