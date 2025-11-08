@@ -1,3 +1,4 @@
+// Copyright 2025 Quentin Cartier
 // NewLevelPopup.hpp
 #pragma once
 #include "udjourney-editor/Level.hpp"

@@ -1,12 +1,13 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
-#include <string>
-#include <fstream>
 #include <filesystem>
+#include <fstream>
+#include <string>
 
 // Helper function to create a temporary test file
 inline std::string create_temp_file(const std::string& content) {
-    std::string temp_path = std::filesystem::temp_directory_path() / ("test_" + std::to_string(rand()) + ".json");
+    std::string temp_path = std::filesystem::temp_directory_path() /
+                            ("test_" + std::to_string(rand()) + ".json");
     std::ofstream file(temp_path);
     file << content;
     file.close();

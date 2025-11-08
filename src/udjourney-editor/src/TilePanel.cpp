@@ -1,4 +1,4 @@
-
+// Copyright 2025 Quentin Cartier
 #include "udjourney-editor/TilePanel.hpp"
 
 #include <imgui.h>

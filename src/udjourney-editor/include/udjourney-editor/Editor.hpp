@@ -1,6 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 #include <memory>
+#include <string>
 
 #include "udjourney-editor/strategies/level/LevelCreationStrategy.hpp"
 
@@ -32,12 +33,20 @@ class Editor {
     std::unique_ptr<PImpl> pimpl;
 
 #ifdef EDITOR_TESTING
-public:
+ public:
     // Test-only methods to access internal state
     Level& get_test_level();
-    void test_export_tilemap_json(const std::string& path) { export_tilemap_json(path); }
-    void test_import_tilemap_json(const std::string& path) { import_tilemap_json(path); }
-    void test_export_platform_level_json(const std::string& path) { export_platform_level_json(path); }
-    void test_import_platform_level_json(const std::string& path) { import_platform_level_json(path); }
+    void test_export_tilemap_json(const std::string& path) {
+        export_tilemap_json(path);
+    }
+    void test_import_tilemap_json(const std::string& path) {
+        import_tilemap_json(path);
+    }
+    void test_export_platform_level_json(const std::string& path) {
+        export_platform_level_json(path);
+    }
+    void test_import_platform_level_json(const std::string& path) {
+        import_platform_level_json(path);
+    }
 #endif
 };

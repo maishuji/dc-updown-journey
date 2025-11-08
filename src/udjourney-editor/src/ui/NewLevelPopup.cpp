@@ -1,3 +1,4 @@
+// Copyright 2025 Quentin Cartier
 // NewLevelPopup.cpp
 #include "udjourney-editor/ui/NewLevelPopup.hpp"
 

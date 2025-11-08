@@ -3,10 +3,10 @@
 
 #include <imgui.h>
 
-#include <iostream>
-#include <vector>
-#include <map>
 #include <algorithm>
+#include <iostream>
+#include <map>
+#include <vector>
 
 // Forward declarations for udjourney types
 enum class PlatformBehaviorType {
@@ -16,11 +16,7 @@ enum class PlatformBehaviorType {
     OscillatingSize
 };
 
-enum class PlatformFeatureType { 
-    None, 
-    Spikes, 
-    Checkpoint 
-};
+enum class PlatformFeatureType { None, Spikes, Checkpoint };
 
 struct EditorPlatform {
     int tile_x;
@@ -72,10 +68,11 @@ struct Level {
 
     void remove_platform_at(int tile_x, int tile_y) {
         platforms.erase(
-            std::remove_if(platforms.begin(), platforms.end(),
-                [tile_x, tile_y](const EditorPlatform& p) {
-                    return p.tile_x == tile_x && p.tile_y == tile_y;
-                }),
+            std::remove_if(platforms.begin(),
+                           platforms.end(),
+                           [tile_x, tile_y](const EditorPlatform& p) {
+                               return p.tile_x == tile_x && p.tile_y == tile_y;
+                           }),
             platforms.end());
     }
 
