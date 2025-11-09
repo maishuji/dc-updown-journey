@@ -100,7 +100,7 @@ add_library(udjourney_editor_lib_test STATIC
   ${IMGUI_BACKEND_DIR}/imgui_impl_opengl3.cpp
 )
 
-target_include_directories(udjourney_editor_lib_test PUBLIC include)
+target_include_directories(udjourney_editor_lib_test PUBLIC include PRIVATE src tests)
 target_link_libraries(udjourney_editor_lib_test PUBLIC raylib nlohmann_json::nlohmann_json)
 target_compile_definitions(udjourney_editor_lib_test PRIVATE EDITOR_TESTING)
 
