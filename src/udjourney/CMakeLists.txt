@@ -37,7 +37,6 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Bonus.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SpriteAnim.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/AnimSpriteController.cpp
 )
 
 if (NOT PLATFORM_DREAMCAST)
