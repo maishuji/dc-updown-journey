@@ -24,7 +24,7 @@ jobs:
       - name: Run cpplint
         run: |
           source ${{ github.workspace }}/venv/bin/activate
-          cpplint --filter=-build/c++11,-runtime/references,-build/header_guard --exclude=src/udjourney/include/udjourney/dreamcast_json_compat.h --recursive src/
+          cpplint --filter=-build/c++11,-runtime/references,-build/header_guard,-build/c++17 --exclude=src/udjourney/include/udjourney/dreamcast_json_compat.h --recursive src/
 
       - name: Build the repository
         run:  |
