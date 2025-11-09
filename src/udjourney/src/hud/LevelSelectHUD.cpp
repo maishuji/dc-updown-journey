@@ -2,16 +2,14 @@
 #include "udjourney/hud/LevelSelectHUD.hpp"
 
 #include <algorithm>
-#include <filesystem>
 #include <iostream>
 #include <string>
 #include <utility>
 
 #include "raylib/raylib.h"
 
-#ifdef PLATFORM_DREAMCAST
-namespace fs = std::experimental::filesystem;
-#else
+#ifndef PLATFORM_DREAMCAST
+#include <filesystem>
 namespace fs = std::filesystem;
 #endif
 
@@ -24,6 +22,11 @@ LevelSelectHUD::LevelSelectHUD(Rectangle rect, const std::string& levels_dir) :
 void LevelSelectHUD::scan_levels_directory() {
     m_level_files.clear();
 
+#ifdef PLATFORM_DREAMCAST
+    // For Dreamcast, use a predefined list of levels since filesystem scanning
+    // is not available These should match the levels embedded in the romdisk
+    m_level_files = {"level1.json", "level2.json", "level3.json"};
+#else
     try {
         if (fs::exists(m_levels_dir) && fs::is_directory(m_levels_dir)) {
             for (const auto& entry : fs::directory_iterator(m_levels_dir)) {
@@ -40,6 +43,7 @@ void LevelSelectHUD::scan_levels_directory() {
 
     // Sort the level files for consistent ordering
     std::sort(m_level_files.begin(), m_level_files.end());
+#endif
 
     // Ensure we have at least one level
     if (m_level_files.empty()) {
