@@ -12,4 +12,7 @@ Standard: Cpp11
 TabWidth: '4'
 UseTab: Never
 
+# Disable include sorting to avoid conflicts with cpplint
+SortIncludes: Never
+
 ...

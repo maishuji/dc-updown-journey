@@ -24,6 +24,7 @@
 #include "udjourney/core/Logger.hpp"
 #include "udjourney/hud/DialogBoxHUD.hpp"
 #include "udjourney/hud/HUDComponent.hpp"
+#include "udjourney/hud/LevelSelectHUD.hpp"
 #include "udjourney/hud/ScoreHUD.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/platform/Platform.hpp"
@@ -356,8 +357,23 @@ void Game::process_input() {
 
         if (m_state == GameState::PLAY) {
             m_state = GameState::PAUSE;
-        } else {
+        } else if (m_state == GameState::PAUSE && !m_showing_level_select) {
             m_state = GameState::PLAY;
+        }
+    }
+
+    // Handle level selection input when paused (but only if level select menu
+    // is not shown)
+    if (m_state == GameState::PAUSE && !m_showing_level_select) {
+        bool level_select_pressed = false;
+#ifdef PLATFORM_DREAMCAST
+        level_select_pressed =
+            IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
+#else
+        level_select_pressed = IsKeyPressed(KEY_L);
+#endif
+        if (level_select_pressed) {
+            show_level_select_menu();
         }
     }
 
@@ -407,7 +423,9 @@ void draw_game_over_(auto score_history) {
 
 void draw_pause_() {
     DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
-    DrawText("Press B button to quit\n", 300, 40, 20, RED);
+    DrawText("Press START to resume\n", 300, 40, 20, WHITE);
+    DrawText("Press L to load level\n", 300, 70, 20, WHITE);
+    DrawText("Press B button to quit\n", 300, 100, 20, RED);
 }
 
 void draw_win_screen_() {
@@ -1006,4 +1024,58 @@ void Game::restart_level() {
 
     // Reset game rect position
     m_rect.y = 0;
+}
+
+void Game::show_level_select_menu() {
+    m_showing_level_select = true;
+
+    // Create level select HUD
+    Rectangle menu_rect = {
+        m_rect.width * 0.2f,    // 20% from left
+        m_rect.height * 0.15f,  // 15% from top
+        m_rect.width * 0.6f,    // 60% width
+        m_rect.height * 0.7f    // 70% height
+    };
+
+    std::string levels_dir = udjourney::coreutils::get_assets_path("levels");
+    auto level_select_hud =
+        std::make_unique<LevelSelectHUD>(menu_rect, levels_dir);
+
+    // Set callbacks
+    level_select_hud->set_on_level_selected_callback(
+        [this](const std::string &level_path) {
+            on_level_selected(level_path);
+        });
+
+    level_select_hud->set_on_cancelled_callback(
+        [this]() { on_level_select_cancelled(); });
+
+    // Add to HUD manager
+    m_hud_manager.push_foreground_hud(std::move(level_select_hud));
+}
+
+void Game::hide_level_select_menu() {
+    m_showing_level_select = false;
+    m_hud_manager.pop_foreground_hud();
+}
+
+void Game::on_level_selected(const std::string &level_path) {
+    // Hide the level select menu
+    hide_level_select_menu();
+
+    // Load the selected level
+    if (load_scene(level_path)) {
+        // Successfully loaded new level - restart with new level
+        restart_level();
+        std::cout << "Loaded level: " << level_path << std::endl;
+    } else {
+        std::cerr << "Failed to load level: " << level_path << std::endl;
+        // Still return to game even if level failed to load
+        m_state = GameState::PLAY;
+    }
+}
+
+void Game::on_level_select_cancelled() {
+    // Hide the level select menu and return to pause menu
+    hide_level_select_menu();
 }
