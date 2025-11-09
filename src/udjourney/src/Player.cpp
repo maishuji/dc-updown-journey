@@ -91,31 +91,9 @@ Player::Player(const IGame &iGame, Rectangle iRect,
         m_texture = texture_manager.get_texture("placeholder.png");
     }
 
-    // Load sprite sheet and initialize animation
+    // Load sprite sheet
     auto &texture_manager = TextureManager::get_instance();
-
-    // Initialize animation controller with animations
-    Texture2D idle_sheet = texture_manager.get_texture("char1-Sheet.png");
-    Texture2D run_sheet = texture_manager.get_texture("char1-run-Sheet.png");
-
-    anim_controller_.add_animation(PlayerState::IDLE,
-                                   "idle",
-                                   SpriteAnim(idle_sheet,
-                                              SPRITE_WIDTH,
-                                              SPRITE_HEIGHT,
-                                              FRAME_DURATION,
-                                              FRAMES_PER_ANIMATION,
-                                              true));
-
-    anim_controller_.add_animation(
-        PlayerState::RUNNING,
-        "running",
-        SpriteAnim(run_sheet,
-                   SPRITE_WIDTH,
-                   SPRITE_HEIGHT,
-                   FRAME_DURATION / 6.0F,  // Faster frame time for running
-                   FRAMES_PER_ANIMATION,
-                   true));
+    m_sprite_sheet = texture_manager.get_texture("char1-Sheet.png");
 }
 
 void Player::draw() const {
@@ -125,8 +103,35 @@ void Player::draw() const {
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
 
-    // Draw current animation through the controller
-    anim_controller_.draw(rect, !m_facing_right);
+    // Draw sprite animation if sprite sheet is loaded
+    if (m_sprite_sheet.id > 0) {
+        Rectangle src_rect = get_sprite_frame_rect();
+
+        // Flip horizontally if facing left
+        if (!m_facing_right) {
+            src_rect.width = -src_rect.width;
+        }
+
+        DrawTexturePro(
+            m_sprite_sheet, src_rect, rect, Vector2{0.0F, 0.0F}, 0, WHITE);
+    } else {
+        // Fallback: draw colored rectangle
+        DrawRectangleRec(rect,
+                         m_pimpl->grounded    ? BLUE
+                         : m_pimpl->colliding ? RED
+                         : m_pimpl->dashing   ? ORANGE
+                                              : GREEN);
+
+        // Fallback texture if sprite sheet fails
+        if (m_texture.id > 0) {
+            auto src_rect = Rectangle{0,
+                                      0,
+                                      static_cast<float>(m_texture.width),
+                                      static_cast<float>(m_texture.height)};
+            DrawTexturePro(
+                m_texture, src_rect, rect, Vector2{0.0F, 0.0F}, 0, WHITE);
+        }
+    }
 
     if (is_invincible()) {
         // Draw a yellow border around the player when invincible
@@ -141,9 +146,8 @@ void Player::update(float iDelta) {
         m_invincibility_timer = 0.0F;
     }
 
-    // Update animation state and controller
-    update_animation_state();
-    anim_controller_.update(iDelta);
+    // Update animation
+    update_animation(iDelta);
 
     // Gravity
     r.y += 1;
@@ -190,9 +194,11 @@ void Player::process_input() {
     if (input_mapping.left_pressed()) {
         r.x -= m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
         m_facing_right = false;  // Update facing direction
+        m_facing_right = false;  // Update facing direction
     }
     if (input_mapping.right_pressed()) {
         r.x += m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
+        m_facing_right = true;  // Update facing direction
         m_facing_right = true;  // Update facing direction
     }
 
@@ -330,26 +336,36 @@ void Player::_reset_jump() noexcept {
     m_pimpl->vy = 0.0F;
 }
 
-void Player::update_animation_state() {
-    // Check if player is currently moving
-    bool is_moving =
-        input_mapping.left_pressed() || input_mapping.right_pressed();
+void Player::update_animation(float delta_time) {
+    // Always animate - including idle animation
+    m_frame_timer += delta_time;
 
-    // Determine player state for animation controller
-    PlayerState new_player_state;
+    if (m_frame_timer >= FRAME_DURATION) {
+        m_frame_timer = 0.0f;
+        m_current_frame = (m_current_frame + 1) % FRAMES_PER_ANIMATION;
+    }
+}
 
+Rectangle Player::get_sprite_frame_rect() const {
+    // Assuming sprite sheet has animations arranged horizontally
+    // with 4 frames per row for different animation states:
+    // Row 0: Idle/Walk animation
+    // Row 1: Jump animation (if available)
+    // Row 2: Dash animation (if available)
+
+    int row = 0;  // Default to walk/idle animation
+
+    // Choose animation row based on player state
     if (m_pimpl->dashing) {
-        new_player_state = PlayerState::DASHING;
+        row = 2;  // Dash animation (if available)
     } else if (m_pimpl->jumping || !m_pimpl->grounded) {
-        new_player_state = PlayerState::JUMPING;
-    } else if (is_moving && m_pimpl->grounded) {
-        m_is_running = true;
-        new_player_state = PlayerState::RUNNING;
+        row = 1;  // Jump animation (if available)
     } else {
-        m_is_running = false;
-        new_player_state = PlayerState::IDLE;
+        row = 0;  // Walk/idle animation
     }
 
-    // Set the current state in the animation controller
-    anim_controller_.set_current_state(new_player_state);
+    return Rectangle{static_cast<float>(m_current_frame * SPRITE_WIDTH),
+                     static_cast<float>(row * SPRITE_HEIGHT),
+                     static_cast<float>(SPRITE_WIDTH),
+                     static_cast<float>(SPRITE_HEIGHT)};
 }
