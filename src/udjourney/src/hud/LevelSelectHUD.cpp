@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <filesystem>
 #include <iostream>
+#include <string>
+#include <utility>
 
 #include "raylib/raylib.h"
 

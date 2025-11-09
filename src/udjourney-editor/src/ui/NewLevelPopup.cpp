@@ -4,6 +4,8 @@
 
 #include <imgui.h>
 
+#include <iostream>
+
 void NewLevelPopup::render() {
     if (show) {
         ImGui::OpenPopup("New Level Options");

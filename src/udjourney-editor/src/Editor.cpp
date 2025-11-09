@@ -1,18 +1,24 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney-editor/Editor.hpp"
 
+// C system headers (imgui treated as C system by cpplint)
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 
+// C++ standard library headers
 #include <cmath>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
+// Third-party library headers
 #include <nlohmann/json.hpp>
 
+// Project headers
 #include "ImGuiFileDialog.h"
 #include "raylib/raylib.h"
 #include "udjourney-editor/DockingHelper.hpp"
