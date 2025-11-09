@@ -91,9 +91,17 @@ Player::Player(const IGame &iGame, Rectangle iRect,
         m_texture = texture_manager.get_texture("placeholder.png");
     }
 
-    // Load sprite sheet
+    // Load sprite sheet and initialize animation
     auto &texture_manager = TextureManager::get_instance();
-    m_sprite_sheet = texture_manager.get_texture("char1-Sheet.png");
+    Texture2D sprite_sheet = texture_manager.get_texture("char1-Sheet.png");
+
+    // Initialize sprite animation with the loaded texture
+    m_sprite_animation = SpriteAnim(sprite_sheet,
+                                    SPRITE_WIDTH,
+                                    SPRITE_HEIGHT,
+                                    FRAME_DURATION,
+                                    FRAMES_PER_ANIMATION,
+                                    true);
 }
 
 void Player::draw() const {
@@ -103,35 +111,8 @@ void Player::draw() const {
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
 
-    // Draw sprite animation if sprite sheet is loaded
-    if (m_sprite_sheet.id > 0) {
-        Rectangle src_rect = get_sprite_frame_rect();
-
-        // Flip horizontally if facing left
-        if (!m_facing_right) {
-            src_rect.width = -src_rect.width;
-        }
-
-        DrawTexturePro(
-            m_sprite_sheet, src_rect, rect, Vector2{0.0F, 0.0F}, 0, WHITE);
-    } else {
-        // Fallback: draw colored rectangle
-        DrawRectangleRec(rect,
-                         m_pimpl->grounded    ? BLUE
-                         : m_pimpl->colliding ? RED
-                         : m_pimpl->dashing   ? ORANGE
-                                              : GREEN);
-
-        // Fallback texture if sprite sheet fails
-        if (m_texture.id > 0) {
-            auto src_rect = Rectangle{0,
-                                      0,
-                                      static_cast<float>(m_texture.width),
-                                      static_cast<float>(m_texture.height)};
-            DrawTexturePro(
-                m_texture, src_rect, rect, Vector2{0.0F, 0.0F}, 0, WHITE);
-        }
-    }
+    // Draw sprite animation using SpriteAnim class
+    m_sprite_animation.draw_with_dest(rect, !m_facing_right);
 
     if (is_invincible()) {
         // Draw a yellow border around the player when invincible
@@ -146,8 +127,9 @@ void Player::update(float iDelta) {
         m_invincibility_timer = 0.0F;
     }
 
-    // Update animation
-    update_animation(iDelta);
+    // Update animation state and sprite animation
+    update_animation_state();
+    m_sprite_animation.update(iDelta);
 
     // Gravity
     r.y += 1;
@@ -334,36 +316,18 @@ void Player::_reset_jump() noexcept {
     m_pimpl->vy = 0.0F;
 }
 
-void Player::update_animation(float delta_time) {
-    // Always animate - including idle animation
-    m_frame_timer += delta_time;
+void Player::update_animation_state() {
+    // Choose animation state based on player state
+    AnimationState new_state;
 
-    if (m_frame_timer >= FRAME_DURATION) {
-        m_frame_timer = 0.0f;
-        m_current_frame = (m_current_frame + 1) % FRAMES_PER_ANIMATION;
-    }
-}
-
-Rectangle Player::get_sprite_frame_rect() const {
-    // Assuming sprite sheet has animations arranged horizontally
-    // with 4 frames per row for different animation states:
-    // Row 0: Idle/Walk animation
-    // Row 1: Jump animation (if available)
-    // Row 2: Dash animation (if available)
-
-    int row = 0;  // Default to walk/idle animation
-
-    // Choose animation row based on player state
     if (m_pimpl->dashing) {
-        row = 2;  // Dash animation (if available)
+        new_state = AnimationState::DASH;
     } else if (m_pimpl->jumping || !m_pimpl->grounded) {
-        row = 1;  // Jump animation (if available)
+        new_state = AnimationState::JUMP;
     } else {
-        row = 0;  // Walk/idle animation
+        new_state = AnimationState::IDLE_WALK;
     }
 
-    return Rectangle{static_cast<float>(m_current_frame * SPRITE_WIDTH),
-                     static_cast<float>(row * SPRITE_HEIGHT),
-                     static_cast<float>(SPRITE_WIDTH),
-                     static_cast<float>(SPRITE_HEIGHT)};
+    // Update animation state if it changed
+    m_sprite_animation.set_animation_state(new_state);
 }
