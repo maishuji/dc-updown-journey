@@ -8,7 +8,7 @@
 
 #include "udjourney-editor/Editor.hpp"
 #include "udjourney-editor/Level.hpp"
-#include "udjourney-editor/tests/test_helpers.hpp"
+#include "test_helpers.hpp"
 
 TEST_CASE("Platform Level JSON Export", "[json][export][platform]") {
     Editor editor;

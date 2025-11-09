@@ -59,7 +59,23 @@ class Player : public IActor, public IObservable {
     struct PImpl;
     std::unique_ptr<struct PImpl> m_pimpl;
     Texture2D m_texture = {};
+    Texture2D m_sprite_sheet = {};
     udjourney::core::events::EventDispatcher &m_dispatcher;
+    
+    // Animation state
+    int m_current_frame = 0;
+    float m_frame_timer = 0.0f;
+    bool m_facing_right = true;
+    
+    // Animation constants
+    static constexpr int SPRITE_WIDTH = 64;
+    static constexpr int SPRITE_HEIGHT = 64;
+    static constexpr int FRAMES_PER_ANIMATION = 8;
+    static constexpr float FRAME_DURATION = 0.3f;  // 100ms per frame
+    
+    // Animation helper methods
+    void update_animation(float delta_time);
+    Rectangle get_sprite_frame_rect() const;
 };
 
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_

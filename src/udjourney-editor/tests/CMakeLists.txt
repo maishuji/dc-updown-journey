@@ -14,10 +14,10 @@ add_executable(udjourney_editor_tests
 # Define EDITOR_TESTING for the test executable
 target_compile_definitions(udjourney_editor_tests PRIVATE EDITOR_TESTING)
 
-# Link against the editor library and Catch2
+# Link against the test-enabled editor library and Catch2
 target_link_libraries(udjourney_editor_tests 
     PRIVATE 
-    udjourney_editor_lib
+    udjourney_editor_lib_test
     Catch2::Catch2WithMain
     nlohmann_json::nlohmann_json
 )

@@ -90,6 +90,10 @@ Player::Player(const IGame &iGame, Rectangle iRect,
         auto &texture_manager = TextureManager::get_instance();
         m_texture = texture_manager.get_texture("placeholder.png");
     }
+
+    // Load sprite sheet
+    auto &texture_manager = TextureManager::get_instance();
+    m_sprite_sheet = texture_manager.get_texture("char1-Sheet.png");
 }
 
 void Player::draw() const {
@@ -98,20 +102,35 @@ void Player::draw() const {
     // Convert to screen coordinates
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
-    DrawRectangleRec(rect,
-                     m_pimpl->grounded    ? BLUE
-                     : m_pimpl->colliding ? RED
-                     : m_pimpl->dashing   ? ORANGE
-                                          : GREEN);
-    if (m_texture.id > 0) {
-        auto src_rect = Rectangle{
-            0,
-            0,
-            static_cast<float>(m_texture.width),  // full width
-            static_cast<float>(m_texture.height)  // full height};
-        };
+
+    // Draw sprite animation if sprite sheet is loaded
+    if (m_sprite_sheet.id > 0) {
+        Rectangle src_rect = get_sprite_frame_rect();
+
+        // Flip horizontally if facing left
+        if (!m_facing_right) {
+            src_rect.width = -src_rect.width;
+        }
+
         DrawTexturePro(
-            m_texture, src_rect, rect, Vector2{0.0F, 0.0F}, 0, WHITE);
+            m_sprite_sheet, src_rect, rect, Vector2{0.0F, 0.0F}, 0, WHITE);
+    } else {
+        // Fallback: draw colored rectangle
+        DrawRectangleRec(rect,
+                         m_pimpl->grounded    ? BLUE
+                         : m_pimpl->colliding ? RED
+                         : m_pimpl->dashing   ? ORANGE
+                                              : GREEN);
+
+        // Fallback texture if sprite sheet fails
+        if (m_texture.id > 0) {
+            auto src_rect = Rectangle{0,
+                                      0,
+                                      static_cast<float>(m_texture.width),
+                                      static_cast<float>(m_texture.height)};
+            DrawTexturePro(
+                m_texture, src_rect, rect, Vector2{0.0F, 0.0F}, 0, WHITE);
+        }
     }
 
     if (is_invincible()) {
@@ -126,6 +145,9 @@ void Player::update(float iDelta) {
     } else {
         m_invincibility_timer = 0.0F;
     }
+
+    // Update animation
+    update_animation(iDelta);
 
     // Gravity
     r.y += 1;
@@ -171,9 +193,11 @@ void Player::update(float iDelta) {
 void Player::process_input() {
     if (input_mapping.left_pressed()) {
         r.x -= m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
+        m_facing_right = false;  // Update facing direction
     }
     if (input_mapping.right_pressed()) {
         r.x += m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
+        m_facing_right = true;  // Update facing direction
     }
 
     // A to Jump
@@ -308,4 +332,38 @@ void Player::notify(const std::string &event) {
 void Player::_reset_jump() noexcept {
     m_pimpl->jumping = false;
     m_pimpl->vy = 0.0F;
+}
+
+void Player::update_animation(float delta_time) {
+    // Always animate - including idle animation
+    m_frame_timer += delta_time;
+
+    if (m_frame_timer >= FRAME_DURATION) {
+        m_frame_timer = 0.0f;
+        m_current_frame = (m_current_frame + 1) % FRAMES_PER_ANIMATION;
+    }
+}
+
+Rectangle Player::get_sprite_frame_rect() const {
+    // Assuming sprite sheet has animations arranged horizontally
+    // with 4 frames per row for different animation states:
+    // Row 0: Idle/Walk animation
+    // Row 1: Jump animation (if available)
+    // Row 2: Dash animation (if available)
+
+    int row = 0;  // Default to walk/idle animation
+
+    // Choose animation row based on player state
+    if (m_pimpl->dashing) {
+        row = 2;  // Dash animation (if available)
+    } else if (m_pimpl->jumping || !m_pimpl->grounded) {
+        row = 1;  // Jump animation (if available)
+    } else {
+        row = 0;  // Walk/idle animation
+    }
+
+    return Rectangle{static_cast<float>(m_current_frame * SPRITE_WIDTH),
+                     static_cast<float>(row * SPRITE_HEIGHT),
+                     static_cast<float>(SPRITE_WIDTH),
+                     static_cast<float>(SPRITE_HEIGHT)};
 }
