@@ -12,11 +12,6 @@ class SpriteAnim {
     SpriteAnim(Texture2D texture, int frame_width, int frame_height,
                float frame_time, int frames_per_row = 4, bool loop = true);
 
-    // Constructor with starting sprite position
-    SpriteAnim(Texture2D texture, int frame_width, int frame_height,
-               float frame_time, int frames_per_row, bool loop, int start_row,
-               int start_col);
-
     void update(float delta_time);
     void draw(Vector2 position, bool flip_horizontal = false) const;
     void draw_with_dest(Rectangle dest_rect,
@@ -43,6 +38,4 @@ class SpriteAnim {
     AnimationState current_state_ = AnimationState::IDLE_WALK;
 
     int total_frames_per_row_ = 0;
-    int start_row_ = 0;  // Starting row index in spritesheet
-    int start_col_ = 0;  // Starting column index in spritesheet
 };
