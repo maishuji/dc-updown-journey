@@ -1,9 +1,6 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/AnimSpriteController.hpp"
 
-#include <string>
-#include <utility>
-
 AnimSpriteController::AnimSpriteController() = default;
 
 void AnimSpriteController::add_animation(PlayerState state,

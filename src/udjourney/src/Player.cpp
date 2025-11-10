@@ -93,27 +93,29 @@ Player::Player(const IGame &iGame, Rectangle iRect,
 
     // Load sprite sheet and initialize animation
     auto &texture_manager = TextureManager::get_instance();
-    Texture2D sprite_sheet = texture_manager.get_texture("char1-Sheet.png");
 
-    // Initialize sprite animation with the loaded texture
-    m_sprite_animation = SpriteAnim(sprite_sheet,
-                                    SPRITE_WIDTH,
-                                    SPRITE_HEIGHT,
-                                    FRAME_DURATION,
-                                    FRAMES_PER_ANIMATION,
-                                    true);
+    // Initialize animation controller with animations
+    Texture2D idle_sheet = texture_manager.get_texture("char1-Sheet.png");
+    Texture2D run_sheet = texture_manager.get_texture("char1-run-Sheet.png");
 
-    Texture2D sprite_sheet_run =
-        texture_manager.get_texture("char1-run-Sheet.png");
+    anim_controller_.add_animation(PlayerState::IDLE,
+                                   "idle",
+                                   SpriteAnim(idle_sheet,
+                                              SPRITE_WIDTH,
+                                              SPRITE_HEIGHT,
+                                              FRAME_DURATION,
+                                              FRAMES_PER_ANIMATION,
+                                              true));
 
-    // Initialize sprite animation with the loaded texture
-    m_sprite_animation_run =
-        SpriteAnim(sprite_sheet_run,
+    anim_controller_.add_animation(
+        PlayerState::RUNNING,
+        "running",
+        SpriteAnim(run_sheet,
                    SPRITE_WIDTH,
                    SPRITE_HEIGHT,
                    FRAME_DURATION / 6.0F,  // Faster frame time for running
                    FRAMES_PER_ANIMATION,
-                   true);
+                   true));
 }
 
 void Player::draw() const {
@@ -123,12 +125,8 @@ void Player::draw() const {
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
 
-    // Choose which animation to draw based on movement state
-    if (m_is_running) {
-        m_sprite_animation_run.draw_with_dest(rect, !m_facing_right);
-    } else {
-        m_sprite_animation.draw_with_dest(rect, !m_facing_right);
-    }
+    // Draw current animation through the controller
+    anim_controller_.draw(rect, !m_facing_right);
 
     if (is_invincible()) {
         // Draw a yellow border around the player when invincible
@@ -143,10 +141,9 @@ void Player::update(float iDelta) {
         m_invincibility_timer = 0.0F;
     }
 
-    // Update animation state and both sprite animations
+    // Update animation state and controller
     update_animation_state();
-    m_sprite_animation.update(iDelta);
-    m_sprite_animation_run.update(iDelta);
+    anim_controller_.update(iDelta);
 
     // Gravity
     r.y += 1;
@@ -340,23 +337,21 @@ void Player::update_animation_state() {
     bool is_moving =
         input_mapping.left_pressed() || input_mapping.right_pressed();
 
-    // Choose animation state based on player state
-    AnimationState new_state;
+    // Determine player state for animation controller
+    PlayerState new_player_state;
 
     if (m_pimpl->dashing) {
-        new_state = AnimationState::DASH;
+        new_player_state = PlayerState::DASHING;
     } else if (m_pimpl->jumping || !m_pimpl->grounded) {
-        new_state = AnimationState::JUMP;
-    } else {
-        new_state = AnimationState::IDLE_WALK;
-    }
-
-    // Determine which animation to use based on movement
-    if (is_moving && m_pimpl->grounded && !m_pimpl->dashing) {
+        new_player_state = PlayerState::JUMPING;
+    } else if (is_moving && m_pimpl->grounded) {
         m_is_running = true;
-        m_sprite_animation_run.set_animation_state(new_state);
+        new_player_state = PlayerState::RUNNING;
     } else {
         m_is_running = false;
-        m_sprite_animation.set_animation_state(new_state);
+        new_player_state = PlayerState::IDLE;
     }
+
+    // Set the current state in the animation controller
+    anim_controller_.set_current_state(new_player_state);
 }
