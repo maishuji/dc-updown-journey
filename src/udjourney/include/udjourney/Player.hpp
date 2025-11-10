@@ -11,7 +11,7 @@
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/interfaces/IObservable.hpp"
 #include "udjourney/interfaces/IObserver.hpp"
-#include "udjourney/SpriteAnim.hpp"
+#include "udjourney/AnimSpriteController.hpp"
 
 class Player : public IActor, public IObservable {
  public:
@@ -57,11 +57,10 @@ class Player : public IActor, public IObservable {
     struct PImpl;
     std::unique_ptr<struct PImpl> m_pimpl;
     Texture2D m_texture = {};
-    SpriteAnim m_sprite_animation;
-    SpriteAnim m_sprite_animation_run;
+    AnimSpriteController anim_controller_;
     udjourney::core::events::EventDispatcher &m_dispatcher;
 
-    // Animation state
+    // Animation state tracking
     bool m_facing_right = true;
     bool m_is_running = false;
 
