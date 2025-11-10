@@ -8,7 +8,23 @@ SpriteAnim::SpriteAnim(Texture2D texture, int frame_width, int frame_height,
     frame_height_(frame_height),
     frame_time_(frame_time),
     frames_per_row_(frames_per_row),
-    loop_(loop) {
+    loop_(loop),
+    start_row_(0),
+    start_col_(0) {
+    total_frames_per_row_ = frames_per_row;
+}
+
+SpriteAnim::SpriteAnim(Texture2D texture, int frame_width, int frame_height,
+                       float frame_time, int frames_per_row, bool loop,
+                       int start_row, int start_col) :
+    texture_(texture),
+    frame_width_(frame_width),
+    frame_height_(frame_height),
+    frame_time_(frame_time),
+    frames_per_row_(frames_per_row),
+    loop_(loop),
+    start_row_(start_row),
+    start_col_(start_col) {
     total_frames_per_row_ = frames_per_row;
 }
 
@@ -52,9 +68,12 @@ void SpriteAnim::draw_with_dest(Rectangle dest_rect,
 }
 
 Rectangle SpriteAnim::get_current_frame_rect() const {
-    int row = static_cast<int>(current_state_);
-    return Rectangle{static_cast<float>(current_frame_ * frame_width_),
-                     static_cast<float>(row * frame_height_),
+    // Calculate actual position in spritesheet
+    int actual_col = start_col_ + current_frame_;
+    int actual_row = start_row_ + static_cast<int>(current_state_);
+    
+    return Rectangle{static_cast<float>(actual_col * frame_width_),
+                     static_cast<float>(actual_row * frame_height_),
                      static_cast<float>(frame_width_),
                      static_cast<float>(frame_height_)};
 }
