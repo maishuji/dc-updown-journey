@@ -20,7 +20,7 @@ namespace {
 const float kDashTimerDefault = 0.2F;
 const float kDashCooldownDefault = 1.0F;
 const float kMoveSpeedYDefault = 5.0F;
-const float kMoveSpeedXDefault = 5.0F;
+const float kMoveSpeedXDefault = 3.0F;
 const float kDashSpeed = 15.0F;
 const float kJumpExhaustion = 0.1F;
 
@@ -102,6 +102,18 @@ Player::Player(const IGame &iGame, Rectangle iRect,
                                     FRAME_DURATION,
                                     FRAMES_PER_ANIMATION,
                                     true);
+
+    Texture2D sprite_sheet_run =
+        texture_manager.get_texture("char1-run-Sheet.png");
+
+    // Initialize sprite animation with the loaded texture
+    m_sprite_animation_run =
+        SpriteAnim(sprite_sheet_run,
+                   SPRITE_WIDTH,
+                   SPRITE_HEIGHT,
+                   FRAME_DURATION / 6.0F,  // Faster frame time for running
+                   FRAMES_PER_ANIMATION,
+                   true);
 }
 
 void Player::draw() const {
@@ -111,8 +123,12 @@ void Player::draw() const {
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
 
-    // Draw sprite animation using SpriteAnim class
-    m_sprite_animation.draw_with_dest(rect, !m_facing_right);
+    // Choose which animation to draw based on movement state
+    if (m_is_running) {
+        m_sprite_animation_run.draw_with_dest(rect, !m_facing_right);
+    } else {
+        m_sprite_animation.draw_with_dest(rect, !m_facing_right);
+    }
 
     if (is_invincible()) {
         // Draw a yellow border around the player when invincible
@@ -127,9 +143,10 @@ void Player::update(float iDelta) {
         m_invincibility_timer = 0.0F;
     }
 
-    // Update animation state and sprite animation
+    // Update animation state and both sprite animations
     update_animation_state();
     m_sprite_animation.update(iDelta);
+    m_sprite_animation_run.update(iDelta);
 
     // Gravity
     r.y += 1;
@@ -317,6 +334,10 @@ void Player::_reset_jump() noexcept {
 }
 
 void Player::update_animation_state() {
+    // Check if player is currently moving
+    bool is_moving =
+        input_mapping.left_pressed() || input_mapping.right_pressed();
+
     // Choose animation state based on player state
     AnimationState new_state;
 
@@ -328,6 +349,12 @@ void Player::update_animation_state() {
         new_state = AnimationState::IDLE_WALK;
     }
 
-    // Update animation state if it changed
-    m_sprite_animation.set_animation_state(new_state);
+    // Determine which animation to use based on movement
+    if (is_moving && m_pimpl->grounded && !m_pimpl->dashing) {
+        m_is_running = true;
+        m_sprite_animation_run.set_animation_state(new_state);
+    } else {
+        m_is_running = false;
+        m_sprite_animation.set_animation_state(new_state);
+    }
 }

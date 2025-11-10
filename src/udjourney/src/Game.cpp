@@ -522,7 +522,7 @@ bool Game::should_continue_scrolling_() const noexcept {
 
 void Game::draw() const {
     BeginDrawing();
-    ClearBackground(BLACK);  // Clear the background with a color
+    ClearBackground(SKYBLUE);  // Clear the background with a blue sky color
 
     // Calculate scale factor
     float scale_x = GetScreenWidth() / static_cast<float>(kBaseWidth);

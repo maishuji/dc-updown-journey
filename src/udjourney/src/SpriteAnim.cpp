@@ -1,5 +1,5 @@
 // Copyright 2025 Quentin Cartier
-#include "SpriteAnim.hpp"
+#include "udjourney/SpriteAnim.hpp"
 
 SpriteAnim::SpriteAnim(Texture2D texture, int frame_width, int frame_height,
                        float frame_time, int frames_per_row, bool loop) :
