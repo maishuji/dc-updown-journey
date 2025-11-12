@@ -1,8 +1,10 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 
-#include "udjourney/interfaces/IActorState.hpp"
+#include <utility>
 #include <string>
+
+#include "udjourney/interfaces/IActorState.hpp"
 
 class Monster;
 

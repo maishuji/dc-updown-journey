@@ -1,11 +1,12 @@
+// Copyright 2025 Quentin Cartier
 #pragma once
-
-#include "udjourney/interfaces/IComponent.hpp"
 
 #include <vector>
 #include <unordered_map>
 #include <string>
 #include <memory>
+
+#include "udjourney/interfaces/IComponent.hpp"
 
 class StateComponent : public IComponent {
  public:

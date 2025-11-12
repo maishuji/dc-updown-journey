@@ -1,3 +1,4 @@
+// Copyright 2025 Quentin Cartier
 #include "udjourney/factories/ActorFactory.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/AnimSpriteController.hpp"

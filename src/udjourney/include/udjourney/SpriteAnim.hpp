@@ -11,11 +11,11 @@ class SpriteAnim {
     SpriteAnim() = default;
     SpriteAnim(Texture2D texture, int frame_width, int frame_height,
                float frame_time, int frames_per_row = 4, bool loop = true);
-    
+
     // Constructor with starting sprite position
     SpriteAnim(Texture2D texture, int frame_width, int frame_height,
-               float frame_time, int frames_per_row, bool loop,
-               int start_row, int start_col);
+               float frame_time, int frames_per_row, bool loop, int start_row,
+               int start_col);
 
     void update(float delta_time);
     void draw(Vector2 position, bool flip_horizontal = false) const;

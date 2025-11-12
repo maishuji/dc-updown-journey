@@ -1,9 +1,11 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/states/MonsterStates.hpp"
-#include "udjourney/Monster.hpp"
-#include "udjourney/Player.hpp"
+
 #include <cmath>
 #include <iostream>
+
+#include "udjourney/Monster.hpp"
+#include "udjourney/Player.hpp"
 
 // Helper function to cast IActor to Monster
 static Monster& to_monster(IActor& actor) {

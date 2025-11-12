@@ -5,6 +5,7 @@
 
 #include <concepts>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "udjourney/interfaces/IComponent.hpp"

@@ -1,3 +1,4 @@
+// Copyright 2025 Quentin Cartier
 #include "udjourney/components/StateComponent.hpp"
 
 #include "udjourney/interfaces/IActorState.hpp"

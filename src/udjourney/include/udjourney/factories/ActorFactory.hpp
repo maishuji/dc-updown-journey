@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <memory>
 #include <raylib/raylib.h>
+#include <memory>
 
 #include "udjourney/interfaces/IActor.hpp"
 
