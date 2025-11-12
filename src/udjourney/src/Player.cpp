@@ -5,6 +5,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "raylib/raymath.h"
 #include "raylib/rlgl.h"

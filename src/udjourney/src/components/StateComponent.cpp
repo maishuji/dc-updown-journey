@@ -1,6 +1,9 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/components/StateComponent.hpp"
 
+#include <string>
+#include <utility>
+
 #include "udjourney/interfaces/IActorState.hpp"
 
 void StateComponent::update(float delta) {
