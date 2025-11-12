@@ -9,89 +9,13 @@
 #include "udjourney/states/MonsterStates.hpp"
 
 Monster::Monster(const IGame& game, Rectangle rect,
-                 const std::string& sprite_sheet) :
-    IActor(game), game_(game), rect_(rect) {
-    // Load monster sprite sheet
-    auto& texture_manager = TextureManager::get_instance();
-    Texture2D sprite_texture = texture_manager.get_texture(sprite_sheet);
-
-    // Initialize animations for different states
-    // Using the new constructor with start_row and start_col
-
-    // IDLE animation - row 0, columns 0-7
-    anim_controller_.add_animation(0,
-                                   "idle",
-                                   SpriteAnim(sprite_texture,
-                                              SPRITE_WIDTH,
-                                              SPRITE_HEIGHT,
-                                              FRAME_DURATION,
-                                              FRAMES_PER_ANIMATION,
-                                              true,
-                                              0,
-                                              0));
-
-    // PATROL animation (same as idle for now) - row 0, columns 0-7
-    anim_controller_.add_animation(1,
-                                   "patrol",
-                                   SpriteAnim(sprite_texture,
-                                              SPRITE_WIDTH,
-                                              SPRITE_HEIGHT,
-                                              FRAME_DURATION / 2.0f,
-                                              FRAMES_PER_ANIMATION,
-                                              true,
-                                              0,
-                                              0));
-
-    // CHASE animation (faster) - row 0, columns 0-7
-    anim_controller_.add_animation(2,
-                                   "chase",
-                                   SpriteAnim(sprite_texture,
-                                              SPRITE_WIDTH,
-                                              SPRITE_HEIGHT,
-                                              FRAME_DURATION / 4.0f,
-                                              FRAMES_PER_ANIMATION,
-                                              true,
-                                              0,
-                                              0));
-
-    // ATTACK animation - row 1, columns 0-7 (if available)
-    anim_controller_.add_animation(3,
-                                   "attack",
-                                   SpriteAnim(sprite_texture,
-                                              SPRITE_WIDTH,
-                                              SPRITE_HEIGHT,
-                                              FRAME_DURATION / 2.0f,
-                                              FRAMES_PER_ANIMATION,
-                                              false,
-                                              1,
-                                              0));
-
-    // HURT animation - row 2, columns 0-7 (if available)
-    anim_controller_.add_animation(4,
-                                   "hurt",
-                                   SpriteAnim(sprite_texture,
-                                              SPRITE_WIDTH,
-                                              SPRITE_HEIGHT,
-                                              FRAME_DURATION / 3.0f,
-                                              4,
-                                              false,
-                                              2,
-                                              0));
-
-    // DEATH animation - row 3, columns 0-7 (if available)
-    anim_controller_.add_animation(5,
-                                   "death",
-                                   SpriteAnim(sprite_texture,
-                                              SPRITE_WIDTH,
-                                              SPRITE_HEIGHT,
-                                              FRAME_DURATION,
-                                              FRAMES_PER_ANIMATION,
-                                              false,
-                                              3,
-                                              0));
-
+                 AnimSpriteController anim_controller) :
+    IActor(game),
+    game_(game),
+    rect_(rect),
+    anim_controller_(std::move(anim_controller)) {
     // Set initial state
-    anim_controller_.set_current_state(0);  // IDLE = 0
+    anim_controller_.set_current_state(ANIM_IDLE);
 
     // Register all monster states (using State pattern)
     states_["IDLE"] = std::make_unique<MonsterIdleState>();
@@ -165,24 +89,24 @@ void Monster::change_state(const std::string& new_state) {
 
         // Map state names to animation indices
         if (new_state == "IDLE") {
-            anim_controller_.set_current_state(0);
+            anim_controller_.set_current_state(ANIM_IDLE);
         } else if (new_state == "PATROL") {
-            anim_controller_.set_current_state(1);
+            anim_controller_.set_current_state(ANIM_PATROL);
         } else if (new_state == "CHASE") {
-            anim_controller_.set_current_state(2);
+            anim_controller_.set_current_state(ANIM_CHASE);
         } else if (new_state == "ATTACK") {
-            anim_controller_.set_current_state(3);
+            anim_controller_.set_current_state(ANIM_ATTACK);
         } else if (new_state == "HURT") {
-            anim_controller_.set_current_state(4);
+            anim_controller_.set_current_state(ANIM_HURT);
         } else if (new_state == "DEATH") {
-            anim_controller_.set_current_state(5);
+            anim_controller_.set_current_state(ANIM_DEATH);
         }
     }
 }
 
 bool Monster::is_attacking() const {
     // Check if current animation is attack animation
-    return anim_controller_.get_current_state_int() == 3;  // ATTACK = 3
+    return anim_controller_.get_current_state_int() == ANIM_ATTACK;
 }
 
 void Monster::reverse_direction() {
@@ -197,7 +121,7 @@ Player* Monster::find_player() const {
 }
 
 void Monster::take_damage(float damage) {
-    if (anim_controller_.get_current_state_int() == 5) {  // DEATH = 5
+    if (anim_controller_.get_current_state_int() == ANIM_DEATH) {
         return;
     }
 

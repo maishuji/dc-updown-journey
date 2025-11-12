@@ -40,6 +40,8 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/states/MonsterStates.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SpriteAnim.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AnimSpriteController.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/loaders/AnimationConfigLoader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/factories/ActorFactory.cpp
 )
 
 if (NOT PLATFORM_DREAMCAST)

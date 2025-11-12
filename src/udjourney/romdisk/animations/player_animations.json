@@ -1,0 +1,110 @@
+{
+  "preset_name": "player_character",
+  "animations": [
+    {
+      "name": "idle",
+      "state_id": 0,
+      "sprite_config": {
+        "filename": "char1-Sheet.png",
+        "sprite_width": 64,
+        "sprite_height": 64,
+        "frames": [
+          {"row": 0, "col": 0},
+          {"row": 0, "col": 1},
+          {"row": 0, "col": 2},
+          {"row": 0, "col": 3},
+          {"row": 0, "col": 4},
+          {"row": 0, "col": 5},
+          {"row": 0, "col": 6},
+          {"row": 0, "col": 7}
+        ],
+        "frame_duration": 0.3,
+        "loop": true
+      }
+    },
+    {
+      "name": "running",
+      "state_id": 1,
+      "sprite_config": {
+        "filename": "char1-run-Sheet.png",
+        "sprite_width": 64,
+        "sprite_height": 64,
+        "frames": [
+          {"row": 0, "col": 0},
+          {"row": 0, "col": 1},
+          {"row": 0, "col": 2},
+          {"row": 0, "col": 3},
+          {"row": 0, "col": 4},
+          {"row": 0, "col": 5},
+          {"row": 0, "col": 6},
+          {"row": 0, "col": 7}
+        ],
+        "frame_duration": 0.05,
+        "loop": true
+      }
+    },
+    {
+      "name": "jumping",
+      "state_id": 2,
+      "sprite_config": {
+        "filename": "char1-run-Sheet.png",
+        "sprite_width": 64,
+        "sprite_height": 64,
+        "frames": [
+          {"row": 0, "col": 0},
+          {"row": 0, "col": 1},
+          {"row": 0, "col": 2},
+          {"row": 0, "col": 3},
+          {"row": 0, "col": 4},
+          {"row": 0, "col": 5},
+          {"row": 0, "col": 6},
+          {"row": 0, "col": 7}
+        ],
+        "frame_duration": 0.05,
+        "loop": true
+      }
+    },
+    {
+      "name": "dashing",
+      "state_id": 3,
+      "sprite_config": {
+        "filename": "char1-run-Sheet.png",
+        "sprite_width": 64,
+        "sprite_height": 64,
+        "frames": [
+          {"row": 0, "col": 0},
+          {"row": 0, "col": 1},
+          {"row": 0, "col": 2},
+          {"row": 0, "col": 3},
+          {"row": 0, "col": 4},
+          {"row": 0, "col": 5},
+          {"row": 0, "col": 6},
+          {"row": 0, "col": 7}
+        ],
+        "frame_duration": 0.05,
+        "loop": true
+      }
+    },
+    {
+      "name": "falling",
+      "state_id": 4,
+      "sprite_config": {
+        "filename": "char1-run-Sheet.png",
+        "sprite_width": 64,
+        "sprite_height": 64,
+        "frames": [
+          {"row": 0, "col": 0},
+          {"row": 0, "col": 1},
+          {"row": 0, "col": 2},
+          {"row": 0, "col": 3},
+          {"row": 0, "col": 4},
+          {"row": 0, "col": 5},
+          {"row": 0, "col": 6},
+          {"row": 0, "col": 7}
+        ],
+        "frame_duration": 0.05,
+        "loop": true
+      }
+    }
+  ]
+}

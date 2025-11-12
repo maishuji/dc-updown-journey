@@ -17,7 +17,8 @@ class Player;
 
 class Monster : public IActor {
  public:
-    Monster(const IGame &game, Rectangle rect, const std::string &sprite_sheet);
+    Monster(const IGame &game, Rectangle rect,
+            AnimSpriteController anim_controller);
     ~Monster() override = default;
 
     void draw() const override;
@@ -107,6 +108,14 @@ class Monster : public IActor {
     static constexpr int FRAMES_PER_ANIMATION = 8;
     static constexpr float FRAME_DURATION = 0.15f;
     static constexpr float ATTACK_COOLDOWN_TIME = 1.5f;
+
+    // Monster animation state IDs (must match monster_animations.json)
+    static constexpr int ANIM_IDLE = 10;
+    static constexpr int ANIM_PATROL = 11;
+    static constexpr int ANIM_CHASE = 12;
+    static constexpr int ANIM_ATTACK = 13;
+    static constexpr int ANIM_HURT = 14;
+    static constexpr int ANIM_DEATH = 15;
 
     // Helper methods
     void update_animations();
