@@ -3,6 +3,9 @@
 
 #include <fstream>
 #include <stdexcept>
+#include <string>
+#include <utility>
+
 #include <nlohmann/json.hpp>
 
 #include "udjourney/core/Logger.hpp"

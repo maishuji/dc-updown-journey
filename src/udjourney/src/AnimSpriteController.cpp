@@ -1,8 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/AnimSpriteController.hpp"
 
- #include <string>
- #include <utility>
+#include <string>
+#include <utility>
 
 AnimSpriteController::AnimSpriteController() = default;
 
