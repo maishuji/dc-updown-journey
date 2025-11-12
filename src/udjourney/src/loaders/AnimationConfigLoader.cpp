@@ -8,6 +8,11 @@
 
 #include <nlohmann/json.hpp>
 
+// Include Dreamcast compatibility functions before nlohmann/json
+#ifdef PLATFORM_DREAMCAST
+#include "udjourney/dreamcast_json_compat.h"
+#endif
+
 #include "udjourney/core/Logger.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/SpriteAnim.hpp"
