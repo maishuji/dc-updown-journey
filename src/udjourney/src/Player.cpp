@@ -81,71 +81,17 @@ struct Player::PImpl {
 };
 
 Player::Player(const IGame &iGame, Rectangle iRect,
-               udjourney::core::events::EventDispatcher &ioDispatcher) :
+               udjourney::core::events::EventDispatcher &ioDispatcher,
+               AnimSpriteController anim_controller) :
     IActor(iGame),
     r(iRect),
     m_pimpl(std::make_unique<Player::PImpl>()),
+    anim_controller_(std::move(anim_controller)),
     m_dispatcher(ioDispatcher) {
     if (m_texture.id == 0) {
         auto &texture_manager = TextureManager::get_instance();
         m_texture = texture_manager.get_texture("placeholder.png");
     }
-
-    // Load sprite sheet and initialize animation
-    auto &texture_manager = TextureManager::get_instance();
-
-    // Initialize animation controller with animations
-    Texture2D idle_sheet = texture_manager.get_texture("char1-Sheet.png");
-    Texture2D run_sheet = texture_manager.get_texture("char1-run-Sheet.png");
-
-    anim_controller_.add_animation(PlayerState::IDLE,
-                                   "idle",
-                                   SpriteAnim(idle_sheet,
-                                              SPRITE_WIDTH,
-                                              SPRITE_HEIGHT,
-                                              FRAME_DURATION,
-                                              FRAMES_PER_ANIMATION,
-                                              true));
-
-    anim_controller_.add_animation(
-        PlayerState::RUNNING,
-        "running",
-        SpriteAnim(run_sheet,
-                   SPRITE_WIDTH,
-                   SPRITE_HEIGHT,
-                   FRAME_DURATION / 6.0F,  // Faster frame time for running
-                   FRAMES_PER_ANIMATION,
-                   true));
-
-    anim_controller_.add_animation(
-        PlayerState::DASHING,
-        "dashing",
-        SpriteAnim(run_sheet,
-                   SPRITE_WIDTH,
-                   SPRITE_HEIGHT,
-                   FRAME_DURATION / 6.0F,  // Faster frame time for running
-                   FRAMES_PER_ANIMATION,
-                   true));
-
-    anim_controller_.add_animation(
-        PlayerState::FALLING,
-        "falling",
-        SpriteAnim(run_sheet,
-                   SPRITE_WIDTH,
-                   SPRITE_HEIGHT,
-                   FRAME_DURATION / 6.0F,  // Faster frame time for running
-                   FRAMES_PER_ANIMATION,
-                   true));
-
-    anim_controller_.add_animation(
-        PlayerState::JUMPING,
-        "jumping",
-        SpriteAnim(run_sheet,
-                   SPRITE_WIDTH,
-                   SPRITE_HEIGHT,
-                   FRAME_DURATION / 6.0F,  // Faster frame time for running
-                   FRAMES_PER_ANIMATION,
-                   true));
 }
 
 void Player::draw() const {

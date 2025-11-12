@@ -21,6 +21,8 @@
 #include "udjourney/CoreUtils.hpp"
 #include "udjourney/Monster.hpp"
 #include "udjourney/Player.hpp"
+#include "udjourney/AnimSpriteController.hpp"
+#include "udjourney/SpriteAnim.hpp"
 #include "udjourney/ScoreHistory.hpp"
 #include "udjourney/core/Logger.hpp"
 #include "udjourney/hud/DialogBoxHUD.hpp"
@@ -28,6 +30,7 @@
 #include "udjourney/hud/LevelSelectHUD.hpp"
 #include "udjourney/hud/ScoreHUD.hpp"
 #include "udjourney/interfaces/IActor.hpp"
+#include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
@@ -82,6 +85,73 @@ struct InputMapping {
 #endif
     }
 } input_mapping;
+
+// Helper function to create player animation controller
+AnimSpriteController create_player_animation_controller() {
+    // Animation constants
+    static constexpr int SPRITE_WIDTH = 64;
+    static constexpr int SPRITE_HEIGHT = 64;
+    static constexpr int FRAMES_PER_ANIMATION = 8;
+    static constexpr float FRAME_DURATION = 0.3f;
+
+    // Get texture manager instance
+    auto &texture_manager = TextureManager::get_instance();
+
+    // Load sprite sheets
+    Texture2D idle_sheet = texture_manager.get_texture("char1-Sheet.png");
+    Texture2D run_sheet = texture_manager.get_texture("char1-run-Sheet.png");
+
+    // Create animation controller with all player animations
+    AnimSpriteController anim_controller;
+
+    anim_controller.add_animation(PlayerState::IDLE,
+                                  "idle",
+                                  SpriteAnim(idle_sheet,
+                                             SPRITE_WIDTH,
+                                             SPRITE_HEIGHT,
+                                             FRAME_DURATION,
+                                             FRAMES_PER_ANIMATION,
+                                             true));
+
+    anim_controller.add_animation(PlayerState::RUNNING,
+                                  "running",
+                                  SpriteAnim(run_sheet,
+                                             SPRITE_WIDTH,
+                                             SPRITE_HEIGHT,
+                                             FRAME_DURATION / 6.0F,
+                                             FRAMES_PER_ANIMATION,
+                                             true));
+
+    anim_controller.add_animation(PlayerState::DASHING,
+                                  "dashing",
+                                  SpriteAnim(run_sheet,
+                                             SPRITE_WIDTH,
+                                             SPRITE_HEIGHT,
+                                             FRAME_DURATION / 6.0F,
+                                             FRAMES_PER_ANIMATION,
+                                             true));
+
+    anim_controller.add_animation(PlayerState::FALLING,
+                                  "falling",
+                                  SpriteAnim(run_sheet,
+                                             SPRITE_WIDTH,
+                                             SPRITE_HEIGHT,
+                                             FRAME_DURATION / 6.0F,
+                                             FRAMES_PER_ANIMATION,
+                                             true));
+
+    anim_controller.add_animation(PlayerState::JUMPING,
+                                  "jumping",
+                                  SpriteAnim(run_sheet,
+                                             SPRITE_WIDTH,
+                                             SPRITE_HEIGHT,
+                                             FRAME_DURATION / 6.0F,
+                                             FRAMES_PER_ANIMATION,
+                                             true));
+
+    return anim_controller;
+}
+
 }  // namespace
 
 const double kUpdateInterval = 0.0001;
@@ -250,7 +320,8 @@ void Game::run() {
     m_player = std::make_unique<Player>(
         *this,
         Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
-        m_event_dispatcher);
+        m_event_dispatcher,
+        create_player_animation_controller());
     m_player->add_observer(static_cast<IObserver *>(this));
 
     m_actors.emplace_back(

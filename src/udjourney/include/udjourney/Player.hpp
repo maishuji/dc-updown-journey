@@ -16,7 +16,8 @@
 class Player : public IActor, public IObservable {
  public:
     Player(const IGame &iGame, Rectangle iRect,
-           udjourney::core::events::EventDispatcher &ioDispatcher);
+           udjourney::core::events::EventDispatcher &ioDispatcher,
+           AnimSpriteController anim_controller);
     ~Player() override;
     void draw() const override;
     void update(float iDelta) override;
