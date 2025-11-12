@@ -116,6 +116,36 @@ Player::Player(const IGame &iGame, Rectangle iRect,
                    FRAME_DURATION / 6.0F,  // Faster frame time for running
                    FRAMES_PER_ANIMATION,
                    true));
+
+    anim_controller_.add_animation(
+        PlayerState::DASHING,
+        "dashing",
+        SpriteAnim(run_sheet,
+                   SPRITE_WIDTH,
+                   SPRITE_HEIGHT,
+                   FRAME_DURATION / 6.0F,  // Faster frame time for running
+                   FRAMES_PER_ANIMATION,
+                   true));
+
+    anim_controller_.add_animation(
+        PlayerState::FALLING,
+        "falling",
+        SpriteAnim(run_sheet,
+                   SPRITE_WIDTH,
+                   SPRITE_HEIGHT,
+                   FRAME_DURATION / 6.0F,  // Faster frame time for running
+                   FRAMES_PER_ANIMATION,
+                   true));
+
+    anim_controller_.add_animation(
+        PlayerState::JUMPING,
+        "jumping",
+        SpriteAnim(run_sheet,
+                   SPRITE_WIDTH,
+                   SPRITE_HEIGHT,
+                   FRAME_DURATION / 6.0F,  // Faster frame time for running
+                   FRAMES_PER_ANIMATION,
+                   true));
 }
 
 void Player::draw() const {

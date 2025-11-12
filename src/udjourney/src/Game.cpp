@@ -19,6 +19,7 @@
 
 #include "udjourney/Bonus.hpp"
 #include "udjourney/CoreUtils.hpp"
+#include "udjourney/Monster.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/ScoreHistory.hpp"
 #include "udjourney/core/Logger.hpp"
@@ -85,7 +86,7 @@ struct InputMapping {
 
 const double kUpdateInterval = 0.0001;
 bool is_running = true;
-std::unique_ptr<Player> player = nullptr;
+// player is now a member of Game class, not a global
 
 struct DashFud {
     int16_t dashable = 1;
@@ -235,6 +236,9 @@ void Game::run() {
     // Create platforms from scene or fallback to random generation
     create_platforms_from_scene();
 
+    // Spawn monsters from scene
+    create_monsters_from_scene();
+
     // Spawn player at scene-defined location or default position
     Vector2 player_spawn_pos{320, 240};  // Default position
     if (m_current_scene) {
@@ -243,11 +247,11 @@ void Game::run() {
             spawn_data.tile_x, spawn_data.tile_y);
     }
 
-    player = std::make_unique<Player>(
+    m_player = std::make_unique<Player>(
         *this,
         Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
         m_event_dispatcher);
-    player->add_observer(static_cast<IObserver *>(this));
+    m_player->add_observer(static_cast<IObserver *>(this));
 
     m_actors.emplace_back(
         std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
@@ -344,7 +348,7 @@ void Game::process_input() {
         if (m_state == GameState::GAMEOVER) {
             // Set a counter of invicibility for the player when starting a new
             // game
-            player->set_invicibility(1.8F);
+            m_player->set_invicibility(1.8F);
             m_state = GameState::PLAY;
             return;
         }
@@ -381,7 +385,7 @@ void Game::process_input() {
         for (auto &actor : m_actors) {
             actor->process_input();
         }
-        player->process_input();
+        m_player->process_input();
     }
 }
 
@@ -548,7 +552,7 @@ void Game::draw() const {
             for (const auto &actor : m_actors) {
                 actor->draw();
             }
-            player->draw();
+            m_player->draw();
 
             // Draw finish line for level-based gameplay
             if (m_current_scene && m_level_height > 0) {
@@ -590,7 +594,7 @@ void Game::update() {
         for (auto &actor : m_actors) {
             actor->update(0.0F);
         }
-        player->update(0.0F);
+        m_player->update(0.0F);
 
         m_updating_actors = false;
 
@@ -650,12 +654,12 @@ void Game::update() {
             for (auto &actor : m_actors) {
                 actor->update(delta);
             }
-            player->update(delta);
+            m_player->update(delta);
             last_update_time = cur_update_time;
 
             // Check win condition: player reached bottom of level
-            if (m_current_scene && player) {
-                Rectangle player_rect = player->get_rectangle();
+            if (m_current_scene && m_player) {
+                Rectangle player_rect = m_player->get_rectangle();
                 float player_bottom = player_rect.y + player_rect.height;
 
                 // Win if player reaches 98% of the level height (very close to
@@ -666,7 +670,17 @@ void Game::update() {
                 }
             }
         }
-        player->handle_collision(m_actors);
+        m_player->handle_collision(m_actors);
+
+        // Handle collision for all monsters
+        for (auto &actor : m_actors) {
+            if (actor->get_group_id() == 2) {  // Monster group ID
+                Monster *monster = dynamic_cast<Monster *>(actor.get());
+                if (monster) {
+                    monster->handle_collision(m_actors);
+                }
+            }
+        }
     }
 
     m_hud_manager.update(delta);
@@ -799,6 +813,8 @@ void Game::on_checkpoint_reached(float x, float y) const {
     // Optional: Add visual/audio feedback here
     udjourney::Logger::info("Checkpoint reached at %, %", x, y);
 }
+
+Player *Game::get_player() const { return m_player.get(); }
 
 // Scene system implementations
 bool Game::load_scene(const std::string &filename) {
@@ -999,12 +1015,59 @@ void Game::create_platforms_from_scene() {
     }
 }
 
+void Game::create_monsters_from_scene() {
+    if (!m_current_scene) {
+        return;  // No scene loaded, no monsters to spawn
+    }
+
+    const auto &monster_spawns = m_current_scene->get_monster_spawns();
+
+    for (const auto &monster_data : monster_spawns) {
+        // Convert tile coordinates to world coordinates
+        Vector2 world_pos = udjourney::scene::Scene::tile_to_world_pos(
+            monster_data.tile_x, monster_data.tile_y);
+
+        Rectangle monster_rect = {
+            world_pos.x,
+            world_pos.y,
+            64.0f,  // Monster width
+            64.0f   // Monster height
+        };
+
+        // Create monster
+        auto monster = std::make_unique<Monster>(
+            *this, monster_rect, monster_data.sprite_sheet);
+
+        // Configure monster behavior ranges
+        float patrol_min = world_pos.x - (monster_data.patrol_range / 2.0f);
+        float patrol_max = world_pos.x + (monster_data.patrol_range / 2.0f);
+        monster->set_patrol_range(patrol_min, patrol_max);
+        monster->set_chase_range(monster_data.chase_range);
+        monster->set_attack_range(monster_data.attack_range);
+
+        udjourney::Logger::info(
+            "Spawned monster at tile (%, %), world pos (%, %)",
+            monster_data.tile_x,
+            monster_data.tile_y,
+            world_pos.x,
+            world_pos.y);
+
+        m_actors.emplace_back(std::move(monster));
+    }
+
+    udjourney::Logger::info("Spawned % monsters from scene",
+                            monster_spawns.size());
+}
+
 void Game::restart_level() {
     // Reset game state
     m_state = GameState::PLAY;
 
     // Recreate platforms from scene
     create_platforms_from_scene();
+
+    // Respawn monsters from scene
+    create_monsters_from_scene();
 
     // Reset player position
 
@@ -1016,10 +1079,10 @@ void Game::restart_level() {
     }
 
     // Reset player at last checkpoint
-    if (player) {
-        player->set_rectangle(
+    if (m_player) {
+        m_player->set_rectangle(
             Rectangle{m_last_checkpoint.x, m_last_checkpoint.y, 20, 20});
-        player->set_invicibility(1.8f);  // Brief invincibility after restart
+        m_player->set_invicibility(1.8f);  // Brief invincibility after restart
     }
 
     // Reset game rect position

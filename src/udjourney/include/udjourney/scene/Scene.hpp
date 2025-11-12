@@ -48,6 +48,15 @@ struct PlayerSpawnData {
     int tile_y;
 };
 
+struct MonsterSpawnData {
+    int tile_x;
+    int tile_y;
+    float patrol_range = 100.0f;                   // Patrol range in pixels
+    float chase_range = 200.0f;                    // Chase range in pixels
+    float attack_range = 50.0f;                    // Attack range in pixels
+    std::string sprite_sheet = "char1-Sheet.png";  // Default sprite
+};
+
 class Scene {
  public:
     Scene() = default;
@@ -63,6 +72,9 @@ class Scene {
         return m_platforms;
     }
     const PlayerSpawnData& get_player_spawn() const { return m_player_spawn; }
+    const std::vector<MonsterSpawnData>& get_monster_spawns() const {
+        return m_monster_spawns;
+    }
     const std::string& get_name() const { return m_name; }
 
     // Setters
@@ -72,6 +84,9 @@ class Scene {
     }
     void set_player_spawn(int tile_x, int tile_y) {
         m_player_spawn = {tile_x, tile_y};
+    }
+    void add_monster_spawn(const MonsterSpawnData& monster) {
+        m_monster_spawns.push_back(monster);
     }
 
     // Tile conversion
@@ -85,6 +100,7 @@ class Scene {
  private:
     std::vector<PlatformData> m_platforms;
     PlayerSpawnData m_player_spawn{0, 0};
+    std::vector<MonsterSpawnData> m_monster_spawns;
     std::string m_name = "Unnamed Level";
 };
 
