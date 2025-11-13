@@ -71,7 +71,7 @@ Rectangle SpriteAnim::get_current_frame_rect() const {
     // Calculate actual position in spritesheet
     int actual_col = start_col_ + current_frame_;
     int actual_row = start_row_ + static_cast<int>(current_state_);
-    
+
     return Rectangle{static_cast<float>(actual_col * frame_width_),
                      static_cast<float>(actual_row * frame_height_),
                      static_cast<float>(frame_width_),
