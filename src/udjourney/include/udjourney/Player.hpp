@@ -1,8 +1,5 @@
 // Copyright 2025 Quentin Cartier
-
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_
-
+#pragma once
 #include <raylib/raylib.h>
 
 #include <memory>
@@ -14,6 +11,7 @@
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/interfaces/IObservable.hpp"
 #include "udjourney/interfaces/IObserver.hpp"
+#include "udjourney/AnimSpriteController.hpp"
 
 class Player : public IActor, public IObservable {
  public:
@@ -59,7 +57,19 @@ class Player : public IActor, public IObservable {
     struct PImpl;
     std::unique_ptr<struct PImpl> m_pimpl;
     Texture2D m_texture = {};
+    AnimSpriteController anim_controller_;
     udjourney::core::events::EventDispatcher &m_dispatcher;
-};
 
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLAYER_HPP_
+    // Animation state tracking
+    bool m_facing_right = true;
+    bool m_is_running = false;
+
+    // Animation constants
+    static constexpr int SPRITE_WIDTH = 64;
+    static constexpr int SPRITE_HEIGHT = 64;
+    static constexpr int FRAMES_PER_ANIMATION = 8;
+    static constexpr float FRAME_DURATION = 0.3f;  // Seconds per frame
+
+    // Animation helper methods
+    void update_animation_state();
+};

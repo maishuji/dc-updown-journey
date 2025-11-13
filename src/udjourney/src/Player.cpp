@@ -20,7 +20,7 @@ namespace {
 const float kDashTimerDefault = 0.2F;
 const float kDashCooldownDefault = 1.0F;
 const float kMoveSpeedYDefault = 5.0F;
-const float kMoveSpeedXDefault = 5.0F;
+const float kMoveSpeedXDefault = 3.0F;
 const float kDashSpeed = 15.0F;
 const float kJumpExhaustion = 0.1F;
 
@@ -90,6 +90,32 @@ Player::Player(const IGame &iGame, Rectangle iRect,
         auto &texture_manager = TextureManager::get_instance();
         m_texture = texture_manager.get_texture("placeholder.png");
     }
+
+    // Load sprite sheet and initialize animation
+    auto &texture_manager = TextureManager::get_instance();
+
+    // Initialize animation controller with animations
+    Texture2D idle_sheet = texture_manager.get_texture("char1-Sheet.png");
+    Texture2D run_sheet = texture_manager.get_texture("char1-run-Sheet.png");
+
+    anim_controller_.add_animation(PlayerState::IDLE,
+                                   "idle",
+                                   SpriteAnim(idle_sheet,
+                                              SPRITE_WIDTH,
+                                              SPRITE_HEIGHT,
+                                              FRAME_DURATION,
+                                              FRAMES_PER_ANIMATION,
+                                              true));
+
+    anim_controller_.add_animation(
+        PlayerState::RUNNING,
+        "running",
+        SpriteAnim(run_sheet,
+                   SPRITE_WIDTH,
+                   SPRITE_HEIGHT,
+                   FRAME_DURATION / 6.0F,  // Faster frame time for running
+                   FRAMES_PER_ANIMATION,
+                   true));
 }
 
 void Player::draw() const {
@@ -98,21 +124,9 @@ void Player::draw() const {
     // Convert to screen coordinates
     rect.x -= game.get_rectangle().x;
     rect.y -= game.get_rectangle().y;
-    DrawRectangleRec(rect,
-                     m_pimpl->grounded    ? BLUE
-                     : m_pimpl->colliding ? RED
-                     : m_pimpl->dashing   ? ORANGE
-                                          : GREEN);
-    if (m_texture.id > 0) {
-        auto src_rect = Rectangle{
-            0,
-            0,
-            static_cast<float>(m_texture.width),  // full width
-            static_cast<float>(m_texture.height)  // full height};
-        };
-        DrawTexturePro(
-            m_texture, src_rect, rect, Vector2{0.0F, 0.0F}, 0, WHITE);
-    }
+
+    // Draw current animation through the controller
+    anim_controller_.draw(rect, !m_facing_right);
 
     if (is_invincible()) {
         // Draw a yellow border around the player when invincible
@@ -126,6 +140,10 @@ void Player::update(float iDelta) {
     } else {
         m_invincibility_timer = 0.0F;
     }
+
+    // Update animation state and controller
+    update_animation_state();
+    anim_controller_.update(iDelta);
 
     // Gravity
     r.y += 1;
@@ -171,9 +189,11 @@ void Player::update(float iDelta) {
 void Player::process_input() {
     if (input_mapping.left_pressed()) {
         r.x -= m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
+        m_facing_right = false;  // Update facing direction
     }
     if (input_mapping.right_pressed()) {
         r.x += m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
+        m_facing_right = true;  // Update facing direction
     }
 
     // A to Jump
@@ -308,4 +328,28 @@ void Player::notify(const std::string &event) {
 void Player::_reset_jump() noexcept {
     m_pimpl->jumping = false;
     m_pimpl->vy = 0.0F;
+}
+
+void Player::update_animation_state() {
+    // Check if player is currently moving
+    bool is_moving =
+        input_mapping.left_pressed() || input_mapping.right_pressed();
+
+    // Determine player state for animation controller
+    PlayerState new_player_state;
+
+    if (m_pimpl->dashing) {
+        new_player_state = PlayerState::DASHING;
+    } else if (m_pimpl->jumping || !m_pimpl->grounded) {
+        new_player_state = PlayerState::JUMPING;
+    } else if (is_moving && m_pimpl->grounded) {
+        m_is_running = true;
+        new_player_state = PlayerState::RUNNING;
+    } else {
+        m_is_running = false;
+        new_player_state = PlayerState::IDLE;
+    }
+
+    // Set the current state in the animation controller
+    anim_controller_.set_current_state(new_player_state);
 }
