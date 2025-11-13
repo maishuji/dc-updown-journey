@@ -73,8 +73,11 @@ case $choice in
             cat > .devcontainer/devcontainer.json << 'EOF'
 {
 	"name": "Dreamcast Environment",
-	"image": "maishuji/dc-kos-image:14.3.0-28sep25-kp29sep25",
-	"postCreateCommand": "source /opt/toolchains/dc/kos/environ.sh",
+    "build": {
+		"dockerfile": "Dockerfile-dreamcast",
+		"context": "."
+	},
+    "postCreateCommand": "",
 	"customizations": {
 		"vscode": {
 			"extensions": [

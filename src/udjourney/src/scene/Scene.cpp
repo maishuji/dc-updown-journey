@@ -128,6 +128,24 @@ bool Scene::load_from_file(const std::string& filename) {
             }
         }
 
+        // Load monster spawns
+        m_monster_spawns.clear();
+        if (scene_data.contains("monsters")) {
+            for (const auto& monster_json : scene_data["monsters"]) {
+                MonsterSpawnData monster;
+                monster.tile_x = monster_json.value("x", 0);
+                monster.tile_y = monster_json.value("y", 0);
+                monster.patrol_range =
+                    monster_json.value("patrol_range", 100.0f);
+                monster.chase_range = monster_json.value("chase_range", 200.0f);
+                monster.attack_range =
+                    monster_json.value("attack_range", 50.0f);
+                monster.sprite_sheet =
+                    monster_json.value("sprite_sheet", "char1-Sheet.png");
+                m_monster_spawns.push_back(monster);
+            }
+        }
+
         Logger::info("Successfully loaded scene: %", filename);
         return true;
     } catch (const std::exception& e) {
@@ -194,6 +212,22 @@ bool Scene::save_to_file(const std::string& filename) const {
             platforms_json.push_back(platform_json);
         }
         scene_data["platforms"] = platforms_json;
+
+        // Save monster spawns
+        json monsters_json = json::array();
+        for (const auto& monster : m_monster_spawns) {
+            json monster_json;
+            monster_json["x"] = monster.tile_x;
+            monster_json["y"] = monster.tile_y;
+            monster_json["patrol_range"] = monster.patrol_range;
+            monster_json["chase_range"] = monster.chase_range;
+            monster_json["attack_range"] = monster.attack_range;
+            monster_json["sprite_sheet"] = monster.sprite_sheet;
+            monsters_json.push_back(monster_json);
+        }
+        if (!monsters_json.empty()) {
+            scene_data["monsters"] = monsters_json;
+        }
 
         std::ofstream file(filename);
         if (!file.is_open()) {

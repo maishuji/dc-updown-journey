@@ -5,6 +5,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "raylib/raymath.h"
 #include "raylib/rlgl.h"
@@ -81,41 +82,17 @@ struct Player::PImpl {
 };
 
 Player::Player(const IGame &iGame, Rectangle iRect,
-               udjourney::core::events::EventDispatcher &ioDispatcher) :
+               udjourney::core::events::EventDispatcher &ioDispatcher,
+               AnimSpriteController anim_controller) :
     IActor(iGame),
     r(iRect),
     m_pimpl(std::make_unique<Player::PImpl>()),
+    anim_controller_(std::move(anim_controller)),
     m_dispatcher(ioDispatcher) {
     if (m_texture.id == 0) {
         auto &texture_manager = TextureManager::get_instance();
         m_texture = texture_manager.get_texture("placeholder.png");
     }
-
-    // Load sprite sheet and initialize animation
-    auto &texture_manager = TextureManager::get_instance();
-
-    // Initialize animation controller with animations
-    Texture2D idle_sheet = texture_manager.get_texture("char1-Sheet.png");
-    Texture2D run_sheet = texture_manager.get_texture("char1-run-Sheet.png");
-
-    anim_controller_.add_animation(PlayerState::IDLE,
-                                   "idle",
-                                   SpriteAnim(idle_sheet,
-                                              SPRITE_WIDTH,
-                                              SPRITE_HEIGHT,
-                                              FRAME_DURATION,
-                                              FRAMES_PER_ANIMATION,
-                                              true));
-
-    anim_controller_.add_animation(
-        PlayerState::RUNNING,
-        "running",
-        SpriteAnim(run_sheet,
-                   SPRITE_WIDTH,
-                   SPRITE_HEIGHT,
-                   FRAME_DURATION / 6.0F,  // Faster frame time for running
-                   FRAMES_PER_ANIMATION,
-                   true));
 }
 
 void Player::draw() const {
@@ -190,9 +167,11 @@ void Player::process_input() {
     if (input_mapping.left_pressed()) {
         r.x -= m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
         m_facing_right = false;  // Update facing direction
+        m_facing_right = false;  // Update facing direction
     }
     if (input_mapping.right_pressed()) {
         r.x += m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
+        m_facing_right = true;  // Update facing direction
         m_facing_right = true;  // Update facing direction
     }
 

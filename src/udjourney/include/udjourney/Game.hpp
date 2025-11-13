@@ -18,6 +18,7 @@
 #include "udjourney/managers/BonusManager.hpp"
 #include "udjourney/managers/HUDManager.hpp"
 #include "udjourney/scene/Scene.hpp"
+#include "udjourney/Player.hpp"
 
 enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER, WIN };
 
@@ -32,10 +33,12 @@ class Game : public IGame, public IObserver {
     void on_notify(const std::string &event) override;
     void on_checkpoint_reached(float x, float y) const override;
     [[nodiscard]] Rectangle get_rectangle() const override { return m_rect; }
+    [[nodiscard]] Player *get_player() const override;
 
     // Scene management
     bool load_scene(const std::string &filename);
     void create_platforms_from_scene();
+    void create_monsters_from_scene();
     void restart_level();
 
     // Level selection
@@ -49,6 +52,7 @@ class Game : public IGame, public IObserver {
     void draw_finish_line_() const;
     bool should_continue_scrolling_() const noexcept;
 
+    std::unique_ptr<Player> m_player;  // Player is now a member
     std::vector<std::unique_ptr<IActor>> m_pending_actors;
     std::vector<std::unique_ptr<IActor>> m_actors;
     std::vector<std::unique_ptr<IActor>> m_dead_actors;

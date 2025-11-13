@@ -5,7 +5,12 @@
 
 #include <concepts>
 #include <memory>
+#include <utility>
+#include <vector>
 
+#include "udjourney/interfaces/IComponent.hpp"
+
+// Forward declarations
 class IGame;
 
 enum class ActorState {
@@ -29,9 +34,17 @@ class IActor {
     void set_state(ActorState iState) noexcept { state = iState; }
     [[nodiscard]] ActorState get_state() const noexcept { return state; }
 
+    void add_component(std::unique_ptr<IComponent> component) {
+        m_components.push_back(std::move(component));
+    }
+    const std::vector<std::unique_ptr<IComponent>> &get_components() const {
+        return m_components;
+    }
+
  private:
     const IGame *m_game = nullptr;
     ActorState state = ActorState::ONGOING;
+    std::vector<std::unique_ptr<IComponent>> m_components;
 };
 
 #endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IACTOR_HPP_

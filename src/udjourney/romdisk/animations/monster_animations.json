@@ -1,0 +1,127 @@
+{
+  "preset_name": "monster_goblin",
+  "animations": [
+    {
+      "name": "idle",
+      "state_id": 10,
+      "sprite_config": {
+        "filename": "char1-Sheet.png",
+        "sprite_width": 64,
+        "sprite_height": 64,
+        "frames": [
+          {"row": 0, "col": 0},
+          {"row": 0, "col": 1},
+          {"row": 0, "col": 2},
+          {"row": 0, "col": 3},
+          {"row": 0, "col": 4},
+          {"row": 0, "col": 5},
+          {"row": 0, "col": 6},
+          {"row": 0, "col": 7}
+        ],
+        "frame_duration": 0.15,
+        "loop": true
+      }
+    },
+    {
+      "name": "patrol",
+      "state_id": 11,
+      "sprite_config": {
+        "filename": "char1-Sheet.png",
+        "sprite_width": 64,
+        "sprite_height": 64,
+        "frames": [
+          {"row": 0, "col": 0},
+          {"row": 0, "col": 1},
+          {"row": 0, "col": 2},
+          {"row": 0, "col": 3},
+          {"row": 0, "col": 4},
+          {"row": 0, "col": 5},
+          {"row": 0, "col": 6},
+          {"row": 0, "col": 7}
+        ],
+        "frame_duration": 0.075,
+        "loop": true
+      }
+    },
+    {
+      "name": "chase",
+      "state_id": 12,
+      "sprite_config": {
+        "filename": "char1-Sheet.png",
+        "sprite_width": 64,
+        "sprite_height": 64,
+        "frames": [
+          {"row": 0, "col": 0},
+          {"row": 0, "col": 1},
+          {"row": 0, "col": 2},
+          {"row": 0, "col": 3},
+          {"row": 0, "col": 4},
+          {"row": 0, "col": 5},
+          {"row": 0, "col": 6},
+          {"row": 0, "col": 7}
+        ],
+        "frame_duration": 0.0375,
+        "loop": true
+      }
+    },
+    {
+      "name": "attack",
+      "state_id": 13,
+      "sprite_config": {
+        "filename": "char1-Sheet.png",
+        "sprite_width": 64,
+        "sprite_height": 64,
+        "frames": [
+          {"row": 0, "col": 0},
+          {"row": 0, "col": 1},
+          {"row": 0, "col": 2},
+          {"row": 0, "col": 3},
+          {"row": 0, "col": 4},
+          {"row": 0, "col": 5},
+          {"row": 0, "col": 6},
+          {"row": 0, "col": 7}
+        ],
+        "frame_duration": 0.075,
+        "loop": false
+      }
+    },
+    {
+      "name": "hurt",
+      "state_id": 14,
+      "sprite_config": {
+        "filename": "char1-Sheet.png",
+        "sprite_width": 64,
+        "sprite_height": 64,
+        "frames": [
+          {"row": 0, "col": 0},
+          {"row": 0, "col": 1},
+          {"row": 0, "col": 2},
+          {"row": 0, "col": 3}
+        ],
+        "frame_duration": 0.05,
+        "loop": false
+      }
+    },
+    {
+      "name": "death",
+      "state_id": 15,
+      "sprite_config": {
+        "filename": "char1-Sheet.png",
+        "sprite_width": 64,
+        "sprite_height": 64,
+        "frames": [
+          {"row": 0, "col": 0},
+          {"row": 0, "col": 1},
+          {"row": 0, "col": 2},
+          {"row": 0, "col": 3},
+          {"row": 0, "col": 4},
+          {"row": 0, "col": 5},
+          {"row": 0, "col": 6},
+          {"row": 0, "col": 7}
+        ],
+        "frame_duration": 0.15,
+        "loop": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "name": "Monster Test Level",
+  "player_spawn": {
+    "x": 17,
+    "y": 0
+  },
+  "platforms": [
+        {
+      "x": 0,
+      "y": 4,
+      "width": 20,
+      "height": 0.8,
+      "behavior": "static",
+      "features": ["checkpoint"]
+    },
+        {
+      "x": 12,
+      "y": 8,
+      "width": 8,
+      "height": 1,
+      "behavior": "static"
+    },
+        {
+      "x": 0,
+      "y": 8,
+      "width": 8,
+      "height": 1,
+      "behavior": "static"
+    },
+        {
+      "x": 10,
+      "y": 12,
+      "width": 6,
+      "height": 1,
+      "behavior": "static"
+    },
+    {
+      "x": 0,
+      "y": 12,
+      "width": 6,
+      "height": 1,
+      "behavior": "static"
+    },
+    {
+      "x": 0,
+      "y": 16,
+      "width": 20,
+      "height": 0.3,
+      "behavior": "static"
+    }
+  ],
+  "monsters": [
+    {
+      "x": 3,
+      "y": 14,
+      "patrol_range": 128.0,
+      "chase_range": 200.0,
+      "attack_range": 50.0,
+      "sprite_sheet": "char1-Sheet.png"
+    },
+    {
+      "x": 12,
+      "y": 10,
+      "patrol_range": 96.0,
+      "chase_range": 180.0,
+      "attack_range": 50.0,
+      "sprite_sheet": "char1-Sheet.png"
+    },
+    {
+      "x": 5,
+      "y": 6,
+      "patrol_range": 160.0,
+      "chase_range": 220.0,
+      "attack_range": 60.0,
+      "sprite_sheet": "char1-Sheet.png"
+    },
+    {
+      "x": 15,
+      "y": 6,
+      "patrol_range": 120.0,
+      "chase_range": 200.0,
+      "attack_range": 50.0,
+      "sprite_sheet": "char1-Sheet.png"
+    },
+    {
+      "x": 10,
+      "y": 2,
+      "patrol_range": 256.0,
+      "chase_range": 300.0,
+      "attack_range": 70.0,
+      "sprite_sheet": "char1-Sheet.png"
+    }
+  ]
+}
