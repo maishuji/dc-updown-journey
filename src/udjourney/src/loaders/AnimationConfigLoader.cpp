@@ -1,4 +1,9 @@
 // Copyright 2025 Quentin Cartier
+// Include Dreamcast compatibility functions BEFORE nlohmann/json
+#ifdef PLATFORM_DREAMCAST
+#include "udjourney/dreamcast_json_compat.h"
+#endif
+
 #include "udjourney/loaders/AnimationConfigLoader.hpp"
 
 #include <fstream>
@@ -7,11 +12,6 @@
 #include <utility>
 
 #include <nlohmann/json.hpp>
-
-// Include Dreamcast compatibility functions before nlohmann/json
-#ifdef PLATFORM_DREAMCAST
-#include "udjourney/dreamcast_json_compat.h"
-#endif
 
 #include "udjourney/core/Logger.hpp"
 #include "udjourney/managers/TextureManager.hpp"

@@ -12,6 +12,11 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/nlohmann/json.git
     GIT_TAG v3.11.3
 )
+
+# Configure nlohmann/json for compatibility with older C++ standards (like Dreamcast)
+set(JSON_DisableEnumSerialization ON CACHE BOOL "" FORCE)
+set(JSON_ImplicitConversions OFF CACHE BOOL "" FORCE)
+
 FetchContent_MakeAvailable(nlohmann_json)
 
 
@@ -86,6 +91,12 @@ target_include_directories(${TARGET_NAME}
 if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
     message(STATUS "Building for Dreamcast")
     target_compile_definitions(${TARGET_NAME}  PRIVATE PLATFORM_DREAMCAST=TRUE)
+    
+    # Force include the compatibility header before any other includes
+    target_compile_options(${TARGET_NAME} PRIVATE 
+        -include ${CMAKE_CURRENT_SOURCE_DIR}/include/udjourney/dreamcast_json_compat.h
+    )
+    
     target_link_libraries(${TARGET_NAME} 
         PUBLIC 
             dcplib raylib GL nlohmann_json::nlohmann_json
