@@ -53,42 +53,27 @@
     {
       "x": 3,
       "y": 14,
-      "patrol_range": 128.0,
-      "chase_range": 200.0,
-      "attack_range": 50.0,
-      "sprite_sheet": "char1-Sheet.png"
+      "preset_name": "goblin"
     },
     {
       "x": 12,
       "y": 10,
-      "patrol_range": 96.0,
-      "chase_range": 180.0,
-      "attack_range": 50.0,
-      "sprite_sheet": "char1-Sheet.png"
+      "preset_name": "goblin"
     },
     {
       "x": 5,
       "y": 6,
-      "patrol_range": 160.0,
-      "chase_range": 220.0,
-      "attack_range": 60.0,
-      "sprite_sheet": "char1-Sheet.png"
+      "preset_name": "spider"
     },
     {
       "x": 15,
       "y": 6,
-      "patrol_range": 120.0,
-      "chase_range": 200.0,
-      "attack_range": 50.0,
-      "sprite_sheet": "char1-Sheet.png"
+      "preset_name": "goblin"
     },
     {
       "x": 10,
       "y": 2,
-      "patrol_range": 256.0,
-      "chase_range": 300.0,
-      "attack_range": 70.0,
-      "sprite_sheet": "char1-Sheet.png"
+      "preset_name": "spider"
     }
   ]
 }

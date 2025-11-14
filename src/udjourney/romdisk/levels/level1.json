@@ -8,10 +8,7 @@
     {
       "x": 5,
       "y": 8,
-      "patrol_range": 100.0,
-      "chase_range": 200.0,
-      "attack_range": 50.0,
-      "sprite_sheet": "char1-Sheet.png"
+      "preset_name": "goblin"
     }
   ],
   "platforms": [

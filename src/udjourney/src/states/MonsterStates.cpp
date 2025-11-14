@@ -18,6 +18,11 @@ void MonsterStateBase::check_transitions(IActor& actor, float delta) {
     auto& monster = to_monster(actor);
     const auto& preset = monster.get_preset();
 
+    // Skip transitions if no preset is loaded
+    if (!preset) {
+        return;  // No preset-based transitions, monster uses basic behavior
+    }
+
     // Check all possible transitions from current state
     for (const auto& transition : preset->state_config.transitions) {
         if (transition.from_state != get_name()) {

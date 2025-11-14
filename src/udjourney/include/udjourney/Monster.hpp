@@ -20,8 +20,7 @@ class Player;
 class Monster : public IActor {
  public:
     Monster(const IGame &game, Rectangle rect,
-            AnimSpriteController anim_controller,
-            const std::string &preset_name);
+            AnimSpriteController anim_controller);
     ~Monster() override = default;
 
     void draw() const override;
@@ -72,6 +71,7 @@ class Monster : public IActor {
     [[nodiscard]] const udjourney::MonsterPreset *get_preset() const {
         return preset_.get();
     }
+    void load_preset(const std::string& preset_name);
     bool is_wall_ahead() const;  // For checking terrain obstacles
 
     // Additional methods for state transitions

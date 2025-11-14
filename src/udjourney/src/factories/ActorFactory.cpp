@@ -26,9 +26,9 @@ std::unique_ptr<IActor> MonsterFactory::create_actor() {
         udjourney::loaders::AnimationConfigLoader::load_and_create(config_path);
 
     // Create a Monster actor instance with animation controller loaded from
-    // JSON (using default goblin preset)
+    // JSON
     auto monster = std::make_unique<Monster>(
-        m_game, m_rect, std::move(anim_controller), "goblin");
+        m_game, m_rect, std::move(anim_controller));
 
     // Set patrol range relative to spawn position
     monster->set_patrol_range(m_rect.x - 100.0f, m_rect.x + 100.0f);
