@@ -997,8 +997,9 @@ void Game::create_monsters_from_scene() {
 
     for (const auto &monster_data : monster_spawns) {
         try {
-            std::cout << "DEBUG: Creating monster with preset: " << monster_data.preset_name << std::endl;
-            
+            std::cout << "DEBUG: Creating monster with preset: "
+                      << monster_data.preset_name << std::endl;
+
             // Convert tile coordinates to world coordinates
             Vector2 world_pos = udjourney::scene::Scene::tile_to_world_pos(
                 monster_data.tile_x, monster_data.tile_y);
@@ -1011,20 +1012,21 @@ void Game::create_monsters_from_scene() {
             };
 
             // Load monster animation configuration from JSON
-            std::string monster_config_path = std::string(ASSETS_BASE_PATH) +
-                                              "animations/monster_animations.json";
+            std::string monster_config_path =
+                std::string(ASSETS_BASE_PATH) +
+                "animations/monster_animations.json";
             AnimSpriteController monster_anim_controller =
                 udjourney::loaders::AnimationConfigLoader::load_and_create(
                     monster_config_path);
-            
+
             std::cout << "DEBUG: Creating monster..." << std::endl;
 
             // Create monster with original constructor
             auto monster = std::make_unique<Monster>(
                 *this, monster_rect, std::move(monster_anim_controller));
-            
+
             std::cout << "DEBUG: Monster created successfully!" << std::endl;
-            
+
             // Load preset if specified
             if (!monster_data.preset_name.empty()) {
                 monster->load_preset(monster_data.preset_name);
@@ -1045,11 +1047,13 @@ void Game::create_monsters_from_scene() {
                 world_pos.y);
 
             m_actors.emplace_back(std::move(monster));
-        } catch (const std::exception& e) {
-            std::cerr << "ERROR: Failed to create monster: " << e.what() << std::endl;
+        } catch (const std::exception &e) {
+            std::cerr << "ERROR: Failed to create monster: " << e.what()
+                      << std::endl;
             continue;
         } catch (...) {
-            std::cerr << "ERROR: Unknown exception while creating monster" << std::endl;
+            std::cerr << "ERROR: Unknown exception while creating monster"
+                      << std::endl;
             continue;
         }
     }

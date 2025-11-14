@@ -48,14 +48,17 @@ Monster::Monster(const IGame& game, Rectangle rect,
     if (states_.find(initial_state) != states_.end()) {
         current_state_ = states_[initial_state].get();
         current_state_->enter(*this);
-        std::cout << "Monster initialized with default state: " << initial_state << std::endl;
+        std::cout << "Monster initialized with default state: " << initial_state
+                  << std::endl;
     } else {
-        std::cerr << "CRITICAL ERROR: Default 'idle' state not found! Available states: ";
+        std::cerr << "CRITICAL ERROR: Default 'idle' state not found! "
+                     "Available states: ";
         for (const auto& state_pair : states_) {
             std::cerr << state_pair.first << " ";
         }
         std::cerr << std::endl;
-        throw std::runtime_error("Monster initialization failed: No valid default state found");
+        throw std::runtime_error(
+            "Monster initialization failed: No valid default state found");
     }
 }
 
@@ -121,11 +124,12 @@ void Monster::change_state(const std::string& new_state) {
                 break;
             }
         }
-        
+
         std::string monster_name = preset_ ? preset_->name : "default_monster";
-        std::cout << "Monster '" << monster_name << "' changing state: " 
-                  << old_state_name << " -> " << new_state << std::endl;
-        
+        std::cout << "Monster '" << monster_name
+                  << "' changing state: " << old_state_name << " -> "
+                  << new_state << std::endl;
+
         current_state_ = it->second.get();
         current_state_->enter(*this);
 
@@ -145,8 +149,9 @@ void Monster::change_state(const std::string& new_state) {
         }
     } else if (it == states_.end()) {
         std::string monster_name = preset_ ? preset_->name : "default_monster";
-        std::cerr << "ERROR: Attempted to change to invalid state '" << new_state 
-                  << "' for monster '" << monster_name << "'. Available states: ";
+        std::cerr << "ERROR: Attempted to change to invalid state '"
+                  << new_state << "' for monster '" << monster_name
+                  << "'. Available states: ";
         for (const auto& state_pair : states_) {
             std::cerr << state_pair.first << " ";
         }
@@ -314,37 +319,39 @@ bool Monster::is_animation_finished() const {
 void Monster::load_preset(const std::string& preset_name) {
     try {
         std::cout << "Loading monster preset: " << preset_name << std::endl;
-        
-        // Load preset from JSON file (MonsterPresetLoader handles the path construction)
+
+        // Load preset from JSON file (MonsterPresetLoader handles the path
+        // construction)
         std::string preset_filename = preset_name + ".json";
         preset_ = udjourney::MonsterPresetLoader::load_preset(preset_filename);
         preset_name_ = preset_name;
-        
-        std::cout << "Monster preset loaded successfully: " << preset_name << std::endl;
-        
+
+        std::cout << "Monster preset loaded successfully: " << preset_name
+                  << std::endl;
+
         // Apply preset stats
         max_health_ = preset_->stats.max_health;
         health_ = max_health_;  // Reset to full health
         speed_ = preset_->stats.movement_speed;
         damage_ = preset_->stats.damage;
-        
+
         // Apply behavior settings
         chase_range_ = preset_->behavior.chase_range;
         attack_range_ = preset_->behavior.attack_range;
-        
+
         // Change to preset's initial state if different from current
         std::string target_state = preset_->state_config.initial_state;
         if (target_state != "idle") {  // Only change if not already idle
             change_state(target_state);
         }
-        
-        std::cout << "Monster configured with preset '" << preset_->name 
-                  << "' (HP: " << max_health_ << ", Speed: " << speed_ 
+
+        std::cout << "Monster configured with preset '" << preset_->name
+                  << "' (HP: " << max_health_ << ", Speed: " << speed_
                   << ", State: " << target_state << ")" << std::endl;
-                  
     } catch (const std::exception& e) {
-        std::cerr << "ERROR: Failed to load monster preset '" << preset_name 
+        std::cerr << "ERROR: Failed to load monster preset '" << preset_name
                   << "': " << e.what() << std::endl;
-        std::cerr << "Monster will continue with default settings." << std::endl;
+        std::cerr << "Monster will continue with default settings."
+                  << std::endl;
     }
 }

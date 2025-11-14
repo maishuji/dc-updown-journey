@@ -135,10 +135,11 @@ bool Scene::load_from_file(const std::string& filename) {
                 MonsterSpawnData monster;
                 monster.tile_x = monster_json.value("x", 0);
                 monster.tile_y = monster_json.value("y", 0);
-                
+
                 // New preset system - preferred approach
-                monster.preset_name = monster_json.value("preset_name", "goblin");
-                
+                monster.preset_name =
+                    monster_json.value("preset_name", "goblin");
+
                 // Legacy fields for backward compatibility
                 monster.patrol_range =
                     monster_json.value("patrol_range", 100.0f);
@@ -225,7 +226,7 @@ bool Scene::save_to_file(const std::string& filename) const {
             monster_json["x"] = monster.tile_x;
             monster_json["y"] = monster.tile_y;
             monster_json["preset_name"] = monster.preset_name;
-            
+
             // Include legacy fields for backward compatibility
             monster_json["patrol_range"] = monster.patrol_range;
             monster_json["chase_range"] = monster.chase_range;

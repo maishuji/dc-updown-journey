@@ -1,6 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney-editor/EditorScene.hpp"
 
+#include <cctype>
+
 struct EditorScene::PImpl {
     // Implementation details can be added here in the future
 };
@@ -38,6 +40,9 @@ void EditorScene::render(Level& level, TilePanel& tile_panel) {
 
     // Render platforms on top of grid
     render_platforms(level, tile_panel, draw_list, origin);
+
+    // Render monsters
+    render_monsters(level, tile_panel, draw_list, origin);
 
     // Render player spawn position
     render_player_spawn(level, draw_list, origin);
@@ -139,6 +144,14 @@ void EditorScene::handle_mouse_input(Level& level, TilePanel& tile_panel,
             if (left_clicked) {
                 handle_spawn_mode_input(level, mouse_pos, origin);
             }
+            break;
+        case EditMode::Monsters:
+            handle_monster_mode_input(level,
+                                      tile_panel,
+                                      mouse_pos,
+                                      origin,
+                                      left_clicked,
+                                      right_clicked);
             break;
     }
 }
@@ -472,4 +485,112 @@ bool EditorScene::is_tile_in_selection(const ImVec2& tile_top_left,
            tile_bottom_right.x <= selection_max.x &&
            tile_top_left.y >= selection_min.y &&
            tile_bottom_right.y <= selection_max.y;
+}
+
+void EditorScene::render_monsters(Level& level, TilePanel& tile_panel,
+                                  ImDrawList* draw_list, const ImVec2& origin) {
+    for (const auto& monster : level.monsters) {
+        // Calculate monster position on screen (consistent with grid and
+        // platforms)
+        ImVec2 monster_pos = ImVec2(origin.x + monster.tile_x * tile_size_,
+                                    origin.y + monster.tile_y * tile_size_);
+
+        // Draw monster as a filled circle
+        draw_list->AddCircleFilled(ImVec2(monster_pos.x + tile_size_ / 2,
+                                          monster_pos.y + tile_size_ / 2),
+                                   tile_size_ / 3,  // Radius
+                                   monster.color,
+                                   12);
+
+        // Draw monster type indicator (first letter)
+        char type_char = monster.preset_name.empty()
+                             ? '?'
+                             : std::toupper(monster.preset_name[0]);
+        draw_list->AddText(ImVec2(monster_pos.x + tile_size_ / 2 - 4,
+                                  monster_pos.y + tile_size_ / 2 - 6),
+                           IM_COL32(255, 255, 255, 255),  // White text
+                           &type_char,
+                           &type_char + 1);
+
+        // Highlight selected monster
+        if (tile_panel.get_selected_monster() == &monster) {
+            draw_list->AddCircle(
+                ImVec2(monster_pos.x + tile_size_ / 2,
+                       monster_pos.y + tile_size_ / 2),
+                tile_size_ / 2,              // Outer highlight circle
+                IM_COL32(255, 255, 0, 255),  // Yellow highlight
+                12,                          // Segments
+                3.0f);
+        }
+    }
+}
+
+void EditorScene::handle_monster_mode_input(Level& level, TilePanel& tile_panel,
+                                            const ImVec2& mouse_pos,
+                                            const ImVec2& origin,
+                                            bool left_clicked,
+                                            bool right_clicked) {
+    // Handle deletion flag from TilePanel
+    if (tile_panel.should_delete_selected_monster() &&
+        tile_panel.get_selected_monster()) {
+        const auto* monster_to_delete = tile_panel.get_selected_monster();
+        level.remove_monster_at(monster_to_delete->tile_x,
+                                monster_to_delete->tile_y);
+        tile_panel.clear_delete_flag();
+        return;
+    }
+
+    // Convert mouse position to tile coordinates
+    ImVec2 tile_pos = screen_to_tile_pos(mouse_pos, origin);
+    int tile_x = static_cast<int>(std::floor(tile_pos.x));
+    int tile_y = static_cast<int>(std::floor(tile_pos.y));
+
+    // Ensure coordinates are within bounds
+    if (tile_x < 0 || tile_y < 0 || tile_x >= static_cast<int>(level.col_cnt) ||
+        tile_y >= static_cast<int>(level.row_cnt)) {
+        return;
+    }
+
+    if (left_clicked) {
+        // Check if there's already a monster at this position
+        EditorMonster* existing_monster = level.get_monster_at(tile_x, tile_y);
+
+        if (existing_monster) {
+            // Select existing monster for editing
+            tile_panel.set_selected_monster(existing_monster);
+        } else {
+            // Create new monster
+            EditorMonster new_monster;
+            new_monster.tile_x = tile_x;
+            new_monster.tile_y = tile_y;
+            new_monster.preset_name = tile_panel.get_selected_monster_preset();
+
+            // Set color based on preset
+            if (new_monster.preset_name == "goblin") {
+                new_monster.color = IM_COL32(255, 0, 0, 255);  // Red
+            } else if (new_monster.preset_name == "spider") {
+                new_monster.color = IM_COL32(128, 0, 128, 255);  // Purple
+            } else {
+                new_monster.color = IM_COL32(255, 0, 0, 255);  // Default red
+            }
+
+            level.add_monster(new_monster);
+
+            // Select the newly created monster
+            EditorMonster* added_monster = level.get_monster_at(tile_x, tile_y);
+            tile_panel.set_selected_monster(added_monster);
+        }
+    }
+
+    if (right_clicked) {
+        // Remove monster at this position
+        level.remove_monster_at(tile_x, tile_y);
+
+        // Clear selection if we deleted the selected monster
+        if (tile_panel.get_selected_monster() &&
+            tile_panel.get_selected_monster()->tile_x == tile_x &&
+            tile_panel.get_selected_monster()->tile_y == tile_y) {
+            tile_panel.set_selected_monster(nullptr);
+        }
+    }
 }

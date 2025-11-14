@@ -57,6 +57,12 @@ class EditorScene {
                                     const ImVec2& origin);
     void handle_spawn_mode_input(Level& level, const ImVec2& mouse_pos,
                                  const ImVec2& origin);
+    void handle_monster_mode_input(Level& level, TilePanel& tile_panel,
+                                   const ImVec2& mouse_pos,
+                                   const ImVec2& origin, bool left_clicked,
+                                   bool right_clicked);
+    void render_monsters(Level& level, TilePanel& tile_panel,
+                         ImDrawList* draw_list, const ImVec2& origin);
     void render_selection(ImDrawList* draw_list);
     void apply_selection_to_tiles(Level& level, TilePanel& tile_panel,
                                   ImDrawList* draw_list, const ImVec2& origin);

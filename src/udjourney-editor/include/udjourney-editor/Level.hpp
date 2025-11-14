@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <string>
 #include <vector>
 
 // Forward declarations for udjourney types
@@ -28,6 +29,13 @@ struct EditorPlatform {
     ImU32 color = IM_COL32(0, 0, 255, 255);  // Blue default
 };
 
+struct EditorMonster {
+    int tile_x;
+    int tile_y;
+    std::string preset_name = "goblin";  // Default preset
+    ImU32 color = IM_COL32(255, 0, 0, 255);  // Red for monsters
+};
+
 struct Cell {
     ImU32 color = IM_COL32(255, 255, 255, 255);  // Default color for the cell
 };
@@ -35,6 +43,7 @@ struct Cell {
 struct Level {
     std::vector<Cell> tiles;
     std::vector<EditorPlatform> platforms;
+    std::vector<EditorMonster> monsters;
     size_t row_cnt = 0;
     size_t col_cnt = 0;
     int player_spawn_x = 2;
@@ -43,6 +52,7 @@ struct Level {
     void clear() {
         tiles.clear();
         platforms.clear();
+        monsters.clear();
         row_cnt = 0;
         col_cnt = 0;
     }
@@ -74,6 +84,29 @@ struct Level {
                                return p.tile_x == tile_x && p.tile_y == tile_y;
                            }),
             platforms.end());
+    }
+
+    void add_monster(const EditorMonster& monster) {
+        monsters.push_back(monster);
+    }
+
+    void remove_monster_at(int tile_x, int tile_y) {
+        monsters.erase(
+            std::remove_if(monsters.begin(),
+                           monsters.end(),
+                           [tile_x, tile_y](const EditorMonster& m) {
+                               return m.tile_x == tile_x && m.tile_y == tile_y;
+                           }),
+            monsters.end());
+    }
+
+    EditorMonster* get_monster_at(int tile_x, int tile_y) {
+        for (auto& monster : monsters) {
+            if (monster.tile_x == tile_x && monster.tile_y == tile_y) {
+                return &monster;
+            }
+        }
+        return nullptr;
     }
 
     void reserve(size_t new_size) { tiles.reserve(new_size); }

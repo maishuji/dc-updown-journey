@@ -306,8 +306,71 @@ void TilePanel::draw_spawn_mode() {
 void TilePanel::draw_monsters_mode() {
     ImGui::Text("Monster Spawns");
     ImGui::Separator();
-    ImGui::Text("Click on the grid to set");
-    ImGui::Text("the monster spawn positions.");
+
+    // Monster preset selection
+    ImGui::Text("Select Monster Type:");
+    if (ImGui::RadioButton("Goblin", selected_monster_preset == "goblin")) {
+        selected_monster_preset = "goblin";
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Spider", selected_monster_preset == "spider")) {
+        selected_monster_preset = "spider";
+    }
+
+    ImGui::Separator();
+    ImGui::Text("Left click: Place %s", selected_monster_preset.c_str());
+    ImGui::Text("Right click: Remove monster");
+    ImGui::Text("Click existing monster to edit");
+
+    // Monster editor for selected monster
+    if (selected_monster_) {
+        draw_monster_editor();
+    }
+}
+
+void TilePanel::draw_monster_editor() {
+    if (!selected_monster_) return;
+
+    ImGui::Separator();
+    ImGui::Text("Editing Monster at (%d, %d)",
+                selected_monster_->tile_x,
+                selected_monster_->tile_y);
+
+    // Preset selection for existing monster
+    ImGui::Text("Monster Type:");
+    bool preset_changed = false;
+    if (ImGui::RadioButton("Goblin##edit",
+                           selected_monster_->preset_name == "goblin")) {
+        selected_monster_->preset_name = "goblin";
+        preset_changed = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Spider##edit",
+                           selected_monster_->preset_name == "spider")) {
+        selected_monster_->preset_name = "spider";
+        preset_changed = true;
+    }
+
+    // Update color based on preset
+    if (preset_changed) {
+        if (selected_monster_->preset_name == "goblin") {
+            selected_monster_->color =
+                IM_COL32(255, 0, 0, 255);  // Red for goblin
+        } else if (selected_monster_->preset_name == "spider") {
+            selected_monster_->color =
+                IM_COL32(128, 0, 128, 255);  // Purple for spider
+        }
+    }
+
+    // Position info (read-only for now)
+    ImGui::Text("Position: Tile (%d, %d)",
+                selected_monster_->tile_x,
+                selected_monster_->tile_y);
+
+    // Option to delete monster
+    if (ImGui::Button("Delete Monster")) {
+        delete_selected_monster_ = true;  // Flag for deletion
+    }
 }
 
 std::vector<PlatformFeatureType> TilePanel::get_selected_features() const {

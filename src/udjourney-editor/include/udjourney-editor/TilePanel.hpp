@@ -42,6 +42,22 @@ class TilePanel {
     }
     EditorPlatform* get_selected_platform() const { return selected_platform_; }
 
+    // Monster editing
+    void set_selected_monster(EditorMonster* monster) {
+        selected_monster_ = monster;
+    }
+    EditorMonster* get_selected_monster() const { return selected_monster_; }
+    const std::string& get_selected_monster_preset() const {
+        return selected_monster_preset;
+    }
+    bool should_delete_selected_monster() const {
+        return delete_selected_monster_;
+    }
+    void clear_delete_flag() {
+        delete_selected_monster_ = false;
+        selected_monster_ = nullptr;
+    }
+
     // Focus management
     void request_focus() { should_focus_ = true; }
 
@@ -62,6 +78,11 @@ class TilePanel {
     // Currently selected platform for editing
     EditorPlatform* selected_platform_ = nullptr;
 
+    // Monster editing
+    std::string selected_monster_preset = "goblin";
+    EditorMonster* selected_monster_ = nullptr;
+    bool delete_selected_monster_ = false;
+
     // Focus management
     bool should_focus_ = false;
 
@@ -70,4 +91,5 @@ class TilePanel {
     void draw_spawn_mode();
     void draw_platform_editor();
     void draw_monsters_mode();
+    void draw_monster_editor();
 };

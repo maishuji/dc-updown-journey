@@ -134,22 +134,23 @@ MonsterStateConfig MonsterPresetLoader::parse_state_config(
     }
 
     // Validate state configuration
-    std::set<std::string> valid_states = {"idle", "patrol", "chase", "attack", "hurt", "death"};
-    
+    std::set<std::string> valid_states = {
+        "idle", "patrol", "chase", "attack", "hurt", "death"};
+
     // Check if initial state is valid
     if (valid_states.find(config.initial_state) == valid_states.end()) {
-        std::cerr << "WARNING: Initial state '" << config.initial_state 
+        std::cerr << "WARNING: Initial state '" << config.initial_state
                   << "' is not a recognized state. Valid states are: ";
         for (const auto& state : valid_states) {
             std::cerr << state << " ";
         }
         std::cerr << std::endl;
     }
-    
+
     // Check if all available states are valid
     for (const auto& state : config.available_states) {
         if (valid_states.find(state) == valid_states.end()) {
-            std::cerr << "WARNING: Available state '" << state 
+            std::cerr << "WARNING: Available state '" << state
                       << "' is not a recognized state. Valid states are: ";
             for (const auto& valid_state : valid_states) {
                 std::cerr << valid_state << " ";
