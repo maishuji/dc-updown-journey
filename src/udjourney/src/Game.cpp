@@ -1014,9 +1014,9 @@ void Game::create_monsters_from_scene() {
             udjourney::loaders::AnimationConfigLoader::load_and_create(
                 monster_config_path);
 
-        // Create monster
+        // Create monster with default preset
         auto monster = std::make_unique<Monster>(
-            *this, monster_rect, std::move(monster_anim_controller));
+            *this, monster_rect, std::move(monster_anim_controller), "goblin");
 
         // Configure monster behavior ranges
         float patrol_min = world_pos.x - (monster_data.patrol_range / 2.0f);

@@ -11,6 +11,8 @@
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/interfaces/IActorState.hpp"
 #include "udjourney/interfaces/IGame.hpp"
+#include "udjourney/MonsterPreset.hpp"
+#include "udjourney/loaders/MonsterPresetLoader.hpp"
 
 // Forward declarations
 class Player;
@@ -18,7 +20,8 @@ class Player;
 class Monster : public IActor {
  public:
     Monster(const IGame &game, Rectangle rect,
-            AnimSpriteController anim_controller);
+            AnimSpriteController anim_controller,
+            const std::string &preset_name);
     ~Monster() override = default;
 
     void draw() const override;
@@ -65,10 +68,25 @@ class Monster : public IActor {
     // Find player in game actors
     Player *find_player() const;
 
+    // Preset system methods
+    [[nodiscard]] const udjourney::MonsterPreset *get_preset() const {
+        return preset_.get();
+    }
+    bool is_wall_ahead() const;  // For checking terrain obstacles
+
+    // Additional methods for state transitions
+    bool is_animation_finished() const;
+    bool is_grounded() const { return grounded_; }
+    float get_current_health() const { return health_; }
+
  private:
     const IGame &game_;
     Rectangle rect_;
     AnimSpriteController anim_controller_;
+
+    // Preset system
+    std::unique_ptr<udjourney::MonsterPreset> preset_;
+    std::string preset_name_;
 
     // State pattern - using IActorState
     std::unordered_map<std::string, std::unique_ptr<IActorState>> states_;

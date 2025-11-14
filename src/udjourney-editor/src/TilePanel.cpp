@@ -78,15 +78,13 @@ void TilePanel::draw() {
     if (ImGui::RadioButton("Platforms", edit_mode == EditMode::Platforms)) {
         edit_mode = EditMode::Platforms;
     }
-    //ImGui::SameLine();
-    if (ImGui::RadioButton("Spawn",
-                           edit_mode == EditMode::PlayerSpawn)) {
+    // ImGui::SameLine();
+    if (ImGui::RadioButton("Spawn", edit_mode == EditMode::PlayerSpawn)) {
         edit_mode = EditMode::PlayerSpawn;
     }
 
     ImGui::SameLine();
-    if (ImGui::RadioButton("Monsters",
-                           edit_mode == EditMode::Monsters)) {
+    if (ImGui::RadioButton("Monsters", edit_mode == EditMode::Monsters)) {
         edit_mode = EditMode::Monsters;
     }
 

@@ -14,25 +14,59 @@
 #include "udjourney/WorldBounds.hpp"
 
 Monster::Monster(const IGame& game, Rectangle rect,
-                 AnimSpriteController anim_controller) :
+                 AnimSpriteController anim_controller,
+                 const std::string& preset_name) :
     IActor(game),
     game_(game),
     rect_(rect),
-    anim_controller_(std::move(anim_controller)) {
+    anim_controller_(std::move(anim_controller)),
+    preset_name_(preset_name) {
+    // Load monster preset
+    udjourney::MonsterPresetLoader loader;
+    preset_ = loader.load_preset(preset_name);
+
+    if (!preset_) {
+        std::cerr << "Failed to load monster preset: " << preset_name
+                  << std::endl;
+        // Create a default preset as fallback
+        preset_ = std::make_unique<udjourney::MonsterPreset>();
+        preset_->stats.max_health = 100.0f;
+        preset_->stats.damage = 10.0f;
+        preset_->stats.movement_speed = 50.0f;
+        preset_->behavior.chase_range = 200.0f;
+        preset_->behavior.attack_range = 50.0f;
+    }
+
+    // Apply preset stats
+    health_ = preset_->stats.max_health;
+    max_health_ = preset_->stats.max_health;
+    damage_ = preset_->stats.damage;
+    speed_ = preset_->stats.movement_speed;
+    chase_range_ = preset_->behavior.chase_range;
+    attack_range_ = preset_->behavior.attack_range;
+
     // Set initial state
     anim_controller_.set_current_state(ANIM_IDLE);
 
     // Register all monster states (using State pattern)
-    states_["IDLE"] = std::make_unique<MonsterIdleState>();
-    states_["PATROL"] = std::make_unique<MonsterPatrolState>();
-    states_["CHASE"] = std::make_unique<MonsterChaseState>();
-    states_["ATTACK"] = std::make_unique<MonsterAttackState>();
-    states_["HURT"] = std::make_unique<MonsterHurtState>();
-    states_["DEATH"] = std::make_unique<MonsterDeathState>();
+    states_["idle"] = std::make_unique<MonsterIdleState>();
+    states_["patrol"] = std::make_unique<MonsterPatrolState>();
+    states_["chase"] = std::make_unique<MonsterChaseState>();
+    states_["attack"] = std::make_unique<MonsterAttackState>();
+    states_["hurt"] = std::make_unique<MonsterHurtState>();
+    states_["death"] = std::make_unique<MonsterDeathState>();
 
-    // Start in IDLE state
-    current_state_ = states_["IDLE"].get();
-    current_state_->enter(*this);
+    // Start in initial state from preset (default to idle)
+    std::string initial_state = preset_->state_config.initial_state;
+    if (states_.find(initial_state) != states_.end()) {
+        current_state_ = states_[initial_state].get();
+        current_state_->enter(*this);
+    } else {
+        std::cerr << "Warning: Initial state '" << initial_state
+                  << "' not found, using idle\n";
+        current_state_ = states_["idle"].get();
+        current_state_->enter(*this);
+    }
 }
 
 void Monster::draw() const {
@@ -92,18 +126,18 @@ void Monster::change_state(const std::string& new_state) {
         current_state_ = it->second.get();
         current_state_->enter(*this);
 
-        // Map state names to animation indices
-        if (new_state == "IDLE") {
+        // Map state names to animation indices (using lowercase)
+        if (new_state == "idle") {
             anim_controller_.set_current_state(ANIM_IDLE);
-        } else if (new_state == "PATROL") {
+        } else if (new_state == "patrol") {
             anim_controller_.set_current_state(ANIM_PATROL);
-        } else if (new_state == "CHASE") {
+        } else if (new_state == "chase") {
             anim_controller_.set_current_state(ANIM_CHASE);
-        } else if (new_state == "ATTACK") {
+        } else if (new_state == "attack") {
             anim_controller_.set_current_state(ANIM_ATTACK);
-        } else if (new_state == "HURT") {
+        } else if (new_state == "hurt") {
             anim_controller_.set_current_state(ANIM_HURT);
-        } else if (new_state == "DEATH") {
+        } else if (new_state == "death") {
             anim_controller_.set_current_state(ANIM_DEATH);
         }
     }
@@ -134,10 +168,10 @@ void Monster::take_damage(float damage) {
 
     if (health_ <= 0.0f) {
         health_ = 0.0f;
-        change_state("DEATH");
+        change_state("death");
         velocity_x_ = 0.0f;
     } else {
-        change_state("HURT");
+        change_state("hurt");
         // Knockback
         velocity_x_ = facing_right_ ? -speed_ * 2.0f : speed_ * 2.0f;
     }
@@ -248,4 +282,20 @@ void Monster::handle_collision(
             }
         }
     }
+}
+
+bool Monster::is_wall_ahead() const {
+    // Simple wall detection - check if we're at patrol boundaries
+    if (facing_right_ && rect_.x >= patrol_max_x_) {
+        return true;
+    } else if (!facing_right_ && rect_.x <= patrol_min_x_) {
+        return true;
+    }
+    return false;
+}
+
+bool Monster::is_animation_finished() const {
+    // For now, we'll use a simple time-based approach
+    // This could be enhanced to check actual animation frame completion
+    return anim_controller_.is_animation_finished();
 }
