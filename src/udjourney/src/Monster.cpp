@@ -11,6 +11,7 @@
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/states/MonsterStates.hpp"
+#include "udjourney/WorldBounds.hpp"
 
 Monster::Monster(const IGame& game, Rectangle rect,
                  AnimSpriteController anim_controller) :
@@ -157,11 +158,12 @@ void Monster::apply_gravity(float delta) {
 }
 
 void Monster::handle_border_collisions() {
-    const auto& game_rect = game_.get_rectangle();
+    // Use WorldBounds for more accurate boundary collision
+    const auto& world_bounds = game_.get_world_bounds();
+    auto collision = world_bounds.check_border_collision(rect_);
 
-    // Left border collision
-    if (rect_.x < game_rect.x) {
-        rect_.x = game_rect.x;
+    if (collision.hit_left) {
+        rect_ = collision.corrected_rect;
         velocity_x_ = 0.0f;
 
         // Reverse patrol direction if patrolling
@@ -170,9 +172,8 @@ void Monster::handle_border_collisions() {
         }
     }
 
-    // Right border collision
-    if (rect_.x + rect_.width > game_rect.x + game_rect.width) {
-        rect_.x = game_rect.x + game_rect.width - rect_.width;
+    if (collision.hit_right) {
+        rect_ = collision.corrected_rect;
         velocity_x_ = 0.0f;
 
         // Reverse patrol direction if patrolling

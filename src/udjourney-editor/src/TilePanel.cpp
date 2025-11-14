@@ -78,10 +78,16 @@ void TilePanel::draw() {
     if (ImGui::RadioButton("Platforms", edit_mode == EditMode::Platforms)) {
         edit_mode = EditMode::Platforms;
     }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Player Spawn",
+    //ImGui::SameLine();
+    if (ImGui::RadioButton("Spawn",
                            edit_mode == EditMode::PlayerSpawn)) {
         edit_mode = EditMode::PlayerSpawn;
+    }
+
+    ImGui::SameLine();
+    if (ImGui::RadioButton("Monsters",
+                           edit_mode == EditMode::Monsters)) {
+        edit_mode = EditMode::Monsters;
     }
 
     ImGui::Separator();
@@ -96,6 +102,9 @@ void TilePanel::draw() {
             break;
         case EditMode::PlayerSpawn:
             draw_spawn_mode();
+            break;
+        case EditMode::Monsters:
+            draw_monsters_mode();
             break;
     }
 
@@ -294,6 +303,13 @@ void TilePanel::draw_spawn_mode() {
     ImGui::Separator();
     ImGui::Text("Click on the grid to set");
     ImGui::Text("the player spawn position.");
+}
+
+void TilePanel::draw_monsters_mode() {
+    ImGui::Text("Monster Spawns");
+    ImGui::Separator();
+    ImGui::Text("Click on the grid to set");
+    ImGui::Text("the monster spawn positions.");
 }
 
 std::vector<PlatformFeatureType> TilePanel::get_selected_features() const {

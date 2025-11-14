@@ -13,6 +13,7 @@
 #include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/platform/Platform.hpp"
+#include "udjourney/WorldBounds.hpp"
 
 Player::~Player() = default;
 
@@ -155,6 +156,15 @@ void Player::update(float iDelta) {
     }
 
     const auto &gameRect = get_game().get_rectangle();
+
+    // Handle world bounds collision
+    const auto& world_bounds = get_game().get_world_bounds();
+    auto collision = world_bounds.check_border_collision(r);
+
+    if (collision.hit_left || collision.hit_right) {
+        // Apply corrected position for horizontal boundaries
+        r = collision.corrected_rect;
+    }
 
     // Gameover it the player is out of the screen at the bottom
     if (r.y > gameRect.y + gameRect.height) {

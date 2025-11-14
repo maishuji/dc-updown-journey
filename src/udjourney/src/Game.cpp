@@ -185,41 +185,8 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
         }
     }
 
-    // Create borders
-    const int border_width = 5;
-    const int border_height = 100;
-    auto game_rect = iGame.get_rectangle();
-
-    constexpr int cpool_size = 5;
-    std::array<Color, cpool_size> color_pool = {
-        GRAY, PINK, BROWN, YELLOW, PURPLE};
-
-    int color_idx = 0;
-    // The left and right borders
-    // Note that they are repeated when running out of the screen
-    for (auto border_top = 0;
-         border_top <= static_cast<int>(game_rect.height + border_height);
-         border_top += border_height) {
-        res.emplace_back(std::make_unique<Platform>(
-            iGame,
-            Rectangle{0,
-                      static_cast<float>(border_top),
-                      static_cast<float>(border_width),
-                      static_cast<float>(border_height)},
-            color_pool[color_idx],
-            true,  // Y-repeated
-            std::make_unique<RandomizePositionStrategy>()));
-        res.emplace_back(std::make_unique<Platform>(
-            iGame,
-            Rectangle{game_rect.width - border_width,
-                      static_cast<float>(border_top),
-                      static_cast<float>(border_width),
-                      static_cast<float>(border_height)},
-            color_pool[color_idx],
-            true,  // Y-repeated
-            std::make_unique<RandomizePositionStrategy>()));
-        color_idx = (color_idx + 1) % cpool_size;
-    }
+    // Note: Border collision is now handled by WorldBounds system
+    // No need to create physical border platforms
 
     return res;
 }
@@ -228,6 +195,9 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     m_rect = Rectangle{
         0, 0, static_cast<float>(iWidth), static_cast<float>(iHeight)};
     m_actors.reserve(10);
+    // Initialize world bounds to window size by default
+    m_world_bounds.set_bounds(
+        0.0f, static_cast<float>(iWidth), 0.0f, static_cast<float>(iHeight));
 
     // Try to load Level 1, fallback to random generation if it fails
     if (!load_scene(
@@ -837,6 +807,27 @@ bool Game::load_scene(const std::string &filename) {
         m_current_scene.reset();
         return false;
     }
+
+    // Update world bounds based on scene content
+    // Calculate scene bounds by finding the rightmost and bottommost platforms
+    float max_x = static_cast<float>(GetScreenWidth());
+    float max_y = static_cast<float>(GetScreenHeight());
+
+    const auto &platforms = m_current_scene->get_platforms();
+    for (const auto &platform : platforms) {
+        Rectangle world_rect =
+            udjourney::scene::Scene::tile_to_world_rect(platform.tile_x,
+                                                        platform.tile_y,
+                                                        platform.width_tiles,
+                                                        platform.height_tiles);
+
+        max_x = std::max(max_x, world_rect.x + world_rect.width);
+        max_y = std::max(max_y, world_rect.y + world_rect.height);
+    }
+
+    // Update world bounds with calculated max values
+    m_world_bounds.set_bounds(0.0f, max_x, 0.0f, max_y);
+
     return true;
 }
 
@@ -993,40 +984,8 @@ void Game::create_platforms_from_scene() {
         m_actors.emplace_back(std::move(platform));
     }
 
-    // Add border walls (left and right boundaries)
-    const int border_width = 5;
-    const int border_height = 100;
-    auto game_rect = get_rectangle();
-
-    constexpr int cpool_size = 5;
-    std::array<Color, cpool_size> color_pool = {
-        GRAY, PINK, BROWN, YELLOW, PURPLE};
-    int color_idx = 0;
-
-    // Add borders that extend to the level height
-    for (auto border_top = 0;
-         border_top <= static_cast<int>(m_level_height + border_height);
-         border_top += border_height) {
-        m_actors.emplace_back(std::make_unique<Platform>(
-            *this,
-            Rectangle{0,
-                      static_cast<float>(border_top),
-                      static_cast<float>(border_width),
-                      static_cast<float>(border_height)},
-            color_pool[color_idx],
-            true,  // Y-repeated
-            std::make_unique<RandomizePositionStrategy>()));
-        m_actors.emplace_back(std::make_unique<Platform>(
-            *this,
-            Rectangle{game_rect.width - border_width,
-                      static_cast<float>(border_top),
-                      static_cast<float>(border_width),
-                      static_cast<float>(border_height)},
-            color_pool[color_idx],
-            true,  // Y-repeated
-            std::make_unique<RandomizePositionStrategy>()));
-        color_idx = (color_idx + 1) % cpool_size;
-    }
+    // Note: Border collision is now handled by WorldBounds system
+    // No need to create physical border platforms
 }
 
 void Game::create_monsters_from_scene() {

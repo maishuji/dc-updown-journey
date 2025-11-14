@@ -17,7 +17,7 @@ extern const ImU32 kColorLightGreen;
 extern const ImU32 kColorPurple;
 }  // namespace color
 
-enum class EditMode { Tiles, Platforms, PlayerSpawn };
+enum class EditMode { Tiles, Platforms, PlayerSpawn, Monsters, Npc };
 
 class TilePanel {
  public:
@@ -69,4 +69,5 @@ class TilePanel {
     void draw_platform_mode();
     void draw_spawn_mode();
     void draw_platform_editor();
+    void draw_monsters_mode();
 };
