@@ -35,8 +35,10 @@ class Game : public IGame, public IObserver {
     void on_checkpoint_reached(float x, float y) const override;
     [[nodiscard]] Rectangle get_rectangle() const override { return m_rect; }
     [[nodiscard]] Player *get_player() const override;
-    [[nodiscard]] const udjourney::WorldBounds& get_world_bounds()
-        const override { return m_world_bounds; }
+    [[nodiscard]] const udjourney::WorldBounds &get_world_bounds()
+        const override {
+        return m_world_bounds;
+    }
 
     // Scene management
     bool load_scene(const std::string &filename);
@@ -54,6 +56,7 @@ class Game : public IGame, public IObserver {
     void draw() const;
     void draw_finish_line_() const;
     bool should_continue_scrolling_() const noexcept;
+    void attack_nearby_monsters();
 
     std::unique_ptr<Player> m_player;  // Player is now a member
     std::vector<std::unique_ptr<IActor>> m_pending_actors;

@@ -233,6 +233,17 @@ void MonsterDeathState::update(IActor& actor, float delta) {
     // Monster stays stationary during death animation
     monster.set_velocity_x(0.0f);
 
+    // Check if death animation is finished
+    if (monster.is_animation_finished()) {
+        std::cout << "Death animation finished, marking monster as CONSUMED\n";
+
+        // Award points for killing the monster
+        monster.award_kill_points();
+
+        actor.set_state(ActorState::CONSUMED);
+        return;
+    }
+
     // Check data-driven transitions (though death is usually final)
     check_transitions(actor, delta);
 }

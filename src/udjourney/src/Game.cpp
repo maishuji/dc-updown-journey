@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -604,14 +605,23 @@ void Game::update() {
                             static_cast<Platform &>(*actor);
                         platform_ref.reuse();
 
-                        // If platform doesn't have a reuse strategy, it will be
-                        // marked CONSUMED and will be removed in the next
-                        // cleanup cycle
+                        // If platform is still CONSUMED after reuse attempt,
+                        // it should be removed (no reuse strategy or reuse
+                        // failed)
+                        if (actor->get_state() == ActorState::CONSUMED) {
+                            to_remove.push_back(actor.get());
+                        }
                     } break;
                     case static_cast<uint8_t>(ActorType::BONUS): {
                         to_remove.push_back(actor.get());
                     } break;
+                    case 3: {  // Monster group ID
+                        to_remove.push_back(actor.get());
+                    } break;
                     default:
+                        // Unknown actor type, remove it to prevent infinite
+                        // loops
+                        to_remove.push_back(actor.get());
                         break;
                 }
             }
@@ -658,7 +668,7 @@ void Game::update() {
 
         // Handle collision for all monsters
         for (auto &actor : m_actors) {
-            if (actor->get_group_id() == 2) {  // Monster group ID
+            if (actor->get_group_id() == 3) {  // Monster group ID
                 Monster *monster = dynamic_cast<Monster *>(actor.get());
                 if (monster) {
                     monster->handle_collision(m_actors);
@@ -735,6 +745,7 @@ void Game::on_notify(const std::string &iEvent) {
     const int16_t kModeScoring = 1;
     const int16_t kModeBonus = 2;
     const int16_t kModeDash = 4;
+    const int16_t kModeAttack = 99;
 
     // Parse event mode
     if (std::getline(str_stream, token, ';')) {
@@ -767,6 +778,8 @@ void Game::on_notify(const std::string &iEvent) {
             if (std::optional<int16_t> score_inc_opt = extract_number_(token);
                 score_inc_opt.has_value()) {
                 m_score += score_inc_opt.value();
+                std::cout << "Score updated: +" << score_inc_opt.value()
+                          << " (Total: " << m_score << ")" << std::endl;
             }
             break;
         case kModeBonus:
@@ -782,6 +795,10 @@ void Game::on_notify(const std::string &iEvent) {
                 dash_opt.has_value()) {
                 dash_fud.dashable = dash_opt.value();
             }
+            break;
+        case kModeAttack:
+            // Player attack - damage nearby monsters
+            attack_nearby_monsters();
             break;
         default:
             break;
@@ -1040,9 +1057,12 @@ void Game::create_monsters_from_scene() {
 
             std::cout << "DEBUG: Creating monster..." << std::endl;
 
-            // Create monster with original constructor
-            auto monster = std::make_unique<Monster>(
-                *this, monster_rect, std::move(monster_anim_controller));
+            // Create monster with EventDispatcher
+            auto monster =
+                std::make_unique<Monster>(*this,
+                                          monster_rect,
+                                          std::move(monster_anim_controller),
+                                          m_event_dispatcher);
 
             std::cout << "DEBUG: Monster created successfully!" << std::endl;
 
@@ -1064,6 +1084,10 @@ void Game::create_monsters_from_scene() {
                 monster_data.tile_y,
                 world_pos.x,
                 world_pos.y);
+
+            // Register the monster as an observable with the game (like Player
+            // and BonusManager)
+            monster->add_observer(static_cast<IObserver *>(this));
 
             m_actors.emplace_back(std::move(monster));
         } catch (const std::exception &e) {
@@ -1163,4 +1187,51 @@ void Game::on_level_selected(const std::string &level_path) {
 void Game::on_level_select_cancelled() {
     // Hide the level select menu and return to pause menu
     hide_level_select_menu();
+}
+
+void Game::attack_nearby_monsters() {
+    if (!m_player) return;
+
+    const float ATTACK_RANGE = 150.0f;
+    const float ATTACK_DAMAGE = 100.0f;  // Enough to kill most monsters
+
+    Rectangle player_rect = m_player->get_rectangle();
+    Vector2 player_center = {player_rect.x + player_rect.width / 2.0f,
+                             player_rect.y + player_rect.height / 2.0f};
+
+    std::cout << "Player attack! Looking for monsters within " << ATTACK_RANGE
+              << " pixels..." << std::endl;
+
+    int monsters_hit = 0;
+
+    // Check all actors for monsters
+    for (auto &actor : m_actors) {
+        if (actor->get_group_id() == 3) {  // Monster group ID
+            Monster *monster = dynamic_cast<Monster *>(actor.get());
+            if (monster) {
+                Rectangle monster_rect = monster->get_rectangle();
+                Vector2 monster_center = {
+                    monster_rect.x + monster_rect.width / 2.0f,
+                    monster_rect.y + monster_rect.height / 2.0f};
+
+                // Calculate distance between player and monster
+                float dx = player_center.x - monster_center.x;
+                float dy = player_center.y - monster_center.y;
+                float distance = sqrt(dx * dx + dy * dy);
+
+                if (distance <= ATTACK_RANGE) {
+                    std::cout << "Attacking monster at distance " << distance
+                              << std::endl;
+                    monster->take_damage(ATTACK_DAMAGE);
+                    monsters_hit++;
+                }
+            }
+        }
+    }
+
+    if (monsters_hit == 0) {
+        std::cout << "No monsters in range to attack." << std::endl;
+    } else {
+        std::cout << "Hit " << monsters_hit << " monsters!" << std::endl;
+    }
 }

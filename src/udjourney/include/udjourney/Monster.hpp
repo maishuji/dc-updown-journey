@@ -11,16 +11,21 @@
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/interfaces/IActorState.hpp"
 #include "udjourney/interfaces/IGame.hpp"
+#include "udjourney/interfaces/IObservable.hpp"
 #include "udjourney/MonsterPreset.hpp"
 #include "udjourney/loaders/MonsterPresetLoader.hpp"
 
 // Forward declarations
 class Player;
+namespace udjourney::core::events {
+class EventDispatcher;
+}
 
-class Monster : public IActor {
+class Monster : public IActor, public IObservable {
  public:
     Monster(const IGame &game, Rectangle rect,
-            AnimSpriteController anim_controller);
+            AnimSpriteController anim_controller,
+            udjourney::core::events::EventDispatcher &dispatcher);
     ~Monster() override = default;
 
     void draw() const override;
@@ -36,7 +41,8 @@ class Monster : public IActor {
     }
 
     [[nodiscard]] inline constexpr uint8_t get_group_id() const override {
-        return 2;  // Monster group ID
+        return 3;  // Monster group ID (3 to avoid conflict with Bonus which is
+                   // 2)
     }
 
     // Monster-specific methods
@@ -71,7 +77,7 @@ class Monster : public IActor {
     [[nodiscard]] const udjourney::MonsterPreset *get_preset() const {
         return preset_.get();
     }
-    void load_preset(const std::string& preset_name);
+    void load_preset(const std::string &preset_name);
     bool is_wall_ahead() const;  // For checking terrain obstacles
 
     // Additional methods for state transitions
@@ -79,10 +85,19 @@ class Monster : public IActor {
     bool is_grounded() const { return grounded_; }
     float get_current_health() const { return health_; }
 
+    // Scoring system
+    void award_kill_points() const;
+
+    // Observable methods
+    void add_observer(IObserver *observer) override;
+    void remove_observer(IObserver *observer) override;
+    void notify(const std::string &event) override;
+
  private:
     const IGame &game_;
     Rectangle rect_;
     AnimSpriteController anim_controller_;
+    udjourney::core::events::EventDispatcher &dispatcher_;
 
     // Preset system
     std::unique_ptr<udjourney::MonsterPreset> preset_;
@@ -139,4 +154,7 @@ class Monster : public IActor {
     void update_animations();
     void apply_gravity(float delta);
     void handle_border_collisions();
+
+    // Observer pattern
+    std::vector<IObserver *> observers;
 };

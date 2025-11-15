@@ -26,12 +26,14 @@ class ActorFactory {
 
 class MonsterFactory : public ActorFactory {
  public:
-    MonsterFactory(const IGame &game, Rectangle rect);
+    MonsterFactory(const IGame &game, Rectangle rect,
+                   udjourney::core::events::EventDispatcher &event_dispatcher);
     std::unique_ptr<IActor> create_actor() override;
 
  private:
     const IGame &m_game;
     Rectangle m_rect;
+    udjourney::core::events::EventDispatcher &m_event_dispatcher;
 };
 
 class PlayerFactory : public ActorFactory {

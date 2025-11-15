@@ -12,6 +12,7 @@
 #include "udjourney/CoreUtils.hpp"
 #include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/managers/TextureManager.hpp"
+#include "udjourney/Monster.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/WorldBounds.hpp"
 
@@ -158,7 +159,7 @@ void Player::update(float iDelta) {
     const auto &gameRect = get_game().get_rectangle();
 
     // Handle world bounds collision
-    const auto& world_bounds = get_game().get_world_bounds();
+    const auto &world_bounds = get_game().get_world_bounds();
     auto collision = world_bounds.check_border_collision(r);
 
     if (collision.hit_left || collision.hit_right) {
@@ -211,6 +212,11 @@ void Player::process_input() {
             false;  // Player can't dash again until cooldown is over
         notify("4;0");
     }
+
+    // Test attack input (X key) - damage nearby monsters
+    if (IsKeyPressed(KEY_X)) {
+        attack_nearby_monsters();
+    }
 }
 
 void Player::resolve_collision(const IActor &iActor) noexcept {
@@ -255,6 +261,7 @@ void Player::handle_collision(
 
     const uint8_t PLATFORM_TYPE_ID = 1;
     const uint8_t BONUS_TYPE_ID = 2;
+    const uint8_t MONSTER_TYPE_ID = 3;
 
     bool tmp_colliding = false;
     bool tmp_grounded = false;
@@ -267,6 +274,17 @@ void Player::handle_collision(
                 udjourney::core::events::ScoreEvent score_event{1};
                 m_dispatcher.dispatch(score_event);
                 platform->set_state(ActorState::CONSUMED);
+            } else if (platform->get_group_id() == MONSTER_TYPE_ID) {
+                // Monster collision - kill the monster to trigger death
+                // animation
+                Monster *monster = dynamic_cast<Monster *>(platform.get());
+                if (monster) {
+                    std::cout << "Player collided with monster! Triggering "
+                                 "death animation..."
+                              << std::endl;
+                    monster->take_damage(
+                        1000.0f);  // Enough damage to kill the monster
+                }
             } else if (platform->get_group_id() == PLATFORM_TYPE_ID) {
                 // Check grounded
                 if (r.y < platform->get_rectangle().y) {
@@ -341,4 +359,10 @@ void Player::update_animation_state() {
 
     // Set the current state in the animation controller
     anim_controller_.set_current_state(new_player_state);
+}
+
+void Player::attack_nearby_monsters() {
+    std::cout << "Player attacking nearby monsters!" << std::endl;
+    // Use the event system to notify the game of an attack
+    notify("99;attack");  // Custom attack event with mode 99
 }

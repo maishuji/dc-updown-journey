@@ -1,6 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/Monster.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -9,17 +10,21 @@
 #include <memory>
 
 #include "udjourney/managers/TextureManager.hpp"
+#include "udjourney/core/events/ScoreEvent.hpp"
+#include "udjourney/core/events/EventDispatcher.hpp"
 #include "udjourney/loaders/MonsterPresetLoader.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/states/MonsterStates.hpp"
 #include "udjourney/WorldBounds.hpp"
 
 Monster::Monster(const IGame& game, Rectangle rect,
-                 AnimSpriteController anim_controller) :
+                 AnimSpriteController anim_controller,
+                 udjourney::core::events::EventDispatcher& dispatcher) :
     IActor(game),
     game_(game),
     rect_(rect),
-    anim_controller_(std::move(anim_controller)) {
+    anim_controller_(std::move(anim_controller)),
+    dispatcher_(dispatcher) {
     // Use default stats for now
     health_ = 100.0f;
     max_health_ = 100.0f;
@@ -353,5 +358,43 @@ void Monster::load_preset(const std::string& preset_name) {
                   << "': " << e.what() << std::endl;
         std::cerr << "Monster will continue with default settings."
                   << std::endl;
+    }
+}
+
+void Monster::award_kill_points() const {
+    // Award points based on monster type or default
+    int points = 100;  // Default points for killing a monster
+
+    // Could vary points based on monster difficulty in the future
+    if (preset_ != nullptr) {
+        // For now, use a simple calculation based on max health
+        points =
+            static_cast<int>(max_health_ / 10.0f) * 10;  // 10 points per 10 HP
+        if (points < 50) points = 50;                    // Minimum points
+        if (points > 500) points = 500;                  // Maximum points
+    }
+
+    // Use the EventDispatcher pattern to notify about scoring (like Player
+    // does)
+    udjourney::core::events::ScoreEvent score_event{points};
+    dispatcher_.dispatch(score_event);
+
+    std::cout << "Monster awarded " << points << " points for kill"
+              << std::endl;
+}
+
+// Observable methods implementation (same as Player)
+void Monster::add_observer(IObserver* observer) {
+    observers.push_back(observer);
+}
+
+void Monster::remove_observer(IObserver* observer) {
+    observers.erase(std::remove(observers.begin(), observers.end(), observer),
+                    observers.end());
+}
+
+void Monster::notify(const std::string& event) {
+    for (auto* observer : observers) {
+        observer->on_notify(event);
     }
 }
