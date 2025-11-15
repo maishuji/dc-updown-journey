@@ -1,6 +1,5 @@
 // Copyright 2025 Quentin Cartier
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_COREUTILS_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_COREUTILS_HPP_
+#pragma once
 
 #include <string>
 
@@ -35,6 +34,15 @@ inline std::string get_assets_path(const std::string& iFilename) {
     return std::string(ASSETS_BASE_PATH) + iFilename;
 }
 
+inline bool file_exists(const std::string& filepath) {
+    FILE* file = fopen(filepath.c_str(), "r");
+    if (file) {
+        fclose(file);
+        return true;
+    }
+    return false;
+}
+
 namespace math {
 
 inline constexpr bool is_near_zero(float iValue,
@@ -44,8 +52,5 @@ inline constexpr bool is_near_zero(float iValue,
 inline constexpr bool is_same_sign(float iValueA, float iValueB) {
     return iValueA * iValueB >= 0.0F;
 }
-
 }  // namespace math
 }  // namespace udjourney::coreutils
-
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_COREUTILS_HPP_

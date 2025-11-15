@@ -184,6 +184,7 @@ AnimSpriteController AnimationConfigLoader::create_controller(
 
 AnimSpriteController AnimationConfigLoader::load_and_create(
     const std::string& filename) {
+    Logger::info("Loading and creating animation controller from: %", filename);
     auto config = load_preset(filename);
     return create_controller(config);
 }

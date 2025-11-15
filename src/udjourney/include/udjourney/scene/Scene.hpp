@@ -58,6 +58,8 @@ struct MonsterSpawnData {
     float chase_range = 200.0f;                    // Chase range in pixels
     float attack_range = 50.0f;                    // Attack range in pixels
     std::string sprite_sheet = "char1-Sheet.png";  // Default sprite
+    std::string animation_config =
+        "animations/player_animations.json";  // Path to animation config
 };
 
 class Scene {

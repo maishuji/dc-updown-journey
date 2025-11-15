@@ -795,7 +795,7 @@ void Game::on_checkpoint_reached(float x, float y) const {
     m_last_checkpoint.y = y;
 
     // Optional: Add visual/audio feedback here
-    udjourney::Logger::info("Checkpoint reached at %, %", x, y);
+    // udjourney::Logger::info("Checkpoint reached at %, %", x, y);
 }
 
 Player *Game::get_player() const { return m_player.get(); }
@@ -1011,13 +1011,32 @@ void Game::create_monsters_from_scene() {
                 64.0f   // Monster height
             };
 
-            // Load monster animation configuration from JSON
-            std::string monster_config_path =
-                std::string(ASSETS_BASE_PATH) +
-                "animations/monster_animations.json";
+            // First load the monster preset to get animation configuration
+            std::unique_ptr<udjourney::MonsterPreset> preset;
+            if (!monster_data.preset_name.empty()) {
+                preset = udjourney::MonsterPresetLoader::load_preset(
+                    monster_data.preset_name + ".json");
+            }
+
+            // Get animation preset file from the monster preset
+            std::string animation_file =
+                "monster_animations.json";  // Default fallback
+            if (preset && !preset->animation_preset_file.empty()) {
+                animation_file = preset->animation_preset_file;
+            }
+
+            // Load monster animation configuration from the preset
+            std::string anim_preset_path =
+                std::string(ASSETS_BASE_PATH) + "animations/" + animation_file;
+            if (!udjourney::coreutils::file_exists(anim_preset_path)) {
+                throw std::runtime_error(
+                    "Monster animation config file not found: " +
+                    anim_preset_path);
+            }
+
             AnimSpriteController monster_anim_controller =
                 udjourney::loaders::AnimationConfigLoader::load_and_create(
-                    monster_config_path);
+                    anim_preset_path);
 
             std::cout << "DEBUG: Creating monster..." << std::endl;
 
@@ -1027,7 +1046,7 @@ void Game::create_monsters_from_scene() {
 
             std::cout << "DEBUG: Monster created successfully!" << std::endl;
 
-            // Load preset if specified
+            // Load preset if specified (this will apply all preset data)
             if (!monster_data.preset_name.empty()) {
                 monster->load_preset(monster_data.preset_name);
             }
