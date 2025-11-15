@@ -104,6 +104,14 @@ target_include_directories(udjourney_editor_lib_test PUBLIC include PRIVATE src 
 target_link_libraries(udjourney_editor_lib_test PUBLIC raylib nlohmann_json::nlohmann_json)
 target_compile_definitions(udjourney_editor_lib_test PRIVATE EDITOR_TESTING)
 
+# Ensure assets symlink exists
+add_custom_command(TARGET udjourney_editor_lib PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CMAKE_SOURCE_DIR}/src/udjourney/romdisk
+        ${CMAKE_SOURCE_DIR}/src/udjourney-editor/assets
+    COMMENT "Creating symlink to romdisk for editor assets"
+)
+
 # Main executable
 add_executable(udjourney_editor
   src/main.cpp

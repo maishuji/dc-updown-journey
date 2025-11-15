@@ -9,6 +9,7 @@ set(ENABLE_EDITOR_TESTING ON)
 add_executable(udjourney_editor_tests
     test_json_operations.cpp
     test_tilemap_json.cpp
+    test_asset_access.cpp
 )
 
 # Define EDITOR_TESTING for the test executable
@@ -31,8 +32,17 @@ target_include_directories(udjourney_editor_tests
 # Set C++ standard
 target_compile_features(udjourney_editor_tests PRIVATE cxx_std_20)
 
+# Ensure assets symlink exists for tests
+add_custom_command(TARGET udjourney_editor_tests PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        ${CMAKE_SOURCE_DIR}/src/udjourney/romdisk
+        ${CMAKE_CURRENT_BINARY_DIR}/assets
+    COMMENT "Creating assets symlink for tests"
+)
+
 # Add test to CTest
 add_test(NAME JSONOperationsTests COMMAND udjourney_editor_tests)
+add_test(NAME AssetAccessTests COMMAND udjourney_editor_tests "[asset_access]")
 
 # Custom test target for running tests
 add_custom_target(run_json_tests
