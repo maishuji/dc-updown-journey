@@ -40,12 +40,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
-FetchContent_Declare(
-  catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG v3.5.2
-)
-FetchContent_MakeAvailable(catch2)
+# Google Test is already available from root-level CMakeLists.txt
+# No need to fetch it again here since it's inherited
 
 # Create library for shared code between main executable and tests
 # Create the editor library
@@ -149,7 +145,7 @@ add_executable(tilepanel_tests
 )
 target_include_directories(tilepanel_tests PRIVATE include src ${imgui_SOURCE_DIR})
 target_include_directories(tilepanel_tests PRIVATE ../udjourney/include)
-target_link_libraries(tilepanel_tests PRIVATE Catch2::Catch2WithMain nlohmann_json::nlohmann_json)
+target_link_libraries(tilepanel_tests PRIVATE gtest gtest_main nlohmann_json::nlohmann_json)
 
 add_test(NAME TilePanelTests COMMAND tilepanel_tests)
 
