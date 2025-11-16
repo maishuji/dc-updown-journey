@@ -6,7 +6,9 @@
 namespace udjourney {
 
 WorldBounds::WorldBounds(float left, float right, float top, float bottom) :
-    left_(left), right_(right), top_(top), bottom_(bottom) {}
+    left_(left), right_(right), top_(top), bottom_(bottom) {
+    // Constructor body can be empty
+}
 
 bool WorldBounds::is_within_bounds(const Rectangle& rect) const {
     return rect.x >= left_ && rect.x + rect.width <= right_ && rect.y >= top_ &&

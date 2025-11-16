@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <iostream>
+#include <memory>
 #include <set>
 
 #include "udjourney/CoreUtils.hpp"
