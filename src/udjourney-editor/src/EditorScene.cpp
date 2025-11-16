@@ -1,7 +1,38 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney-editor/EditorScene.hpp"
 
+#include <raylib/raylib.h>
+
 #include <cctype>
+
+#include <filesystem>
+#include <fstream>
+#include <unordered_map>
+
+#include <nlohmann/json.hpp>
+
+// Simple texture cache for editor
+static std::unordered_map<std::string, Texture2D> texture_cache;
+
+Texture2D load_texture_cached(const std::string& filename) {
+    auto iter = texture_cache.find(filename);
+    if (iter != texture_cache.end()) {
+        return iter->second;
+    }
+
+    // Load texture from assets directory
+    std::string full_path = "assets/" + filename;
+    Texture2D texture = LoadTexture(full_path.c_str());
+    if (texture.id != 0) {  // Valid texture
+        texture_cache[filename] = texture;
+    }
+    return texture;
+}
+
+// Forward declarations
+void render_monster_cursor_preview(TilePanel& tile_panel, ImDrawList* draw_list,
+                                   const ImVec2& mouse_pos,
+                                   const ImVec2& origin, float tile_size);
 
 struct EditorScene::PImpl {
     // Implementation details can be added here in the future
@@ -15,11 +46,31 @@ void render_cursor_(Level& level, TilePanel& tile_panel, ImDrawList* draw_list,
                     const ImVec2& origin) {
     auto pos = ImGui::GetMousePos();
     ImVec2 cursor_pos = origin;
-    draw_list->AddRectFilled(
-        ImVec2(pos.x, pos.y),
-        ImVec2(pos.x + tile_panel.get_platform_size().x * 50,
-               pos.y + tile_panel.get_platform_size().y * 50),
-        IM_COL32(255, 255, 0, 255));
+
+    // Handle different edit modes
+    switch (tile_panel.get_edit_mode()) {
+        case EditMode::Monsters: {
+            // Show monster sprite preview for monster mode
+            render_monster_cursor_preview(tile_panel,
+                                          draw_list,
+                                          pos,
+                                          origin,
+                                          32.0f);  // Use constant tile size
+            break;
+        }
+        case EditMode::Platforms: {
+            // Show platform preview
+            draw_list->AddRectFilled(
+                ImVec2(pos.x, pos.y),
+                ImVec2(pos.x + tile_panel.get_platform_size().x * 50,
+                       pos.y + tile_panel.get_platform_size().y * 50),
+                IM_COL32(255, 255, 0, 128));  // Semi-transparent yellow
+            break;
+        }
+        default:
+            // Default cursor for other modes
+            break;
+    }
 }
 
 void EditorScene::render(Level& level, TilePanel& tile_panel) {
@@ -593,4 +644,181 @@ void EditorScene::handle_monster_mode_input(Level& level, TilePanel& tile_panel,
             tile_panel.set_selected_monster(nullptr);
         }
     }
+}
+
+void render_monster_cursor_preview(TilePanel& tile_panel, ImDrawList* draw_list,
+                                   const ImVec2& mouse_pos,
+                                   const ImVec2& origin, float tile_size) {
+    // Get the selected monster preset
+    const std::string& selected_preset =
+        tile_panel.get_selected_monster_preset();
+    if (selected_preset.empty()) {
+        return;  // No preset selected
+    }
+
+    // Convert mouse position to tile coordinates (manual calculation since
+    // we're outside the class)
+    ImVec2 relative_pos =
+        ImVec2(mouse_pos.x - origin.x, mouse_pos.y - origin.y);
+    int tile_x = static_cast<int>(relative_pos.x / tile_size);
+    int tile_y = static_cast<int>(relative_pos.y / tile_size);
+
+    // Calculate the preview position (centered on tile)
+    ImVec2 preview_pos =
+        ImVec2(origin.x + tile_x * tile_size, origin.y + tile_y * tile_size);
+
+    try {
+        // Try to load monster preset configuration
+        std::string monster_preset_path =
+            "assets/monsters/" + selected_preset + ".json";
+
+        if (!std::filesystem::exists(monster_preset_path)) {
+            // Fallback: draw a simple colored circle
+            draw_list->AddCircleFilled(
+                ImVec2(preview_pos.x + tile_size / 2,
+                       preview_pos.y + tile_size / 2),
+                tile_size / 3,
+                IM_COL32(255, 255, 0, 128),  // Semi-transparent yellow
+                12);
+            return;
+        }
+
+        // Load monster preset JSON
+        std::ifstream file(monster_preset_path);
+        if (!file.is_open()) {
+            return;
+        }
+
+        nlohmann::json preset_json;
+        file >> preset_json;
+
+        const auto kAnimPresetKey = "animation_preset";
+
+        // Find the animation config file
+        if (!preset_json.contains(kAnimPresetKey)) {
+            return;
+        }
+
+        std::string anim_config_file =
+            preset_json[kAnimPresetKey].get<std::string>();
+        std::string anim_config_path = "assets/animations/" + anim_config_file;
+
+        if (!std::filesystem::exists(anim_config_path)) {
+            return;
+        }
+
+        // Load animation configuration
+        std::ifstream anim_file(anim_config_path);
+        if (!anim_file.is_open()) {
+            return;
+        }
+
+        nlohmann::json anim_json;
+        anim_file >> anim_json;
+
+        // Find the idle animation (state_id = 10)
+        std::string sprite_filename;
+        int sprite_width = 64;
+        int sprite_height = 64;
+        int idle_row = 0;
+        int idle_col = 0;
+
+        if (anim_json.contains("animations")) {
+            for (const auto& anim : anim_json["animations"]) {
+                if (anim.contains("state_id") &&
+                    anim["state_id"].get<int>() == 10) {  // ANIM_IDLE
+                    // Found idle animation
+                    if (anim.contains("sprite_config")) {
+                        const auto& sprite_config = anim["sprite_config"];
+
+                        if (sprite_config.contains("filename")) {
+                            sprite_filename =
+                                sprite_config["filename"].get<std::string>();
+                        }
+                        if (sprite_config.contains("sprite_width")) {
+                            sprite_width =
+                                sprite_config["sprite_width"].get<int>();
+                        }
+                        if (sprite_config.contains("sprite_height")) {
+                            sprite_height =
+                                sprite_config["sprite_height"].get<int>();
+                        }
+
+                        // Get the first frame position (idle state first frame)
+                        if (sprite_config.contains("frames") &&
+                            sprite_config["frames"].is_array()) {
+                            const auto& frames = sprite_config["frames"];
+                            if (!frames.empty()) {
+                                const auto& first_frame = frames[0];
+                                if (first_frame.contains("row")) {
+                                    idle_row = first_frame["row"].get<int>();
+                                }
+                                if (first_frame.contains("col")) {
+                                    idle_col = first_frame["col"].get<int>();
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Load the sprite texture using simple cache
+        if (!sprite_filename.empty()) {
+            Texture2D sprite_texture = load_texture_cached(sprite_filename);
+
+            if (sprite_texture.id != 0) {  // Valid texture
+                // Calculate source rectangle for the first frame of idle
+                // animation
+                Rectangle source_rect = {
+                    static_cast<float>(idle_col * sprite_width),
+                    static_cast<float>(idle_row * sprite_height),
+                    static_cast<float>(sprite_width),
+                    static_cast<float>(sprite_height)};
+
+                // Calculate destination rectangle (fit to tile size)
+                Rectangle dest_rect = {preview_pos.x,  // Align to tile boundary
+                                       preview_pos.y,  // Align to tile boundary
+                                       tile_size,
+                                       tile_size};
+
+                // Use ImGui's DrawList to render the texture
+                // Convert raylib texture to ImGui texture ID (OpenGL texture
+                // ID)
+                ImTextureID img_id =
+                    static_cast<ImTextureID>(sprite_texture.id);
+
+                // Calculate UV coordinates for the sprite frame
+                ImVec2 uv0 = ImVec2(source_rect.x / sprite_texture.width,
+                                    source_rect.y / sprite_texture.height);
+                ImVec2 uv1 = ImVec2(
+                    (source_rect.x + source_rect.width) / sprite_texture.width,
+                    (source_rect.y + source_rect.height) /
+                        sprite_texture.height);
+
+                // Draw the sprite with some transparency to indicate it's a
+                // preview
+                draw_list->AddImage(
+                    img_id,
+                    ImVec2(dest_rect.x, dest_rect.y),
+                    ImVec2(dest_rect.x + dest_rect.width,
+                           dest_rect.y + dest_rect.height),
+                    uv0,
+                    uv1,
+                    IM_COL32(
+                        255, 255, 255, 180));  // Semi-transparent white tint
+                return;
+            }
+        }
+    } catch (const std::exception& e) {
+        // Error occurred, fall back to simple preview
+    }
+
+    // Fallback: draw a simple colored circle if sprite loading failed
+    draw_list->AddCircleFilled(
+        ImVec2(preview_pos.x + tile_size / 2, preview_pos.y + tile_size / 2),
+        tile_size / 3,
+        IM_COL32(255, 255, 0, 128),  // Semi-transparent yellow
+        12);
 }

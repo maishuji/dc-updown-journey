@@ -1,0 +1,361 @@
+{
+  "monsters": [
+    {
+      "preset_name": "goblin",
+      "x": 8,
+      "y": 4
+    },
+    {
+      "preset_name": "goblin",
+      "x": 9,
+      "y": 7
+    },
+    {
+      "preset_name": "goblin",
+      "x": 5,
+      "y": 11
+    },
+    {
+      "preset_name": "poring",
+      "x": 10,
+      "y": 12
+    },
+    {
+      "preset_name": "spider",
+      "x": 16,
+      "y": 12
+    },
+    {
+      "preset_name": "spider",
+      "x": 5,
+      "y": 17
+    },
+    {
+      "preset_name": "spider",
+      "x": 18,
+      "y": 5
+    },
+    {
+      "preset_name": "poring",
+      "x": 15,
+      "y": 8
+    },
+    {
+      "preset_name": "poring",
+      "x": 3,
+      "y": 3
+    },
+    {
+      "preset_name": "poring",
+      "x": 11,
+      "y": 2
+    },
+    {
+      "preset_name": "poring",
+      "x": 9,
+      "y": 18
+    },
+    {
+      "preset_name": "goblin",
+      "x": 12,
+      "y": 10
+    },
+    {
+      "preset_name": "goblin",
+      "x": 13,
+      "y": 15
+    },
+    {
+      "preset_name": "goblin",
+      "x": 8,
+      "y": 15
+    }
+  ],
+  "name": "Untitled Level",
+  "platforms": [
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 0,
+      "y": 5
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 10,
+      "y": 3
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 16,
+      "y": 6
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 6,
+      "y": 5
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 8,
+      "y": 8
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 15,
+      "y": 9
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 9,
+      "y": 11
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 3,
+      "y": 13
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 10,
+      "y": 13
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 16,
+      "y": 13
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 13,
+      "y": 17
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 8,
+      "y": 16
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 4,
+      "y": 19
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 9,
+      "y": 20
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 18,
+      "y": 7
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 12,
+      "y": 27
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 6,
+      "y": 25
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 6,
+      "y": 28
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 18,
+      "y": 29
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 12,
+      "y": 32
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 5,
+      "y": 30
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 18,
+      "y": 34
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 9,
+      "y": 36
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 6,
+      "y": 34
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 17,
+      "y": 36
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 2,
+      "y": 41
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 10,
+      "y": 40
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 17,
+      "y": 41
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 20,
+      "y": 47
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 6,
+      "y": 47
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 11,
+      "y": 44
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 3,
+      "y": 53
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 10,
+      "y": 51
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 18,
+      "y": 51
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 21,
+      "y": 53
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 11,
+      "y": 57
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 15,
+      "y": 58
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 15,
+      "y": 59
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 7,
+      "y": 58
+    },
+    {
+      "behavior": "horizontal",
+      "height": 0.5,
+      "width": 5.0,
+      "x": 4,
+      "y": 59
+    }
+  ],
+  "player_spawn": {
+    "x": 2,
+    "y": 8
+  }
+}

@@ -1,11 +1,11 @@
 {
   "name": "spider",
   "display_name": "Jumping Spider",
-  "animation_preset": "monster_animations.json",
+  "animation_preset": "spider_animations.json",
   "visual": {
     "width": 64,
     "height": 64,
-    "sprite_sheet": "char1-Sheet.png"
+    "sprite_sheet": "spiderplant-Sheet.png"
   },
   "stats": {
     "max_health": 30.0,

@@ -1,10 +1,12 @@
 // Copyright 2025 Quentin Cartier
-#include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <iostream>
+
+#include <catch2/catch_test_macros.hpp>
+
 
 // Mock the ASSETS_BASE_PATH for testing
 #ifdef ASSETS_BASE_PATH

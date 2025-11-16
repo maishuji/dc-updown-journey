@@ -7,6 +7,7 @@
 
 // Include Level.hpp to get enum definitions
 #include "udjourney-editor/Level.hpp"
+#include "udjourney-editor/MonsterPresetManager.hpp"
 
 namespace color {
 extern const ImU32 kColorRed;
@@ -61,6 +62,9 @@ class TilePanel {
     // Focus management
     void request_focus() { should_focus_ = true; }
 
+    // Initialize monster preset selection
+    void initialize_monster_presets();
+
  private:
     float scale = 1.0f;  // Default scale
 
@@ -82,6 +86,9 @@ class TilePanel {
     std::string selected_monster_preset = "goblin";
     EditorMonster* selected_monster_ = nullptr;
     bool delete_selected_monster_ = false;
+
+    // Monster preset management
+    udjourney::editor::MonsterPresetManager monster_preset_manager_;
 
     // Focus management
     bool should_focus_ = false;

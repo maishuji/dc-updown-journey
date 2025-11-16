@@ -1,0 +1,289 @@
+{
+  "monsters": [
+    {
+      "preset_name": "spider",
+      "x": 7,
+      "y": 10
+    },
+    {
+      "preset_name": "spider",
+      "x": 7,
+      "y": 12
+    },
+    {
+      "preset_name": "spider",
+      "x": 14,
+      "y": 5
+    },
+    {
+      "preset_name": "spider",
+      "x": 14,
+      "y": 7
+    },
+    {
+      "preset_name": "spider",
+      "x": 3,
+      "y": 3
+    },
+    {
+      "preset_name": "spider",
+      "x": 15,
+      "y": 11
+    },
+    {
+      "preset_name": "spider",
+      "x": 4,
+      "y": 16
+    },
+    {
+      "preset_name": "spider",
+      "x": 17,
+      "y": 16
+    },
+    {
+      "preset_name": "spider",
+      "x": 12,
+      "y": 19
+    },
+    {
+      "preset_name": "spider",
+      "x": 20,
+      "y": 21
+    },
+    {
+      "preset_name": "spider",
+      "x": 7,
+      "y": 20
+    },
+    {
+      "preset_name": "spider",
+      "x": 4,
+      "y": 29
+    },
+    {
+      "preset_name": "spider",
+      "x": 18,
+      "y": 29
+    },
+    {
+      "preset_name": "spider",
+      "x": 16,
+      "y": 42
+    },
+    {
+      "preset_name": "spider",
+      "x": 4,
+      "y": 36
+    },
+    {
+      "preset_name": "spider",
+      "x": 10,
+      "y": 33
+    },
+    {
+      "preset_name": "spider",
+      "x": 12,
+      "y": 42
+    },
+    {
+      "preset_name": "spider",
+      "x": 16,
+      "y": 37
+    },
+    {
+      "preset_name": "spider",
+      "x": 5,
+      "y": 43
+    },
+    {
+      "preset_name": "spider",
+      "x": 5,
+      "y": 51
+    },
+    {
+      "preset_name": "spider",
+      "x": 8,
+      "y": 54
+    },
+    {
+      "preset_name": "spider",
+      "x": 6,
+      "y": 56
+    }
+  ],
+  "name": "Untitled Level",
+  "platforms": [
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 3,
+      "y": 4
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 14,
+      "y": 6
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 14,
+      "y": 8
+    },
+    {
+      "behavior": "oscillating_size",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 15,
+      "y": 12
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 7,
+      "y": 11
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 7,
+      "y": 13
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 4,
+      "y": 17
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 16,
+      "y": 17
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 21,
+      "y": 17
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 12,
+      "y": 20
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 20,
+      "y": 22
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 7,
+      "y": 21
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 4,
+      "y": 30
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 18,
+      "y": 30
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 10,
+      "y": 34
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 4,
+      "y": 37
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 5,
+      "y": 44
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 16,
+      "y": 38
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 12,
+      "y": 43
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 17,
+      "y": 43
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 5,
+      "y": 52
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 8,
+      "y": 55
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 6,
+      "y": 57
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 19,
+      "y": 59
+    }
+  ],
+  "player_spawn": {
+    "x": 2,
+    "y": 8
+  }
+}
