@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,10 +16,15 @@
 class JSONOperationsTest : public ::testing::Test {
  protected:
     void SetUp() override {
-        // Initialize editor in each test to avoid graphics context conflicts
+        // Initialize editor once per test
+        editor = std::make_unique<Editor>();
+        editor->init();
     }
 
     void TearDown() override {
+        // Clean up editor first
+        editor.reset();
+
         // Clean up any temporary files
         for (const auto& path : temp_files) {
             if (std::filesystem::exists(path)) {
@@ -34,15 +40,13 @@ class JSONOperationsTest : public ::testing::Test {
         return temp_path;
     }
 
+    std::unique_ptr<Editor> editor;
     std::vector<std::string> temp_files;
 };
 
 TEST_F(JSONOperationsTest, PlatformLevelJSONExport) {
-    Editor editor;
-    editor.init();
-
     // Create a level with platforms and player spawn
-    Level& level = editor.get_test_level();
+    Level& level = editor->get_test_level();
     level.player_spawn_x = 10;
     level.player_spawn_y = 5;
 
@@ -76,7 +80,7 @@ TEST_F(JSONOperationsTest, PlatformLevelJSONExport) {
 
     // Export to temporary file
     std::string temp_path = createTempFile("platform_export.json");
-    editor.test_export_platform_level_json(temp_path);
+    editor->test_export_platform_level_json(temp_path);
 
     // Verify file was created
     ASSERT_TRUE(std::filesystem::exists(temp_path));
@@ -137,9 +141,6 @@ TEST_F(JSONOperationsTest, PlatformLevelJSONExport) {
 }
 
 TEST_F(JSONOperationsTest, PlatformLevelJSONImport) {
-    Editor editor;
-    editor.init();
-
     // Create test JSON content
     nlohmann::json test_json = {{"name", "Test Level"},
                                 {"player_spawn", {{"x", 12}, {"y", 8}}},
@@ -166,9 +167,9 @@ TEST_F(JSONOperationsTest, PlatformLevelJSONImport) {
     std::string temp_path = create_temp_file(test_json.dump(2));
 
     // Import the file
-    editor.test_import_platform_level_json(temp_path);
+    editor->test_import_platform_level_json(temp_path);
 
-    Level& level = editor.get_test_level();
+    Level& level = editor->get_test_level();
 
     // Player spawn is imported correctly
     EXPECT_EQ(level.player_spawn_x, 12);
@@ -219,14 +220,8 @@ TEST_F(JSONOperationsTest, PlatformLevelJSONImport) {
 }
 
 TEST_F(JSONOperationsTest, PlatformLevelJSONRoundTrip) {
-    Editor editor;
-    editor.init();
-
-    Editor editor2;
-    editor2.init();
-
     // Create original level
-    Level& level1 = editor.get_test_level();
+    Level& level1 = editor->get_test_level();
     level1.player_spawn_x = 7;
     level1.player_spawn_y = 3;
 
@@ -242,12 +237,12 @@ TEST_F(JSONOperationsTest, PlatformLevelJSONRoundTrip) {
 
     // Export to file
     std::string temp_path = createTempFile("roundtrip.json");
-    editor.test_export_platform_level_json(temp_path);
+    editor->test_export_platform_level_json(temp_path);
 
-    // Import with second editor
-    editor2.test_import_platform_level_json(temp_path);
-
-    Level& level2 = editor2.get_test_level();
+    // Clear the current level and import back
+    Level& level2 = editor->get_test_level();
+    level2.platforms.clear();  // Clear to test import
+    editor->test_import_platform_level_json(temp_path);
 
     // Player spawn preserved in round trip
     EXPECT_EQ(level2.player_spawn_x, level1.player_spawn_x);
@@ -266,17 +261,14 @@ TEST_F(JSONOperationsTest, PlatformLevelJSONRoundTrip) {
 }
 
 TEST_F(JSONOperationsTest, InvalidJSONHandling) {
-    Editor editor;
-    editor.init();
-
     // Missing file - should not crash when importing non-existent file
     EXPECT_NO_THROW(
-        editor.test_import_platform_level_json("non_existent_file.json"));
+        editor->test_import_platform_level_json("non_existent_file.json"));
 
     // Invalid JSON syntax
     std::string invalid_json = "{ invalid json syntax }";
     std::string temp_path = create_temp_file(invalid_json);
-    EXPECT_NO_THROW(editor.test_import_platform_level_json(temp_path));
+    EXPECT_NO_THROW(editor->test_import_platform_level_json(temp_path));
 
     // Missing required fields
     nlohmann::json incomplete_json = {
@@ -284,7 +276,7 @@ TEST_F(JSONOperationsTest, InvalidJSONHandling) {
          {{{"x", 5}, {"y", 10}}}}  // Missing width, height, behavior
     };
     std::string temp_path2 = create_temp_file(incomplete_json.dump());
-    EXPECT_NO_THROW(editor.test_import_platform_level_json(temp_path2));
+    EXPECT_NO_THROW(editor->test_import_platform_level_json(temp_path2));
 
     // Unknown behavior type
     nlohmann::json unknown_behavior_json = {
@@ -295,9 +287,9 @@ TEST_F(JSONOperationsTest, InvalidJSONHandling) {
            {"height", 1.0},
            {"behavior", "unknown_behavior_type"}}}}};
     std::string temp_path3 = create_temp_file(unknown_behavior_json.dump());
-    EXPECT_NO_THROW(editor.test_import_platform_level_json(temp_path3));
+    EXPECT_NO_THROW(editor->test_import_platform_level_json(temp_path3));
 
-    Level& level = editor.get_test_level();
+    Level& level = editor->get_test_level();
     if (!level.platforms.empty()) {
         // Should default to static behavior for unknown types
         EXPECT_EQ(level.platforms[0].behavior_type,

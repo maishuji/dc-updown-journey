@@ -19,13 +19,13 @@
 #include <vector>
 
 #include "udjourney/Bonus.hpp"
-#include "udjourney/CoreUtils.hpp"
+#include <udj-core/CoreUtils.hpp>
 #include "udjourney/Monster.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/AnimSpriteController.hpp"
 #include "udjourney/SpriteAnim.hpp"
 #include "udjourney/ScoreHistory.hpp"
-#include "udjourney/core/Logger.hpp"
+#include <udj-core/Logger.hpp>
 #include "udjourney/hud/DialogBoxHUD.hpp"
 #include "udjourney/hud/HUDComponent.hpp"
 #include "udjourney/hud/LevelSelectHUD.hpp"

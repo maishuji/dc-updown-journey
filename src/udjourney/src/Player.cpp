@@ -10,7 +10,7 @@
 
 #include "raylib/raymath.h"
 #include "raylib/rlgl.h"
-#include "udjourney/CoreUtils.hpp"
+#include <udj-core/CoreUtils.hpp>
 #include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/Monster.hpp"

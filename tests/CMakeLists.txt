@@ -12,6 +12,7 @@ add_executable(updown_journey_tests
 # Link libraries
 target_link_libraries(updown_journey_tests
     PUBLIC
+        udj-core
         gtest
         gtest_main
         nlohmann_json::nlohmann_json

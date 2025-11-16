@@ -1,0 +1,480 @@
+{
+  "monsters": [
+    {
+      "preset_name": "goblin",
+      "x": 13,
+      "y": 6
+    },
+    {
+      "preset_name": "goblin",
+      "x": 10,
+      "y": 14
+    },
+    {
+      "preset_name": "poring",
+      "x": 16,
+      "y": 12
+    },
+    {
+      "preset_name": "poring",
+      "x": 13,
+      "y": 17
+    },
+    {
+      "preset_name": "poring",
+      "x": 4,
+      "y": 19
+    },
+    {
+      "preset_name": "spider",
+      "x": 18,
+      "y": 25
+    },
+    {
+      "preset_name": "spider",
+      "x": 16,
+      "y": 28
+    }
+  ],
+  "name": "Untitled Level",
+  "platforms": [
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 0,
+      "y": 2
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 1,
+      "y": 3
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 2,
+      "y": 4
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 3,
+      "y": 5
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 4,
+      "y": 6
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 5,
+      "y": 7
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 6,
+      "y": 8
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 7,
+      "y": 9
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 8,
+      "y": 10
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 9,
+      "y": 11
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 10,
+      "y": 12
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 11,
+      "y": 13
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 12,
+      "y": 14
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 13,
+      "y": 15
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 14,
+      "y": 16
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 15,
+      "y": 17
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 16,
+      "y": 18
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 17,
+      "y": 19
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 18,
+      "y": 20
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 19,
+      "y": 21
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 20,
+      "y": 22
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 21,
+      "y": 23
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 22,
+      "y": 24
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 23,
+      "y": 25
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 24,
+      "y": 26
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 25,
+      "y": 27
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 26,
+      "y": 28
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 27,
+      "y": 29
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 29,
+      "y": 32
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 28,
+      "y": 33
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 27,
+      "y": 34
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 26,
+      "y": 35
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 25,
+      "y": 36
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 24,
+      "y": 37
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 23,
+      "y": 38
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 22,
+      "y": 39
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 21,
+      "y": 40
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 20,
+      "y": 41
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 19,
+      "y": 42
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 18,
+      "y": 43
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 17,
+      "y": 44
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 16,
+      "y": 45
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 15,
+      "y": 46
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 14,
+      "y": 47
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 13,
+      "y": 48
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 12,
+      "y": 49
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 11,
+      "y": 50
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 10,
+      "y": 51
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 9,
+      "y": 52
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 8,
+      "y": 53
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 7,
+      "y": 54
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 6,
+      "y": 55
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 5,
+      "y": 56
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 4,
+      "y": 57
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 3,
+      "y": 58
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 2,
+      "y": 59
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 14,
+      "y": 10
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 16,
+      "y": 10
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 14,
+      "y": 31
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 16,
+      "y": 31
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 14,
+      "y": 54
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 16,
+      "y": 54
+    }
+  ],
+  "player_spawn": {
+    "x": 2,
+    "y": 8
+  }
+}

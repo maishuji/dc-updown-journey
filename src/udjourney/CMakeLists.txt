@@ -101,7 +101,7 @@ if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
     
     target_link_libraries(${TARGET_NAME} 
         PUBLIC 
-            dcplib raylib GL nlohmann_json::nlohmann_json
+            udj-core dcplib raylib GL nlohmann_json::nlohmann_json
     )
     # ---- ROMDISK generation ----
     set(ROMDISK_DIR "romdisk")
@@ -114,6 +114,6 @@ if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
 else()
     target_link_libraries(${TARGET_NAME} 
         PUBLIC 
-            raylib GL nlohmann_json::nlohmann_json
+            udj-core raylib GL nlohmann_json::nlohmann_json
     )
 endif()

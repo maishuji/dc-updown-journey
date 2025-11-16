@@ -199,109 +199,131 @@ void Editor::import_platform_level_json(const std::string &import_path) {
         return;
     }
 
-    nlohmann::json jlevel;
-    in >> jlevel;
-    in.close();
+    try {
+        nlohmann::json jlevel;
+        in >> jlevel;
+        in.close();
 
-    // Clear existing platforms
-    pimpl->level.platforms.clear();
+        // Clear existing platforms
+        pimpl->level.platforms.clear();
 
-    // Import player spawn position
-    if (jlevel.contains("player_spawn")) {
-        pimpl->level.player_spawn_x = jlevel["player_spawn"]["x"].get<int>();
-        pimpl->level.player_spawn_y = jlevel["player_spawn"]["y"].get<int>();
-    }
-
-    // Import platforms
-    if (jlevel.contains("platforms")) {
-        for (const auto &jplatform : jlevel["platforms"]) {
-            EditorPlatform platform;
-            platform.tile_x = jplatform["x"].get<int>();
-            platform.tile_y = jplatform["y"].get<int>();
-            platform.width_tiles = jplatform["width"].get<float>();
-            platform.height_tiles = jplatform["height"].get<float>();
-
-            // Parse behavior type
-            std::string behavior = jplatform["behavior"].get<std::string>();
-            if (behavior == "static") {
-                platform.behavior_type = PlatformBehaviorType::Static;
-            } else if (behavior == "horizontal") {
-                platform.behavior_type = PlatformBehaviorType::Horizontal;
-            } else if (behavior == "eight_turn") {
-                platform.behavior_type =
-                    PlatformBehaviorType::EightTurnHorizontal;
-            } else if (behavior == "oscillating_size") {
-                platform.behavior_type = PlatformBehaviorType::OscillatingSize;
+        // Import player spawn position
+        if (jlevel.contains("player_spawn") &&
+            jlevel["player_spawn"].is_object()) {
+            const auto &spawn = jlevel["player_spawn"];
+            if (spawn.contains("x") && spawn.contains("y")) {
+                pimpl->level.player_spawn_x = spawn["x"].get<int>();
+                pimpl->level.player_spawn_y = spawn["y"].get<int>();
             }
+        }
 
-            // Parse features
-            platform.features.clear();
-            if (jplatform.contains("features")) {
-                for (const auto &feature_str : jplatform["features"]) {
-                    std::string feature = feature_str.get<std::string>();
-                    if (feature == "spikes") {
-                        platform.features.push_back(
-                            PlatformFeatureType::Spikes);
-                    } else if (feature == "checkpoint") {
-                        platform.features.push_back(
-                            PlatformFeatureType::Checkpoint);
+        // Import platforms
+        if (jlevel.contains("platforms") && jlevel["platforms"].is_array()) {
+            for (const auto &jplatform : jlevel["platforms"]) {
+                // Skip invalid platform entries
+                if (!jplatform.is_object() || !jplatform.contains("x") ||
+                    !jplatform.contains("y") || !jplatform.contains("width") ||
+                    !jplatform.contains("height") ||
+                    !jplatform.contains("behavior")) {
+                    continue;
+                }
+
+                EditorPlatform platform;
+                platform.tile_x = jplatform["x"].get<int>();
+                platform.tile_y = jplatform["y"].get<int>();
+                platform.width_tiles = jplatform["width"].get<float>();
+                platform.height_tiles = jplatform["height"].get<float>();
+
+                // Parse behavior type
+                std::string behavior = jplatform["behavior"].get<std::string>();
+                if (behavior == "static") {
+                    platform.behavior_type = PlatformBehaviorType::Static;
+                } else if (behavior == "horizontal") {
+                    platform.behavior_type = PlatformBehaviorType::Horizontal;
+                } else if (behavior == "eight_turn") {
+                    platform.behavior_type =
+                        PlatformBehaviorType::EightTurnHorizontal;
+                } else if (behavior == "oscillating_size") {
+                    platform.behavior_type =
+                        PlatformBehaviorType::OscillatingSize;
+                }
+
+                // Parse features
+                platform.features.clear();
+                if (jplatform.contains("features")) {
+                    for (const auto &feature_str : jplatform["features"]) {
+                        std::string feature = feature_str.get<std::string>();
+                        if (feature == "spikes") {
+                            platform.features.push_back(
+                                PlatformFeatureType::Spikes);
+                        } else if (feature == "checkpoint") {
+                            platform.features.push_back(
+                                PlatformFeatureType::Checkpoint);
+                        }
                     }
                 }
+
+                // Set platform color based on behavior and features
+                PlatformFeatureType primary_feature =
+                    platform.features.empty() ? PlatformFeatureType::None
+                                              : platform.features[0];
+
+                // Simple color assignment based on behavior type
+                switch (platform.behavior_type) {
+                    case PlatformBehaviorType::Static:
+                        platform.color = IM_COL32(0, 0, 255, 255);  // Blue
+                        break;
+                    case PlatformBehaviorType::Horizontal:
+                        platform.color = IM_COL32(255, 128, 0, 255);  // Orange
+                        break;
+                    case PlatformBehaviorType::EightTurnHorizontal:
+                        platform.color = IM_COL32(128, 0, 255, 255);  // Purple
+                        break;
+                    case PlatformBehaviorType::OscillatingSize:
+                        platform.color =
+                            IM_COL32(0, 255, 128, 255);  // Light Green
+                        break;
+                }
+
+                // Override with feature colors if present
+                if (primary_feature == PlatformFeatureType::Spikes) {
+                    platform.color =
+                        IM_COL32(255, 0, 0, 255);  // Red for spikes
+                } else if (primary_feature == PlatformFeatureType::Checkpoint) {
+                    platform.color =
+                        IM_COL32(0, 255, 0, 255);  // Green for checkpoint
+                }
+
+                pimpl->level.platforms.push_back(platform);
             }
-
-            // Set platform color based on behavior and features
-            PlatformFeatureType primary_feature =
-                platform.features.empty() ? PlatformFeatureType::None
-                                          : platform.features[0];
-
-            // Simple color assignment based on behavior type
-            switch (platform.behavior_type) {
-                case PlatformBehaviorType::Static:
-                    platform.color = IM_COL32(0, 0, 255, 255);  // Blue
-                    break;
-                case PlatformBehaviorType::Horizontal:
-                    platform.color = IM_COL32(255, 128, 0, 255);  // Orange
-                    break;
-                case PlatformBehaviorType::EightTurnHorizontal:
-                    platform.color = IM_COL32(128, 0, 255, 255);  // Purple
-                    break;
-                case PlatformBehaviorType::OscillatingSize:
-                    platform.color = IM_COL32(0, 255, 128, 255);  // Light Green
-                    break;
-            }
-
-            // Override with feature colors if present
-            if (primary_feature == PlatformFeatureType::Spikes) {
-                platform.color = IM_COL32(255, 0, 0, 255);  // Red for spikes
-            } else if (primary_feature == PlatformFeatureType::Checkpoint) {
-                platform.color =
-                    IM_COL32(0, 255, 0, 255);  // Green for checkpoint
-            }
-
-            pimpl->level.platforms.push_back(platform);
         }
-    }
 
-    // Clear existing monsters and import new ones
-    pimpl->level.monsters.clear();
-    if (jlevel.contains("monsters")) {
-        for (const auto &jmonster : jlevel["monsters"]) {
-            EditorMonster monster;
-            monster.tile_x = jmonster["x"].get<int>();
-            monster.tile_y = jmonster["y"].get<int>();
-            monster.preset_name = jmonster["preset_name"].get<std::string>();
+        // Clear existing monsters and import new ones
+        pimpl->level.monsters.clear();
+        if (jlevel.contains("monsters")) {
+            for (const auto &jmonster : jlevel["monsters"]) {
+                EditorMonster monster;
+                monster.tile_x = jmonster["x"].get<int>();
+                monster.tile_y = jmonster["y"].get<int>();
+                monster.preset_name =
+                    jmonster["preset_name"].get<std::string>();
 
-            // Set color based on preset
-            if (monster.preset_name == "goblin") {
-                monster.color = IM_COL32(255, 0, 0, 255);  // Red
-            } else if (monster.preset_name == "spider") {
-                monster.color = IM_COL32(128, 0, 128, 255);  // Purple
-            } else {
-                monster.color = IM_COL32(255, 0, 0, 255);  // Default red
+                // Set color based on preset
+                if (monster.preset_name == "goblin") {
+                    monster.color = IM_COL32(255, 0, 0, 255);  // Red
+                } else if (monster.preset_name == "spider") {
+                    monster.color = IM_COL32(128, 0, 128, 255);  // Purple
+                } else {
+                    monster.color = IM_COL32(255, 0, 0, 255);  // Default red
+                }
+
+                pimpl->level.monsters.push_back(monster);
             }
-
-            pimpl->level.monsters.push_back(monster);
         }
+    } catch (const std::exception &e) {
+        std::cerr << "Error importing platform level JSON: " << e.what()
+                  << std::endl;
+        // Don't clear existing data on error - just fail gracefully
     }
 }
 

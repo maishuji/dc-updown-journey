@@ -67,7 +67,7 @@ add_library(udjourney_editor_lib
 
 target_include_directories(udjourney_editor_lib PUBLIC include)
 target_include_directories(udjourney_editor_lib PUBLIC ../udjourney/include)
-target_link_libraries(udjourney_editor_lib PUBLIC raylib nlohmann_json::nlohmann_json)
+target_link_libraries(udjourney_editor_lib PUBLIC udj-core raylib nlohmann_json::nlohmann_json)
 
 # Set EDITOR_TESTING flag when building for tests
 option(ENABLE_EDITOR_TESTING "Enable editor testing features" OFF)
@@ -76,7 +76,7 @@ if(ENABLE_EDITOR_TESTING)
 endif()
 
 target_include_directories(udjourney_editor_lib PUBLIC include)
-target_link_libraries(udjourney_editor_lib PUBLIC raylib nlohmann_json::nlohmann_json)
+target_link_libraries(udjourney_editor_lib PUBLIC udj-core raylib nlohmann_json::nlohmann_json)
 
 # Create test-enabled version of the library
 add_library(udjourney_editor_lib_test STATIC
@@ -101,7 +101,7 @@ add_library(udjourney_editor_lib_test STATIC
 
 target_include_directories(udjourney_editor_lib_test PUBLIC include PRIVATE src tests)
 target_include_directories(udjourney_editor_lib_test PUBLIC ../udjourney/include)
-target_link_libraries(udjourney_editor_lib_test PUBLIC raylib nlohmann_json::nlohmann_json)
+target_link_libraries(udjourney_editor_lib_test PUBLIC udj-core raylib nlohmann_json::nlohmann_json)
 target_compile_definitions(udjourney_editor_lib_test PRIVATE EDITOR_TESTING)
 
 # Ensure assets symlink exists in both source and build directories

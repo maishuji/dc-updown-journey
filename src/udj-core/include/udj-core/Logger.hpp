@@ -7,8 +7,11 @@
 #include <string>
 #include <utility>
 
-namespace udjourney {
+namespace udj::core {
 
+/**
+ * @brief Simple logging utility with template-based formatting
+ */
 class Logger {
  public:
     enum class Level { Info, Warning, Error, Debug };
@@ -87,4 +90,9 @@ class Logger {
     }
 };
 
-}  // namespace udjourney
+}  // namespace udj::core
+
+// Backward compatibility alias for existing code
+namespace udjourney {
+using Logger = udj::core::Logger;
+}

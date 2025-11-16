@@ -3,7 +3,7 @@
 
 #include <raylib/raylib.h>
 
-#include "udjourney/core/Logger.hpp"
+#include <udj-core/Logger.hpp>
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/platform/Platform.hpp"

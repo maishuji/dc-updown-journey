@@ -8,7 +8,7 @@
 #include <memory>
 #include <set>
 
-#include "udjourney/CoreUtils.hpp"
+#include <udj-core/CoreUtils.hpp>
 
 using json = nlohmann::json;
 
