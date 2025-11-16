@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <string>
 #include <unordered_map>
 
 #include <nlohmann/json.hpp>

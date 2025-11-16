@@ -1,11 +1,12 @@
 // Copyright 2025 Quentin Cartier
+#include <gtest/gtest.h>
+
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <iostream>
 
-#include <gtest/gtest.h>
 
 // Mock the ASSETS_BASE_PATH for testing
 #ifdef ASSETS_BASE_PATH

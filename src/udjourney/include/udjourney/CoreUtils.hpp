@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include <cstdio>  // FILE, fopen, fclose
 
 namespace internal {
 inline constexpr float kEpsilonDefault = 0.001F;

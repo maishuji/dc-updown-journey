@@ -1,7 +1,11 @@
 // Copyright 2025 Quentin Cartier
+#include <gtest/gtest.h>
+
 #include <filesystem>
 #include <fstream>
-#include <gtest/gtest.h>
+#include <string>
+#include <vector>
+#include <iostream>
 
 #include "udjourney-editor/MonsterPresetManager.hpp"
 

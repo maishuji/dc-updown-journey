@@ -3,6 +3,9 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
+#include <string>
+#include <vector>
+
 #include <nlohmann/json.hpp>
 
 namespace udjourney::editor {

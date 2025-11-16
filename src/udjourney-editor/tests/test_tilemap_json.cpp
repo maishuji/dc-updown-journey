@@ -1,10 +1,11 @@
 // Copyright 2025 Quentin Cartier
+#include <gtest/gtest.h>
+
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
 
-#include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
 #include "udjourney-editor/Editor.hpp"
