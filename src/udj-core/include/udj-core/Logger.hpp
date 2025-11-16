@@ -94,5 +94,5 @@ class Logger {
 
 // Backward compatibility alias for existing code
 namespace udjourney {
-    using Logger = udj::core::Logger;
+using Logger = udj::core::Logger;
 }
