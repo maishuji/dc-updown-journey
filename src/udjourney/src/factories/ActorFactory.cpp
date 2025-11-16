@@ -12,7 +12,7 @@
 #include "udjourney/Monster.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/loaders/AnimationConfigLoader.hpp"
-#include "udjourney/CoreUtils.hpp"
+#include <udj-core/CoreUtils.hpp>
 #include "udjourney/core/events/EventDispatcher.hpp"
 
 MonsterFactory::MonsterFactory(

@@ -12,7 +12,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "udjourney/core/Logger.hpp"
+#include <udj-core/Logger.hpp>
 
 using json = nlohmann::json;
 

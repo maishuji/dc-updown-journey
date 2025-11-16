@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "udjourney/CoreUtils.hpp"
+#include <udj-core/CoreUtils.hpp>
 
 TextureManager& TextureManager::get_instance() {
     static TextureManager instance;

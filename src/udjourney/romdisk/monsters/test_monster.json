@@ -1,0 +1,9 @@
+{
+  "name": "test_monster",
+  "display_name": "Test Monster",
+  "description": "A test monster for unit tests",
+  "health": 100,
+  "speed": 50,
+  "sprite_file": "test_monster.png",
+  "animation_config": "test_monster_anim.json"
+}

@@ -13,7 +13,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "udjourney/core/Logger.hpp"
+#include <udj-core/Logger.hpp>
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/SpriteAnim.hpp"
 
