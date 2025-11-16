@@ -1,0 +1,74 @@
+{
+  "name": "poring",
+  "display_name": "Poring",
+  "animation_preset": "poring_animations.json",
+  "visual": {
+    "width": 64,
+    "height": 64,
+    "sprite_sheet": "poring1-Sheet.png"
+  },
+  "stats": {
+    "max_health": 50.0,
+    "movement_speed": 40.0,
+    "damage": 15.0,
+    "knockback_force": 80.0,
+    "attack_cooldown": 1.5,
+    "jump_force": 0.0
+  },
+  "behavior": {
+    "patrol_range": 100.0,
+    "chase_range": 150.0,
+    "attack_range": 45.0,
+    "patrol_speed_multiplier": 1.0,
+    "chase_speed_multiplier": 1.8,
+    "can_jump": false,
+    "can_fly": false,
+    "can_climb": false,
+    "idle_duration": 2.0,
+    "patrol_pause_duration": 1.0
+  },
+  "state_config": {
+    "initial_state": "idle",
+    "available_states": ["idle", "patrol", "chase", "attack", "hurt", "death"],
+    "transitions": [
+      {
+        "from_state": "idle",
+        "to_state": "patrol",
+        "condition": "timer_expired",
+        "condition_value": 2.0
+      },
+      {
+        "from_state": "patrol",
+        "to_state": "chase",
+        "condition": "player_in_range",
+        "condition_value": 150.0
+      },
+      {
+        "from_state": "chase",
+        "to_state": "attack",
+        "condition": "player_in_range",
+        "condition_value": 45.0
+      },
+      {
+        "from_state": "attack",
+        "to_state": "chase",
+        "condition": "animation_finished"
+      },
+      {
+        "from_state": "chase",
+        "to_state": "patrol",
+        "condition": "player_out_of_range",
+        "condition_value": 200.0
+      }
+    ],
+    "state_durations": {
+      "idle": 2.0,
+      "attack": 0.6
+    }
+  },
+  "audio": {
+    "attack": "goblin_attack.wav",
+    "hurt": "goblin_hurt.wav",
+    "death": "goblin_death.wav"
+  }
+}

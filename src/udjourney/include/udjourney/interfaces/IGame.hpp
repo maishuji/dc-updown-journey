@@ -8,6 +8,7 @@
 
 class IActor;
 class Player;
+namespace udjourney { class WorldBounds; }
 
 class IGame {
  public:
@@ -19,4 +20,6 @@ class IGame {
     [[nodiscard]] virtual Rectangle get_rectangle() const = 0;
     virtual void on_checkpoint_reached(float x, float y) const = 0;
     [[nodiscard]] virtual Player* get_player() const = 0;
+    [[nodiscard]] virtual const udjourney::WorldBounds&
+        get_world_bounds() const = 0;
 };

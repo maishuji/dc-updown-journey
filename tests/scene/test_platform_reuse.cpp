@@ -7,6 +7,7 @@
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/NoReuseStrategy.hpp"
 #include "udjourney/interfaces/IGame.hpp"
+#include "udjourney/WorldBounds.hpp"
 
 // Mock Game class for testing
 class MockGame : public IGame {
@@ -25,6 +26,11 @@ class MockGame : public IGame {
         // Mock implementation - do nothing for tests
     }
     Player* get_player() const override { return nullptr; }
+    
+    const udjourney::WorldBounds& get_world_bounds() const override { 
+        static udjourney::WorldBounds bounds;
+        return bounds; 
+    }
 
  private:
     Rectangle m_rect;

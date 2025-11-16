@@ -15,8 +15,10 @@
 #include "udjourney/CoreUtils.hpp"
 #include "udjourney/core/events/EventDispatcher.hpp"
 
-MonsterFactory::MonsterFactory(const IGame &game, Rectangle rect) :
-    m_game(game), m_rect(rect) {}
+MonsterFactory::MonsterFactory(
+    const IGame &game, Rectangle rect,
+    udjourney::core::events::EventDispatcher &event_dispatcher) :
+    m_game(game), m_rect(rect), m_event_dispatcher(event_dispatcher) {}
 
 std::unique_ptr<IActor> MonsterFactory::create_actor() {
     // Load monster animation configuration from JSON file
@@ -27,8 +29,8 @@ std::unique_ptr<IActor> MonsterFactory::create_actor() {
 
     // Create a Monster actor instance with animation controller loaded from
     // JSON
-    auto monster =
-        std::make_unique<Monster>(m_game, m_rect, std::move(anim_controller));
+    auto monster = std::make_unique<Monster>(
+        m_game, m_rect, std::move(anim_controller), m_event_dispatcher);
 
     // Set patrol range relative to spawn position
     monster->set_patrol_range(m_rect.x - 100.0f, m_rect.x + 100.0f);

@@ -1,0 +1,75 @@
+{
+  "name": "spider",
+  "display_name": "Jumping Spider",
+  "animation_preset": "spider_animations.json",
+  "visual": {
+    "width": 64,
+    "height": 64,
+    "sprite_sheet": "spiderplant-Sheet.png"
+  },
+  "stats": {
+    "max_health": 30.0,
+    "movement_speed": 60.0,
+    "damage": 20.0,
+    "knockback_force": 50.0,
+    "attack_cooldown": 1.0,
+    "jump_force": 400.0
+  },
+  "behavior": {
+    "patrol_range": 200.0,
+    "chase_range": 300.0,
+    "attack_range": 80.0,
+    "patrol_speed_multiplier": 0.8,
+    "chase_speed_multiplier": 1.5,
+    "can_jump": true,
+    "can_fly": false,
+    "can_climb": true,
+    "idle_duration": 1.0,
+    "jump_cooldown": 2.0,
+    "patrol_pause_duration": 0.5
+  },
+  "state_config": {
+    "initial_state": "idle",
+    "available_states": ["idle", "patrol", "chase", "attack", "hurt", "death"],
+    "transitions": [
+      {
+        "from_state": "idle",
+        "to_state": "patrol",
+        "condition": "timer_expired",
+        "condition_value": 1.0
+      },
+      {
+        "from_state": "patrol",
+        "to_state": "chase",
+        "condition": "player_in_range",
+        "condition_value": 300.0
+      },
+      {
+        "from_state": "chase",
+        "to_state": "attack",
+        "condition": "player_in_range",
+        "condition_value": 80.0
+      },
+      {
+        "from_state": "attack",
+        "to_state": "chase",
+        "condition": "animation_finished"
+      },
+      {
+        "from_state": "chase",
+        "to_state": "patrol",
+        "condition": "player_out_of_range",
+        "condition_value": 350.0
+      }
+    ],
+    "state_durations": {
+      "idle": 1.0,
+      "attack": 0.8
+    }
+  },
+  "audio": {
+    "attack": "spider_attack.wav",
+    "hurt": "spider_hurt.wav",
+    "death": "spider_death.wav"
+  }
+}

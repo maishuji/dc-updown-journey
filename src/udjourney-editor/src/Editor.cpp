@@ -175,6 +175,16 @@ void Editor::export_platform_level_json(const std::string &export_path) {
         jlevel["platforms"].push_back(jplatform);
     }
 
+    // Monsters array
+    jlevel["monsters"] = nlohmann::json::array();
+    for (const auto &monster : pimpl->level.monsters) {
+        nlohmann::json jmonster;
+        jmonster["x"] = monster.tile_x;
+        jmonster["y"] = monster.tile_y;
+        jmonster["preset_name"] = monster.preset_name;
+        jlevel["monsters"].push_back(jmonster);
+    }
+
     std::ofstream out(export_path);
     out << jlevel.dump(2);
     out.close();
@@ -269,6 +279,28 @@ void Editor::import_platform_level_json(const std::string &import_path) {
             }
 
             pimpl->level.platforms.push_back(platform);
+        }
+    }
+
+    // Clear existing monsters and import new ones
+    pimpl->level.monsters.clear();
+    if (jlevel.contains("monsters")) {
+        for (const auto &jmonster : jlevel["monsters"]) {
+            EditorMonster monster;
+            monster.tile_x = jmonster["x"].get<int>();
+            monster.tile_y = jmonster["y"].get<int>();
+            monster.preset_name = jmonster["preset_name"].get<std::string>();
+
+            // Set color based on preset
+            if (monster.preset_name == "goblin") {
+                monster.color = IM_COL32(255, 0, 0, 255);  // Red
+            } else if (monster.preset_name == "spider") {
+                monster.color = IM_COL32(128, 0, 128, 255);  // Purple
+            } else {
+                monster.color = IM_COL32(255, 0, 0, 255);  // Default red
+            }
+
+            pimpl->level.monsters.push_back(monster);
         }
     }
 }

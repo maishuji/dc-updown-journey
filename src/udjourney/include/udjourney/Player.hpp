@@ -49,6 +49,9 @@ class Player : public IActor, public IObservable {
         return m_invincibility_timer > 0.0F;
     }
 
+    // Attack system for testing
+    void attack_nearby_monsters();
+
  private:
     float m_invincibility_timer = 0.0F;
 

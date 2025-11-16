@@ -1,6 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/Monster.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -9,29 +10,61 @@
 #include <memory>
 
 #include "udjourney/managers/TextureManager.hpp"
+#include "udjourney/core/events/ScoreEvent.hpp"
+#include "udjourney/core/events/EventDispatcher.hpp"
+#include "udjourney/loaders/MonsterPresetLoader.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/states/MonsterStates.hpp"
+#include "udjourney/WorldBounds.hpp"
 
 Monster::Monster(const IGame& game, Rectangle rect,
-                 AnimSpriteController anim_controller) :
+                 AnimSpriteController anim_controller,
+                 udjourney::core::events::EventDispatcher& dispatcher) :
     IActor(game),
     game_(game),
     rect_(rect),
-    anim_controller_(std::move(anim_controller)) {
+    anim_controller_(std::move(anim_controller)),
+    dispatcher_(dispatcher) {
+    // Use default stats for now
+    health_ = 100.0f;
+    max_health_ = 100.0f;
+    damage_ = 10.0f;
+    speed_ = 50.0f;
+    chase_range_ = 200.0f;
+    attack_range_ = 50.0f;
+
     // Set initial state
     anim_controller_.set_current_state(ANIM_IDLE);
 
     // Register all monster states (using State pattern)
-    states_["IDLE"] = std::make_unique<MonsterIdleState>();
-    states_["PATROL"] = std::make_unique<MonsterPatrolState>();
-    states_["CHASE"] = std::make_unique<MonsterChaseState>();
-    states_["ATTACK"] = std::make_unique<MonsterAttackState>();
-    states_["HURT"] = std::make_unique<MonsterHurtState>();
-    states_["DEATH"] = std::make_unique<MonsterDeathState>();
+    states_["idle"] = std::make_unique<MonsterIdleState>();
+    states_["patrol"] = std::make_unique<MonsterPatrolState>();
+    states_["chase"] = std::make_unique<MonsterChaseState>();
+    states_["attack"] = std::make_unique<MonsterAttackState>();
+    states_["hurt"] = std::make_unique<MonsterHurtState>();
+    states_["death"] = std::make_unique<MonsterDeathState>();
 
-    // Start in IDLE state
-    current_state_ = states_["IDLE"].get();
-    current_state_->enter(*this);
+    // Initialize preset to nullptr for now (will be set later if needed)
+    preset_ = nullptr;
+    preset_name_ = "";
+
+    // Start in default idle state (preset can override this later)
+    std::string initial_state = "idle";
+    if (states_.find(initial_state) != states_.end()) {
+        current_state_ = states_[initial_state].get();
+        current_state_->enter(*this);
+        std::cout << "Monster initialized with default state: " << initial_state
+                  << std::endl;
+    } else {
+        std::cerr << "CRITICAL ERROR: Default 'idle' state not found! "
+                     "Available states: ";
+        for (const auto& state_pair : states_) {
+            std::cerr << state_pair.first << " ";
+        }
+        std::cerr << std::endl;
+        throw std::runtime_error(
+            "Monster initialization failed: No valid default state found");
+    }
 }
 
 void Monster::draw() const {
@@ -88,23 +121,46 @@ void Monster::process_input() {
 void Monster::change_state(const std::string& new_state) {
     auto it = states_.find(new_state);
     if (it != states_.end() && current_state_ != it->second.get()) {
+        std::string old_state_name = "unknown";
+        // Find current state name for logging
+        for (const auto& state_pair : states_) {
+            if (state_pair.second.get() == current_state_) {
+                old_state_name = state_pair.first;
+                break;
+            }
+        }
+
+        std::string monster_name = preset_ ? preset_->name : "default_monster";
+        std::cout << "Monster '" << monster_name
+                  << "' changing state: " << old_state_name << " -> "
+                  << new_state << std::endl;
+
         current_state_ = it->second.get();
         current_state_->enter(*this);
 
-        // Map state names to animation indices
-        if (new_state == "IDLE") {
+        // Map state names to animation indices (using lowercase)
+        if (new_state == "idle") {
             anim_controller_.set_current_state(ANIM_IDLE);
-        } else if (new_state == "PATROL") {
+        } else if (new_state == "patrol") {
             anim_controller_.set_current_state(ANIM_PATROL);
-        } else if (new_state == "CHASE") {
+        } else if (new_state == "chase") {
             anim_controller_.set_current_state(ANIM_CHASE);
-        } else if (new_state == "ATTACK") {
+        } else if (new_state == "attack") {
             anim_controller_.set_current_state(ANIM_ATTACK);
-        } else if (new_state == "HURT") {
+        } else if (new_state == "hurt") {
             anim_controller_.set_current_state(ANIM_HURT);
-        } else if (new_state == "DEATH") {
+        } else if (new_state == "death") {
             anim_controller_.set_current_state(ANIM_DEATH);
         }
+    } else if (it == states_.end()) {
+        std::string monster_name = preset_ ? preset_->name : "default_monster";
+        std::cerr << "ERROR: Attempted to change to invalid state '"
+                  << new_state << "' for monster '" << monster_name
+                  << "'. Available states: ";
+        for (const auto& state_pair : states_) {
+            std::cerr << state_pair.first << " ";
+        }
+        std::cerr << std::endl;
     }
 }
 
@@ -133,10 +189,10 @@ void Monster::take_damage(float damage) {
 
     if (health_ <= 0.0f) {
         health_ = 0.0f;
-        change_state("DEATH");
+        change_state("death");
         velocity_x_ = 0.0f;
     } else {
-        change_state("HURT");
+        change_state("hurt");
         // Knockback
         velocity_x_ = facing_right_ ? -speed_ * 2.0f : speed_ * 2.0f;
     }
@@ -157,11 +213,12 @@ void Monster::apply_gravity(float delta) {
 }
 
 void Monster::handle_border_collisions() {
-    const auto& game_rect = game_.get_rectangle();
+    // Use WorldBounds for more accurate boundary collision
+    const auto& world_bounds = game_.get_world_bounds();
+    auto collision = world_bounds.check_border_collision(rect_);
 
-    // Left border collision
-    if (rect_.x < game_rect.x) {
-        rect_.x = game_rect.x;
+    if (collision.hit_left) {
+        rect_ = collision.corrected_rect;
         velocity_x_ = 0.0f;
 
         // Reverse patrol direction if patrolling
@@ -170,9 +227,8 @@ void Monster::handle_border_collisions() {
         }
     }
 
-    // Right border collision
-    if (rect_.x + rect_.width > game_rect.x + game_rect.width) {
-        rect_.x = game_rect.x + game_rect.width - rect_.width;
+    if (collision.hit_right) {
+        rect_ = collision.corrected_rect;
         velocity_x_ = 0.0f;
 
         // Reverse patrol direction if patrolling
@@ -246,5 +302,99 @@ void Monster::handle_collision(
                 }
             }
         }
+    }
+}
+
+bool Monster::is_wall_ahead() const {
+    // Simple wall detection - check if we're at patrol boundaries
+    if (facing_right_ && rect_.x >= patrol_max_x_) {
+        return true;
+    } else if (!facing_right_ && rect_.x <= patrol_min_x_) {
+        return true;
+    }
+    return false;
+}
+
+bool Monster::is_animation_finished() const {
+    // For now, we'll use a simple time-based approach
+    // This could be enhanced to check actual animation frame completion
+    return anim_controller_.is_animation_finished();
+}
+
+void Monster::load_preset(const std::string& preset_name) {
+    try {
+        std::cout << "Loading monster preset: " << preset_name << std::endl;
+
+        // Load preset from JSON file (MonsterPresetLoader handles the path
+        // construction)
+        std::string preset_filename = preset_name + ".json";
+        preset_ = udjourney::MonsterPresetLoader::load_preset(preset_filename);
+        preset_name_ = preset_name;
+
+        std::cout << "Monster preset loaded successfully: " << preset_name
+                  << std::endl;
+
+        // Apply preset stats
+        max_health_ = preset_->stats.max_health;
+        health_ = max_health_;  // Reset to full health
+        speed_ = preset_->stats.movement_speed;
+        damage_ = preset_->stats.damage;
+
+        // Apply behavior settings
+        chase_range_ = preset_->behavior.chase_range;
+        attack_range_ = preset_->behavior.attack_range;
+
+        // Change to preset's initial state if different from current
+        std::string target_state = preset_->state_config.initial_state;
+        if (target_state != "idle") {  // Only change if not already idle
+            change_state(target_state);
+        }
+
+        std::cout << "Monster configured with preset '" << preset_->name
+                  << "' (HP: " << max_health_ << ", Speed: " << speed_
+                  << ", State: " << target_state << ")" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "ERROR: Failed to load monster preset '" << preset_name
+                  << "': " << e.what() << std::endl;
+        std::cerr << "Monster will continue with default settings."
+                  << std::endl;
+    }
+}
+
+void Monster::award_kill_points() const {
+    // Award points based on monster type or default
+    int points = 100;  // Default points for killing a monster
+
+    // Could vary points based on monster difficulty in the future
+    if (preset_ != nullptr) {
+        // For now, use a simple calculation based on max health
+        points =
+            static_cast<int>(max_health_ / 10.0f) * 10;  // 10 points per 10 HP
+        if (points < 50) points = 50;                    // Minimum points
+        if (points > 500) points = 500;                  // Maximum points
+    }
+
+    // Use the EventDispatcher pattern to notify about scoring (like Player
+    // does)
+    udjourney::core::events::ScoreEvent score_event{points};
+    dispatcher_.dispatch(score_event);
+
+    std::cout << "Monster awarded " << points << " points for kill"
+              << std::endl;
+}
+
+// Observable methods implementation (same as Player)
+void Monster::add_observer(IObserver* observer) {
+    observers.push_back(observer);
+}
+
+void Monster::remove_observer(IObserver* observer) {
+    observers.erase(std::remove(observers.begin(), observers.end(), observer),
+                    observers.end());
+}
+
+void Monster::notify(const std::string& event) {
+    for (auto* observer : observers) {
+        observer->on_notify(event);
     }
 }

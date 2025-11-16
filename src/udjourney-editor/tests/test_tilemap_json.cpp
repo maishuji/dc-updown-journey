@@ -1,19 +1,42 @@
 // Copyright 2025 Quentin Cartier
+#include <gtest/gtest.h>
+
 #include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
 
-#include <catch2/catch_test_macros.hpp>
 #include <nlohmann/json.hpp>
 
 #include "udjourney-editor/Editor.hpp"
 #include "udjourney-editor/Level.hpp"
 #include "helpers/test_helpers.hpp"
 
-TEST_CASE("Tilemap JSON Export", "[json][export][tilemap]") {
+class TilemapJSONTest : public ::testing::Test {
+ protected:
+    void SetUp() override { editor.init(); }
+
+    void TearDown() override {
+        // Clean up any temporary files
+        for (const auto& path : temp_files) {
+            if (std::filesystem::exists(path)) {
+                std::filesystem::remove(path);
+            }
+        }
+    }
+
+    std::string createTempFile(const std::string& suffix = ".json") {
+        std::string temp_path =
+            std::filesystem::temp_directory_path() / ("test_" + suffix);
+        temp_files.push_back(temp_path);
+        return temp_path;
+    }
+
     Editor editor;
-    editor.init();
+    std::vector<std::string> temp_files;
+};
+
+TEST_F(TilemapJSONTest, TilemapJSONExport) {
     Level& level = editor.get_test_level();
 
     // Set up test tilemap data using the actual structure
@@ -47,51 +70,45 @@ TEST_CASE("Tilemap JSON Export", "[json][export][tilemap]") {
     level.player_spawn_y = 5;
 
     // Export to temporary file
-    std::string temp_path =
-        std::filesystem::temp_directory_path() / "test_tilemap_export.json";
+    std::string temp_path = createTempFile("tilemap_export.json");
     editor.test_export_tilemap_json(temp_path);
 
     // Verify file was created
-    REQUIRE(std::filesystem::exists(temp_path));
+    ASSERT_TRUE(std::filesystem::exists(temp_path));
 
     // Parse and verify JSON content
     std::ifstream file(temp_path);
     nlohmann::json exported_json;
     file >> exported_json;
 
-    SECTION("Level dimensions are exported correctly") {
-        REQUIRE(exported_json.contains("rows"));
-        REQUIRE(exported_json.contains("cols"));
-        REQUIRE(exported_json["rows"] == 8);
-        REQUIRE(exported_json["cols"] == 10);
+    // Level dimensions are exported correctly
+    EXPECT_TRUE(exported_json.contains("rows"));
+    EXPECT_TRUE(exported_json.contains("cols"));
+    EXPECT_EQ(exported_json["rows"], 8);
+    EXPECT_EQ(exported_json["cols"], 10);
+
+    // Tilemap data is exported correctly
+    EXPECT_TRUE(exported_json.contains("tiles"));
+    EXPECT_TRUE(exported_json["tiles"].is_array());
+    EXPECT_EQ(exported_json["tiles"].size(), 80);  // 8 * 10
+
+    // Check the structure contains row, col, and color
+    auto& first_tile = exported_json["tiles"][0];
+    EXPECT_TRUE(first_tile.contains("row"));
+    EXPECT_TRUE(first_tile.contains("col"));
+    EXPECT_TRUE(first_tile.contains("color"));
+
+    // Check specific tile colors
+    bool found_wall = false, found_ground = false, found_air = false;
+    for (const auto& tile : exported_json["tiles"]) {
+        ImU32 color = tile["color"].get<ImU32>();
+        if (color == WALL_COLOR) found_wall = true;
+        if (color == GROUND_COLOR) found_ground = true;
+        if (color == AIR_COLOR) found_air = true;
     }
-
-    SECTION("Tilemap data is exported correctly") {
-        REQUIRE(exported_json.contains("tiles"));
-        REQUIRE(exported_json["tiles"].is_array());
-        REQUIRE(exported_json["tiles"].size() == 80);  // 8 * 10
-
-        // Check the structure contains row, col, and color
-        auto& first_tile = exported_json["tiles"][0];
-        REQUIRE(first_tile.contains("row"));
-        REQUIRE(first_tile.contains("col"));
-        REQUIRE(first_tile.contains("color"));
-
-        // Check specific tile colors
-        bool found_wall = false, found_ground = false, found_air = false;
-        for (const auto& tile : exported_json["tiles"]) {
-            ImU32 color = tile["color"].get<ImU32>();
-            if (color == WALL_COLOR) found_wall = true;
-            if (color == GROUND_COLOR) found_ground = true;
-            if (color == AIR_COLOR) found_air = true;
-        }
-        REQUIRE(found_wall);
-        REQUIRE(found_ground);
-        REQUIRE(found_air);
-    }
-
-    // Clean up
-    std::filesystem::remove(temp_path);
+    EXPECT_TRUE(found_wall);
+    EXPECT_TRUE(found_ground);
+    EXPECT_TRUE(found_air);
 }
 
 TEST_CASE("Tilemap JSON Import", "[json][import][tilemap]") {

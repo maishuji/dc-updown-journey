@@ -1,0 +1,259 @@
+{
+  "name": "Untitled Level",
+  "platforms": [
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 12,
+      "y": 9
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 8,
+      "y": 12
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 17,
+      "y": 12
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 2,
+      "y": 15
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 19,
+      "y": 16
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 12,
+      "y": 16
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 6,
+      "y": 18
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 18,
+      "y": 19
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 19,
+      "y": 8
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 6,
+      "y": 6
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 12,
+      "y": 4
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 20,
+      "y": 3
+    },
+    {
+      "behavior": "horizontal",
+      "features": [
+        "checkpoint"
+      ],
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 14,
+      "y": 21
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 19,
+      "y": 26
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 8,
+      "y": 23
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 3,
+      "y": 26
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 8,
+      "y": 29
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 6,
+      "y": 31
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 5,
+      "y": 34
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 13,
+      "y": 30
+    },
+    {
+      "behavior": "horizontal",
+      "features": [
+        "checkpoint"
+      ],
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 15,
+      "y": 33
+    },
+    {
+      "behavior": "static",
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 18,
+      "y": 30
+    },
+    {
+      "behavior": "static",
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 20,
+      "y": 32
+    },
+    {
+      "behavior": "static",
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 18,
+      "y": 35
+    },
+    {
+      "behavior": "static",
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 1,
+      "y": 31
+    },
+    {
+      "behavior": "horizontal",
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 11,
+      "y": 57
+    },
+    {
+      "behavior": "oscillating_size",
+      "features": [
+        "checkpoint"
+      ],
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 16,
+      "y": 51
+    },
+    {
+      "behavior": "oscillating_size",
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 4,
+      "y": 47
+    },
+    {
+      "behavior": "oscillating_size",
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 22,
+      "y": 44
+    },
+    {
+      "behavior": "oscillating_size",
+      "features": [
+        "spikes"
+      ],
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 6,
+      "y": 51
+    },
+    {
+      "behavior": "oscillating_size",
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 14,
+      "y": 43
+    },
+    {
+      "behavior": "oscillating_size",
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 6,
+      "y": 40
+    },
+    {
+      "behavior": "oscillating_size",
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 13,
+      "y": 36
+    },
+    {
+      "behavior": "oscillating_size",
+      "height": 3.0,
+      "width": 2.9000000953674316,
+      "x": 2,
+      "y": 10
+    }
+  ],
+  "player_spawn": {
+    "x": 2,
+    "y": 8
+  }
+}

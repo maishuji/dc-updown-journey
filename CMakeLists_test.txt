@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.20)
+project(monster_preset_test)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find nlohmann_json
+find_package(nlohmann_json REQUIRED)
+
+# Include directories
+include_directories(src/udjourney/include)
+
+# Create test executable
+add_executable(monster_preset_test 
+    test_monster_preset.cpp
+    src/udjourney/src/MonsterPresetLoader.cpp
+)
+
+# Link nlohmann_json
+target_link_libraries(monster_preset_test nlohmann_json::nlohmann_json)
+
+# Define ASSETS_BASE_PATH for the test
+target_compile_definitions(monster_preset_test PRIVATE ASSETS_BASE_PATH="src/udjourney/romdisk/")

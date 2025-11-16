@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -185,41 +186,8 @@ std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
         }
     }
 
-    // Create borders
-    const int border_width = 5;
-    const int border_height = 100;
-    auto game_rect = iGame.get_rectangle();
-
-    constexpr int cpool_size = 5;
-    std::array<Color, cpool_size> color_pool = {
-        GRAY, PINK, BROWN, YELLOW, PURPLE};
-
-    int color_idx = 0;
-    // The left and right borders
-    // Note that they are repeated when running out of the screen
-    for (auto border_top = 0;
-         border_top <= static_cast<int>(game_rect.height + border_height);
-         border_top += border_height) {
-        res.emplace_back(std::make_unique<Platform>(
-            iGame,
-            Rectangle{0,
-                      static_cast<float>(border_top),
-                      static_cast<float>(border_width),
-                      static_cast<float>(border_height)},
-            color_pool[color_idx],
-            true,  // Y-repeated
-            std::make_unique<RandomizePositionStrategy>()));
-        res.emplace_back(std::make_unique<Platform>(
-            iGame,
-            Rectangle{game_rect.width - border_width,
-                      static_cast<float>(border_top),
-                      static_cast<float>(border_width),
-                      static_cast<float>(border_height)},
-            color_pool[color_idx],
-            true,  // Y-repeated
-            std::make_unique<RandomizePositionStrategy>()));
-        color_idx = (color_idx + 1) % cpool_size;
-    }
+    // Note: Border collision is now handled by WorldBounds system
+    // No need to create physical border platforms
 
     return res;
 }
@@ -228,6 +196,9 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     m_rect = Rectangle{
         0, 0, static_cast<float>(iWidth), static_cast<float>(iHeight)};
     m_actors.reserve(10);
+    // Initialize world bounds to window size by default
+    m_world_bounds.set_bounds(
+        0.0f, static_cast<float>(iWidth), 0.0f, static_cast<float>(iHeight));
 
     // Try to load Level 1, fallback to random generation if it fails
     if (!load_scene(
@@ -634,14 +605,23 @@ void Game::update() {
                             static_cast<Platform &>(*actor);
                         platform_ref.reuse();
 
-                        // If platform doesn't have a reuse strategy, it will be
-                        // marked CONSUMED and will be removed in the next
-                        // cleanup cycle
+                        // If platform is still CONSUMED after reuse attempt,
+                        // it should be removed (no reuse strategy or reuse
+                        // failed)
+                        if (actor->get_state() == ActorState::CONSUMED) {
+                            to_remove.push_back(actor.get());
+                        }
                     } break;
                     case static_cast<uint8_t>(ActorType::BONUS): {
                         to_remove.push_back(actor.get());
                     } break;
+                    case 3: {  // Monster group ID
+                        to_remove.push_back(actor.get());
+                    } break;
                     default:
+                        // Unknown actor type, remove it to prevent infinite
+                        // loops
+                        to_remove.push_back(actor.get());
                         break;
                 }
             }
@@ -688,7 +668,7 @@ void Game::update() {
 
         // Handle collision for all monsters
         for (auto &actor : m_actors) {
-            if (actor->get_group_id() == 2) {  // Monster group ID
+            if (actor->get_group_id() == 3) {  // Monster group ID
                 Monster *monster = dynamic_cast<Monster *>(actor.get());
                 if (monster) {
                     monster->handle_collision(m_actors);
@@ -765,6 +745,7 @@ void Game::on_notify(const std::string &iEvent) {
     const int16_t kModeScoring = 1;
     const int16_t kModeBonus = 2;
     const int16_t kModeDash = 4;
+    const int16_t kModeAttack = 99;
 
     // Parse event mode
     if (std::getline(str_stream, token, ';')) {
@@ -797,6 +778,8 @@ void Game::on_notify(const std::string &iEvent) {
             if (std::optional<int16_t> score_inc_opt = extract_number_(token);
                 score_inc_opt.has_value()) {
                 m_score += score_inc_opt.value();
+                std::cout << "Score updated: +" << score_inc_opt.value()
+                          << " (Total: " << m_score << ")" << std::endl;
             }
             break;
         case kModeBonus:
@@ -813,6 +796,10 @@ void Game::on_notify(const std::string &iEvent) {
                 dash_fud.dashable = dash_opt.value();
             }
             break;
+        case kModeAttack:
+            // Player attack - damage nearby monsters
+            attack_nearby_monsters();
+            break;
         default:
             break;
     }
@@ -825,7 +812,7 @@ void Game::on_checkpoint_reached(float x, float y) const {
     m_last_checkpoint.y = y;
 
     // Optional: Add visual/audio feedback here
-    udjourney::Logger::info("Checkpoint reached at %, %", x, y);
+    // udjourney::Logger::info("Checkpoint reached at %, %", x, y);
 }
 
 Player *Game::get_player() const { return m_player.get(); }
@@ -837,6 +824,27 @@ bool Game::load_scene(const std::string &filename) {
         m_current_scene.reset();
         return false;
     }
+
+    // Update world bounds based on scene content
+    // Calculate scene bounds by finding the rightmost and bottommost platforms
+    float max_x = static_cast<float>(GetScreenWidth());
+    float max_y = static_cast<float>(GetScreenHeight());
+
+    const auto &platforms = m_current_scene->get_platforms();
+    for (const auto &platform : platforms) {
+        Rectangle world_rect =
+            udjourney::scene::Scene::tile_to_world_rect(platform.tile_x,
+                                                        platform.tile_y,
+                                                        platform.width_tiles,
+                                                        platform.height_tiles);
+
+        max_x = std::max(max_x, world_rect.x + world_rect.width);
+        max_y = std::max(max_y, world_rect.y + world_rect.height);
+    }
+
+    // Update world bounds with calculated max values
+    m_world_bounds.set_bounds(0.0f, max_x, 0.0f, max_y);
+
     return true;
 }
 
@@ -993,40 +1001,8 @@ void Game::create_platforms_from_scene() {
         m_actors.emplace_back(std::move(platform));
     }
 
-    // Add border walls (left and right boundaries)
-    const int border_width = 5;
-    const int border_height = 100;
-    auto game_rect = get_rectangle();
-
-    constexpr int cpool_size = 5;
-    std::array<Color, cpool_size> color_pool = {
-        GRAY, PINK, BROWN, YELLOW, PURPLE};
-    int color_idx = 0;
-
-    // Add borders that extend to the level height
-    for (auto border_top = 0;
-         border_top <= static_cast<int>(m_level_height + border_height);
-         border_top += border_height) {
-        m_actors.emplace_back(std::make_unique<Platform>(
-            *this,
-            Rectangle{0,
-                      static_cast<float>(border_top),
-                      static_cast<float>(border_width),
-                      static_cast<float>(border_height)},
-            color_pool[color_idx],
-            true,  // Y-repeated
-            std::make_unique<RandomizePositionStrategy>()));
-        m_actors.emplace_back(std::make_unique<Platform>(
-            *this,
-            Rectangle{game_rect.width - border_width,
-                      static_cast<float>(border_top),
-                      static_cast<float>(border_width),
-                      static_cast<float>(border_height)},
-            color_pool[color_idx],
-            true,  // Y-repeated
-            std::make_unique<RandomizePositionStrategy>()));
-        color_idx = (color_idx + 1) % cpool_size;
-    }
+    // Note: Border collision is now handled by WorldBounds system
+    // No need to create physical border platforms
 }
 
 void Game::create_monsters_from_scene() {
@@ -1037,43 +1013,92 @@ void Game::create_monsters_from_scene() {
     const auto &monster_spawns = m_current_scene->get_monster_spawns();
 
     for (const auto &monster_data : monster_spawns) {
-        // Convert tile coordinates to world coordinates
-        Vector2 world_pos = udjourney::scene::Scene::tile_to_world_pos(
-            monster_data.tile_x, monster_data.tile_y);
+        try {
+            std::cout << "DEBUG: Creating monster with preset: "
+                      << monster_data.preset_name << std::endl;
 
-        Rectangle monster_rect = {
-            world_pos.x,
-            world_pos.y,
-            64.0f,  // Monster width
-            64.0f   // Monster height
-        };
+            // Convert tile coordinates to world coordinates
+            Vector2 world_pos = udjourney::scene::Scene::tile_to_world_pos(
+                monster_data.tile_x, monster_data.tile_y);
 
-        // Load monster animation configuration from JSON
-        std::string monster_config_path = std::string(ASSETS_BASE_PATH) +
-                                          "animations/monster_animations.json";
-        AnimSpriteController monster_anim_controller =
-            udjourney::loaders::AnimationConfigLoader::load_and_create(
-                monster_config_path);
+            Rectangle monster_rect = {
+                world_pos.x,
+                world_pos.y,
+                64.0f,  // Monster width
+                64.0f   // Monster height
+            };
 
-        // Create monster
-        auto monster = std::make_unique<Monster>(
-            *this, monster_rect, std::move(monster_anim_controller));
+            // First load the monster preset to get animation configuration
+            std::unique_ptr<udjourney::MonsterPreset> preset;
+            if (!monster_data.preset_name.empty()) {
+                preset = udjourney::MonsterPresetLoader::load_preset(
+                    monster_data.preset_name + ".json");
+            }
 
-        // Configure monster behavior ranges
-        float patrol_min = world_pos.x - (monster_data.patrol_range / 2.0f);
-        float patrol_max = world_pos.x + (monster_data.patrol_range / 2.0f);
-        monster->set_patrol_range(patrol_min, patrol_max);
-        monster->set_chase_range(monster_data.chase_range);
-        monster->set_attack_range(monster_data.attack_range);
+            // Get animation preset file from the monster preset
+            std::string animation_file =
+                "monster_animations.json";  // Default fallback
+            if (preset && !preset->animation_preset_file.empty()) {
+                animation_file = preset->animation_preset_file;
+            }
 
-        udjourney::Logger::info(
-            "Spawned monster at tile (%, %), world pos (%, %)",
-            monster_data.tile_x,
-            monster_data.tile_y,
-            world_pos.x,
-            world_pos.y);
+            // Load monster animation configuration from the preset
+            std::string anim_preset_path =
+                std::string(ASSETS_BASE_PATH) + "animations/" + animation_file;
+            if (!udjourney::coreutils::file_exists(anim_preset_path)) {
+                throw std::runtime_error(
+                    "Monster animation config file not found: " +
+                    anim_preset_path);
+            }
 
-        m_actors.emplace_back(std::move(monster));
+            AnimSpriteController monster_anim_controller =
+                udjourney::loaders::AnimationConfigLoader::load_and_create(
+                    anim_preset_path);
+
+            std::cout << "DEBUG: Creating monster..." << std::endl;
+
+            // Create monster with EventDispatcher
+            auto monster =
+                std::make_unique<Monster>(*this,
+                                          monster_rect,
+                                          std::move(monster_anim_controller),
+                                          m_event_dispatcher);
+
+            std::cout << "DEBUG: Monster created successfully!" << std::endl;
+
+            // Load preset if specified (this will apply all preset data)
+            if (!monster_data.preset_name.empty()) {
+                monster->load_preset(monster_data.preset_name);
+            }
+
+            // Configure monster behavior ranges
+            float patrol_min = world_pos.x - (monster_data.patrol_range / 2.0f);
+            float patrol_max = world_pos.x + (monster_data.patrol_range / 2.0f);
+            monster->set_patrol_range(patrol_min, patrol_max);
+            monster->set_chase_range(monster_data.chase_range);
+            monster->set_attack_range(monster_data.attack_range);
+
+            udjourney::Logger::info(
+                "Spawned monster at tile (%, %), world pos (%, %)",
+                monster_data.tile_x,
+                monster_data.tile_y,
+                world_pos.x,
+                world_pos.y);
+
+            // Register the monster as an observable with the game (like Player
+            // and BonusManager)
+            monster->add_observer(static_cast<IObserver *>(this));
+
+            m_actors.emplace_back(std::move(monster));
+        } catch (const std::exception &e) {
+            std::cerr << "ERROR: Failed to create monster: " << e.what()
+                      << std::endl;
+            continue;
+        } catch (...) {
+            std::cerr << "ERROR: Unknown exception while creating monster"
+                      << std::endl;
+            continue;
+        }
     }
 
     udjourney::Logger::info("Spawned % monsters from scene",
@@ -1162,4 +1187,51 @@ void Game::on_level_selected(const std::string &level_path) {
 void Game::on_level_select_cancelled() {
     // Hide the level select menu and return to pause menu
     hide_level_select_menu();
+}
+
+void Game::attack_nearby_monsters() {
+    if (!m_player) return;
+
+    const float ATTACK_RANGE = 150.0f;
+    const float ATTACK_DAMAGE = 100.0f;  // Enough to kill most monsters
+
+    Rectangle player_rect = m_player->get_rectangle();
+    Vector2 player_center = {player_rect.x + player_rect.width / 2.0f,
+                             player_rect.y + player_rect.height / 2.0f};
+
+    std::cout << "Player attack! Looking for monsters within " << ATTACK_RANGE
+              << " pixels..." << std::endl;
+
+    int monsters_hit = 0;
+
+    // Check all actors for monsters
+    for (auto &actor : m_actors) {
+        if (actor->get_group_id() == 3) {  // Monster group ID
+            Monster *monster = dynamic_cast<Monster *>(actor.get());
+            if (monster) {
+                Rectangle monster_rect = monster->get_rectangle();
+                Vector2 monster_center = {
+                    monster_rect.x + monster_rect.width / 2.0f,
+                    monster_rect.y + monster_rect.height / 2.0f};
+
+                // Calculate distance between player and monster
+                float dx = player_center.x - monster_center.x;
+                float dy = player_center.y - monster_center.y;
+                float distance = sqrt(dx * dx + dy * dy);
+
+                if (distance <= ATTACK_RANGE) {
+                    std::cout << "Attacking monster at distance " << distance
+                              << std::endl;
+                    monster->take_damage(ATTACK_DAMAGE);
+                    monsters_hit++;
+                }
+            }
+        }
+    }
+
+    if (monsters_hit == 0) {
+        std::cout << "No monsters in range to attack." << std::endl;
+    } else {
+        std::cout << "Hit " << monsters_hit << " monsters!" << std::endl;
+    }
 }
