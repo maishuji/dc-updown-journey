@@ -567,7 +567,7 @@
             "y": 1088.0
           }
         ],
-        "parallax_factor": 0.5,
+        "parallax_factor": 0.0,
         "texture_file": ""
       }
     ]
