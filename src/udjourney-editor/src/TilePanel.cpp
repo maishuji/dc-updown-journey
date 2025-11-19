@@ -6,6 +6,7 @@
 
 #include <string>
 #include <vector>
+#include <cstring>
 
 #include "udjourney-editor/Level.hpp"
 
@@ -17,6 +18,15 @@ const ImU32 kColorOrange = IM_COL32(255, 128, 0, 255);
 const ImU32 kColorLightGreen = IM_COL32(0, 255, 128, 255);
 const ImU32 kColorPurple = IM_COL32(128, 0, 255, 255);
 }  // namespace color
+
+TilePanel::TilePanel() {}
+
+void TilePanel::set_background_managers(
+    BackgroundManager* bg_manager,
+    BackgroundObjectPresetManager* preset_manager) {
+    background_manager_ = bg_manager;
+    background_preset_manager_ = preset_manager;
+}
 
 struct TileInfp {
     ImU32 color;
@@ -88,6 +98,10 @@ void TilePanel::draw() {
         edit_mode = EditMode::Monsters;
     }
 
+    if (ImGui::RadioButton("Background", edit_mode == EditMode::Background)) {
+        edit_mode = EditMode::Background;
+    }
+
     ImGui::Separator();
 
     // Draw mode-specific UI
@@ -103,6 +117,9 @@ void TilePanel::draw() {
             break;
         case EditMode::Monsters:
             draw_monsters_mode();
+            break;
+        case EditMode::Background:
+            draw_background_mode();
             break;
     }
 
@@ -473,6 +490,180 @@ void TilePanel::initialize_monster_presets() {
             // If current selection is invalid, pick the first available preset
             if (!found) {
                 selected_monster_preset = preset_names[0];
+            }
+        }
+    }
+}
+
+void TilePanel::draw_background_mode() {
+    if (!background_manager_ || !background_preset_manager_) {
+        ImGui::TextColored(ImVec4(1, 0, 0, 1),
+                           "Background system not initialized");
+        return;
+    }
+
+    ImGui::Text("Background Layers");
+    ImGui::Text("Layers: %zu / %d",
+                background_manager_->get_layer_count(),
+                BackgroundManager::MAX_LAYERS);
+    ImGui::Separator();
+
+    // Add layer controls
+    if (background_manager_->can_add_layer()) {
+        ImGui::Text("Add New Layer:");
+        ImGui::InputText("Name", new_layer_name_, sizeof(new_layer_name_));
+        ImGui::SliderFloat("Parallax", &new_layer_parallax_, 0.0f, 1.0f);
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                           "(0.0 = static, 1.0 = moves with camera)");
+        ImGui::InputInt("Depth", &new_layer_depth_);
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                           "(Lower = rendered behind)");
+
+        if (ImGui::Button("Add Layer")) {
+            BackgroundLayer layer(
+                new_layer_name_, new_layer_parallax_, new_layer_depth_);
+            if (background_manager_->add_layer(layer)) {
+                std::strcpy(new_layer_name_, "New Layer");
+                new_layer_parallax_ = 0.5f;
+                new_layer_depth_ = 0;
+            }
+        }
+        ImGui::Separator();
+    } else {
+        ImGui::TextColored(ImVec4(1, 0.5f, 0, 1),
+                           "Maximum layers reached (5/5)");
+        ImGui::Separator();
+    }
+
+    // Layer list
+    ImGui::Text("Layers:");
+    const auto& layers = background_manager_->get_layers();
+    auto selected = background_manager_->get_selected_layer();
+
+    for (size_t i = 0; i < layers.size(); ++i) {
+        bool is_selected = selected.has_value() && selected.value() == i;
+
+        ImGui::PushID(static_cast<int>(i));
+
+        // Layer name with selection
+        if (ImGui::Selectable(layers[i].get_name().c_str(), is_selected)) {
+            background_manager_->select_layer(i);
+        }
+
+        // Layer info and controls on same line
+        ImGui::SameLine();
+        ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
+                           "(P:%.1f D:%d)",
+                           layers[i].get_parallax_factor(),
+                           layers[i].get_depth());
+
+        // Move and delete buttons
+        ImGui::SameLine();
+        if (ImGui::SmallButton("^") && i > 0) {
+            background_manager_->move_layer_up(i);
+        }
+        ImGui::SameLine();
+        if (ImGui::SmallButton("v") && i < layers.size() - 1) {
+            background_manager_->move_layer_down(i);
+        }
+        ImGui::SameLine();
+        if (ImGui::SmallButton("X")) {
+            background_manager_->remove_layer(i);
+            if (selected.has_value() && selected.value() == i) {
+                background_manager_->clear_selection();
+            }
+        }
+
+        ImGui::PopID();
+    }
+
+    if (layers.empty()) {
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No layers yet");
+    }
+
+    ImGui::Separator();
+
+    // Add object controls - only if layer is selected
+    if (!selected.has_value()) {
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                           "Select a layer to add objects");
+        background_placing_mode_ = false;
+    } else {
+        ImGui::Text("Add Objects to: %s",
+                    layers[selected.value()].get_name().c_str());
+
+        // Show available presets as clickable list
+        if (background_preset_manager_->has_presets()) {
+            const auto& presets = background_preset_manager_->get_presets();
+
+            ImGui::Text("Available Objects:");
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                               "(Click to select, then click in scene)");
+
+            for (size_t i = 0; i < presets.size(); ++i) {
+                ImGui::PushID(static_cast<int>(i + 500));
+
+                bool is_selected =
+                    (selected_preset_idx_ == static_cast<int>(i)) &&
+                    background_placing_mode_;
+
+                // Highlight selected preset
+                if (is_selected) {
+                    ImGui::PushStyleColor(ImGuiCol_Button,
+                                          ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
+                }
+
+                if (ImGui::Button(presets[i].name.c_str(), ImVec2(-1, 0))) {
+                    selected_preset_idx_ = static_cast<int>(i);
+                    new_bg_object_scale_ = presets[i].default_scale;
+                    background_placing_mode_ = true;
+                }
+
+                if (is_selected) {
+                    ImGui::PopStyleColor();
+                }
+
+                ImGui::PopID();
+            }
+
+            // Scale slider for current selection
+            if (background_placing_mode_) {
+                ImGui::Separator();
+                ImGui::Text("Placing: %s",
+                            presets[selected_preset_idx_].name.c_str());
+                ImGui::SliderFloat("Scale", &new_bg_object_scale_, 0.1f, 5.0f);
+                if (ImGui::Button("Cancel Placement")) {
+                    background_placing_mode_ = false;
+                }
+            }
+        } else {
+            ImGui::TextColored(ImVec4(1, 0.5f, 0, 1), "No presets loaded");
+            background_placing_mode_ = false;
+        }
+
+        ImGui::Separator();
+
+        // Show objects in selected layer
+        ImGui::Text("Objects in Layer:");
+        const auto& objects = layers[selected.value()].get_objects();
+        if (objects.empty()) {
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                               "No objects yet");
+        } else {
+            for (size_t i = 0; i < objects.size(); ++i) {
+                ImGui::PushID(static_cast<int>(i + 1000));
+                ImGui::Text("%zu: %s", i, objects[i].sprite_name.c_str());
+                ImGui::SameLine();
+                ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
+                                   "(%.0f, %.0f) x%.1f",
+                                   objects[i].x,
+                                   objects[i].y,
+                                   objects[i].scale);
+                ImGui::SameLine();
+                if (ImGui::SmallButton("X")) {
+                    background_manager_->remove_object(selected.value(), i);
+                }
+                ImGui::PopID();
             }
         }
     }

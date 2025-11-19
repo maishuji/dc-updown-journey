@@ -4,6 +4,7 @@
 #include <raylib/raylib.h>
 
 #include <cctype>
+#include <cmath>
 
 #include <filesystem>
 #include <fstream>
@@ -11,6 +12,7 @@
 #include <unordered_map>
 
 #include <nlohmann/json.hpp>
+#include "udj-core/CoreUtils.hpp"
 
 // Simple texture cache for editor
 static std::unordered_map<std::string, Texture2D> texture_cache;
@@ -74,7 +76,9 @@ void render_cursor_(Level& level, TilePanel& tile_panel, ImDrawList* draw_list,
     }
 }
 
-void EditorScene::render(Level& level, TilePanel& tile_panel) {
+void EditorScene::render(Level& level, TilePanel& tile_panel,
+                         BackgroundManager* bg_manager,
+                         BackgroundObjectPresetManager* bg_preset_manager) {
     ImGuiIO& io = ImGui::GetIO();
 
     // Scene View window - docking system will manage position and size
@@ -87,8 +91,17 @@ void EditorScene::render(Level& level, TilePanel& tile_panel) {
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     ImVec2 origin = ImGui::GetCursorScreenPos();
 
-    // Render the grid (background)
-    render_grid(level, draw_list, origin);
+    // Render background objects first (behind everything)
+    if (bg_manager) {
+        render_background(bg_manager, draw_list, origin);
+    }
+
+    // Render the grid (background) - skip when placing background objects
+    bool is_placing_bg = tile_panel.get_edit_mode() == EditMode::Background &&
+                         tile_panel.is_background_placing_mode();
+    if (!is_placing_bg) {
+        render_grid(level, draw_list, origin);
+    }
 
     // Render platforms on top of grid
     render_platforms(level, tile_panel, draw_list, origin);
@@ -101,6 +114,18 @@ void EditorScene::render(Level& level, TilePanel& tile_panel) {
 
     // Handle mouse input and selection based on current mode
     handle_mouse_input(level, tile_panel, draw_list, origin);
+
+    // Show background object preview if in placing mode
+    if (bg_manager && bg_preset_manager &&
+        tile_panel.get_edit_mode() == EditMode::Background &&
+        tile_panel.is_background_placing_mode()) {
+        render_background_placement_preview(bg_manager,
+                                            bg_preset_manager,
+                                            tile_panel,
+                                            draw_list,
+                                            origin,
+                                            level);
+    }
 
     render_cursor_(level, tile_panel, draw_list, origin);
 
@@ -125,6 +150,17 @@ void EditorScene::render(Level& level, TilePanel& tile_panel) {
         }
         platform_popup_.close();
     }
+
+    // Render screen bounds outline
+    ImVec2 screen_top_left = ImVec2(origin.x, origin.y);
+    ImVec2 screen_bottom_right =
+        ImVec2(origin.x + 640, origin.y + level.row_cnt * tile_size_);
+    draw_list->AddRect(screen_top_left,
+                       screen_bottom_right,
+                       IM_COL32(255, 0, 0, 255),
+                       0.0f,
+                       0,
+                       2.0f);
 }
 
 void EditorScene::setup_scene_window(const ImGuiIO& io) {
@@ -134,6 +170,70 @@ void EditorScene::setup_scene_window(const ImGuiIO& io) {
     ImGui::SetNextWindowSize(
         ImVec2(io.DisplaySize.x - offset_x_, io.DisplaySize.y - offset_y_),
         ImGuiCond_Always);
+}
+
+void EditorScene::render_background(BackgroundManager* bg_manager,
+                                    ImDrawList* draw_list,
+                                    const ImVec2& origin) {
+    if (!bg_manager) return;
+
+    const auto& layers = bg_manager->get_layers();
+
+    // Render layers in depth order (already sorted by BackgroundManager)
+    for (const auto& layer : layers) {
+        const auto& objects = layer.get_objects();
+
+        for (const auto& obj : objects) {
+            // Skip if no sprite sheet specified
+            if (obj.sprite_sheet.empty()) continue;
+
+            // Load texture from cache
+            Texture2D texture = load_texture_cached(obj.sprite_sheet);
+            if (texture.id == 0) continue;  // Skip if texture failed to load
+
+            // Calculate source rectangle (tile in sprite sheet)
+            Rectangle source = {
+                static_cast<float>(obj.tile_col * obj.tile_size),
+                static_cast<float>(obj.tile_row * obj.tile_size),
+                static_cast<float>(obj.tile_size),
+                static_cast<float>(obj.tile_size)};
+
+            // Calculate destination position and size
+            float scaled_size = obj.tile_size * obj.scale;
+            ImVec2 pos = ImVec2(origin.x + obj.x, origin.y + obj.y);
+            ImVec2 size = ImVec2(scaled_size, scaled_size);
+
+            // Convert Raylib texture to ImGui UV coordinates
+            ImVec2 uv0(source.x / texture.width, source.y / texture.height);
+            ImVec2 uv1((source.x + source.width) / texture.width,
+                       (source.y + source.height) / texture.height);
+
+            // Draw the sprite
+            draw_list->AddImage(
+                (ImTextureID)(size_t)texture.id,
+                pos,
+                ImVec2(pos.x + size.x, pos.y + size.y),
+                uv0,
+                uv1,
+                IM_COL32(255, 255, 255, 255)  // Full opacity white
+            );
+
+            // Draw bounding box for selected layer
+            auto selected = bg_manager->get_selected_layer();
+            if (selected.has_value()) {
+                if (&layer == &layers[selected.value()]) {
+                    draw_list->AddRect(
+                        pos,
+                        ImVec2(pos.x + size.x, pos.y + size.y),
+                        IM_COL32(255, 255, 0, 200),  // Yellow outline
+                        0.0f,
+                        0,
+                        2.0f  // Thickness
+                    );
+                }
+            }
+        }
+    }
 }
 
 void EditorScene::render_grid(Level& level, ImDrawList* draw_list,
@@ -204,6 +304,11 @@ void EditorScene::handle_mouse_input(Level& level, TilePanel& tile_panel,
                                       origin,
                                       left_clicked,
                                       right_clicked);
+            break;
+        case EditMode::Background:
+            if (left_clicked) {
+                handle_background_mode_input(tile_panel, mouse_pos, origin);
+            }
             break;
     }
 }
@@ -822,4 +927,147 @@ void render_monster_cursor_preview(TilePanel& tile_panel, ImDrawList* draw_list,
         tile_size / 3,
         IM_COL32(255, 255, 0, 128),  // Semi-transparent yellow
         12);
+}
+
+void EditorScene::handle_background_mode_input(TilePanel& tile_panel,
+                                               const ImVec2& mouse_pos,
+                                               const ImVec2& origin) {
+    // This will be called when user clicks in scene view
+    // The actual object placement needs to happen in the render method
+    // where we have access to bg_manager
+}
+
+void EditorScene::render_background_placement_preview(
+    BackgroundManager* bg_manager,
+    BackgroundObjectPresetManager* bg_preset_manager, TilePanel& tile_panel,
+    ImDrawList* draw_list, const ImVec2& origin, Level& level) {
+    // Get mouse position
+    ImVec2 mouse_pos = ImGui::GetMousePos();
+    bool hovered = ImGui::IsWindowHovered();
+    bool left_clicked = ImGui::IsMouseClicked(0);
+
+    // Get selected layer
+    auto selected = bg_manager->get_selected_layer();
+    if (!selected.has_value()) {
+        return;
+    }
+
+    // Get preset info
+    int preset_idx = tile_panel.get_selected_background_preset_idx();
+    float scale = tile_panel.get_background_object_scale();
+
+    if (preset_idx < 0) {
+        return;
+    }
+
+    // Calculate position relative to origin
+    float x = mouse_pos.x - origin.x;
+    float y = mouse_pos.y - origin.y;
+
+    // Snap to 32-pixel grid
+    constexpr float GRID_SIZE = 32.0f;
+    float snapped_x = std::floor(x / GRID_SIZE) * GRID_SIZE;
+    float snapped_y = std::floor(y / GRID_SIZE) * GRID_SIZE;
+
+    // Calculate level bounds
+    float level_width = level.col_cnt * GRID_SIZE;
+    float level_height = level.row_cnt * GRID_SIZE;
+
+    // Get preset data to check bounds
+    const auto& presets = bg_preset_manager->get_presets();
+    if (preset_idx >= static_cast<int>(presets.size())) {
+        return;
+    }
+    const auto& preset = presets[preset_idx];
+    float preview_size = preset.tile_size * scale;
+
+    // Check if object would be within level bounds
+    bool within_bounds =
+        (snapped_x >= 0 && snapped_x + preview_size <= level_width &&
+         snapped_y >= 0 && snapped_y + preview_size <= level_height);
+
+    // Don't show preview or allow placement if out of bounds
+    if (!within_bounds) {
+        return;
+    }
+
+    // Convert back to screen coordinates for rendering
+    ImVec2 snapped_screen_pos(origin.x + snapped_x, origin.y + snapped_y);
+
+    // Draw preview sprite at mouse position
+    if (hovered) {
+        // Load the sprite sheet texture
+        std::string texture_path = preset.sprite_sheet;
+        Texture2D texture = load_texture_cached(texture_path);
+
+        if (texture.id > 0) {
+            // Calculate UV coordinates for the tile
+            float tile_size_f = static_cast<float>(preset.tile_size);
+            float u0 = (preset.tile_col * tile_size_f) / texture.width;
+            float v0 = (preset.tile_row * tile_size_f) / texture.height;
+            float u1 = u0 + (tile_size_f / texture.width);
+            float v1 = v0 + (tile_size_f / texture.height);
+
+            // Draw semi-transparent preview sprite at snapped position
+            ImVec2 p_min(snapped_screen_pos.x, snapped_screen_pos.y);
+            ImVec2 p_max(snapped_screen_pos.x + preview_size,
+                         snapped_screen_pos.y + preview_size);
+
+            draw_list->AddImage(
+                (void*)(intptr_t)texture.id,
+                p_min,
+                p_max,
+                ImVec2(u0, v0),
+                ImVec2(u1, v1),
+                IM_COL32(255, 255, 255, 180)  // Semi-transparent
+            );
+
+            // Draw outline around preview
+            draw_list->AddRect(
+                p_min, p_max, IM_COL32(255, 255, 0, 200), 0.0f, 0, 2.0f);
+        } else {
+            // Fallback to circle if texture fails to load
+            float preview_size = 64.0f * scale;
+            ImVec2 center(snapped_screen_pos.x + preview_size / 2,
+                          snapped_screen_pos.y + preview_size / 2);
+            draw_list->AddCircle(
+                center, preview_size / 2, IM_COL32(255, 255, 0, 200), 32, 2.0f);
+        }
+
+        // Handle click to place object
+        if (left_clicked && bg_preset_manager) {
+            auto selected_layer = bg_manager->get_selected_layer();
+            if (!selected_layer.has_value()) {
+                return;
+            }
+
+            int selected_layer_idx = static_cast<int>(selected_layer.value());
+            const auto& presets = bg_preset_manager->get_presets();
+
+            if (preset_idx < static_cast<int>(presets.size())) {
+                const auto& preset = presets[preset_idx];
+
+                // Create background object from preset
+                BackgroundObject obj;
+                obj.sprite_name = preset.name;
+                obj.x = snapped_x;
+                obj.y = snapped_y;
+                obj.scale = scale;
+                obj.rotation = 0.0f;
+                obj.sprite_sheet = preset.sprite_sheet;
+                obj.tile_size = preset.tile_size;
+                obj.tile_row = preset.tile_row;
+                obj.tile_col = preset.tile_col;
+
+                // Add to selected layer
+                bg_manager->add_object(selected_layer_idx, obj);
+            }
+        }
+    }
+
+    // Handle cancel with ESC or right-click
+    if (ImGui::IsKeyPressed(ImGuiKey_Escape) ||
+        ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+        tile_panel.clear_background_placing_mode();
+    }
 }

@@ -11,6 +11,7 @@ add_executable(udjourney_editor_tests
     test_tilemap_json_simple.cpp
     test_asset_access.cpp
     test_monster_preset_manager.cpp
+    test_background.cpp
 )
 
 # Define EDITOR_TESTING for the test executable
