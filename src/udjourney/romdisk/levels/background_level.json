@@ -1,0 +1,282 @@
+{
+  "monsters": [
+    {
+      "preset_name": "goblin",
+      "x": 5,
+      "y": 33
+    },
+    {
+      "preset_name": "goblin",
+      "x": 15,
+      "y": 35
+    },
+    {
+      "preset_name": "goblin",
+      "x": 9,
+      "y": 39
+    },
+    {
+      "preset_name": "goblin",
+      "x": 15,
+      "y": 41
+    },
+    {
+      "preset_name": "goblin",
+      "x": 14,
+      "y": 15
+    },
+    {
+      "preset_name": "goblin",
+      "x": 18,
+      "y": 18
+    },
+    {
+      "preset_name": "poring",
+      "x": 12,
+      "y": 22
+    },
+    {
+      "preset_name": "poring",
+      "x": 18,
+      "y": 21
+    },
+    {
+      "preset_name": "poring",
+      "x": 6,
+      "y": 20
+    },
+    {
+      "preset_name": "spider",
+      "x": 16,
+      "y": 27
+    },
+    {
+      "preset_name": "spider",
+      "x": 11,
+      "y": 28
+    },
+    {
+      "preset_name": "spider",
+      "x": 6,
+      "y": 26
+    },
+    {
+      "preset_name": "poring",
+      "x": 15,
+      "y": 4
+    },
+    {
+      "preset_name": "poring",
+      "x": 12,
+      "y": 4
+    },
+    {
+      "preset_name": "poring",
+      "x": 10,
+      "y": 4
+    }
+  ],
+  "name": "Untitled Level",
+  "platforms": [
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 6,
+      "y": 15
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 5,
+      "y": 21
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 12,
+      "y": 23
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 6,
+      "y": 27
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 11,
+      "y": 29
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 5,
+      "y": 34
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 2,
+      "y": 38
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 9,
+      "y": 40
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 14,
+      "y": 16
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 18,
+      "y": 19
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 19,
+      "y": 22
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 21,
+      "y": 23
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 22,
+      "y": 23
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 16,
+      "y": 28
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 15,
+      "y": 36
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 18,
+      "y": 31
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 15,
+      "y": 42
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 11,
+      "y": 47
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 7,
+      "y": 46
+    },
+    {
+      "behavior": "static",
+      "height": 3.0,
+      "width": 3.299999952316284,
+      "x": 1,
+      "y": 49
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 17,
+      "y": 49
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 11,
+      "y": 54
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 11,
+      "y": 59
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 7,
+      "y": 59
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 9,
+      "y": 6
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 13,
+      "y": 6
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 17,
+      "y": 6
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 1.7999999523162842,
+      "x": 2,
+      "y": 6
+    }
+  ],
+  "player_spawn": {
+    "x": 2,
+    "y": 2
+  }
+}
