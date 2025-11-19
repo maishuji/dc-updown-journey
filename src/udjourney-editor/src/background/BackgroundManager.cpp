@@ -143,40 +143,88 @@ void BackgroundManager::load_from_file(const std::string& filename) {
 
 void BackgroundManager::save_to_file(const std::string& filename) const {
     try {
-        nlohmann::json j;
-        j["layers"] = nlohmann::json::array();
-
-        for (const auto& layer : layers_) {
-            nlohmann::json layer_json;
-            layer_json["name"] = layer.get_name();
-            layer_json["texture_file"] = layer.get_texture_file();
-            layer_json["parallax_factor"] = layer.get_parallax_factor();
-            layer_json["depth"] = layer.get_depth();
-
-            layer_json["objects"] = nlohmann::json::array();
-            for (const auto& obj : layer.get_objects()) {
-                nlohmann::json obj_json;
-                obj_json["sprite_name"] = obj.sprite_name;
-                obj_json["x"] = obj.x;
-                obj_json["y"] = obj.y;
-                obj_json["scale"] = obj.scale;
-                obj_json["rotation"] = obj.rotation;
-
-                // Save preset tile information
-                obj_json["sprite_sheet"] = obj.sprite_sheet;
-                obj_json["tile_size"] = obj.tile_size;
-                obj_json["tile_row"] = obj.tile_row;
-                obj_json["tile_col"] = obj.tile_col;
-
-                layer_json["objects"].push_back(obj_json);
-            }
-
-            j["layers"].push_back(layer_json);
-        }
-
+        nlohmann::json j = to_json();
         std::ofstream file(filename);
         file << j.dump(2);
     } catch (const std::exception& e) {
         std::cerr << "Error saving background: " << e.what() << std::endl;
+    }
+}
+
+nlohmann::json BackgroundManager::to_json() const {
+    nlohmann::json j;
+    j["layers"] = nlohmann::json::array();
+
+    for (const auto& layer : layers_) {
+        nlohmann::json layer_json;
+        layer_json["name"] = layer.get_name();
+        layer_json["texture_file"] = layer.get_texture_file();
+        layer_json["parallax_factor"] = layer.get_parallax_factor();
+        layer_json["depth"] = layer.get_depth();
+
+        layer_json["objects"] = nlohmann::json::array();
+        for (const auto& obj : layer.get_objects()) {
+            nlohmann::json obj_json;
+            obj_json["sprite_name"] = obj.sprite_name;
+            obj_json["x"] = obj.x;
+            obj_json["y"] = obj.y;
+            obj_json["scale"] = obj.scale;
+            obj_json["rotation"] = obj.rotation;
+
+            // Save preset tile information
+            obj_json["sprite_sheet"] = obj.sprite_sheet;
+            obj_json["tile_size"] = obj.tile_size;
+            obj_json["tile_row"] = obj.tile_row;
+            obj_json["tile_col"] = obj.tile_col;
+
+            layer_json["objects"].push_back(obj_json);
+        }
+
+        j["layers"].push_back(layer_json);
+    }
+
+    return j;
+}
+
+void BackgroundManager::from_json(const nlohmann::json& j) {
+    try {
+        // Clear existing layers
+        clear();
+
+        if (!j.contains("layers") || !j["layers"].is_array()) {
+            return;
+        }
+
+        for (const auto& layer_json : j["layers"]) {
+            BackgroundLayer layer;
+            layer.set_name(layer_json.value("name", "Unnamed Layer"));
+            layer.set_texture_file(layer_json.value("texture_file", ""));
+            layer.set_parallax_factor(
+                layer_json.value("parallax_factor", 1.0f));
+            layer.set_depth(layer_json.value("depth", 0));
+
+            // Load objects
+            if (layer_json.contains("objects") &&
+                layer_json["objects"].is_array()) {
+                for (const auto& obj_json : layer_json["objects"]) {
+                    BackgroundObject obj;
+                    obj.sprite_name = obj_json.value("sprite_name", "");
+                    obj.x = obj_json.value("x", 0.0f);
+                    obj.y = obj_json.value("y", 0.0f);
+                    obj.scale = obj_json.value("scale", 1.0f);
+                    obj.rotation = obj_json.value("rotation", 0.0f);
+                    obj.sprite_sheet = obj_json.value("sprite_sheet", "");
+                    obj.tile_size = obj_json.value("tile_size", 128);
+                    obj.tile_row = obj_json.value("tile_row", 0);
+                    obj.tile_col = obj_json.value("tile_col", 0);
+
+                    layer.add_object(obj);
+                }
+            }
+
+            add_layer(layer);
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error parsing background JSON: " << e.what() << std::endl;
     }
 }

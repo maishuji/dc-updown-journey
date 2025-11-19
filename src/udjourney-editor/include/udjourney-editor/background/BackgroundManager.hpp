@@ -5,6 +5,7 @@
 #include <vector>
 #include <optional>
 
+#include <nlohmann/json_fwd.hpp>
 #include "udjourney-editor/background/BackgroundLayer.hpp"
 
 class BackgroundManager {
@@ -41,6 +42,8 @@ class BackgroundManager {
     // Persistence
     void load_from_file(const std::string& filename);
     void save_to_file(const std::string& filename) const;
+    nlohmann::json to_json() const;
+    void from_json(const nlohmann::json& j);
 
     // Clear all
     void clear();

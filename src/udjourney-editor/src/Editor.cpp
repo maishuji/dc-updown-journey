@@ -190,6 +190,9 @@ void Editor::export_platform_level_json(const std::string &export_path) {
         jlevel["monsters"].push_back(jmonster);
     }
 
+    // Export background data
+    jlevel["backgrounds"] = pimpl->background_manager.to_json();
+
     std::ofstream out(export_path);
     out << jlevel.dump(2);
     out.close();
@@ -324,6 +327,12 @@ void Editor::import_platform_level_json(const std::string &import_path) {
 
                 pimpl->level.monsters.push_back(monster);
             }
+        }
+
+        // Import background data
+        pimpl->background_manager.clear();
+        if (jlevel.contains("backgrounds")) {
+            pimpl->background_manager.from_json(jlevel["backgrounds"]);
         }
     } catch (const std::exception &e) {
         std::cerr << "Error importing platform level JSON: " << e.what()
