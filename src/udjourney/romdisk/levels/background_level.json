@@ -565,6 +565,17 @@
             "tile_size": 128,
             "x": 512.0,
             "y": 1088.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/trees.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 256,
+            "x": 512.0,
+            "y": 0.0
           }
         ],
         "parallax_factor": 0.0,

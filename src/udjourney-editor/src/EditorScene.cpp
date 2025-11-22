@@ -209,13 +209,12 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
                        (source.y + source.height) / texture.height);
 
             // Draw the sprite
-            draw_list->AddImage(
-                reinterpret_cast<ImTextureID>(static_cast<size_t>(texture.id)),
-                pos,
-                ImVec2(pos.x + size.x, pos.y + size.y),
-                uv0,
-                uv1,
-                IM_COL32(255, 255, 255, 255));
+            draw_list->AddImage(static_cast<ImTextureID>(texture.id),
+                                pos,
+                                ImVec2(pos.x + size.x, pos.y + size.y),
+                                uv0,
+                                uv1,
+                                IM_COL32(255, 255, 255, 255));
 
             // Draw bounding box for selected layer
             auto selected = bg_manager->get_selected_layer();
@@ -1013,13 +1012,12 @@ void EditorScene::render_background_placement_preview(
             ImVec2 p_max(snapped_screen_pos.x + preview_size,
                          snapped_screen_pos.y + preview_size);
 
-            draw_list->AddImage(
-                reinterpret_cast<void*>(static_cast<intptr_t>(texture.id)),
-                p_min,
-                p_max,
-                ImVec2(u0, v0),
-                ImVec2(u1, v1),
-                IM_COL32(255, 255, 255, 180));
+            draw_list->AddImage(static_cast<ImTextureID>(texture.id),
+                                p_min,
+                                p_max,
+                                ImVec2(u0, v0),
+                                ImVec2(u1, v1),
+                                IM_COL32(255, 255, 255, 180));
 
             // Draw outline around preview
             draw_list->AddRect(
