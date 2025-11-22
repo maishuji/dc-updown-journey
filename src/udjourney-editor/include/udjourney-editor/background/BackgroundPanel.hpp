@@ -1,9 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
-
+#include <imgui.h>
 #include "udjourney-editor/background/BackgroundManager.hpp"
 #include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
-#include <imgui.h>
 
 class BackgroundPanel {
  public:

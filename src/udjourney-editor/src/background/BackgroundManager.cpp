@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <utility>
+
 #include <nlohmann/json.hpp>
 
 bool BackgroundManager::add_layer(const BackgroundLayer& layer) {

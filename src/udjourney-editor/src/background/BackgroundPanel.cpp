@@ -51,7 +51,8 @@ void BackgroundPanel::render_add_layer_controls() {
         BackgroundLayer layer(
             new_layer_name_, new_parallax_factor_, new_depth_);
         if (manager_.add_layer(layer)) {
-            std::strcpy(new_layer_name_, "New Layer");
+            std::snprintf(
+                new_layer_name_, sizeof(new_layer_name_), "New Layer");
             new_parallax_factor_ = 0.5f;
             new_depth_ = 0;
         }

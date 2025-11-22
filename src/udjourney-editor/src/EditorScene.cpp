@@ -210,26 +210,26 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
 
             // Draw the sprite
             draw_list->AddImage(
-                (ImTextureID)(size_t)texture.id,
+                reinterpret_cast<ImTextureID>(static_cast<size_t>(texture.id)),
                 pos,
                 ImVec2(pos.x + size.x, pos.y + size.y),
                 uv0,
                 uv1,
-                IM_COL32(255, 255, 255, 255)  // Full opacity white
-            );
+                IM_COL32(255, 255, 255, 255));
 
             // Draw bounding box for selected layer
             auto selected = bg_manager->get_selected_layer();
+
+            auto yellow = IM_COL32(255, 255, 0, 200);
+
             if (selected.has_value()) {
                 if (&layer == &layers[selected.value()]) {
-                    draw_list->AddRect(
-                        pos,
-                        ImVec2(pos.x + size.x, pos.y + size.y),
-                        IM_COL32(255, 255, 0, 200),  // Yellow outline
-                        0.0f,
-                        0,
-                        2.0f  // Thickness
-                    );
+                    draw_list->AddRect(pos,
+                                       ImVec2(pos.x + size.x, pos.y + size.y),
+                                       yellow,
+                                       0.0f,
+                                       0,
+                                       2.0f);
                 }
             }
         }
@@ -1014,13 +1014,12 @@ void EditorScene::render_background_placement_preview(
                          snapped_screen_pos.y + preview_size);
 
             draw_list->AddImage(
-                (void*)(intptr_t)texture.id,
+                reinterpret_cast<void*>(static_cast<intptr_t>(texture.id)),
                 p_min,
                 p_max,
                 ImVec2(u0, v0),
                 ImVec2(u1, v1),
-                IM_COL32(255, 255, 255, 180)  // Semi-transparent
-            );
+                IM_COL32(255, 255, 255, 180));
 
             // Draw outline around preview
             draw_list->AddRect(

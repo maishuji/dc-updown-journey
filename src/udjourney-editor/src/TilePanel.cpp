@@ -523,7 +523,8 @@ void TilePanel::draw_background_mode() {
             BackgroundLayer layer(
                 new_layer_name_, new_layer_parallax_, new_layer_depth_);
             if (background_manager_->add_layer(layer)) {
-                std::strcpy(new_layer_name_, "New Layer");
+                std::snprintf(
+                    new_layer_name_, sizeof(new_layer_name_), "New Layer");
                 new_layer_parallax_ = 0.5f;
                 new_layer_depth_ = 0;
             }
