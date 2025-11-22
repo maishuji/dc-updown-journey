@@ -1,6 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include <gtest/gtest.h>
 
+#include <string>
+
 #include "udjourney-editor/background/BackgroundLayer.hpp"
 #include "udjourney-editor/background/BackgroundManager.hpp"
 

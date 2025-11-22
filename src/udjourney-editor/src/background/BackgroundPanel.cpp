@@ -1,6 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney-editor/background/BackgroundPanel.hpp"
 #include <cstring>
+#include <cstdio>
 
 BackgroundPanel::BackgroundPanel(
     BackgroundManager& manager, BackgroundObjectPresetManager& preset_manager) :

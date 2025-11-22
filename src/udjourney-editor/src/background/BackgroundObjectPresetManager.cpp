@@ -1,6 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
 
+#include <string>
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
