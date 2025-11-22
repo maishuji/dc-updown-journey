@@ -8,13 +8,17 @@
 
 #include "udjourney-editor/Level.hpp"
 #include "udjourney-editor/TilePanel.hpp"
+#include "udjourney-editor/background/BackgroundManager.hpp"
+#include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
 #include "udjourney-editor/ui/PlatformContextPopup.hpp"
 
 class EditorScene {
  public:
     EditorScene();
     // Main rendering function
-    void render(Level& level, TilePanel& tile_panel);
+    void render(Level& level, TilePanel& tile_panel,
+                BackgroundManager* bg_manager = nullptr,
+                BackgroundObjectPresetManager* bg_preset_manager = nullptr);
 
     virtual ~EditorScene();
 
@@ -43,6 +47,12 @@ class EditorScene {
 
     // Internal rendering methods
     void setup_scene_window(const ImGuiIO& io);
+    void render_background(BackgroundManager* bg_manager, ImDrawList* draw_list,
+                           const ImVec2& origin);
+    void render_background_placement_preview(
+        BackgroundManager* bg_manager,
+        BackgroundObjectPresetManager* bg_preset_manager, TilePanel& tile_panel,
+        ImDrawList* draw_list, const ImVec2& origin, Level& level);
     void render_grid(Level& level, ImDrawList* draw_list, const ImVec2& origin);
     void render_platforms(Level& level, TilePanel& tile_panel,
                           ImDrawList* draw_list, const ImVec2& origin);
@@ -61,6 +71,9 @@ class EditorScene {
                                    const ImVec2& mouse_pos,
                                    const ImVec2& origin, bool left_clicked,
                                    bool right_clicked);
+    void handle_background_mode_input(TilePanel& tile_panel,
+                                      const ImVec2& mouse_pos,
+                                      const ImVec2& origin);
     void render_monsters(Level& level, TilePanel& tile_panel,
                          ImDrawList* draw_list, const ImVec2& origin);
     void render_selection(ImDrawList* draw_list);

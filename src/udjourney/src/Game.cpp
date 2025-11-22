@@ -509,6 +509,119 @@ bool Game::should_continue_scrolling_() const noexcept {
 
 // Scene system implementations
 
+void Game::draw_backgrounds() const {
+    if (!m_current_scene) {
+        return;
+    }
+
+    const auto &layers = m_current_scene->get_background_layers();
+    if (layers.empty()) {
+        return;
+    }
+
+    // Get camera position for parallax effect
+    // Only vertical scrolling in this game - horizontal camera is fixed at 0
+    // Use m_rect.y for vertical scroll offset
+    Vector2 camera_pos = {0, m_rect.y};
+
+    // Sort layers by depth (lower depth = further back)
+    std::vector<const udjourney::scene::BackgroundLayerData *> sorted_layers;
+    for (const auto &layer : layers) {
+        sorted_layers.push_back(&layer);
+    }
+    std::sort(sorted_layers.begin(),
+              sorted_layers.end(),
+              [](const auto *a, const auto *b) { return a->depth < b->depth; });
+
+    // Draw each layer
+    for (const auto *layer : sorted_layers) {
+        // Calculate parallax offset
+        // parallax_factor 0.0 = follows camera fully (moves with scene)
+        // parallax_factor 1.0 = static (doesn't move, stays fixed on screen)
+        float parallax_offset_x =
+            camera_pos.x * (1.0f - layer->parallax_factor);
+        float parallax_offset_y =
+            camera_pos.y * (1.0f - layer->parallax_factor);
+
+        // Draw layer texture if it exists
+        if (!layer->texture_file.empty()) {
+            // Load texture if not cached
+            if (m_background_textures.find(layer->texture_file) ==
+                m_background_textures.end()) {
+                std::string texture_path =
+                    std::string(ASSETS_BASE_PATH) + layer->texture_file;
+                Texture2D tex = LoadTexture(texture_path.c_str());
+                if (tex.id > 0) {
+                    m_background_textures[layer->texture_file] = tex;
+                    udj::core::Logger::info("Loaded background texture: %",
+                                            texture_path);
+                } else {
+                    udj::core::Logger::error(
+                        "Failed to load background texture: %", texture_path);
+                }
+            }
+
+            // Draw the texture if loaded
+            if (m_background_textures[layer->texture_file].id > 0) {
+                const auto &tex = m_background_textures[layer->texture_file];
+                DrawTexture(tex,
+                            static_cast<int>(-parallax_offset_x),
+                            static_cast<int>(-parallax_offset_y),
+                            WHITE);
+            }
+        }
+
+        // Draw background objects in this layer
+        for (const auto &obj : layer->objects) {
+            // Load sprite sheet texture if not cached
+            if (!obj.sprite_sheet.empty()) {
+                if (m_background_textures.find(obj.sprite_sheet) ==
+                    m_background_textures.end()) {
+                    std::string texture_path =
+                        std::string(ASSETS_BASE_PATH) + obj.sprite_sheet;
+                    Texture2D tex = LoadTexture(texture_path.c_str());
+                    if (tex.id > 0) {
+                        m_background_textures[obj.sprite_sheet] = tex;
+                        udj::core::Logger::info(
+                            "Loaded background sprite sheet: %", texture_path);
+                    } else {
+                        udj::core::Logger::error(
+                            "Failed to load background sprite sheet: %",
+                            texture_path);
+                    }
+                }
+
+                if (m_background_textures[obj.sprite_sheet].id > 0) {
+                    const auto &tex = m_background_textures[obj.sprite_sheet];
+
+                    // Calculate tile source rectangle (UV coordinates)
+                    Rectangle source = {
+                        static_cast<float>(obj.tile_col * obj.tile_size),
+                        static_cast<float>(obj.tile_row * obj.tile_size),
+                        static_cast<float>(obj.tile_size),
+                        static_cast<float>(obj.tile_size)};
+
+                    // Convert world coordinates to screen coordinates with
+                    // parallax Object positions are in world coordinates,
+                    // subtract game scroll with parallax factor
+                    float screen_x = obj.x - parallax_offset_x;
+                    float screen_y = obj.y - parallax_offset_y;
+
+                    // Calculate destination rectangle with scale
+                    float scaled_size = obj.tile_size * obj.scale;
+                    Rectangle dest = {
+                        screen_x, screen_y, scaled_size, scaled_size};
+
+                    // Draw the sprite tile
+                    Vector2 origin = {0, 0};
+                    DrawTexturePro(
+                        tex, source, dest, origin, obj.rotation, WHITE);
+                }
+            }
+        }
+    }
+}
+
 void Game::draw() const {
     BeginDrawing();
     ClearBackground(SKYBLUE);  // Clear the background with a blue sky color
@@ -534,6 +647,9 @@ void Game::draw() const {
             draw_title_();
             break;
         case GameState::PLAY: {
+            // Draw backgrounds first (behind everything)
+            draw_backgrounds();
+
             for (const auto &actor : m_actors) {
                 actor->draw();
             }

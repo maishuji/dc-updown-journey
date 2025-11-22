@@ -2,8 +2,8 @@
   "backgrounds": {
     "layers": [
       {
-        "depth": -1,
-        "name": "trois",
+        "depth": 0,
+        "name": "New Layer",
         "objects": [
           {
             "rotation": 0.0,
@@ -13,17 +13,295 @@
             "tile_col": 0,
             "tile_row": 0,
             "tile_size": 256,
-            "x": 32.0,
-            "y": 800.0
-          }
-        ],
-        "parallax_factor": 0.2750000059604645,
-        "texture_file": ""
-      },
-      {
-        "depth": 0,
-        "name": "front",
-        "objects": [
+            "x": 0.0,
+            "y": 0.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/trees.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 256,
+            "x": 256.0,
+            "y": 0.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 0.0,
+            "y": 256.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 128.0,
+            "y": 256.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 256.0,
+            "y": 256.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 256.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 512.0,
+            "y": 256.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 512.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 256.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 128.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 0.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 0.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 128.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 256.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 512.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 512.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 256.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 128.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 0.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 0.0,
+            "y": 768.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 128.0,
+            "y": 768.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 256.0,
+            "y": 768.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 768.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/hill_1.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 512.0,
+            "y": 768.0
+          },
           {
             "rotation": 0.0,
             "scale": 1.0,
@@ -33,7 +311,62 @@
             "tile_row": 0,
             "tile_size": 256,
             "x": 192.0,
-            "y": 736.0
+            "y": 1664.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/trees.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 256,
+            "x": 128.0,
+            "y": 1664.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/trees.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 256,
+            "x": 256.0,
+            "y": 1664.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/trees.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 256,
+            "x": 288.0,
+            "y": 1664.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/trees.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 256,
+            "x": 352.0,
+            "y": 1664.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/trees.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 256,
+            "x": 32.0,
+            "y": 1664.0
           },
           {
             "rotation": 0.0,
@@ -44,51 +377,7 @@
             "tile_row": 0,
             "tile_size": 256,
             "x": 96.0,
-            "y": 416.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 512.0,
-            "y": 0.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 384.0,
-            "y": 0.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 256.0,
-            "y": 0.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 128.0,
-            "y": 0.0
+            "y": 1664.0
           },
           {
             "rotation": 0.0,
@@ -99,18 +388,7 @@
             "tile_row": 0,
             "tile_size": 128,
             "x": 0.0,
-            "y": 0.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 0.0,
-            "y": 128.0
+            "y": 1344.0
           },
           {
             "rotation": 0.0,
@@ -121,7 +399,7 @@
             "tile_row": 0,
             "tile_size": 128,
             "x": 128.0,
-            "y": 128.0
+            "y": 1344.0
           },
           {
             "rotation": 0.0,
@@ -129,612 +407,449 @@
             "sprite_name": "Rock",
             "sprite_sheet": "background/soil_1.png",
             "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 256.0,
-            "y": 128.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 384.0,
-            "y": 128.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 512.0,
-            "y": 128.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 512.0,
-            "y": 256.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 384.0,
-            "y": 256.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 256.0,
-            "y": 256.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 128.0,
-            "y": 256.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 0.0,
-            "y": 256.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Bush",
-            "sprite_sheet": "background/hill_1.png",
-            "tile_col": 0,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 32.0,
-            "y": 608.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Bush",
-            "sprite_sheet": "background/hill_1.png",
-            "tile_col": 0,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 160.0,
-            "y": 608.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Bush",
-            "sprite_sheet": "background/hill_1.png",
-            "tile_col": 0,
             "tile_row": 0,
             "tile_size": 128,
             "x": 288.0,
-            "y": 608.0
+            "y": 1344.0
           },
           {
             "rotation": 0.0,
             "scale": 1.0,
-            "sprite_name": "Bush",
-            "sprite_sheet": "background/hill_1.png",
-            "tile_col": 0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 256.0,
+            "y": 1344.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
             "tile_row": 0,
             "tile_size": 128,
             "x": 416.0,
-            "y": 608.0
+            "y": 1344.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 1344.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 512.0,
+            "y": 1344.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 0.0,
+            "y": 1216.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 128.0,
+            "y": 1216.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 256.0,
+            "y": 1216.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 1216.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 512.0,
+            "y": 1216.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 0.0,
+            "y": 1088.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 128.0,
+            "y": 1088.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 256.0,
+            "y": 1088.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 1088.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/soil_1.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 512.0,
+            "y": 1088.0
           }
         ],
         "parallax_factor": 0.0,
-        "texture_file": ""
-      },
-      {
-        "depth": 1,
-        "name": "other",
-        "objects": [
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Bush",
-            "sprite_sheet": "background/hill_1.png",
-            "tile_col": 0,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 512.0,
-            "y": 320.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Bush",
-            "sprite_sheet": "background/hill_1.png",
-            "tile_col": 0,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 384.0,
-            "y": 320.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Bush",
-            "sprite_sheet": "background/hill_1.png",
-            "tile_col": 0,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 256.0,
-            "y": 320.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Bush",
-            "sprite_sheet": "background/hill_1.png",
-            "tile_col": 0,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 128.0,
-            "y": 320.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Bush",
-            "sprite_sheet": "background/hill_1.png",
-            "tile_col": 0,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 0.0,
-            "y": 320.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 0.0,
-            "y": 1056.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 128.0,
-            "y": 1056.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 256.0,
-            "y": 1056.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 384.0,
-            "y": 1056.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 512.0,
-            "y": 1056.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 640.0,
-            "y": 1056.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 768.0,
-            "y": 1056.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 128.0,
-            "y": 1184.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 256.0,
-            "y": 1184.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 384.0,
-            "y": 1184.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 0.0,
-            "y": 1184.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 512.0,
-            "y": 1184.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 640.0,
-            "y": 1184.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 768.0,
-            "y": 1184.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 640.0,
-            "y": 192.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 640.0,
-            "y": 64.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 768.0,
-            "y": 64.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 768.0,
-            "y": 192.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 0.0,
-            "y": 1312.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 128.0,
-            "y": 1312.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 256.0,
-            "y": 1312.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 384.0,
-            "y": 1312.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 512.0,
-            "y": 1312.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 640.0,
-            "y": 1312.0
-          },
-          {
-            "rotation": 0.0,
-            "scale": 1.0,
-            "sprite_name": "Rock",
-            "sprite_sheet": "background/soil_1.png",
-            "tile_col": 1,
-            "tile_row": 0,
-            "tile_size": 128,
-            "x": 768.0,
-            "y": 1312.0
-          }
-        ],
-        "parallax_factor": 0.1860000044107437,
         "texture_file": ""
       }
     ]
   },
   "monsters": [
     {
-      "preset_name": "poring",
+      "preset_name": "goblin",
       "x": 5,
-      "y": 8
+      "y": 33
+    },
+    {
+      "preset_name": "goblin",
+      "x": 15,
+      "y": 35
+    },
+    {
+      "preset_name": "goblin",
+      "x": 9,
+      "y": 39
+    },
+    {
+      "preset_name": "goblin",
+      "x": 15,
+      "y": 41
+    },
+    {
+      "preset_name": "goblin",
+      "x": 14,
+      "y": 15
+    },
+    {
+      "preset_name": "goblin",
+      "x": 18,
+      "y": 18
+    },
+    {
+      "preset_name": "poring",
+      "x": 12,
+      "y": 22
+    },
+    {
+      "preset_name": "poring",
+      "x": 18,
+      "y": 21
+    },
+    {
+      "preset_name": "poring",
+      "x": 6,
+      "y": 20
+    },
+    {
+      "preset_name": "spider",
+      "x": 16,
+      "y": 27
+    },
+    {
+      "preset_name": "spider",
+      "x": 11,
+      "y": 28
+    },
+    {
+      "preset_name": "spider",
+      "x": 6,
+      "y": 26
+    },
+    {
+      "preset_name": "poring",
+      "x": 15,
+      "y": 4
+    },
+    {
+      "preset_name": "poring",
+      "x": 12,
+      "y": 4
+    },
+    {
+      "preset_name": "poring",
+      "x": 10,
+      "y": 4
     }
   ],
   "name": "Untitled Level",
   "platforms": [
     {
-      "behavior": "static",
+      "behavior": "horizontal",
       "height": 1.0,
-      "width": 4.0,
-      "x": 8,
-      "y": 3
-    },
-    {
-      "behavior": "static",
-      "features": [
-        "checkpoint"
-      ],
-      "height": 1.0,
-      "width": 3.0,
-      "x": 15,
-      "y": 6
+      "width": 1.0,
+      "x": 6,
+      "y": 15
     },
     {
       "behavior": "horizontal",
-      "height": 0.30000001192092896,
-      "width": 4.0,
+      "height": 1.0,
+      "width": 3.299999952316284,
       "x": 5,
-      "y": 9
-    },
-    {
-      "behavior": "static",
-      "height": 1.0,
-      "width": 5.0,
-      "x": 12,
-      "y": 12
-    },
-    {
-      "behavior": "static",
-      "features": [
-        "spikes"
-      ],
-      "height": 1.0,
-      "width": 3.0,
-      "x": 2,
-      "y": 15
-    },
-    {
-      "behavior": "eight_turn",
-      "features": [
-        "checkpoint"
-      ],
-      "height": 1.0,
-      "width": 2.0,
-      "x": 8,
-      "y": 15
-    },
-    {
-      "behavior": "oscillating_size",
-      "height": 1.0,
-      "width": 4.0,
-      "x": 14,
-      "y": 18
-    },
-    {
-      "behavior": "static",
-      "height": 1.0,
-      "width": 6.0,
-      "x": 6,
       "y": 21
     },
     {
       "behavior": "horizontal",
-      "features": [
-        "spikes"
-      ],
       "height": 1.0,
-      "width": 3.0,
-      "x": 16,
-      "y": 24
+      "width": 3.299999952316284,
+      "x": 12,
+      "y": 23
     },
     {
-      "behavior": "static",
-      "features": [
-        "checkpoint"
-      ],
+      "behavior": "horizontal",
       "height": 1.0,
-      "width": 9.0,
-      "x": 3,
+      "width": 3.299999952316284,
+      "x": 6,
       "y": 27
     },
     {
-      "behavior": "static",
-      "features": [
-        "checkpoint",
-        "spikes"
-      ],
+      "behavior": "horizontal",
       "height": 1.0,
-      "width": 4.900000095367432,
+      "width": 3.299999952316284,
       "x": 11,
-      "y": 30
+      "y": 29
     },
     {
-      "behavior": "static",
-      "height": 2.0,
-      "width": 8.0,
-      "x": 7,
-      "y": 33
-    },
-    {
-      "behavior": "eight_turn",
+      "behavior": "horizontal",
       "height": 1.0,
-      "width": 1.0,
+      "width": 3.299999952316284,
+      "x": 5,
+      "y": 34
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
       "x": 2,
-      "y": 4
+      "y": 38
     },
     {
-      "behavior": "static",
+      "behavior": "horizontal",
       "height": 1.0,
-      "width": 3.0999999046325684,
+      "width": 3.299999952316284,
+      "x": 9,
+      "y": 40
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 14,
+      "y": 16
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 18,
+      "y": 19
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 19,
+      "y": 22
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 21,
+      "y": 23
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 22,
+      "y": 23
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 16,
+      "y": 28
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
       "x": 15,
-      "y": 33
+      "y": 36
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 18,
+      "y": 31
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 15,
+      "y": 42
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 11,
+      "y": 47
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 7,
+      "y": 46
     },
     {
       "behavior": "static",
+      "height": 3.0,
+      "width": 3.299999952316284,
+      "x": 1,
+      "y": 49
+    },
+    {
+      "behavior": "horizontal",
       "height": 1.0,
-      "width": 3.0999999046325684,
-      "x": 0,
-      "y": 33
+      "width": 3.299999952316284,
+      "x": 17,
+      "y": 49
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 11,
+      "y": 54
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 11,
+      "y": 59
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 7,
+      "y": 59
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 9,
+      "y": 6
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 13,
+      "y": 6
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.299999952316284,
+      "x": 17,
+      "y": 6
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 1.7999999523162842,
+      "x": 2,
+      "y": 6
     }
   ],
   "player_spawn": {
-    "x": 10,
-    "y": 1
+    "x": 2,
+    "y": 2
   }
 }

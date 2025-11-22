@@ -152,6 +152,42 @@ bool Scene::load_from_file(const std::string& filename) {
             }
         }
 
+        // Load background layers
+        m_background_layers.clear();
+        if (scene_data.contains("backgrounds") &&
+            scene_data["backgrounds"].contains("layers")) {
+            Logger::info("Loading background layers...");
+            for (const auto& layer_json : scene_data["backgrounds"]["layers"]) {
+                BackgroundLayerData layer;
+                layer.name = layer_json.value("name", "Background Layer");
+                layer.texture_file = layer_json.value("texture_file", "");
+                layer.parallax_factor =
+                    layer_json.value("parallax_factor", 1.0f);
+                layer.depth = layer_json.value("depth", 0);
+
+                // Load background objects
+                if (layer_json.contains("objects")) {
+                    for (const auto& obj_json : layer_json["objects"]) {
+                        BackgroundObjectData obj;
+                        obj.sprite_name = obj_json.value("sprite_name", "");
+                        obj.x = obj_json.value("x", 0.0f);
+                        obj.y = obj_json.value("y", 0.0f);
+                        obj.scale = obj_json.value("scale", 1.0f);
+                        obj.rotation = obj_json.value("rotation", 0.0f);
+                        obj.sprite_sheet = obj_json.value("sprite_sheet", "");
+                        obj.tile_size = obj_json.value("tile_size", 128);
+                        obj.tile_row = obj_json.value("tile_row", 0);
+                        obj.tile_col = obj_json.value("tile_col", 0);
+                        layer.objects.push_back(obj);
+                    }
+                }
+                m_background_layers.push_back(layer);
+                Logger::info("Loaded background layer: % with % objects",
+                             layer.name,
+                             layer.objects.size());
+            }
+        }
+
         Logger::info("Successfully loaded scene: %", filename);
         return true;
     } catch (const std::exception& e) {

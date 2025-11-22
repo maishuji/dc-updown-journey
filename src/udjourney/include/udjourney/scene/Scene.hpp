@@ -62,6 +62,26 @@ struct MonsterSpawnData {
         "animations/player_animations.json";  // Path to animation config
 };
 
+struct BackgroundObjectData {
+    std::string sprite_name;
+    float x = 0.0f;
+    float y = 0.0f;
+    float scale = 1.0f;
+    float rotation = 0.0f;
+    std::string sprite_sheet;
+    int tile_size = 128;
+    int tile_row = 0;
+    int tile_col = 0;
+};
+
+struct BackgroundLayerData {
+    std::string name = "Background Layer";
+    std::string texture_file;
+    float parallax_factor = 1.0f;
+    int depth = 0;
+    std::vector<BackgroundObjectData> objects;
+};
+
 class Scene {
  public:
     Scene() = default;
@@ -79,6 +99,9 @@ class Scene {
     const PlayerSpawnData& get_player_spawn() const { return m_player_spawn; }
     const std::vector<MonsterSpawnData>& get_monster_spawns() const {
         return m_monster_spawns;
+    }
+    const std::vector<BackgroundLayerData>& get_background_layers() const {
+        return m_background_layers;
     }
     const std::string& get_name() const { return m_name; }
 
@@ -106,6 +129,7 @@ class Scene {
     std::vector<PlatformData> m_platforms;
     PlayerSpawnData m_player_spawn{0, 0};
     std::vector<MonsterSpawnData> m_monster_spawns;
+    std::vector<BackgroundLayerData> m_background_layers;
     std::string m_name = "Unnamed Level";
 };
 

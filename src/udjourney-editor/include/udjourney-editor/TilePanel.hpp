@@ -8,6 +8,8 @@
 // Include Level.hpp to get enum definitions
 #include "udjourney-editor/Level.hpp"
 #include "udjourney-editor/MonsterPresetManager.hpp"
+#include "udjourney-editor/background/BackgroundManager.hpp"
+#include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
 
 namespace color {
 extern const ImU32 kColorRed;
@@ -18,11 +20,25 @@ extern const ImU32 kColorLightGreen;
 extern const ImU32 kColorPurple;
 }  // namespace color
 
-enum class EditMode { Tiles, Platforms, PlayerSpawn, Monsters, Npc };
+enum class EditMode {
+    Tiles,
+    Platforms,
+    PlayerSpawn,
+    Monsters,
+    Npc,
+    Background
+};
 
 class TilePanel {
  public:
+    TilePanel();
+
     void draw();
+
+    // Set background managers (called from Editor)
+    void set_background_managers(BackgroundManager* bg_manager,
+                                 BackgroundObjectPresetManager* preset_manager);
+
     inline ImU32 get_current_color() const noexcept { return cur_color; }
     inline EditMode get_edit_mode() const noexcept { return edit_mode; }
     inline PlatformBehaviorType get_platform_behavior() const noexcept {
@@ -65,6 +81,19 @@ class TilePanel {
     // Initialize monster preset selection
     void initialize_monster_presets();
 
+    // Background getters
+    bool is_background_placing_mode() const { return background_placing_mode_; }
+    int get_selected_background_preset_idx() const {
+        return selected_preset_idx_;
+    }
+    float get_background_object_scale() const { return new_bg_object_scale_; }
+
+    // Background control
+    void clear_background_placing_mode() {
+        background_placing_mode_ = false;
+        selected_preset_idx_ = -1;
+    }
+
  private:
     float scale = 1.0f;  // Default scale
 
@@ -90,6 +119,16 @@ class TilePanel {
     // Monster preset management
     udjourney::editor::MonsterPresetManager monster_preset_manager_;
 
+    // Background management
+    BackgroundManager* background_manager_ = nullptr;
+    BackgroundObjectPresetManager* background_preset_manager_ = nullptr;
+    int selected_preset_idx_ = 0;
+    float new_bg_object_scale_ = 1.0f;
+    char new_layer_name_[128] = "New Layer";
+    float new_layer_parallax_ = 0.5f;
+    int new_layer_depth_ = 0;
+    bool background_placing_mode_ = false;  // True when ready to place object
+
     // Focus management
     bool should_focus_ = false;
 
@@ -99,4 +138,5 @@ class TilePanel {
     void draw_platform_editor();
     void draw_monsters_mode();
     void draw_monster_editor();
+    void draw_background_mode();
 };

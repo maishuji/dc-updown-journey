@@ -1,0 +1,28 @@
+{
+  "presets": [
+    {
+      "name": "Tree",
+      "sprite_sheet": "background/trees.png",
+      "tile_size": 256,
+      "tile_row": 0,
+      "tile_col": 0,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Rock",
+      "sprite_sheet": "background/soil_1.png",
+      "tile_size": 128,
+      "tile_row": 0,
+      "tile_col": 1,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Bush",
+      "sprite_sheet": "background/hill_1.png",
+      "tile_size": 128,
+      "tile_row": 0,
+      "tile_col": 0,
+      "default_scale": 1.0
+    }
+  ]
+}

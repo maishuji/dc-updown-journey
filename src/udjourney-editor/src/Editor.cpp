@@ -25,8 +25,11 @@
 #include "udjourney-editor/EditorScene.hpp"
 #include "udjourney-editor/Level.hpp"
 #include "udjourney-editor/TilePanel.hpp"
+#include "udjourney-editor/background/BackgroundManager.hpp"
+#include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
 #include "udjourney-editor/strategies/level/LevelCreationStrategy.hpp"
 #include "udjourney-editor/ui/NewLevelPopup.hpp"
+#include "udj-core/CoreUtils.hpp"
 
 struct Editor::PImpl {
     bool running = true;
@@ -34,6 +37,8 @@ struct Editor::PImpl {
     Level level;
     TilePanel tile_panel;
     EditorScene scene;
+    BackgroundManager background_manager;
+    BackgroundObjectPresetManager background_preset_manager;
     std::string last_export_path;
     ImGuiStyle original_style;
     std::unique_ptr<LevelCreationStrategy> level_creation_strategy = nullptr;
@@ -185,6 +190,9 @@ void Editor::export_platform_level_json(const std::string &export_path) {
         jlevel["monsters"].push_back(jmonster);
     }
 
+    // Export background data
+    jlevel["backgrounds"] = pimpl->background_manager.to_json();
+
     std::ofstream out(export_path);
     out << jlevel.dump(2);
     out.close();
@@ -320,6 +328,12 @@ void Editor::import_platform_level_json(const std::string &import_path) {
                 pimpl->level.monsters.push_back(monster);
             }
         }
+
+        // Import background data
+        pimpl->background_manager.clear();
+        if (jlevel.contains("backgrounds")) {
+            pimpl->background_manager.from_json(jlevel["backgrounds"]);
+        }
     } catch (const std::exception &e) {
         std::cerr << "Error importing platform level JSON: " << e.what()
                   << std::endl;
@@ -348,6 +362,18 @@ void Editor::init() {
     // Initialize OpenGL3 backend
     ImGui_ImplOpenGL3_Init("#version 330");
     ImGui::GetStyle().ScaleAllSizes(pimpl->ui_scale);
+
+    // Load background object presets
+    std::string preset_path =
+        udj::core::filesystem::get_assets_path("") + "background_presets.json";
+    if (!pimpl->background_preset_manager.load_from_file(preset_path)) {
+        std::cerr << "Warning: Failed to load background presets from: "
+                  << preset_path << std::endl;
+    }
+
+    // Set background managers on tile panel
+    pimpl->tile_panel.set_background_managers(
+        &pimpl->background_manager, &pimpl->background_preset_manager);
 
     // Initialize with a default level size
     new_tilemap(60, 30);
@@ -587,7 +613,10 @@ void Editor::run() {
         pimpl->tile_panel.draw();
 
         // Render the main scene view using EditorScene
-        pimpl->scene.render(pimpl->level, pimpl->tile_panel);
+        pimpl->scene.render(pimpl->level,
+                            pimpl->tile_panel,
+                            &pimpl->background_manager,
+                            &pimpl->background_preset_manager);
 
         // Render UI popups after scene
         pimpl->newLevelPopup.render();

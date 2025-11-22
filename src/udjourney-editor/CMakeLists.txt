@@ -53,6 +53,10 @@ add_library(udjourney_editor_lib
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/ui/NewLevelPopup.cpp
+  src/background/BackgroundLayer.cpp
+  src/background/BackgroundManager.cpp
+  src/background/BackgroundPanel.cpp
+  src/background/BackgroundObjectPresetManager.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -87,6 +91,10 @@ add_library(udjourney_editor_lib_test STATIC
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/ui/NewLevelPopup.cpp
+  src/background/BackgroundLayer.cpp
+  src/background/BackgroundManager.cpp
+  src/background/BackgroundPanel.cpp
+  src/background/BackgroundObjectPresetManager.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -138,6 +146,9 @@ add_executable(tilepanel_tests
   src/TilePanel.cpp
   src/MonsterPresetManager.cpp
   src/strategies/level/BlankLevelStrategy.cpp
+  src/background/BackgroundLayer.cpp
+  src/background/BackgroundManager.cpp
+  src/background/BackgroundObjectPresetManager.cpp
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
   ${imgui_SOURCE_DIR}/imgui_tables.cpp
@@ -145,7 +156,7 @@ add_executable(tilepanel_tests
 )
 target_include_directories(tilepanel_tests PRIVATE include src ${imgui_SOURCE_DIR})
 target_include_directories(tilepanel_tests PRIVATE ../udjourney/include)
-target_link_libraries(tilepanel_tests PRIVATE gtest gtest_main nlohmann_json::nlohmann_json)
+target_link_libraries(tilepanel_tests PRIVATE udj-core gtest gtest_main nlohmann_json::nlohmann_json)
 
 add_test(NAME TilePanelTests COMMAND tilepanel_tests)
 
