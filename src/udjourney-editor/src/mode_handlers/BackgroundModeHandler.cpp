@@ -4,8 +4,27 @@
 #include <imgui.h>
 #include <cstdio>
 #include <cstring>
+#include <unordered_map>
 
+#include "raylib/raylib.h"
 #include "udjourney-editor/background/BackgroundLayer.hpp"
+
+// Texture cache for preview thumbnails
+static std::unordered_map<std::string, Texture2D> preview_texture_cache;
+
+static Texture2D load_preview_texture(const std::string& sprite_sheet) {
+    auto it = preview_texture_cache.find(sprite_sheet);
+    if (it != preview_texture_cache.end()) {
+        return it->second;
+    }
+
+    std::string full_path = "assets/" + sprite_sheet;
+    Texture2D texture = LoadTexture(full_path.c_str());
+    if (texture.id != 0) {
+        preview_texture_cache[sprite_sheet] = texture;
+    }
+    return texture;
+}
 
 BackgroundModeHandler::BackgroundModeHandler(
     BackgroundManager* bg_manager,
@@ -157,30 +176,107 @@ void BackgroundModeHandler::render_object_controls() {
             ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
                                "(Click to select, then click in scene)");
 
-            for (size_t i = 0; i < presets.size(); ++i) {
-                ImGui::PushID(static_cast<int>(i + 500));
+            // Display presets as a grid of 64x64 tiles
+            const float tile_size = 64.0f;
+            const float padding = 4.0f;
+            const float available_width = ImGui::GetContentRegionAvail().x;
+            const int tiles_per_row = static_cast<int>(
+                (available_width + padding) / (tile_size + padding));
 
-                bool is_selected =
-                    (selected_preset_idx_ == static_cast<int>(i)) &&
-                    background_placing_mode_;
+            if (tiles_per_row > 0) {
+                for (size_t i = 0; i < presets.size(); ++i) {
+                    ImGui::PushID(static_cast<int>(i + 500));
 
-                // Highlight selected preset
-                if (is_selected) {
-                    ImGui::PushStyleColor(ImGuiCol_Button,
-                                          ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
+                    bool is_selected =
+                        (selected_preset_idx_ == static_cast<int>(i)) &&
+                        background_placing_mode_;
+
+                    // Load texture for preview
+                    Texture2D texture =
+                        load_preview_texture(presets[i].sprite_sheet);
+
+                    if (texture.id != 0) {
+                        // Calculate UV coordinates for the tile in sprite sheet
+                        float tile_w = static_cast<float>(presets[i].tile_size);
+                        float tile_h = static_cast<float>(presets[i].tile_size);
+                        float u0 =
+                            (presets[i].tile_col * tile_w) / texture.width;
+                        float v0 =
+                            (presets[i].tile_row * tile_h) / texture.height;
+                        float u1 = u0 + (tile_w / texture.width);
+                        float v1 = v0 + (tile_h / texture.height);
+
+                        // Highlight selected preset
+                        ImVec4 tint_color =
+                            is_selected ? ImVec4(0.5f, 1.0f, 0.5f, 1.0f)
+                                        : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+                        ImVec4 border_color =
+                            is_selected ? ImVec4(0.2f, 0.8f, 0.2f, 1.0f)
+                                        : ImVec4(0.4f, 0.4f, 0.4f, 0.5f);
+
+                        // Draw tile as ImageButton
+                        ImGui::PushStyleColor(ImGuiCol_Button,
+                                              ImVec4(0, 0, 0, 0));
+                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                                              ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
+                        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                                              ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+                        ImGui::PushStyleColor(ImGuiCol_Border, border_color);
+                        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,
+                                            2.0f);
+
+                        char button_id[64];
+                        std::snprintf(
+                            button_id, sizeof(button_id), "##bg_obj_%zu", i);
+
+                        if (ImGui::ImageButton(
+                                button_id,
+                                static_cast<ImTextureID>(texture.id),
+                                ImVec2(tile_size, tile_size),
+                                ImVec2(u0, v0),
+                                ImVec2(u1, v1),
+                                ImVec4(0, 0, 0, 0),  // background
+                                tint_color)) {
+                            selected_preset_idx_ = static_cast<int>(i);
+                            new_bg_object_scale_ = presets[i].default_scale;
+                            background_placing_mode_ = true;
+                        }
+
+                        ImGui::PopStyleVar();
+                        ImGui::PopStyleColor(4);
+
+                        // Show tooltip with object name on hover
+                        if (ImGui::IsItemHovered()) {
+                            ImGui::BeginTooltip();
+                            ImGui::Text("%s", presets[i].name.c_str());
+                            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                                               "Size: %dx%d",
+                                               presets[i].tile_size,
+                                               presets[i].tile_size);
+                            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                                               "Default scale: %.1fx",
+                                               presets[i].default_scale);
+                            ImGui::EndTooltip();
+                        }
+                    } else {
+                        // Fallback to text button if texture fails to load
+                        if (ImGui::Button(presets[i].name.c_str(),
+                                          ImVec2(tile_size, tile_size))) {
+                            selected_preset_idx_ = static_cast<int>(i);
+                            new_bg_object_scale_ = presets[i].default_scale;
+                            background_placing_mode_ = true;
+                        }
+                    }
+
+                    // Layout grid: add separator or new line
+                    if ((i + 1) % tiles_per_row != 0 &&
+                        i < presets.size() - 1) {
+                        ImGui::SameLine(0.0f, padding);
+                    }
+
+                    ImGui::PopID();
                 }
-
-                if (ImGui::Button(presets[i].name.c_str(), ImVec2(-1, 0))) {
-                    selected_preset_idx_ = static_cast<int>(i);
-                    new_bg_object_scale_ = presets[i].default_scale;
-                    background_placing_mode_ = true;
-                }
-
-                if (is_selected) {
-                    ImGui::PopStyleColor();
-                }
-
-                ImGui::PopID();
             }
 
             // Scale slider for current selection
