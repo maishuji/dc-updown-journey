@@ -64,6 +64,11 @@ Texture2D load_texture_cached(const std::string& filename) {
 }
 
 // Forward declarations
+bool render_monster_sprite(const std::string& preset_name,
+                           ImDrawList* draw_list, const ImVec2& pos,
+                           float tile_size,
+                           ImU32 tint_color = IM_COL32(255, 255, 255, 255));
+
 void render_monster_cursor_preview(EditorPanel& editor_panel,
                                    ImDrawList* draw_list,
                                    const ImVec2& mouse_pos,
@@ -239,6 +244,60 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
                                           selected_bg_object_idx_);
                 selected_bg_layer_idx_ = -1;
                 selected_bg_object_idx_ = -1;
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        ImGui::EndPopup();
+    }
+
+    // Monster context menu (must be inside Scene View window)
+    if (ImGui::BeginPopup("MonsterContextMenu")) {
+        if (selected_monster_for_context_) {
+            ImGui::Text("Monster: %s",
+                        selected_monster_for_context_->preset_name.c_str());
+            ImGui::Text("Position: (%d, %d)",
+                        selected_monster_for_context_->tile_x,
+                        selected_monster_for_context_->tile_y);
+
+            // Show health and speed (with overrides if present)
+            if (auto* preset_mgr = editor_panel.get_monster_preset_manager()) {
+                if (auto* preset = preset_mgr->get_preset(
+                        selected_monster_for_context_->preset_name)) {
+                    int health =
+                        selected_monster_for_context_->health_override != -1
+                            ? selected_monster_for_context_->health_override
+                            : preset->health;
+                    int speed =
+                        selected_monster_for_context_->speed_override != -1
+                            ? selected_monster_for_context_->speed_override
+                            : preset->speed;
+
+                    ImGui::Text(
+                        "Health: %d%s",
+                        health,
+                        selected_monster_for_context_->health_override != -1
+                            ? " (custom)"
+                            : "");
+                    ImGui::Text(
+                        "Speed: %d%s",
+                        speed,
+                        selected_monster_for_context_->speed_override != -1
+                            ? " (custom)"
+                            : "");
+                }
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Delete Monster", "Delete")) {
+                // Clear selection if we're deleting the selected monster
+                if (editor_panel.get_selected_monster() ==
+                    selected_monster_for_context_) {
+                    editor_panel.set_selected_monster(nullptr);
+                }
+                level.remove_monster_at(selected_monster_for_context_->tile_x,
+                                        selected_monster_for_context_->tile_y);
+                selected_monster_for_context_ = nullptr;
                 ImGui::CloseCurrentPopup();
             }
         }
@@ -618,9 +677,11 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
     }
 
     if (right_clicked) {
-        // No action for right click in current modes except platform mode
-        if (editor_panel.get_edit_mode() != EditMode::Platforms) {
-            // Open context menu
+        // Allow right-click for modes that use context menus
+        EditMode mode = editor_panel.get_edit_mode();
+        if (mode != EditMode::Platforms && mode != EditMode::Monsters &&
+            mode != EditMode::Background) {
+            // Open context menu for other modes
             ImGui::OpenPopup("MyPopup");
             return;
         }
@@ -998,31 +1059,37 @@ void EditorScene::render_monsters(Level& level, EditorPanel& editor_panel,
         ImVec2 monster_pos = ImVec2(origin.x + monster.tile_x * tile_size_,
                                     origin.y + monster.tile_y * tile_size_);
 
-        // Draw monster as a filled circle
-        draw_list->AddCircleFilled(ImVec2(monster_pos.x + tile_size_ / 2,
-                                          monster_pos.y + tile_size_ / 2),
-                                   tile_size_ / 3,  // Radius
-                                   monster.color,
-                                   12);
+        // Try to render sprite, fallback to circle if it fails
+        bool sprite_rendered = render_monster_sprite(
+            monster.preset_name, draw_list, monster_pos, tile_size_);
 
-        // Draw monster type indicator (first letter)
-        char type_char = monster.preset_name.empty()
-                             ? '?'
-                             : std::toupper(monster.preset_name[0]);
-        draw_list->AddText(ImVec2(monster_pos.x + tile_size_ / 2 - 4,
-                                  monster_pos.y + tile_size_ / 2 - 6),
-                           IM_COL32(255, 255, 255, 255),  // White text
-                           &type_char,
-                           &type_char + 1);
+        if (!sprite_rendered) {
+            // Fallback: Draw monster as a filled circle
+            draw_list->AddCircleFilled(ImVec2(monster_pos.x + tile_size_ / 2,
+                                              monster_pos.y + tile_size_ / 2),
+                                       tile_size_ / 3,  // Radius
+                                       monster.color,
+                                       12);
 
-        // Highlight selected monster
+            // Draw monster type indicator (first letter)
+            char type_char = monster.preset_name.empty()
+                                 ? '?'
+                                 : std::toupper(monster.preset_name[0]);
+            draw_list->AddText(ImVec2(monster_pos.x + tile_size_ / 2 - 4,
+                                      monster_pos.y + tile_size_ / 2 - 6),
+                               IM_COL32(255, 255, 255, 255),  // White text
+                               &type_char,
+                               &type_char + 1);
+        }
+
+        // Highlight selected monster with a rectangle outline
         if (editor_panel.get_selected_monster() == &monster) {
-            draw_list->AddCircle(
-                ImVec2(monster_pos.x + tile_size_ / 2,
-                       monster_pos.y + tile_size_ / 2),
-                tile_size_ / 2,              // Outer highlight circle
+            draw_list->AddRect(
+                monster_pos,
+                ImVec2(monster_pos.x + tile_size_, monster_pos.y + tile_size_),
                 IM_COL32(255, 255, 0, 255),  // Yellow highlight
-                12,                          // Segments
+                0.0f,
+                0,
                 3.0f);
         }
     }
@@ -1085,16 +1152,137 @@ void EditorScene::handle_monster_mode_input(
     }
 
     if (right_clicked) {
-        // Remove monster at this position
-        level.remove_monster_at(tile_x, tile_y);
+        // Check if there's a monster at this position
+        EditorMonster* existing_monster = level.get_monster_at(tile_x, tile_y);
 
-        // Clear selection if we deleted the selected monster
-        if (editor_panel.get_selected_monster() &&
-            editor_panel.get_selected_monster()->tile_x == tile_x &&
-            editor_panel.get_selected_monster()->tile_y == tile_y) {
-            editor_panel.set_selected_monster(nullptr);
+        if (existing_monster) {
+            // Open context menu for this monster
+            selected_monster_for_context_ = existing_monster;
+            ImGui::OpenPopup("MonsterContextMenu");
         }
     }
+}
+
+// Helper function to render a monster sprite at a position
+// Returns true if sprite was rendered, false if fallback is needed
+bool render_monster_sprite(const std::string& preset_name,
+                           ImDrawList* draw_list, const ImVec2& pos,
+                           float tile_size, ImU32 tint_color) {
+    try {
+        std::string monster_preset_path =
+            "assets/monsters/" + preset_name + ".json";
+
+        if (!std::filesystem::exists(monster_preset_path)) {
+            return false;
+        }
+
+        std::ifstream file(monster_preset_path);
+        if (!file.is_open()) {
+            return false;
+        }
+
+        nlohmann::json preset_json;
+        file >> preset_json;
+
+        if (!preset_json.contains("animation_preset")) {
+            return false;
+        }
+
+        std::string anim_config_file =
+            preset_json["animation_preset"].get<std::string>();
+        std::string anim_config_path = "assets/animations/" + anim_config_file;
+
+        if (!std::filesystem::exists(anim_config_path)) {
+            return false;
+        }
+
+        std::ifstream anim_file(anim_config_path);
+        if (!anim_file.is_open()) {
+            return false;
+        }
+
+        nlohmann::json anim_json;
+        anim_file >> anim_json;
+
+        std::string sprite_filename;
+        int sprite_width = 64;
+        int sprite_height = 64;
+        int idle_row = 0;
+        int idle_col = 0;
+
+        if (anim_json.contains("animations")) {
+            for (const auto& anim : anim_json["animations"]) {
+                if (anim.contains("state_id") &&
+                    anim["state_id"].get<int>() == 10) {  // ANIM_IDLE
+                    if (anim.contains("sprite_config")) {
+                        const auto& sprite_config = anim["sprite_config"];
+
+                        if (sprite_config.contains("filename")) {
+                            sprite_filename =
+                                sprite_config["filename"].get<std::string>();
+                        }
+                        if (sprite_config.contains("sprite_width")) {
+                            sprite_width =
+                                sprite_config["sprite_width"].get<int>();
+                        }
+                        if (sprite_config.contains("sprite_height")) {
+                            sprite_height =
+                                sprite_config["sprite_height"].get<int>();
+                        }
+
+                        if (sprite_config.contains("frames") &&
+                            sprite_config["frames"].is_array()) {
+                            const auto& frames = sprite_config["frames"];
+                            if (!frames.empty()) {
+                                const auto& first_frame = frames[0];
+                                if (first_frame.contains("row")) {
+                                    idle_row = first_frame["row"].get<int>();
+                                }
+                                if (first_frame.contains("col")) {
+                                    idle_col = first_frame["col"].get<int>();
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (!sprite_filename.empty()) {
+            Texture2D sprite_texture = load_texture_cached(sprite_filename);
+
+            if (sprite_texture.id != 0) {
+                ImTextureID img_id =
+                    static_cast<ImTextureID>(sprite_texture.id);
+
+                ImVec2 uv0 =
+                    ImVec2(static_cast<float>(idle_col * sprite_width) /
+                               sprite_texture.width,
+                           static_cast<float>(idle_row * sprite_height) /
+                               sprite_texture.height);
+                ImVec2 uv1 = ImVec2(
+                    static_cast<float>(idle_col * sprite_width + sprite_width) /
+                        sprite_texture.width,
+                    static_cast<float>(idle_row * sprite_height +
+                                       sprite_height) /
+                        sprite_texture.height);
+
+                draw_list->AddImage(
+                    img_id,
+                    pos,
+                    ImVec2(pos.x + tile_size, pos.y + tile_size),
+                    uv0,
+                    uv1,
+                    tint_color);
+                return true;
+            }
+        }
+    } catch (const std::exception&) {
+        return false;
+    }
+
+    return false;
 }
 
 void render_monster_cursor_preview(EditorPanel& editor_panel,
@@ -1119,160 +1307,20 @@ void render_monster_cursor_preview(EditorPanel& editor_panel,
     ImVec2 preview_pos =
         ImVec2(origin.x + tile_x * tile_size, origin.y + tile_y * tile_size);
 
-    try {
-        // Try to load monster preset configuration
-        std::string monster_preset_path =
-            "assets/monsters/" + selected_preset + ".json";
-
-        if (!std::filesystem::exists(monster_preset_path)) {
-            // Fallback: draw a simple colored circle
-            draw_list->AddCircleFilled(
-                ImVec2(preview_pos.x + tile_size / 2,
-                       preview_pos.y + tile_size / 2),
-                tile_size / 3,
-                IM_COL32(255, 255, 0, 128),  // Semi-transparent yellow
-                12);
-            return;
-        }
-
-        // Load monster preset JSON
-        std::ifstream file(monster_preset_path);
-        if (!file.is_open()) {
-            return;
-        }
-
-        nlohmann::json preset_json;
-        file >> preset_json;
-
-        const auto kAnimPresetKey = "animation_preset";
-
-        // Find the animation config file
-        if (!preset_json.contains(kAnimPresetKey)) {
-            return;
-        }
-
-        std::string anim_config_file =
-            preset_json[kAnimPresetKey].get<std::string>();
-        std::string anim_config_path = "assets/animations/" + anim_config_file;
-
-        if (!std::filesystem::exists(anim_config_path)) {
-            return;
-        }
-
-        // Load animation configuration
-        std::ifstream anim_file(anim_config_path);
-        if (!anim_file.is_open()) {
-            return;
-        }
-
-        nlohmann::json anim_json;
-        anim_file >> anim_json;
-
-        // Find the idle animation (state_id = 10)
-        std::string sprite_filename;
-        int sprite_width = 64;
-        int sprite_height = 64;
-        int idle_row = 0;
-        int idle_col = 0;
-
-        if (anim_json.contains("animations")) {
-            for (const auto& anim : anim_json["animations"]) {
-                if (anim.contains("state_id") &&
-                    anim["state_id"].get<int>() == 10) {  // ANIM_IDLE
-                    // Found idle animation
-                    if (anim.contains("sprite_config")) {
-                        const auto& sprite_config = anim["sprite_config"];
-
-                        if (sprite_config.contains("filename")) {
-                            sprite_filename =
-                                sprite_config["filename"].get<std::string>();
-                        }
-                        if (sprite_config.contains("sprite_width")) {
-                            sprite_width =
-                                sprite_config["sprite_width"].get<int>();
-                        }
-                        if (sprite_config.contains("sprite_height")) {
-                            sprite_height =
-                                sprite_config["sprite_height"].get<int>();
-                        }
-
-                        // Get the first frame position (idle state first frame)
-                        if (sprite_config.contains("frames") &&
-                            sprite_config["frames"].is_array()) {
-                            const auto& frames = sprite_config["frames"];
-                            if (!frames.empty()) {
-                                const auto& first_frame = frames[0];
-                                if (first_frame.contains("row")) {
-                                    idle_row = first_frame["row"].get<int>();
-                                }
-                                if (first_frame.contains("col")) {
-                                    idle_col = first_frame["col"].get<int>();
-                                }
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-
-        // Load the sprite texture using simple cache
-        if (!sprite_filename.empty()) {
-            Texture2D sprite_texture = load_texture_cached(sprite_filename);
-
-            if (sprite_texture.id != 0) {  // Valid texture
-                // Calculate source rectangle for the first frame of idle
-                // animation
-                Rectangle source_rect = {
-                    static_cast<float>(idle_col * sprite_width),
-                    static_cast<float>(idle_row * sprite_height),
-                    static_cast<float>(sprite_width),
-                    static_cast<float>(sprite_height)};
-
-                // Calculate destination rectangle (fit to tile size)
-                Rectangle dest_rect = {preview_pos.x,  // Align to tile boundary
-                                       preview_pos.y,  // Align to tile boundary
-                                       tile_size,
-                                       tile_size};
-
-                // Use ImGui's DrawList to render the texture
-                // Convert raylib texture to ImGui texture ID (OpenGL texture
-                // ID)
-                ImTextureID img_id =
-                    static_cast<ImTextureID>(sprite_texture.id);
-
-                // Calculate UV coordinates for the sprite frame
-                ImVec2 uv0 = ImVec2(source_rect.x / sprite_texture.width,
-                                    source_rect.y / sprite_texture.height);
-                ImVec2 uv1 = ImVec2(
-                    (source_rect.x + source_rect.width) / sprite_texture.width,
-                    (source_rect.y + source_rect.height) /
-                        sprite_texture.height);
-
-                // Draw the sprite with some transparency to indicate it's a
-                // preview
-                draw_list->AddImage(
-                    img_id,
-                    ImVec2(dest_rect.x, dest_rect.y),
-                    ImVec2(dest_rect.x + dest_rect.width,
-                           dest_rect.y + dest_rect.height),
-                    uv0,
-                    uv1,
-                    IM_COL32(
-                        255, 255, 255, 180));  // Semi-transparent white tint
-                return;
-            }
-        }
-    } catch (const std::exception& e) {
-        // Error occurred, fall back to simple preview
+    // Try to render sprite, fallback to circle if it fails
+    if (!render_monster_sprite(selected_preset,
+                               draw_list,
+                               preview_pos,
+                               tile_size,
+                               IM_COL32(255, 255, 255, 180))) {
+        // Fallback: draw a simple colored circle if sprite loading failed
+        draw_list->AddCircleFilled(
+            ImVec2(preview_pos.x + tile_size / 2,
+                   preview_pos.y + tile_size / 2),
+            tile_size / 3,
+            IM_COL32(255, 255, 0, 128),  // Semi-transparent yellow
+            12);
     }
-
-    // Fallback: draw a simple colored circle if sprite loading failed
-    draw_list->AddCircleFilled(
-        ImVec2(preview_pos.x + tile_size / 2, preview_pos.y + tile_size / 2),
-        tile_size / 3,
-        IM_COL32(255, 255, 0, 128),  // Semi-transparent yellow
-        12);
 }
 
 void EditorScene::handle_background_mode_input(EditorPanel& editor_panel,

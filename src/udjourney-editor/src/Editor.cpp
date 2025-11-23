@@ -187,6 +187,15 @@ void Editor::export_platform_level_json(const std::string &export_path) {
         jmonster["x"] = monster.tile_x;
         jmonster["y"] = monster.tile_y;
         jmonster["preset_name"] = monster.preset_name;
+
+        // Only include overrides if they're set (not -1)
+        if (monster.health_override != -1) {
+            jmonster["health"] = monster.health_override;
+        }
+        if (monster.speed_override != -1) {
+            jmonster["speed"] = monster.speed_override;
+        }
+
         jlevel["monsters"].push_back(jmonster);
     }
 
@@ -315,6 +324,14 @@ void Editor::import_platform_level_json(const std::string &import_path) {
                 monster.tile_y = jmonster["y"].get<int>();
                 monster.preset_name =
                     jmonster["preset_name"].get<std::string>();
+
+                // Load health and speed overrides if present
+                if (jmonster.contains("health")) {
+                    monster.health_override = jmonster["health"].get<int>();
+                }
+                if (jmonster.contains("speed")) {
+                    monster.speed_override = jmonster["speed"].get<int>();
+                }
 
                 // Set color based on preset
                 if (monster.preset_name == "goblin") {

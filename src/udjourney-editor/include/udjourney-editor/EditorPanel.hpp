@@ -79,6 +79,9 @@ class EditorPanel {
     const std::string& get_selected_monster_preset() const;
     bool should_delete_selected_monster() const;
     void clear_delete_flag();
+    udjourney::editor::MonsterPresetManager* get_monster_preset_manager() {
+        return &monster_preset_manager_;
+    }
 
     // Focus management
     void request_focus() { should_focus_ = true; }

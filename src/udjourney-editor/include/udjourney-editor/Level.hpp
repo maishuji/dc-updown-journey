@@ -32,8 +32,13 @@ struct EditorPlatform {
 struct EditorMonster {
     int tile_x;
     int tile_y;
-    std::string preset_name = "goblin";  // Default preset
+    std::string preset_name = "goblin";      // Default preset
     ImU32 color = IM_COL32(255, 0, 0, 255);  // Red for monsters
+
+    // Optional overrides for health and speed (use -1 to indicate "use preset
+    // default")
+    int health_override = -1;
+    int speed_override = -1;
 };
 
 struct Cell {
@@ -91,13 +96,13 @@ struct Level {
     }
 
     void remove_monster_at(int tile_x, int tile_y) {
-        monsters.erase(
-            std::remove_if(monsters.begin(),
-                           monsters.end(),
-                           [tile_x, tile_y](const EditorMonster& m) {
-                               return m.tile_x == tile_x && m.tile_y == tile_y;
-                           }),
-            monsters.end());
+        monsters.erase(std::remove_if(monsters.begin(),
+                                      monsters.end(),
+                                      [tile_x, tile_y](const EditorMonster& m) {
+                                          return m.tile_x == tile_x &&
+                                                 m.tile_y == tile_y;
+                                      }),
+                       monsters.end());
     }
 
     EditorMonster* get_monster_at(int tile_x, int tile_y) {

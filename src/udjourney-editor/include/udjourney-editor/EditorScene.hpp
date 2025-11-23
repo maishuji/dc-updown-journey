@@ -49,6 +49,9 @@ class EditorScene {
     int selected_bg_layer_idx_ = -1;
     int selected_bg_object_idx_ = -1;
 
+    // Monster context menu selection
+    EditorMonster* selected_monster_for_context_ = nullptr;
+
     // Internal rendering methods
     void setup_scene_window(const ImGuiIO& io);
     void render_background(BackgroundManager* bg_manager, ImDrawList* draw_list,
