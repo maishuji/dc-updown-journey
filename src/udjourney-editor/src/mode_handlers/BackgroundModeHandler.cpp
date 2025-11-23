@@ -62,6 +62,20 @@ void BackgroundModeHandler::render_layer_list() {
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
                            "(0.0 = static, 1.0 = moves with camera)");
         ImGui::InputInt("Depth", &new_layer_depth_);
+        if (ImGui::IsItemHovered()) {
+            ImGui::BeginTooltip();
+            ImGui::Text("Background Layer Rendering Order");
+            ImGui::Separator();
+            ImGui::TextWrapped(
+                "Controls which background layer appears in front or behind "
+                "OTHER background layers.\n\n"
+                "- Lower values (e.g., 0, 1) render first (furthest back)\n"
+                "- Higher values (e.g., 10, 100) render last (closest)\n"
+                "- Multiple layers can share the same depth value\n\n"
+                "Note: ALL background layers always render behind the game "
+                "scene (platforms, monsters, player).");
+            ImGui::EndTooltip();
+        }
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
                            "(Lower = rendered behind)");
 
