@@ -129,6 +129,11 @@ class TilePanel {
     int new_layer_depth_ = 0;
     bool background_placing_mode_ = false;  // True when ready to place object
 
+    // Layer deletion confirmation
+    bool show_delete_layer_confirmation_ = false;
+    size_t layer_to_delete_ = 0;
+    size_t layer_object_count_ = 0;
+
     // Focus management
     bool should_focus_ = false;
 

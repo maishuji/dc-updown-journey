@@ -551,6 +551,31 @@ void TilePanel::draw_background_mode() {
             background_manager_->select_layer(i);
         }
 
+        // Right-click context menu for layer
+        if (ImGui::BeginPopupContextItem()) {
+            ImGui::Text("Layer: %s", layers[i].get_name().c_str());
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Move Up", nullptr, false, i > 0)) {
+                background_manager_->move_layer_up(i);
+            }
+
+            if (ImGui::MenuItem(
+                    "Move Down", nullptr, false, i < layers.size() - 1)) {
+                background_manager_->move_layer_down(i);
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Delete Layer")) {
+                layer_to_delete_ = i;
+                layer_object_count_ = layers[i].get_objects().size();
+                show_delete_layer_confirmation_ = true;
+            }
+
+            ImGui::EndPopup();
+        }
+
         // Layer info and controls on same line
         ImGui::SameLine();
         ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
@@ -569,10 +594,9 @@ void TilePanel::draw_background_mode() {
         }
         ImGui::SameLine();
         if (ImGui::SmallButton("X")) {
-            background_manager_->remove_layer(i);
-            if (selected.has_value() && selected.value() == i) {
-                background_manager_->clear_selection();
-            }
+            layer_to_delete_ = i;
+            layer_object_count_ = layers[i].get_objects().size();
+            show_delete_layer_confirmation_ = true;
         }
 
         ImGui::PopID();
@@ -580,6 +604,34 @@ void TilePanel::draw_background_mode() {
 
     if (layers.empty()) {
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No layers yet");
+    }
+
+    // Layer deletion confirmation popup
+    if (show_delete_layer_confirmation_) {
+        ImGui::OpenPopup("Delete Layer?");
+        show_delete_layer_confirmation_ = false;
+    }
+
+    if (ImGui::BeginPopupModal(
+            "Delete Layer?", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Are you sure you want to delete this background layer?");
+        ImGui::Text("(%zu object%s)",
+                    layer_object_count_,
+                    layer_object_count_ == 1 ? "" : "s");
+        ImGui::Separator();
+
+        if (ImGui::Button("Delete", ImVec2(120, 0))) {
+            background_manager_->remove_layer(layer_to_delete_);
+            if (selected.has_value() && selected.value() == layer_to_delete_) {
+                background_manager_->clear_selection();
+            }
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
     }
 
     ImGui::Separator();

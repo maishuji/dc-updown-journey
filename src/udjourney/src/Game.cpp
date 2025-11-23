@@ -604,7 +604,11 @@ void Game::draw_backgrounds() const {
                     // Convert world coordinates to screen coordinates with
                     // parallax Object positions are in world coordinates,
                     // subtract game scroll with parallax factor
-                    float screen_x = obj.x - parallax_offset_x;
+                    // Background is centered: x=320 in background = screen
+                    // center
+                    constexpr float BG_CENTER_OFFSET = 320.0f;
+                    float screen_x =
+                        obj.x - parallax_offset_x - BG_CENTER_OFFSET;
                     float screen_y = obj.y - parallax_offset_y;
 
                     // Calculate destination rectangle with scale

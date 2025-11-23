@@ -17,6 +17,37 @@
 // Simple texture cache for editor
 static std::unordered_map<std::string, Texture2D> texture_cache;
 
+// Helper function to draw dashed lines
+static void draw_dashed_line(ImDrawList* draw_list, const ImVec2& p1,
+                             const ImVec2& p2, ImU32 color, float thickness,
+                             float dash_size) {
+    float dx = p2.x - p1.x;
+    float dy = p2.y - p1.y;
+    float length = std::sqrt(dx * dx + dy * dy);
+
+    if (length < 0.001f) return;
+
+    float nx = dx / length;
+    float ny = dy / length;
+
+    float pos = 0.0f;
+    bool draw_dash = true;
+
+    while (pos < length) {
+        float segment_length = std::min(dash_size, length - pos);
+
+        if (draw_dash) {
+            ImVec2 start(p1.x + nx * pos, p1.y + ny * pos);
+            ImVec2 end(p1.x + nx * (pos + segment_length),
+                       p1.y + ny * (pos + segment_length));
+            draw_list->AddLine(start, end, color, thickness);
+        }
+
+        pos += segment_length;
+        draw_dash = !draw_dash;
+    }
+}
+
 Texture2D load_texture_cached(const std::string& filename) {
     auto iter = texture_cache.find(filename);
     if (iter != texture_cache.end()) {
@@ -91,16 +122,16 @@ void EditorScene::render(Level& level, TilePanel& tile_panel,
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     ImVec2 origin = ImGui::GetCursorScreenPos();
 
-    // Render background objects first (behind everything)
-    if (bg_manager) {
-        render_background(bg_manager, draw_list, origin);
-    }
-
     // Render the grid (background) - skip when placing background objects
     bool is_placing_bg = tile_panel.get_edit_mode() == EditMode::Background &&
                          tile_panel.is_background_placing_mode();
     if (!is_placing_bg) {
         render_grid(level, draw_list, origin);
+    }
+
+    // Render background objects first (behind everything)
+    if (bg_manager) {
+        render_background(bg_manager, draw_list, origin, level);
     }
 
     // Render platforms on top of grid
@@ -127,11 +158,90 @@ void EditorScene::render(Level& level, TilePanel& tile_panel,
                                             level);
     }
 
+    // Handle background object selection when NOT in placement mode
+    if (bg_manager && tile_panel.get_edit_mode() == EditMode::Background &&
+        !tile_panel.is_background_placing_mode() && ImGui::IsWindowHovered()) {
+        const auto& layers = bg_manager->get_layers();
+        ImVec2 mouse_pos = ImGui::GetMousePos();
+        bool left_clicked = ImGui::IsMouseClicked(0);
+        bool right_clicked = ImGui::IsMouseClicked(1);
+        bool delete_pressed = ImGui::IsKeyPressed(ImGuiKey_Delete);
+
+        constexpr float SCREEN_WIDTH = 640.0f;
+        float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
+
+        // Check for object selection on left click or right click
+        if (left_clicked || right_clicked) {
+            bool found = false;
+            // Search in reverse order (top to bottom) to select topmost object
+            for (int layer_idx = layers.size() - 1; layer_idx >= 0 && !found;
+                 --layer_idx) {
+                const auto& layer_objects = layers[layer_idx].get_objects();
+                for (int obj_idx = layer_objects.size() - 1;
+                     obj_idx >= 0 && !found;
+                     --obj_idx) {
+                    const auto& obj = layer_objects[obj_idx];
+                    float scaled_size = obj.tile_size * obj.scale;
+                    ImVec2 obj_screen_pos(
+                        origin.x + obj.x - bg_horizontal_offset,
+                        origin.y + obj.y);
+
+                    // Check if mouse is within object bounds
+                    if (mouse_pos.x >= obj_screen_pos.x &&
+                        mouse_pos.x <= obj_screen_pos.x + scaled_size &&
+                        mouse_pos.y >= obj_screen_pos.y &&
+                        mouse_pos.y <= obj_screen_pos.y + scaled_size) {
+                        selected_bg_layer_idx_ = layer_idx;
+                        selected_bg_object_idx_ = obj_idx;
+                        found = true;
+
+                        // Open context menu on right click
+                        if (right_clicked) {
+                            ImGui::OpenPopup("BackgroundObjectContextMenu");
+                        }
+                    }
+                }
+            }
+            // Clear selection if clicked on empty space
+            if (!found && left_clicked) {
+                selected_bg_layer_idx_ = -1;
+                selected_bg_object_idx_ = -1;
+            }
+        }
+
+        // Delete selected object on Delete key
+        if (delete_pressed && selected_bg_layer_idx_ >= 0 &&
+            selected_bg_object_idx_ >= 0) {
+            bg_manager->remove_object(selected_bg_layer_idx_,
+                                      selected_bg_object_idx_);
+            selected_bg_layer_idx_ = -1;
+            selected_bg_object_idx_ = -1;
+        }
+    }
+
     render_cursor_(level, tile_panel, draw_list, origin);
 
     // Reserve space for ImGui layout
     ImGui::Dummy(
         ImVec2(level.col_cnt * tile_size_, level.row_cnt * tile_size_));
+
+    // Background object context menu (must be inside Scene View window)
+    if (ImGui::BeginPopup("BackgroundObjectContextMenu")) {
+        if (selected_bg_layer_idx_ >= 0 && selected_bg_object_idx_ >= 0 &&
+            bg_manager) {
+            ImGui::Text("Background Object");
+            ImGui::Separator();
+
+            if (ImGui::MenuItem("Delete", "Delete")) {
+                bg_manager->remove_object(selected_bg_layer_idx_,
+                                          selected_bg_object_idx_);
+                selected_bg_layer_idx_ = -1;
+                selected_bg_object_idx_ = -1;
+                ImGui::CloseCurrentPopup();
+            }
+        }
+        ImGui::EndPopup();
+    }
 
     ImGui::End();
 
@@ -173,11 +283,163 @@ void EditorScene::setup_scene_window(const ImGuiIO& io) {
 }
 
 void EditorScene::render_background(BackgroundManager* bg_manager,
-                                    ImDrawList* draw_list,
-                                    const ImVec2& origin) {
+                                    ImDrawList* draw_list, const ImVec2& origin,
+                                    const Level& level) {
     if (!bg_manager) return;
 
     const auto& layers = bg_manager->get_layers();
+    auto selected = bg_manager->get_selected_layer();
+
+    // Draw spannable bounds for selected layer
+    if (selected.has_value() && selected.value() < layers.size()) {
+        const auto& selected_layer = layers[selected.value()];
+        float parallax_factor = selected_layer.get_parallax_factor();
+
+        // Calculate spannable area based on parallax
+        // Scene dimensions
+        constexpr float SCREEN_WIDTH = 640.0f;
+        constexpr float SCREEN_HEIGHT = 480.0f;
+        float level_height = level.row_cnt * tile_size_;
+
+        // For vertical scrolling:
+        // max_scroll = level_height - SCREEN_HEIGHT (if level is taller than
+        // screen)
+        float max_scroll = std::max(0.0f, level_height - SCREEN_HEIGHT);
+
+        // Background rendering: screen_y = obj.y - camera_y * (1 -
+        // parallax_factor) For object to be visible: 0 <= screen_y <=
+        // SCREEN_HEIGHT When camera = 0: need obj.y >= 0 and obj.y <=
+        // SCREEN_HEIGHT When camera = max_scroll: need obj.y >= max_scroll * (1
+        // - parallax_factor)
+        //                           and obj.y <= max_scroll * (1 -
+        //                           parallax_factor) + SCREEN_HEIGHT
+        //
+        // So spannable range is: [0, max_scroll * (1 - parallax_factor) +
+        // SCREEN_HEIGHT]
+        //
+        // With parallax_factor = 0.0 (follows camera): spannable = level_height
+        // (full scene) With parallax_factor = 1.0 (static): spannable =
+        // SCREEN_HEIGHT (just screen)
+        // With parallax_factor = 0.5: spannable = level_height * 0.5 +
+        // SCREEN_HEIGHT
+        //
+        // Add small margin (10% of screen height) for smooth coverage at edges
+        float base_spannable_height =
+            max_scroll * (1.0f - parallax_factor) + SCREEN_HEIGHT;
+        float spannable_height =
+            base_spannable_height + SCREEN_HEIGHT * 0.1f;  // Small margin
+
+        // Center background horizontally - offset by half screen width
+        // This makes the center of the scene (320px) align with center of
+        // background
+        float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
+
+        // Draw spannable bounds rectangle (centered)
+        ImVec2 bounds_min = ImVec2(origin.x - bg_horizontal_offset, origin.y);
+        ImVec2 bounds_max =
+            ImVec2(origin.x + SCREEN_WIDTH + bg_horizontal_offset,
+                   origin.y + spannable_height);
+
+        // Draw semi-transparent fill
+        draw_list->AddRectFilled(
+            bounds_min, bounds_max, IM_COL32(100, 150, 255, 30));
+
+        // Draw border
+        draw_list->AddRect(bounds_min,
+                           bounds_max,
+                           IM_COL32(100, 150, 255, 200),
+                           0.0f,
+                           0,
+                           2.0f);
+
+        // Draw exact mapping bounds (without margin) as a dashed line
+        ImVec2 exact_bounds_min =
+            ImVec2(origin.x - bg_horizontal_offset, origin.y);
+        ImVec2 exact_bounds_max =
+            ImVec2(origin.x + SCREEN_WIDTH + bg_horizontal_offset,
+                   origin.y + base_spannable_height);
+
+        // Draw dashed rectangle for exact bounds
+        draw_dashed_line(draw_list,
+                         ImVec2(exact_bounds_min.x, exact_bounds_max.y),
+                         ImVec2(exact_bounds_max.x, exact_bounds_max.y),
+                         IM_COL32(255, 255, 0, 200),
+                         2.0f,
+                         8.0f);  // Yellow dashed line at bottom
+
+        // Draw label with parallax info
+        char label[128];
+        snprintf(label,
+                 sizeof(label),
+                 "Layer: %s\nParallax: %.2f\nSpannable: %.0f x %.0f",
+                 selected_layer.get_name().c_str(),
+                 parallax_factor,
+                 SCREEN_WIDTH,
+                 spannable_height);
+        draw_list->AddText(ImVec2(bounds_min.x + 5, bounds_min.y + 5),
+                           IM_COL32(255, 255, 255, 255),
+                           label);
+
+        // Draw parallax mapping guide lines every 5 tiles
+        // These show which part of background is visible at different scene
+        // positions
+        constexpr float TILE_SIZE = 32.0f;
+        constexpr int LINE_INTERVAL = 5;  // Draw line every 5 tiles
+
+        for (int tile_y = 0; tile_y <= static_cast<int>(level.row_cnt);
+             tile_y += LINE_INTERVAL) {
+            float scene_y = tile_y * TILE_SIZE;
+
+            // Skip if beyond level bounds
+            if (scene_y > level_height) break;
+
+            // Calculate camera position at this scene position
+            // Camera follows player, which is at this y position
+            float camera_y = std::max(0.0f, std::min(scene_y, max_scroll));
+
+            // Calculate where this maps to on the background
+            // background_y = scene_y - camera_y * (1 - parallax_factor)
+            float bg_y = camera_y * (1.0f - parallax_factor);
+
+            // Draw dashed line from scene position to background position
+            // Background is centered, so extend lines to show full width
+            ImVec2 scene_left(origin.x, origin.y + scene_y);
+            ImVec2 scene_right(origin.x + SCREEN_WIDTH, origin.y + scene_y);
+            ImVec2 bg_left(origin.x - bg_horizontal_offset, origin.y + bg_y);
+            ImVec2 bg_right(origin.x + SCREEN_WIDTH + bg_horizontal_offset,
+                            origin.y + bg_y);
+
+            // Color based on position
+            ImU32 line_color = IM_COL32(255, 200, 100, 150);
+
+            // Draw dashed horizontal line on scene (red border area)
+            draw_dashed_line(
+                draw_list, scene_left, scene_right, line_color, 2.0f, 10.0f);
+
+            // Draw dashed horizontal line on background (blue spannable area)
+            draw_dashed_line(
+                draw_list, bg_left, bg_right, line_color, 2.0f, 10.0f);
+
+            // Draw connecting vertical line showing the mapping
+            ImVec2 connect_start(origin.x + SCREEN_WIDTH + 5,
+                                 origin.y + scene_y);
+            ImVec2 connect_end(origin.x + SCREEN_WIDTH + 5, origin.y + bg_y);
+            draw_dashed_line(draw_list,
+                             connect_start,
+                             connect_end,
+                             IM_COL32(150, 255, 150, 180),
+                             1.5f,
+                             8.0f);
+
+            // Draw label showing the tile position
+            char pos_label[32];
+            snprintf(pos_label, sizeof(pos_label), "T%d", tile_y);
+            draw_list->AddText(
+                ImVec2(origin.x + SCREEN_WIDTH + 10, origin.y + scene_y - 8),
+                IM_COL32(255, 255, 255, 200),
+                pos_label);
+        }
+    }
 
     // Render layers in depth order (already sorted by BackgroundManager)
     for (const auto& layer : layers) {
@@ -199,8 +461,13 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
                 static_cast<float>(obj.tile_size)};
 
             // Calculate destination position and size
+            // Center background horizontally by offsetting left by half screen
+            // width
+            constexpr float SCREEN_WIDTH = 640.0f;
+            float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
             float scaled_size = obj.tile_size * obj.scale;
-            ImVec2 pos = ImVec2(origin.x + obj.x, origin.y + obj.y);
+            ImVec2 pos = ImVec2(origin.x + obj.x - bg_horizontal_offset,
+                                origin.y + obj.y);
             ImVec2 size = ImVec2(scaled_size, scaled_size);
 
             // Convert Raylib texture to ImGui UV coordinates
@@ -232,6 +499,81 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
                 }
             }
         }
+    }
+
+    // Draw selection indicator for selected background object
+    if (bg_manager && selected_bg_layer_idx_ >= 0 &&
+        selected_bg_object_idx_ >= 0) {
+        const auto& layers = bg_manager->get_layers();
+        constexpr float SCREEN_WIDTH = 640.0f;
+        float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
+
+        if (selected_bg_layer_idx_ < static_cast<int>(layers.size())) {
+            const auto& layer_objects =
+                layers[selected_bg_layer_idx_].get_objects();
+            if (selected_bg_object_idx_ <
+                static_cast<int>(layer_objects.size())) {
+                const auto& obj = layer_objects[selected_bg_object_idx_];
+                float scaled_size = obj.tile_size * obj.scale;
+                ImVec2 obj_screen_pos(origin.x + obj.x - bg_horizontal_offset,
+                                      origin.y + obj.y);
+
+                // Draw bright selection outline
+                draw_list->AddRect(obj_screen_pos,
+                                   ImVec2(obj_screen_pos.x + scaled_size,
+                                          obj_screen_pos.y + scaled_size),
+                                   IM_COL32(0, 255, 0, 255),
+                                   0.0f,
+                                   0,
+                                   3.0f);
+            }
+        }
+    }
+
+    // DRAW CENTER LINE LAST (so it appears on top of everything)
+    if (selected.has_value() && selected.value() < layers.size()) {
+        const auto& selected_layer = layers[selected.value()];
+        float parallax_factor = selected_layer.get_parallax_factor();
+
+        constexpr float SCREEN_WIDTH = 640.0f;
+        constexpr float SCREEN_HEIGHT = 480.0f;
+        float level_height = level.row_cnt * tile_size_;
+        float max_scroll = std::max(0.0f, level_height - SCREEN_HEIGHT);
+        float base_spannable_height =
+            max_scroll * (1.0f - parallax_factor) + SCREEN_HEIGHT;
+        float spannable_height = base_spannable_height + SCREEN_HEIGHT * 0.1f;
+        float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
+
+        // Scene center: middle of the red-bordered platform area
+        float scene_center_x = origin.x + SCREEN_WIDTH / 2.0f;
+        float scene_center_y = origin.y + level_height / 2.0f;
+
+        // Background layer center: middle of the blue spannable area
+        // Horizontally: center of spannable width
+        float bg_center_x = origin.x + bg_horizontal_offset;
+        float bg_center_y = origin.y + spannable_height / 2.0f;
+
+        // Draw pink diagonal line connecting the two centers
+        draw_list->AddLine(ImVec2(scene_center_x, scene_center_y),
+                           ImVec2(bg_center_x, bg_center_y),
+                           IM_COL32(255, 100, 200, 220),
+                           3.0f);
+
+        // Add "C" label in the middle of the line
+        draw_list->AddText(ImVec2((scene_center_x + bg_center_x) / 2.0f - 5,
+                                  (scene_center_y + bg_center_y) / 2.0f - 10),
+                           IM_COL32(255, 100, 200, 255),
+                           "C");
+
+        // Add "Sc" label at scene center endpoint
+        draw_list->AddText(ImVec2(scene_center_x + 5, scene_center_y - 10),
+                           IM_COL32(255, 100, 200, 255),
+                           "Sc");
+
+        // Add "Bg" label at background center endpoint
+        draw_list->AddText(ImVec2(bg_center_x + 5, bg_center_y - 10),
+                           IM_COL32(255, 100, 200, 255),
+                           "Bg");
     }
 }
 
@@ -960,7 +1302,9 @@ void EditorScene::render_background_placement_preview(
     }
 
     // Calculate position relative to origin
-    float x = mouse_pos.x - origin.x;
+    // Background is centered horizontally, so adjust for offset
+    constexpr float BG_HORIZONTAL_OFFSET = 320.0f;  // Half of 640
+    float x = mouse_pos.x - origin.x + BG_HORIZONTAL_OFFSET;
     float y = mouse_pos.y - origin.y;
 
     // Snap to 32-pixel grid
@@ -968,9 +1312,20 @@ void EditorScene::render_background_placement_preview(
     float snapped_x = std::floor(x / GRID_SIZE) * GRID_SIZE;
     float snapped_y = std::floor(y / GRID_SIZE) * GRID_SIZE;
 
-    // Calculate level bounds
-    float level_width = level.col_cnt * GRID_SIZE;
+    // Calculate spannable bounds based on parallax factor
+    constexpr float SCREEN_WIDTH = 640.0f;
+    constexpr float SCREEN_HEIGHT = 480.0f;
+
+    const auto& layers = bg_manager->get_layers();
+    const auto& selected_layer = layers[selected.value()];
+    float parallax_factor = selected_layer.get_parallax_factor();
+
     float level_height = level.row_cnt * GRID_SIZE;
+    float max_scroll = std::max(0.0f, level_height - SCREEN_HEIGHT);
+    float base_spannable_height =
+        max_scroll * (1.0f - parallax_factor) + SCREEN_HEIGHT;
+    float spannable_height =
+        base_spannable_height + SCREEN_HEIGHT * 0.1f;  // Small margin
 
     // Get preset data to check bounds
     const auto& presets = bg_preset_manager->get_presets();
@@ -980,10 +1335,25 @@ void EditorScene::render_background_placement_preview(
     const auto& preset = presets[preset_idx];
     float preview_size = preset.tile_size * scale;
 
-    // Check if object would be within level bounds
+    // Allow objects to be partially outside bounds (at least 25% must be
+    // within) This allows objects to extend beyond edges for better visual
+    // coverage
+    float min_overlap = preview_size * 0.25f;
+
+    // Background is centered, so spannable width extends from -320 to 960
+    // (total 1280)
+    float spannable_width_left = -SCREEN_WIDTH / 2.0f;
+    float spannable_width_right = SCREEN_WIDTH + SCREEN_WIDTH / 2.0f;
+
+    // Check if at least part of the object is within spannable area
     bool within_bounds =
-        (snapped_x >= 0 && snapped_x + preview_size <= level_width &&
-         snapped_y >= 0 && snapped_y + preview_size <= level_height);
+        (snapped_x + preview_size >= spannable_width_left - preview_size +
+                                         min_overlap &&  // Allow left edge
+         snapped_x <=
+             spannable_width_right - min_overlap &&  // Allow right edge
+         snapped_y + preview_size >=
+             0 - preview_size + min_overlap &&          // Allow top edge
+         snapped_y <= spannable_height - min_overlap);  // Allow bottom edge
 
     // Don't show preview or allow placement if out of bounds
     if (!within_bounds) {
@@ -991,7 +1361,9 @@ void EditorScene::render_background_placement_preview(
     }
 
     // Convert back to screen coordinates for rendering
-    ImVec2 snapped_screen_pos(origin.x + snapped_x, origin.y + snapped_y);
+    // Subtract offset because background is centered
+    ImVec2 snapped_screen_pos(origin.x + snapped_x - BG_HORIZONTAL_OFFSET,
+                              origin.y + snapped_y);
 
     // Draw preview sprite at mouse position
     if (hovered) {

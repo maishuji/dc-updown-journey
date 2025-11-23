@@ -45,10 +45,14 @@ class EditorScene {
     ImVec2 selection_start_;
     ImVec2 selection_end_;
 
+    // Background object selection
+    int selected_bg_layer_idx_ = -1;
+    int selected_bg_object_idx_ = -1;
+
     // Internal rendering methods
     void setup_scene_window(const ImGuiIO& io);
     void render_background(BackgroundManager* bg_manager, ImDrawList* draw_list,
-                           const ImVec2& origin);
+                           const ImVec2& origin, const Level& level);
     void render_background_placement_preview(
         BackgroundManager* bg_manager,
         BackgroundObjectPresetManager* bg_preset_manager, TilePanel& tile_panel,
