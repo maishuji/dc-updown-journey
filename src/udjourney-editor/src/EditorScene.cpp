@@ -333,11 +333,12 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
 
         // Center background horizontally - offset by half screen width
         // This makes the center of the scene (320px) align with center of
-        // background
+        // background Extended left boundary to allow objects with negative x
         float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
+        float extended_left_offset = SCREEN_WIDTH * 1.5f;  // Extended boundary
 
-        // Draw spannable bounds rectangle (centered)
-        ImVec2 bounds_min = ImVec2(origin.x - bg_horizontal_offset, origin.y);
+        // Draw spannable bounds rectangle (centered, with extended left side)
+        ImVec2 bounds_min = ImVec2(origin.x - extended_left_offset, origin.y);
         ImVec2 bounds_max =
             ImVec2(origin.x + SCREEN_WIDTH + bg_horizontal_offset,
                    origin.y + spannable_height);
@@ -356,7 +357,7 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
 
         // Draw exact mapping bounds (without margin) as a dashed line
         ImVec2 exact_bounds_min =
-            ImVec2(origin.x - bg_horizontal_offset, origin.y);
+            ImVec2(origin.x - extended_left_offset, origin.y);
         ImVec2 exact_bounds_max =
             ImVec2(origin.x + SCREEN_WIDTH + bg_horizontal_offset,
                    origin.y + base_spannable_height);
@@ -1344,10 +1345,11 @@ void EditorScene::render_background_placement_preview(
     // coverage
     float min_overlap = preview_size * 0.25f;
 
-    // Background is centered, so spannable width extends from -320 to 960
-    // (total 1280)
-    float spannable_width_left = -SCREEN_WIDTH / 2.0f;
-    float spannable_width_right = SCREEN_WIDTH + SCREEN_WIDTH / 2.0f;
+    // Background is centered, so spannable width extends further left to allow
+    // objects with negative x coordinates (extends from -960 to 960, total
+    // 1920)
+    float spannable_width_left = -SCREEN_WIDTH * 1.5f;                 // -960
+    float spannable_width_right = SCREEN_WIDTH + SCREEN_WIDTH / 2.0f;  // 960
 
     // Check if at least part of the object is within spannable area
     bool within_bounds =
