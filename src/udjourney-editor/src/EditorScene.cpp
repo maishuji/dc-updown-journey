@@ -64,7 +64,8 @@ Texture2D load_texture_cached(const std::string& filename) {
 }
 
 // Forward declarations
-void render_monster_cursor_preview(TilePanel& tile_panel, ImDrawList* draw_list,
+void render_monster_cursor_preview(EditorPanel& editor_panel,
+                                   ImDrawList* draw_list,
                                    const ImVec2& mouse_pos,
                                    const ImVec2& origin, float tile_size);
 
@@ -76,16 +77,16 @@ EditorScene::EditorScene() : pimpl_(std::make_unique<PImpl>()) {}
 
 EditorScene::~EditorScene() = default;
 
-void render_cursor_(Level& level, TilePanel& tile_panel, ImDrawList* draw_list,
-                    const ImVec2& origin) {
+void render_cursor_(Level& level, EditorPanel& editor_panel,
+                    ImDrawList* draw_list, const ImVec2& origin) {
     auto pos = ImGui::GetMousePos();
     ImVec2 cursor_pos = origin;
 
     // Handle different edit modes
-    switch (tile_panel.get_edit_mode()) {
+    switch (editor_panel.get_edit_mode()) {
         case EditMode::Monsters: {
             // Show monster sprite preview for monster mode
-            render_monster_cursor_preview(tile_panel,
+            render_monster_cursor_preview(editor_panel,
                                           draw_list,
                                           pos,
                                           origin,
@@ -96,8 +97,8 @@ void render_cursor_(Level& level, TilePanel& tile_panel, ImDrawList* draw_list,
             // Show platform preview
             draw_list->AddRectFilled(
                 ImVec2(pos.x, pos.y),
-                ImVec2(pos.x + tile_panel.get_platform_size().x * 50,
-                       pos.y + tile_panel.get_platform_size().y * 50),
+                ImVec2(pos.x + editor_panel.get_platform_size().x * 50,
+                       pos.y + editor_panel.get_platform_size().y * 50),
                 IM_COL32(255, 255, 0, 128));  // Semi-transparent yellow
             break;
         }
@@ -107,7 +108,7 @@ void render_cursor_(Level& level, TilePanel& tile_panel, ImDrawList* draw_list,
     }
 }
 
-void EditorScene::render(Level& level, TilePanel& tile_panel,
+void EditorScene::render(Level& level, EditorPanel& editor_panel,
                          BackgroundManager* bg_manager,
                          BackgroundObjectPresetManager* bg_preset_manager) {
     ImGuiIO& io = ImGui::GetIO();
@@ -123,8 +124,8 @@ void EditorScene::render(Level& level, TilePanel& tile_panel,
     ImVec2 origin = ImGui::GetCursorScreenPos();
 
     // Render the grid (background) - skip when placing background objects
-    bool is_placing_bg = tile_panel.get_edit_mode() == EditMode::Background &&
-                         tile_panel.is_background_placing_mode();
+    bool is_placing_bg = editor_panel.get_edit_mode() == EditMode::Background &&
+                         editor_panel.is_background_placing_mode();
     if (!is_placing_bg) {
         render_grid(level, draw_list, origin);
     }
@@ -135,32 +136,33 @@ void EditorScene::render(Level& level, TilePanel& tile_panel,
     }
 
     // Render platforms on top of grid
-    render_platforms(level, tile_panel, draw_list, origin);
+    render_platforms(level, editor_panel, draw_list, origin);
 
     // Render monsters
-    render_monsters(level, tile_panel, draw_list, origin);
+    render_monsters(level, editor_panel, draw_list, origin);
 
     // Render player spawn position
     render_player_spawn(level, draw_list, origin);
 
     // Handle mouse input and selection based on current mode
-    handle_mouse_input(level, tile_panel, draw_list, origin);
+    handle_mouse_input(level, editor_panel, draw_list, origin);
 
     // Show background object preview if in placing mode
     if (bg_manager && bg_preset_manager &&
-        tile_panel.get_edit_mode() == EditMode::Background &&
-        tile_panel.is_background_placing_mode()) {
+        editor_panel.get_edit_mode() == EditMode::Background &&
+        editor_panel.is_background_placing_mode()) {
         render_background_placement_preview(bg_manager,
                                             bg_preset_manager,
-                                            tile_panel,
+                                            editor_panel,
                                             draw_list,
                                             origin,
                                             level);
     }
 
     // Handle background object selection when NOT in placement mode
-    if (bg_manager && tile_panel.get_edit_mode() == EditMode::Background &&
-        !tile_panel.is_background_placing_mode() && ImGui::IsWindowHovered()) {
+    if (bg_manager && editor_panel.get_edit_mode() == EditMode::Background &&
+        !editor_panel.is_background_placing_mode() &&
+        ImGui::IsWindowHovered()) {
         const auto& layers = bg_manager->get_layers();
         ImVec2 mouse_pos = ImGui::GetMousePos();
         bool left_clicked = ImGui::IsMouseClicked(0);
@@ -219,7 +221,7 @@ void EditorScene::render(Level& level, TilePanel& tile_panel,
         }
     }
 
-    render_cursor_(level, tile_panel, draw_list, origin);
+    render_cursor_(level, editor_panel, draw_list, origin);
 
     // Reserve space for ImGui layout
     ImGui::Dummy(
@@ -253,8 +255,8 @@ void EditorScene::render(Level& level, TilePanel& tile_panel,
         EditorPlatform* to_delete = platform_popup_.get_platform_to_delete();
         if (to_delete) {
             // Clear selection if we're deleting the selected platform
-            if (tile_panel.get_selected_platform() == to_delete) {
-                tile_panel.set_selected_platform(nullptr);
+            if (editor_panel.get_selected_platform() == to_delete) {
+                editor_panel.set_selected_platform(nullptr);
             }
             level.remove_platform_at(to_delete->tile_x, to_delete->tile_y);
         }
@@ -598,7 +600,7 @@ void EditorScene::render_grid(Level& level, ImDrawList* draw_list,
     }
 }
 
-void EditorScene::handle_mouse_input(Level& level, TilePanel& tile_panel,
+void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
                                      ImDrawList* draw_list,
                                      const ImVec2& origin) {
     ImVec2 mouse_pos = ImGui::GetMousePos();
@@ -608,15 +610,15 @@ void EditorScene::handle_mouse_input(Level& level, TilePanel& tile_panel,
 
     if (!hovered || (!left_clicked && !right_clicked)) {
         // Still need to handle tile mode drag behavior
-        if (tile_panel.get_edit_mode() == EditMode::Tiles) {
-            handle_tile_mode_input(level, tile_panel, draw_list, origin);
+        if (editor_panel.get_edit_mode() == EditMode::Tiles) {
+            handle_tile_mode_input(level, editor_panel, draw_list, origin);
         }
         return;
     }
 
     if (right_clicked) {
         // No action for right click in current modes except platform mode
-        if (tile_panel.get_edit_mode() != EditMode::Platforms) {
+        if (editor_panel.get_edit_mode() != EditMode::Platforms) {
             // Open context menu
             ImGui::OpenPopup("MyPopup");
             return;
@@ -624,14 +626,14 @@ void EditorScene::handle_mouse_input(Level& level, TilePanel& tile_panel,
     }
 
     // Handle input based on current edit mode
-    switch (tile_panel.get_edit_mode()) {
+    switch (editor_panel.get_edit_mode()) {
         case EditMode::Tiles:
             if (left_clicked) {
-                handle_tile_mode_input(level, tile_panel, draw_list, origin);
+                handle_tile_mode_input(level, editor_panel, draw_list, origin);
             }
             break;
         case EditMode::Platforms:
-            handle_platform_mode_input(level, tile_panel, mouse_pos, origin);
+            handle_platform_mode_input(level, editor_panel, mouse_pos, origin);
             break;
         case EditMode::PlayerSpawn:
             if (left_clicked) {
@@ -640,7 +642,7 @@ void EditorScene::handle_mouse_input(Level& level, TilePanel& tile_panel,
             break;
         case EditMode::Monsters:
             handle_monster_mode_input(level,
-                                      tile_panel,
+                                      editor_panel,
                                       mouse_pos,
                                       origin,
                                       left_clicked,
@@ -648,13 +650,14 @@ void EditorScene::handle_mouse_input(Level& level, TilePanel& tile_panel,
             break;
         case EditMode::Background:
             if (left_clicked) {
-                handle_background_mode_input(tile_panel, mouse_pos, origin);
+                handle_background_mode_input(editor_panel, mouse_pos, origin);
             }
             break;
     }
 }
 
-void EditorScene::handle_tile_mode_input(Level& level, TilePanel& tile_panel,
+void EditorScene::handle_tile_mode_input(Level& level,
+                                         EditorPanel& editor_panel,
                                          ImDrawList* draw_list,
                                          const ImVec2& origin) {
     ImVec2 mouse_pos = ImGui::GetMousePos();
@@ -686,12 +689,12 @@ void EditorScene::handle_tile_mode_input(Level& level, TilePanel& tile_panel,
 
     // Apply selection to tiles when done
     if (selection_done_) {
-        apply_selection_to_tiles(level, tile_panel, draw_list, origin);
+        apply_selection_to_tiles(level, editor_panel, draw_list, origin);
     }
 }
 
 void EditorScene::handle_platform_mode_input(Level& level,
-                                             TilePanel& tile_panel,
+                                             EditorPanel& editor_panel,
                                              const ImVec2& mouse_pos,
                                              const ImVec2& origin) {
     ImVec2 tile_pos = screen_to_tile_pos(mouse_pos, origin);
@@ -724,7 +727,7 @@ void EditorScene::handle_platform_mode_input(Level& level,
 
     // Left click edits existing platform
     if (ImGui::IsMouseClicked(0) && existing_platform) {
-        tile_panel.set_selected_platform(existing_platform);
+        editor_panel.set_selected_platform(existing_platform);
         return;
     }
 
@@ -734,14 +737,14 @@ void EditorScene::handle_platform_mode_input(Level& level,
         platform.tile_x = tile_x;
         platform.tile_y = tile_y;
 
-        auto [width, height] = tile_panel.get_platform_size();
+        auto [width, height] = editor_panel.get_platform_size();
 
         platform.width_tiles = width;
         platform.height_tiles = height;
-        platform.behavior_type = tile_panel.get_platform_behavior();
+        platform.behavior_type = editor_panel.get_platform_behavior();
 
         // Get selected features from tile panel
-        platform.features = tile_panel.get_selected_features();
+        platform.features = editor_panel.get_selected_features();
 
         // Calculate color based on behavior and features
         PlatformFeatureType primary_feature = platform.features.empty()
@@ -754,8 +757,8 @@ void EditorScene::handle_platform_mode_input(Level& level,
         if (existing_platform) {
             level.remove_platform_at(tile_x, tile_y);
             // Clear selection if we replaced the selected platform
-            if (tile_panel.get_selected_platform() == existing_platform) {
-                tile_panel.set_selected_platform(nullptr);
+            if (editor_panel.get_selected_platform() == existing_platform) {
+                editor_panel.set_selected_platform(nullptr);
             }
         }
 
@@ -792,7 +795,8 @@ void EditorScene::render_selection(ImDrawList* draw_list) {
     draw_list->AddRect(p_min, p_max, border_color, 0.0f, 0, 3.0f);
 }
 
-void EditorScene::apply_selection_to_tiles(Level& level, TilePanel& tile_panel,
+void EditorScene::apply_selection_to_tiles(Level& level,
+                                           EditorPanel& editor_panel,
                                            ImDrawList* draw_list,
                                            const ImVec2& origin) {
     ImVec2 p_min = ImVec2(fminf(selection_start_.x, selection_end_.x),
@@ -812,7 +816,7 @@ void EditorScene::apply_selection_to_tiles(Level& level, TilePanel& tile_panel,
                     tile_top_left, tile_bottom_right, p_min, p_max)) {
                 // Apply current color from tile panel
                 level.tiles[y * level.col_cnt + x].color =
-                    tile_panel.get_current_color();
+                    editor_panel.get_current_color();
 
                 // Draw selection indicator
                 draw_list->AddRect(
@@ -867,7 +871,7 @@ void render_checkpoint_(const ImVec2& top_left, const ImVec2& bottom_right,
             IM_COL32(255, 255, 255, 150));  // Semi-transparent green
 }
 
-void EditorScene::render_platforms(Level& level, TilePanel& tile_panel,
+void EditorScene::render_platforms(Level& level, EditorPanel& editor_panel,
                                    ImDrawList* draw_list,
                                    const ImVec2& origin) {
     for (const auto& platform : level.platforms) {
@@ -900,7 +904,7 @@ void EditorScene::render_platforms(Level& level, TilePanel& tile_panel,
             unit_top_left, unit_bottom_right, platform.color);
 
         // Draw platform border (highlighted if selected)
-        bool is_selected = (tile_panel.get_selected_platform() == &platform);
+        bool is_selected = (editor_panel.get_selected_platform() == &platform);
         ImU32 border_color =
             is_selected ? IM_COL32(255, 255, 0, 255) : IM_COL32(0, 0, 0, 255);
         float border_thickness = is_selected ? 3.0f : 2.0f;
@@ -985,7 +989,7 @@ bool EditorScene::is_tile_in_selection(const ImVec2& tile_top_left,
            tile_bottom_right.y <= selection_max.y;
 }
 
-void EditorScene::render_monsters(Level& level, TilePanel& tile_panel,
+void EditorScene::render_monsters(Level& level, EditorPanel& editor_panel,
                                   ImDrawList* draw_list, const ImVec2& origin) {
     for (const auto& monster : level.monsters) {
         // Calculate monster position on screen (consistent with grid and
@@ -1011,7 +1015,7 @@ void EditorScene::render_monsters(Level& level, TilePanel& tile_panel,
                            &type_char + 1);
 
         // Highlight selected monster
-        if (tile_panel.get_selected_monster() == &monster) {
+        if (editor_panel.get_selected_monster() == &monster) {
             draw_list->AddCircle(
                 ImVec2(monster_pos.x + tile_size_ / 2,
                        monster_pos.y + tile_size_ / 2),
@@ -1023,18 +1027,16 @@ void EditorScene::render_monsters(Level& level, TilePanel& tile_panel,
     }
 }
 
-void EditorScene::handle_monster_mode_input(Level& level, TilePanel& tile_panel,
-                                            const ImVec2& mouse_pos,
-                                            const ImVec2& origin,
-                                            bool left_clicked,
-                                            bool right_clicked) {
+void EditorScene::handle_monster_mode_input(
+    Level& level, EditorPanel& editor_panel, const ImVec2& mouse_pos,
+    const ImVec2& origin, bool left_clicked, bool right_clicked) {
     // Handle deletion flag from TilePanel
-    if (tile_panel.should_delete_selected_monster() &&
-        tile_panel.get_selected_monster()) {
-        const auto* monster_to_delete = tile_panel.get_selected_monster();
+    if (editor_panel.should_delete_selected_monster() &&
+        editor_panel.get_selected_monster()) {
+        const auto* monster_to_delete = editor_panel.get_selected_monster();
         level.remove_monster_at(monster_to_delete->tile_x,
                                 monster_to_delete->tile_y);
-        tile_panel.clear_delete_flag();
+        editor_panel.clear_delete_flag();
         return;
     }
 
@@ -1055,13 +1057,14 @@ void EditorScene::handle_monster_mode_input(Level& level, TilePanel& tile_panel,
 
         if (existing_monster) {
             // Select existing monster for editing
-            tile_panel.set_selected_monster(existing_monster);
+            editor_panel.set_selected_monster(existing_monster);
         } else {
             // Create new monster
             EditorMonster new_monster;
             new_monster.tile_x = tile_x;
             new_monster.tile_y = tile_y;
-            new_monster.preset_name = tile_panel.get_selected_monster_preset();
+            new_monster.preset_name =
+                editor_panel.get_selected_monster_preset();
 
             // Set color based on preset
             if (new_monster.preset_name == "goblin") {
@@ -1076,7 +1079,7 @@ void EditorScene::handle_monster_mode_input(Level& level, TilePanel& tile_panel,
 
             // Select the newly created monster
             EditorMonster* added_monster = level.get_monster_at(tile_x, tile_y);
-            tile_panel.set_selected_monster(added_monster);
+            editor_panel.set_selected_monster(added_monster);
         }
     }
 
@@ -1085,20 +1088,21 @@ void EditorScene::handle_monster_mode_input(Level& level, TilePanel& tile_panel,
         level.remove_monster_at(tile_x, tile_y);
 
         // Clear selection if we deleted the selected monster
-        if (tile_panel.get_selected_monster() &&
-            tile_panel.get_selected_monster()->tile_x == tile_x &&
-            tile_panel.get_selected_monster()->tile_y == tile_y) {
-            tile_panel.set_selected_monster(nullptr);
+        if (editor_panel.get_selected_monster() &&
+            editor_panel.get_selected_monster()->tile_x == tile_x &&
+            editor_panel.get_selected_monster()->tile_y == tile_y) {
+            editor_panel.set_selected_monster(nullptr);
         }
     }
 }
 
-void render_monster_cursor_preview(TilePanel& tile_panel, ImDrawList* draw_list,
+void render_monster_cursor_preview(EditorPanel& editor_panel,
+                                   ImDrawList* draw_list,
                                    const ImVec2& mouse_pos,
                                    const ImVec2& origin, float tile_size) {
     // Get the selected monster preset
     const std::string& selected_preset =
-        tile_panel.get_selected_monster_preset();
+        editor_panel.get_selected_monster_preset();
     if (selected_preset.empty()) {
         return;  // No preset selected
     }
@@ -1270,7 +1274,7 @@ void render_monster_cursor_preview(TilePanel& tile_panel, ImDrawList* draw_list,
         12);
 }
 
-void EditorScene::handle_background_mode_input(TilePanel& tile_panel,
+void EditorScene::handle_background_mode_input(EditorPanel& editor_panel,
                                                const ImVec2& mouse_pos,
                                                const ImVec2& origin) {
     // This will be called when user clicks in scene view
@@ -1280,7 +1284,7 @@ void EditorScene::handle_background_mode_input(TilePanel& tile_panel,
 
 void EditorScene::render_background_placement_preview(
     BackgroundManager* bg_manager,
-    BackgroundObjectPresetManager* bg_preset_manager, TilePanel& tile_panel,
+    BackgroundObjectPresetManager* bg_preset_manager, EditorPanel& editor_panel,
     ImDrawList* draw_list, const ImVec2& origin, Level& level) {
     // Get mouse position
     ImVec2 mouse_pos = ImGui::GetMousePos();
@@ -1294,8 +1298,8 @@ void EditorScene::render_background_placement_preview(
     }
 
     // Get preset info
-    int preset_idx = tile_panel.get_selected_background_preset_idx();
-    float scale = tile_panel.get_background_object_scale();
+    int preset_idx = editor_panel.get_selected_background_preset_idx();
+    float scale = editor_panel.get_background_object_scale();
 
     if (preset_idx < 0) {
         return;
@@ -1437,6 +1441,6 @@ void EditorScene::render_background_placement_preview(
     // Handle cancel with ESC or right-click
     if (ImGui::IsKeyPressed(ImGuiKey_Escape) ||
         ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
-        tile_panel.clear_background_placing_mode();
+        editor_panel.clear_background_placing_mode();
     }
 }

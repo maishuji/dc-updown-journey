@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "udjourney-editor/Level.hpp"
-#include "udjourney-editor/TilePanel.hpp"
+#include "udjourney-editor/EditorPanel.hpp"
 #include "udjourney-editor/background/BackgroundManager.hpp"
 #include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
 #include "udjourney-editor/ui/PlatformContextPopup.hpp"
@@ -16,7 +16,7 @@ class EditorScene {
  public:
     EditorScene();
     // Main rendering function
-    void render(Level& level, TilePanel& tile_panel,
+    void render(Level& level, EditorPanel& editor_panel,
                 BackgroundManager* bg_manager = nullptr,
                 BackgroundObjectPresetManager* bg_preset_manager = nullptr);
 
@@ -55,33 +55,34 @@ class EditorScene {
                            const ImVec2& origin, const Level& level);
     void render_background_placement_preview(
         BackgroundManager* bg_manager,
-        BackgroundObjectPresetManager* bg_preset_manager, TilePanel& tile_panel,
-        ImDrawList* draw_list, const ImVec2& origin, Level& level);
+        BackgroundObjectPresetManager* bg_preset_manager,
+        EditorPanel& editor_panel, ImDrawList* draw_list, const ImVec2& origin,
+        Level& level);
     void render_grid(Level& level, ImDrawList* draw_list, const ImVec2& origin);
-    void render_platforms(Level& level, TilePanel& tile_panel,
+    void render_platforms(Level& level, EditorPanel& editor_panel,
                           ImDrawList* draw_list, const ImVec2& origin);
     void render_player_spawn(Level& level, ImDrawList* draw_list,
                              const ImVec2& origin);
-    void handle_mouse_input(Level& level, TilePanel& tile_panel,
+    void handle_mouse_input(Level& level, EditorPanel& editor_panel,
                             ImDrawList* draw_list, const ImVec2& origin);
-    void handle_tile_mode_input(Level& level, TilePanel& tile_panel,
+    void handle_tile_mode_input(Level& level, EditorPanel& editor_panel,
                                 ImDrawList* draw_list, const ImVec2& origin);
-    void handle_platform_mode_input(Level& level, TilePanel& tile_panel,
+    void handle_platform_mode_input(Level& level, EditorPanel& editor_panel,
                                     const ImVec2& mouse_pos,
                                     const ImVec2& origin);
     void handle_spawn_mode_input(Level& level, const ImVec2& mouse_pos,
                                  const ImVec2& origin);
-    void handle_monster_mode_input(Level& level, TilePanel& tile_panel,
+    void handle_monster_mode_input(Level& level, EditorPanel& editor_panel,
                                    const ImVec2& mouse_pos,
                                    const ImVec2& origin, bool left_clicked,
                                    bool right_clicked);
-    void handle_background_mode_input(TilePanel& tile_panel,
+    void handle_background_mode_input(EditorPanel& editor_panel,
                                       const ImVec2& mouse_pos,
                                       const ImVec2& origin);
-    void render_monsters(Level& level, TilePanel& tile_panel,
+    void render_monsters(Level& level, EditorPanel& editor_panel,
                          ImDrawList* draw_list, const ImVec2& origin);
     void render_selection(ImDrawList* draw_list);
-    void apply_selection_to_tiles(Level& level, TilePanel& tile_panel,
+    void apply_selection_to_tiles(Level& level, EditorPanel& editor_panel,
                                   ImDrawList* draw_list, const ImVec2& origin);
 
     // Helper methods

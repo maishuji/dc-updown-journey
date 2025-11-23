@@ -4,12 +4,22 @@
 
 #include <string>
 #include <vector>
+#include <memory>
+#include <map>
 
 // Include Level.hpp to get enum definitions
 #include "udjourney-editor/Level.hpp"
 #include "udjourney-editor/MonsterPresetManager.hpp"
 #include "udjourney-editor/background/BackgroundManager.hpp"
 #include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
+
+// Forward declare mode handlers
+class IModeHandler;
+class TileModeHandler;
+class PlatformModeHandler;
+class SpawnModeHandler;
+class MonsterModeHandler;
+class BackgroundModeHandler;
 
 namespace color {
 extern const ImU32 kColorRed;
@@ -29,10 +39,16 @@ enum class EditMode {
     Background
 };
 
-class TilePanel {
+class EditorPanel {
  public:
-    TilePanel();
+    EditorPanel();
+    ~EditorPanel();  // Must be defined in .cpp where handler types are complete
 
+    // Delete copy/move to avoid issues with unique_ptr of incomplete types
+    EditorPanel(const EditorPanel&) = delete;
+    EditorPanel& operator=(const EditorPanel&) = delete;
+    EditorPanel(EditorPanel&&) = delete;
+    EditorPanel& operator=(EditorPanel&&) = delete;
     void draw();
 
     // Set background managers (called from Editor)
@@ -51,29 +67,18 @@ class TilePanel {
     ImVec2 get_platform_size() const noexcept;
 
     void set_button(const std::string& iId, ImU32 color);
-    inline void set_scale(float scale) noexcept { this->scale = scale; }
+    void set_scale(float scale) noexcept;
 
     // Platform editing
-    void set_selected_platform(EditorPlatform* platform) {
-        selected_platform_ = platform;
-    }
+    void set_selected_platform(EditorPlatform* platform);
     EditorPlatform* get_selected_platform() const { return selected_platform_; }
 
     // Monster editing
-    void set_selected_monster(EditorMonster* monster) {
-        selected_monster_ = monster;
-    }
-    EditorMonster* get_selected_monster() const { return selected_monster_; }
-    const std::string& get_selected_monster_preset() const {
-        return selected_monster_preset;
-    }
-    bool should_delete_selected_monster() const {
-        return delete_selected_monster_;
-    }
-    void clear_delete_flag() {
-        delete_selected_monster_ = false;
-        selected_monster_ = nullptr;
-    }
+    void set_selected_monster(EditorMonster* monster);
+    EditorMonster* get_selected_monster() const;
+    const std::string& get_selected_monster_preset() const;
+    bool should_delete_selected_monster() const;
+    void clear_delete_flag();
 
     // Focus management
     void request_focus() { should_focus_ = true; }
@@ -82,44 +87,39 @@ class TilePanel {
     void initialize_monster_presets();
 
     // Background getters
-    bool is_background_placing_mode() const { return background_placing_mode_; }
-    int get_selected_background_preset_idx() const {
-        return selected_preset_idx_;
-    }
-    float get_background_object_scale() const { return new_bg_object_scale_; }
+    bool is_background_placing_mode() const;
+    int get_selected_background_preset_idx() const;
+    float get_background_object_scale() const;
 
     // Background control
-    void clear_background_placing_mode() {
-        background_placing_mode_ = false;
-        selected_preset_idx_ = -1;
-    }
+    void clear_background_placing_mode();
 
  private:
     float scale = 1.0f;  // Default scale
-
-    ImVec2 platform_size = ImVec2(1.0f, 1.0f);
-
-    ImU32 cur_color = IM_COL32(255, 255, 255,
-                               255);  // Default color for the current selection
     EditMode edit_mode = EditMode::Tiles;
-    PlatformBehaviorType platform_behavior = PlatformBehaviorType::Static;
 
-    // Feature selection for new platforms
+    // Mode handlers (Strategy pattern)
+    std::unique_ptr<TileModeHandler> tile_handler_;
+    std::unique_ptr<PlatformModeHandler> platform_handler_;
+    std::unique_ptr<SpawnModeHandler> spawn_handler_;
+    std::unique_ptr<MonsterModeHandler> monster_handler_;
+    std::unique_ptr<BackgroundModeHandler> background_handler_;
+
+    // Legacy members kept for compatibility (TODO: fully migrate to handlers)
+    ImU32 cur_color = IM_COL32(255, 255, 255, 255);
+    ImVec2 platform_size = ImVec2(1.0f, 1.0f);
+    PlatformBehaviorType platform_behavior = PlatformBehaviorType::Static;
     bool feature_spikes = false;
     bool feature_checkpoint = false;
-
-    // Currently selected platform for editing
     EditorPlatform* selected_platform_ = nullptr;
 
-    // Monster editing
+    // Monster editing (TODO: create MonsterModeHandler)
     std::string selected_monster_preset = "goblin";
     EditorMonster* selected_monster_ = nullptr;
     bool delete_selected_monster_ = false;
-
-    // Monster preset management
     udjourney::editor::MonsterPresetManager monster_preset_manager_;
 
-    // Background management
+    // Background management (delegated to BackgroundModeHandler)
     BackgroundManager* background_manager_ = nullptr;
     BackgroundObjectPresetManager* background_preset_manager_ = nullptr;
     int selected_preset_idx_ = 0;
@@ -127,7 +127,7 @@ class TilePanel {
     char new_layer_name_[128] = "New Layer";
     float new_layer_parallax_ = 0.5f;
     int new_layer_depth_ = 0;
-    bool background_placing_mode_ = false;  // True when ready to place object
+    bool background_placing_mode_ = false;
 
     // Layer deletion confirmation
     bool show_delete_layer_confirmation_ = false;

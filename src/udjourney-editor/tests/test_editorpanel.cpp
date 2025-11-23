@@ -1,9 +1,9 @@
 // Copyright 2025 Quentin Cartier
 #include <gtest/gtest.h>
 
-#include "udjourney-editor/TilePanel.hpp"
+#include "udjourney-editor/EditorPanel.hpp"
 
-TEST(TilePanelTest, ColorValuesAreCorrect) {
+TEST(EditorPanelTest, ColorValuesAreCorrect) {
     EXPECT_EQ(color::kColorRed, IM_COL32(255, 0, 0, 255));
     EXPECT_EQ(color::kColorGreen, IM_COL32(0, 255, 0, 255));
     EXPECT_EQ(color::kColorBlue, IM_COL32(0, 0, 255, 255));
@@ -12,10 +12,10 @@ TEST(TilePanelTest, ColorValuesAreCorrect) {
     EXPECT_EQ(color::kColorPurple, IM_COL32(128, 0, 255, 255));
 }
 
-TEST(TilePanelTest, SetButtonSetsCurrentColor) {
+TEST(EditorPanelTest, SetButtonSetsCurrentColor) {
     // This test would require ImGui context to work properly
     // For now, we'll test color constants and basic functionality
-    TilePanel panel;
+    EditorPanel panel;
 
     // Test that we can get the current color (default should be white)
     ImU32 initial_color = panel.get_current_color();

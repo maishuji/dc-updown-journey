@@ -15,11 +15,6 @@ MonsterPresetManager::MonsterPresetManager() { load_available_presets(); }
 void MonsterPresetManager::load_available_presets() {
     presets_.clear();
 
-    auto cur_path = std::filesystem::current_path();  // Ensure current path is
-                                                      // set correctly
-    // std::cout << "Current working directory: " << cur_path.string() <<
-    // std::endl;
-
     const std::string assets_path = "assets/monsters";
 
     if (!std::filesystem::exists(assets_path)) {

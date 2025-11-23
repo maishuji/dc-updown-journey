@@ -24,7 +24,7 @@
 #include "udjourney-editor/DockingHelper.hpp"
 #include "udjourney-editor/EditorScene.hpp"
 #include "udjourney-editor/Level.hpp"
-#include "udjourney-editor/TilePanel.hpp"
+#include "udjourney-editor/EditorPanel.hpp"
 #include "udjourney-editor/background/BackgroundManager.hpp"
 #include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
 #include "udjourney-editor/strategies/level/LevelCreationStrategy.hpp"
@@ -35,7 +35,7 @@ struct Editor::PImpl {
     bool running = true;
     float ui_scale = 2.0f;
     Level level;
-    TilePanel tile_panel;
+    EditorPanel editor_panel;
     EditorScene scene;
     BackgroundManager background_manager;
     BackgroundObjectPresetManager background_preset_manager;
@@ -372,7 +372,7 @@ void Editor::init() {
     }
 
     // Set background managers on tile panel
-    pimpl->tile_panel.set_background_managers(
+    pimpl->editor_panel.set_background_managers(
         &pimpl->background_manager, &pimpl->background_preset_manager);
 
     // Initialize with a default level size
@@ -383,7 +383,7 @@ void Editor::run() {
     while (!WindowShouldClose()) {
         // Global keyboard shortcuts (using raylib for global detection)
         if (IsKeyPressed(KEY_F1)) {
-            pimpl->tile_panel.request_focus();
+            pimpl->editor_panel.request_focus();
         }
 
         // Export as JSON shortcut (Ctrl+E)
@@ -547,7 +547,7 @@ void Editor::run() {
                                 pimpl->original_style;  // Reset to original
                                                         // before scaling
                             ImGui::GetStyle().ScaleAllSizes(scale);
-                            pimpl->tile_panel.set_scale(scale);
+                            pimpl->editor_panel.set_scale(scale);
                         }
                     }
                     ImGui::EndMenu();
@@ -610,11 +610,11 @@ void Editor::run() {
             ImGuiFileDialog::Instance()->Close();
         }
 
-        pimpl->tile_panel.draw();
+        pimpl->editor_panel.draw();
 
         // Render the main scene view using EditorScene
         pimpl->scene.render(pimpl->level,
-                            pimpl->tile_panel,
+                            pimpl->editor_panel,
                             &pimpl->background_manager,
                             &pimpl->background_preset_manager);
 

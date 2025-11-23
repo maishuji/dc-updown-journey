@@ -48,7 +48,7 @@ FetchContent_MakeAvailable(nlohmann_json)
 add_library(udjourney_editor_lib
   src/Editor.cpp
   src/EditorScene.cpp
-  src/TilePanel.cpp
+  src/EditorPanel.cpp
   src/MonsterPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
@@ -57,6 +57,11 @@ add_library(udjourney_editor_lib
   src/background/BackgroundManager.cpp
   src/background/BackgroundPanel.cpp
   src/background/BackgroundObjectPresetManager.cpp
+  src/mode_handlers/TileModeHandler.cpp
+  src/mode_handlers/PlatformModeHandler.cpp
+  src/mode_handlers/SpawnModeHandler.cpp
+  src/mode_handlers/BackgroundModeHandler.cpp
+  src/mode_handlers/MonsterModeHandler.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -86,7 +91,7 @@ target_link_libraries(udjourney_editor_lib PUBLIC udj-core raylib nlohmann_json:
 add_library(udjourney_editor_lib_test STATIC
   src/Editor.cpp
   src/EditorScene.cpp
-  src/TilePanel.cpp
+  src/EditorPanel.cpp
   src/MonsterPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
@@ -95,6 +100,11 @@ add_library(udjourney_editor_lib_test STATIC
   src/background/BackgroundManager.cpp
   src/background/BackgroundPanel.cpp
   src/background/BackgroundObjectPresetManager.cpp
+  src/mode_handlers/TileModeHandler.cpp
+  src/mode_handlers/PlatformModeHandler.cpp
+  src/mode_handlers/SpawnModeHandler.cpp
+  src/mode_handlers/BackgroundModeHandler.cpp
+  src/mode_handlers/MonsterModeHandler.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -141,24 +151,29 @@ endif()
 
 enable_testing()
 
-add_executable(tilepanel_tests
-  tests/test_tilepanel.cpp
-  src/TilePanel.cpp
+add_executable(editorpanel_tests
+  tests/test_editorpanel.cpp
+  src/EditorPanel.cpp
   src/MonsterPresetManager.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/background/BackgroundLayer.cpp
   src/background/BackgroundManager.cpp
   src/background/BackgroundObjectPresetManager.cpp
+  src/mode_handlers/TileModeHandler.cpp
+  src/mode_handlers/PlatformModeHandler.cpp
+  src/mode_handlers/SpawnModeHandler.cpp
+  src/mode_handlers/BackgroundModeHandler.cpp
+  src/mode_handlers/MonsterModeHandler.cpp
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
   ${imgui_SOURCE_DIR}/imgui_tables.cpp
   ${imgui_SOURCE_DIR}/imgui_widgets.cpp
 )
-target_include_directories(tilepanel_tests PRIVATE include src ${imgui_SOURCE_DIR})
-target_include_directories(tilepanel_tests PRIVATE ../udjourney/include)
-target_link_libraries(tilepanel_tests PRIVATE udj-core gtest gtest_main nlohmann_json::nlohmann_json)
+target_include_directories(editorpanel_tests PRIVATE include src ${imgui_SOURCE_DIR})
+target_include_directories(editorpanel_tests PRIVATE ../udjourney/include)
+target_link_libraries(editorpanel_tests PRIVATE udj-core gtest gtest_main nlohmann_json::nlohmann_json)
 
-add_test(NAME TilePanelTests COMMAND tilepanel_tests)
+add_test(NAME EditorPanelTests COMMAND editorpanel_tests)
 
 # Add the tests subdirectory
 add_subdirectory(tests)
