@@ -2,13 +2,14 @@
 #include "udjourney-editor/mode_handlers/MonsterModeHandler.hpp"
 
 #include <imgui.h>
-#include <raylib/raylib.h>
-#include <nlohmann/json.hpp>
-
 #include <filesystem>
 #include <fstream>
 #include <functional>
 #include <unordered_map>
+
+#include <nlohmann/json.hpp>
+
+#include "raylib/raylib.h"
 
 // Texture cache for monster preview thumbnails
 static std::unordered_map<std::string, Texture2D> monster_texture_cache;
