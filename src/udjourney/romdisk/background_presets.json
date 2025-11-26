@@ -1,0 +1,76 @@
+{
+  "presets": [
+    {
+      "name": "Tree",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 1,
+      "tile_col": 0,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Tree Winter",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 1,
+      "tile_col": 1,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Tree Autumn",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 1,
+      "tile_col": 2,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Rock",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 0,
+      "tile_col": 0,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Bush",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 0,
+      "tile_col": 2,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Bush Top",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 0,
+      "tile_col": 3,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Mountain Top",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 0,
+      "tile_col": 1,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Mountain Top 2",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 2,
+      "tile_col": 0,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Pattern 1",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 0,
+      "tile_col": 2,
+      "default_scale": 1.0
+    }
+  ]
+}

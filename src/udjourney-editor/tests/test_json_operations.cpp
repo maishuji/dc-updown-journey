@@ -296,3 +296,46 @@ TEST_F(JSONOperationsTest, InvalidJSONHandling) {
                   PlatformBehaviorType::Static);
     }
 }
+
+TEST_F(JSONOperationsTest, ImportFromFileStrategyTest) {
+    // Create a test JSON file with complete level data
+    nlohmann::json test_json = {
+        {"rows", 12},
+        {"cols", 20},
+        {"player_spawn", {{"x", 3}, {"y", 10}}},
+        {"platforms",
+         {{{"x", 0},
+           {"y", 11},
+           {"width", 5.0},
+           {"height", 1.0},
+           {"behavior", "static"},
+           {"features", nlohmann::json::array()}}}},
+        {"monsters",
+         {{{"x", 10}, {"y", 9}, {"preset_name", "goblin"}, {"health", 150}}}}};
+
+    std::string temp_path = create_temp_file(test_json.dump());
+
+    // Import using the strategy through Editor's method
+    ASSERT_NO_THROW(editor->test_import_platform_level_json(temp_path));
+
+    // Verify the import worked correctly
+    Level& level = editor->get_test_level();
+
+    EXPECT_EQ(level.row_cnt, 12);
+    EXPECT_EQ(level.col_cnt, 20);
+    EXPECT_EQ(level.player_spawn_x, 3);
+    EXPECT_EQ(level.player_spawn_y, 10);
+
+    ASSERT_EQ(level.platforms.size(), 1);
+    EXPECT_EQ(level.platforms[0].tile_x, 0);
+    EXPECT_EQ(level.platforms[0].tile_y, 11);
+    EXPECT_FLOAT_EQ(level.platforms[0].width_tiles, 5.0f);
+    EXPECT_FLOAT_EQ(level.platforms[0].height_tiles, 1.0f);
+    EXPECT_EQ(level.platforms[0].behavior_type, PlatformBehaviorType::Static);
+
+    ASSERT_EQ(level.monsters.size(), 1);
+    EXPECT_EQ(level.monsters[0].tile_x, 10);
+    EXPECT_EQ(level.monsters[0].tile_y, 9);
+    EXPECT_EQ(level.monsters[0].preset_name, "goblin");
+    EXPECT_EQ(level.monsters[0].health_override, 150);
+}

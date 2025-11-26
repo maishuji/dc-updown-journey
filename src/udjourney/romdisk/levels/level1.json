@@ -1,125 +1,363 @@
 {
-  "name": "Level 1 - Journey Downward",
-  "player_spawn": {
-    "x": 10,
-    "y": 1
+  "backgrounds": {
+    "layers": [
+      {
+        "depth": 0,
+        "name": "New Layer",
+        "objects": [
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 512.0,
+            "y": 1120.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 3.0299999713897705,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 864.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.7089999914169312,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 352.0,
+            "y": 1024.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 1184.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 1184.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 1184.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 1184.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 1184.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.1920000314712524,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 1120.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 640.0
+          }
+        ],
+        "parallax_factor": 0.5,
+        "texture_file": ""
+      }
+    ]
   },
-  "monsters": [
-    {
-      "x": 5,
-      "y": 8,
-      "preset_name": "poring"
-    }
-  ],
+  "monsters": [],
+  "name": "Untitled Level",
   "platforms": [
     {
-      "x": 8,
-      "y": 3,
-      "width": 4,
-      "height": 1,
-      "behavior": "static",
-      "comment": "Starting platform"
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 0,
+      "y": 10
     },
     {
-      "x": 15,
-      "y": 6,
-      "width": 3,
-      "height": 1,
-      "behavior": "static",
-      "features": ["checkpoint"]
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 4,
+      "y": 13
     },
     {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 5.0,
       "x": 5,
-      "y": 9,
-      "width": 4,
-      "height": 0.3,
+      "y": 18
+    },
+    {
       "behavior": "horizontal",
-      "behavior_params": {
-        "speed": 1.5,
-        "range": 6.0
-      }
-    },
-    {
-      "x": 12,
-      "y": 12,
-      "width": 5,
-      "height": 1,
-      "behavior": "static"
-    },
-    {
-      "x": 2,
-      "y": 15,
-      "width": 3,
-      "height": 1,
-      "behavior": "static",
-      "features": ["spikes"]
-    },
-    {
+      "height": 1.0,
+      "width": 5.0,
       "x": 8,
-      "y": 15,
-      "width": 2,
-      "height": 1,
-      "behavior": "eight_turn",
-      "behavior_params": {
-        "speed": 1.2,
-        "amplitude": 3.0
-      },
-      "features": ["checkpoint"]
+      "y": 22
     },
     {
-      "x": 14,
-      "y": 18,
-      "width": 4,
-      "height": 1,
-      "behavior": "oscillating_size",
-      "behavior_params": {
-        "min_scale": 0.6,
-        "max_scale": 1.4,
-        "speed": 2.0
-      }
-    },
-    {
-      "x": 6,
-      "y": 21,
-      "width": 6,
-      "height": 1,
-      "behavior": "static"
-    },
-    {
-      "x": 16,
-      "y": 24,
-      "width": 3,
-      "height": 1,
       "behavior": "horizontal",
-      "behavior_params": {
-        "speed": 2.0,
-        "range": 4.0
-      },
-      "features": ["spikes"]
+      "height": 1.0,
+      "width": 5.0,
+      "x": 10,
+      "y": 25
     },
     {
-      "x": 3,
-      "y": 27,
-      "width": 9,
-      "height": 1,
-      "behavior": "static",
-      "features": ["checkpoint"]
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 16,
+      "y": 29
     },
     {
-      "x": 11,
-      "y": 30,
-      "width": 30,
-      "height": 1,
-      "behavior": "static",
-      "features": ["checkpoint", "spikes"]
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 17,
+      "y": 33
     },
     {
-      "x": 7,
-      "y": 33,
-      "width": 8,
-      "height": 2,
-      "behavior": "static",
-      "comment": "Final platform - reaching here is victory!"
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 13,
+      "y": 34
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 9,
+      "y": 37
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 5,
+      "y": 42
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 4,
+      "y": 46
     }
-  ]
+  ],
+  "player_spawn": {
+    "x": 2,
+    "y": 8
+  }
 }

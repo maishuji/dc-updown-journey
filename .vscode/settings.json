@@ -1,11 +1,11 @@
 {
-    
     "terminal.integrated.shellIntegration.enabled": true,
     "terminal.integrated.defaultProfile.osx": "Init dev env",
     "cmake.configureOnOpen": false,
     "C_Cpp.formatting": "clangFormat",
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": false,
+    "editor.formatOnSave": true,
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
     "cmake.configureSettings": {
         "toolkitFile": "${workspaceFolder}/.vscode/cmake-kits.json",
@@ -72,4 +72,4 @@
         "sstream": "cpp"
     },
     "C_Cpp.default.compilerPath": "/opt/toolchains/dc/kos/utils/build_wrappers/kos-c++",
-  }
+}
