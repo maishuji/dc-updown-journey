@@ -52,6 +52,8 @@ add_library(udjourney_editor_lib
   src/MonsterPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
+  src/strategies/level/ImportFromFileStrategy.cpp
+  src/strategies/level/StaircaseLevelStrategy.cpp
   src/ui/NewLevelPopup.cpp
   src/background/BackgroundLayer.cpp
   src/background/BackgroundManager.cpp
@@ -95,6 +97,8 @@ add_library(udjourney_editor_lib_test STATIC
   src/MonsterPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
+  src/strategies/level/ImportFromFileStrategy.cpp
+  src/strategies/level/StaircaseLevelStrategy.cpp
   src/ui/NewLevelPopup.cpp
   src/background/BackgroundLayer.cpp
   src/background/BackgroundManager.cpp
@@ -156,6 +160,8 @@ add_executable(editorpanel_tests
   src/EditorPanel.cpp
   src/MonsterPresetManager.cpp
   src/strategies/level/BlankLevelStrategy.cpp
+  src/strategies/level/ImportFromFileStrategy.cpp
+  src/strategies/level/StaircaseLevelStrategy.cpp
   src/background/BackgroundLayer.cpp
   src/background/BackgroundManager.cpp
   src/background/BackgroundObjectPresetManager.cpp
