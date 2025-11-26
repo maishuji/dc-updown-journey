@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <string>
 
 #include <nlohmann/json.hpp>
 
@@ -180,7 +181,6 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
         import_success_ = true;
         std::cout << "Successfully imported level from: " << file_path_
                   << std::endl;
-
     } catch (const std::exception& e) {
         error_message_ = std::string("Error importing level JSON: ") + e.what();
         std::cerr << error_message_ << std::endl;

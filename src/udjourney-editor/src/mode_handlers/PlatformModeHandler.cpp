@@ -2,6 +2,7 @@
 #include "udjourney-editor/mode_handlers/PlatformModeHandler.hpp"
 
 #include <algorithm>
+#include <vector>
 
 PlatformModeHandler::PlatformModeHandler() {}
 

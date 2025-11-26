@@ -4,10 +4,13 @@
 #include <raylib/raylib.h>
 
 #include <cctype>
+#include <cstdio>
 #include <cmath>
 
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <unordered_map>
 

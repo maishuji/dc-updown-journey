@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <functional>
+#include <string>
 #include <unordered_map>
 
 #include <nlohmann/json.hpp>
