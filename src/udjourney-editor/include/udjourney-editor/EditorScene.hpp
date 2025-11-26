@@ -52,6 +52,10 @@ class EditorScene {
     // Monster context menu selection
     EditorMonster* selected_monster_for_context_ = nullptr;
 
+    // FUD element selection
+    FUDElement* selected_fud_ = nullptr;
+    int selected_fud_idx_ = -1;
+
     // Internal rendering methods
     void setup_scene_window(const ImGuiIO& io);
     void render_background(BackgroundManager* bg_manager, ImDrawList* draw_list,
@@ -82,8 +86,14 @@ class EditorScene {
     void handle_background_mode_input(EditorPanel& editor_panel,
                                       const ImVec2& mouse_pos,
                                       const ImVec2& origin);
+    void handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
+                               const ImVec2& mouse_pos, const ImVec2& origin,
+                               bool left_clicked, bool right_clicked);
     void render_monsters(Level& level, EditorPanel& editor_panel,
                          ImDrawList* draw_list, const ImVec2& origin);
+    void render_fuds(Level& level, EditorPanel& editor_panel,
+                     ImDrawList* draw_list, const ImVec2& origin,
+                     const ImVec2& viewport_size);
     void render_selection(ImDrawList* draw_list);
     void apply_selection_to_tiles(Level& level, EditorPanel& editor_panel,
                                   ImDrawList* draw_list, const ImVec2& origin);
@@ -97,6 +107,8 @@ class EditorScene {
                               const ImVec2& origin) const;
     ImU32 get_platform_color(PlatformBehaviorType behavior,
                              PlatformFeatureType feature) const;
+    ImVec2 calculate_fud_anchor_position(FUDAnchor anchor,
+                                         const ImVec2& viewport_size) const;
 
     struct PImpl;
     std::unique_ptr<PImpl> pimpl_;

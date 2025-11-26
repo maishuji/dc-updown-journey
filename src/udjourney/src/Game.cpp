@@ -626,6 +626,161 @@ void Game::draw_backgrounds() const {
     }
 }
 
+void Game::draw_fuds_() const {
+    if (!m_current_scene) {
+        return;
+    }
+
+    const auto &fuds = m_current_scene->get_fuds();
+    if (fuds.empty()) {
+        return;
+    }
+
+    // FUDs are drawn in screen space (not affected by camera/scrolling)
+    for (const auto &fud : fuds) {
+        if (!fud.visible) {
+            continue;
+        }
+
+        // Calculate anchor position based on screen size
+        float anchor_x = 0.0f;
+        float anchor_y = 0.0f;
+
+        float screen_width = static_cast<float>(kBaseWidth);
+        float screen_height = static_cast<float>(kBaseHeight);
+
+        switch (fud.anchor) {
+            case udjourney::scene::FUDAnchor::TopLeft:
+                anchor_x = 0;
+                anchor_y = 0;
+                break;
+            case udjourney::scene::FUDAnchor::TopCenter:
+                anchor_x = screen_width / 2;
+                anchor_y = 0;
+                break;
+            case udjourney::scene::FUDAnchor::TopRight:
+                anchor_x = screen_width;
+                anchor_y = 0;
+                break;
+            case udjourney::scene::FUDAnchor::MiddleLeft:
+                anchor_x = 0;
+                anchor_y = screen_height / 2;
+                break;
+            case udjourney::scene::FUDAnchor::MiddleCenter:
+                anchor_x = screen_width / 2;
+                anchor_y = screen_height / 2;
+                break;
+            case udjourney::scene::FUDAnchor::MiddleRight:
+                anchor_x = screen_width;
+                anchor_y = screen_height / 2;
+                break;
+            case udjourney::scene::FUDAnchor::BottomLeft:
+                anchor_x = 0;
+                anchor_y = screen_height;
+                break;
+            case udjourney::scene::FUDAnchor::BottomCenter:
+                anchor_x = screen_width / 2;
+                anchor_y = screen_height;
+                break;
+            case udjourney::scene::FUDAnchor::BottomRight:
+                anchor_x = screen_width;
+                anchor_y = screen_height;
+                break;
+        }
+
+        // Calculate final FUD position
+        float fud_x = anchor_x + fud.offset_x;
+        float fud_y = anchor_y + fud.offset_y;
+
+        // Draw FUD based on type
+        if (fud.type_id == "healthbar" || fud.type_id == "mana_bar") {
+            // Draw a simple health/mana bar
+            Color bar_color = fud.type_id == "healthbar" ? RED : BLUE;
+            Color bg_color = DARKGRAY;
+
+            // Background
+            DrawRectangle(static_cast<int>(fud_x),
+                          static_cast<int>(fud_y),
+                          static_cast<int>(fud.size_x),
+                          static_cast<int>(fud.size_y),
+                          bg_color);
+
+            // Bar (80% filled for demo)
+            float fill_percent = 0.8f;
+            DrawRectangle(static_cast<int>(fud_x + 2),
+                          static_cast<int>(fud_y + 2),
+                          static_cast<int>((fud.size_x - 4) * fill_percent),
+                          static_cast<int>(fud.size_y - 4),
+                          bar_color);
+
+            // Border
+            DrawRectangleLines(static_cast<int>(fud_x),
+                               static_cast<int>(fud_y),
+                               static_cast<int>(fud.size_x),
+                               static_cast<int>(fud.size_y),
+                               WHITE);
+
+            // Text
+            DrawText(fud.name.c_str(),
+                     static_cast<int>(fud_x + 5),
+                     static_cast<int>(fud_y + 5),
+                     12,
+                     WHITE);
+        } else if (fud.type_id == "score_display") {
+            // Draw score display
+            DrawRectangle(static_cast<int>(fud_x),
+                          static_cast<int>(fud_y),
+                          static_cast<int>(fud.size_x),
+                          static_cast<int>(fud.size_y),
+                          ColorAlpha(BLACK, 0.5f));
+
+            char score_text[64];
+            snprintf(score_text, sizeof(score_text), "Score: %d", m_score);
+            DrawText(score_text,
+                     static_cast<int>(fud_x + 10),
+                     static_cast<int>(fud_y + 10),
+                     20,
+                     WHITE);
+        } else if (fud.type_id == "timer") {
+            // Draw timer
+            DrawRectangle(static_cast<int>(fud_x),
+                          static_cast<int>(fud_y),
+                          static_cast<int>(fud.size_x),
+                          static_cast<int>(fud.size_y),
+                          ColorAlpha(BLACK, 0.5f));
+
+            // Simple countdown timer (demo - would need actual timer logic)
+            int minutes = 3;
+            int seconds = 0;
+            char timer_text[32];
+            snprintf(
+                timer_text, sizeof(timer_text), "%02d:%02d", minutes, seconds);
+            DrawText(timer_text,
+                     static_cast<int>(fud_x + 10),
+                     static_cast<int>(fud_y + 5),
+                     24,
+                     YELLOW);
+        } else {
+            // Generic FUD - just draw a labeled box
+            DrawRectangle(static_cast<int>(fud_x),
+                          static_cast<int>(fud_y),
+                          static_cast<int>(fud.size_x),
+                          static_cast<int>(fud.size_y),
+                          ColorAlpha(YELLOW, 0.3f));
+            DrawRectangleLines(static_cast<int>(fud_x),
+                               static_cast<int>(fud_y),
+                               static_cast<int>(fud.size_x),
+                               static_cast<int>(fud.size_y),
+                               YELLOW);
+            DrawText(fud.name.c_str(),
+                     static_cast<int>(fud_x + 5),
+                     static_cast<int>(fud_y + 5),
+                     12,
+                     WHITE);
+        }
+    }
+}
+
 void Game::draw() const {
     BeginDrawing();
     ClearBackground(SKYBLUE);  // Clear the background with a blue sky color
@@ -683,6 +838,11 @@ void Game::draw() const {
             break;
     }
     m_hud_manager.draw();
+
+    // Draw FUDs (Fixed UI Displays) from current scene
+    if (m_current_scene) {
+        draw_fuds_();
+    }
 
     rlPopMatrix();
     DrawText(kResolutions[current_resolution_idx].label, 10, 10, 20, YELLOW);

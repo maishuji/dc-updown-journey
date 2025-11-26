@@ -152,6 +152,10 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
     // Render player spawn position
     render_player_spawn(level, draw_list, origin);
 
+    // Render FUD elements
+    ImVec2 viewport_size = ImGui::GetContentRegionAvail();
+    render_fuds(level, editor_panel, draw_list, origin, viewport_size);
+
     // Handle mouse input and selection based on current mode
     handle_mouse_input(level, editor_panel, draw_list, origin);
 
@@ -717,6 +721,14 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
             if (left_clicked) {
                 handle_background_mode_input(editor_panel, mouse_pos, origin);
             }
+            break;
+        case EditMode::FUD:
+            handle_fud_mode_input(level,
+                                  editor_panel,
+                                  mouse_pos,
+                                  origin,
+                                  left_clicked,
+                                  right_clicked);
             break;
     }
 }
@@ -1495,5 +1507,168 @@ void EditorScene::render_background_placement_preview(
     if (ImGui::IsKeyPressed(ImGuiKey_Escape) ||
         ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
         editor_panel.clear_background_placing_mode();
+    }
+}
+
+// Helper to calculate FUD anchor position based on viewport
+ImVec2 EditorScene::calculate_fud_anchor_position(
+    FUDAnchor anchor, const ImVec2& viewport_size) const {
+    ImVec2 pos(0, 0);
+
+    switch (anchor) {
+        case FUDAnchor::TopLeft:
+            pos = ImVec2(0, 0);
+            break;
+        case FUDAnchor::TopCenter:
+            pos = ImVec2(viewport_size.x / 2, 0);
+            break;
+        case FUDAnchor::TopRight:
+            pos = ImVec2(viewport_size.x, 0);
+            break;
+        case FUDAnchor::MiddleLeft:
+            pos = ImVec2(0, viewport_size.y / 2);
+            break;
+        case FUDAnchor::MiddleCenter:
+            pos = ImVec2(viewport_size.x / 2, viewport_size.y / 2);
+            break;
+        case FUDAnchor::MiddleRight:
+            pos = ImVec2(viewport_size.x, viewport_size.y / 2);
+            break;
+        case FUDAnchor::BottomLeft:
+            pos = ImVec2(0, viewport_size.y);
+            break;
+        case FUDAnchor::BottomCenter:
+            pos = ImVec2(viewport_size.x / 2, viewport_size.y);
+            break;
+        case FUDAnchor::BottomRight:
+            pos = ImVec2(viewport_size.x, viewport_size.y);
+            break;
+    }
+
+    return pos;
+}
+
+void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
+                              ImDrawList* draw_list, const ImVec2& origin,
+                              const ImVec2& viewport_size) {
+    if (level.fuds.empty()) {
+        return;
+    }
+
+    for (size_t i = 0; i < level.fuds.size(); ++i) {
+        const auto& fud = level.fuds[i];
+
+        if (!fud.visible) {
+            continue;
+        }
+
+        // Calculate anchor position
+        ImVec2 anchor_pos =
+            calculate_fud_anchor_position(fud.anchor, viewport_size);
+
+        // Add origin and offset
+        ImVec2 fud_pos = ImVec2(origin.x + anchor_pos.x + fud.offset.x,
+                                origin.y + anchor_pos.y + fud.offset.y);
+
+        ImVec2 fud_end = ImVec2(fud_pos.x + fud.size.x, fud_pos.y + fud.size.y);
+
+        // Determine if this FUD is selected
+        FUDElement* selected = editor_panel.get_selected_fud();
+        bool is_selected = (selected == &level.fuds[i]);
+
+        // Draw FUD rectangle
+        ImU32 border_color =
+            is_selected ? IM_COL32(0, 255, 0, 255)     // Green for selected
+                        : IM_COL32(255, 255, 0, 200);  // Yellow for normal
+        ImU32 fill_color =
+            IM_COL32(255, 255, 0, 50);  // Semi-transparent yellow fill
+
+        draw_list->AddRectFilled(fud_pos, fud_end, fill_color);
+        draw_list->AddRect(fud_pos, fud_end, border_color, 0.0f, 0, 2.0f);
+
+        // Draw anchor point (small circle)
+        ImVec2 anchor_screen_pos =
+            ImVec2(origin.x + anchor_pos.x, origin.y + anchor_pos.y);
+        draw_list->AddCircleFilled(
+            anchor_screen_pos, 4.0f, IM_COL32(255, 0, 0, 200));
+
+        // Draw label
+        char label[128];
+        snprintf(label, sizeof(label), "%s", fud.name.c_str());
+        ImVec2 text_pos = ImVec2(fud_pos.x + 5, fud_pos.y + 5);
+        draw_list->AddText(text_pos, IM_COL32(255, 255, 255, 255), label);
+
+        // Draw type info
+        snprintf(label, sizeof(label), "Type: %s", fud.type_id.c_str());
+        ImVec2 type_pos = ImVec2(fud_pos.x + 5, fud_pos.y + 20);
+        draw_list->AddText(type_pos, IM_COL32(200, 200, 200, 255), label);
+    }
+}
+
+void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
+                                        const ImVec2& mouse_pos,
+                                        const ImVec2& origin, bool left_clicked,
+                                        bool right_clicked) {
+    // Handle "Add FUD" button click from panel
+    if (editor_panel.should_add_fud()) {
+        FUDElement new_fud = editor_panel.create_fud_from_preset();
+        level.add_fud(new_fud);
+        editor_panel.clear_fud_add_flag();
+
+        // Select the newly added FUD
+        if (!level.fuds.empty()) {
+            editor_panel.set_selected_fud(&level.fuds.back());
+        }
+        return;
+    }
+
+    // Handle FUD deletion
+    if (editor_panel.should_delete_selected_fud()) {
+        FUDElement* selected = editor_panel.get_selected_fud();
+
+        if (selected) {
+            // Find and remove the selected FUD
+            for (size_t i = 0; i < level.fuds.size(); ++i) {
+                if (&level.fuds[i] == selected) {
+                    level.remove_fud(i);
+                    break;
+                }
+            }
+        }
+
+        editor_panel.clear_fud_delete_flag();
+        return;
+    }
+
+    // Handle FUD selection
+    if (left_clicked) {
+        ImVec2 viewport_size = ImGui::GetContentRegionAvail();
+
+        // Check if mouse clicked on any FUD
+        for (size_t i = 0; i < level.fuds.size(); ++i) {
+            auto& fud = level.fuds[i];
+
+            if (!fud.visible) {
+                continue;
+            }
+
+            // Calculate FUD position
+            ImVec2 anchor_pos =
+                calculate_fud_anchor_position(fud.anchor, viewport_size);
+            ImVec2 fud_pos = ImVec2(origin.x + anchor_pos.x + fud.offset.x,
+                                    origin.y + anchor_pos.y + fud.offset.y);
+            ImVec2 fud_end =
+                ImVec2(fud_pos.x + fud.size.x, fud_pos.y + fud.size.y);
+
+            // Check if mouse is inside FUD bounds
+            if (mouse_pos.x >= fud_pos.x && mouse_pos.x <= fud_end.x &&
+                mouse_pos.y >= fud_pos.y && mouse_pos.y <= fud_end.y) {
+                editor_panel.set_selected_fud(&fud);
+                return;
+            }
+        }
+
+        // Clicked on empty space - deselect
+        editor_panel.set_selected_fud(nullptr);
     }
 }

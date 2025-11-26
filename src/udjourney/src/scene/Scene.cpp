@@ -188,6 +188,62 @@ bool Scene::load_from_file(const std::string& filename) {
             }
         }
 
+        // Load FUDs
+        m_fuds.clear();
+        if (scene_data.contains("fuds")) {
+            Logger::info("Loading FUD elements...");
+            for (const auto& fud_json : scene_data["fuds"]) {
+                FUDData fud;
+                fud.name = fud_json.value("name", "FUD");
+                fud.type_id = fud_json.value("type_id", "unknown");
+
+                // Parse anchor
+                std::string anchor_str = fud_json.value("anchor", "TopLeft");
+                if (anchor_str == "TopCenter")
+                    fud.anchor = FUDAnchor::TopCenter;
+                else if (anchor_str == "TopRight")
+                    fud.anchor = FUDAnchor::TopRight;
+                else if (anchor_str == "MiddleLeft")
+                    fud.anchor = FUDAnchor::MiddleLeft;
+                else if (anchor_str == "MiddleCenter")
+                    fud.anchor = FUDAnchor::MiddleCenter;
+                else if (anchor_str == "MiddleRight")
+                    fud.anchor = FUDAnchor::MiddleRight;
+                else if (anchor_str == "BottomLeft")
+                    fud.anchor = FUDAnchor::BottomLeft;
+                else if (anchor_str == "BottomCenter")
+                    fud.anchor = FUDAnchor::BottomCenter;
+                else if (anchor_str == "BottomRight")
+                    fud.anchor = FUDAnchor::BottomRight;
+                else
+                    fud.anchor = FUDAnchor::TopLeft;
+
+                // Load offset and size
+                if (fud_json.contains("offset")) {
+                    fud.offset_x = fud_json["offset"].value("x", 0.0f);
+                    fud.offset_y = fud_json["offset"].value("y", 0.0f);
+                }
+                if (fud_json.contains("size")) {
+                    fud.size_x = fud_json["size"].value("x", 100.0f);
+                    fud.size_y = fud_json["size"].value("y", 30.0f);
+                }
+
+                fud.visible = fud_json.value("visible", true);
+
+                // Load properties as strings (simplified for game runtime)
+                if (fud_json.contains("properties")) {
+                    for (const auto& [key, value] :
+                         fud_json["properties"].items()) {
+                        fud.properties[key] =
+                            value.dump();  // Store as JSON string
+                    }
+                }
+
+                m_fuds.push_back(fud);
+                Logger::info("Loaded FUD: % (type: %)", fud.name, fud.type_id);
+            }
+        }
+
         Logger::info("Successfully loaded scene: %", filename);
         return true;
     } catch (const std::exception& e) {

@@ -1,0 +1,38 @@
+{
+  "type_id": "score_display",
+  "display_name": "Score Display",
+  "category": "ScoreCounter",
+  "default_size": {
+    "x": 150,
+    "y": 40
+  },
+  "default_anchor": "TopRight",
+  "description": "Displays the player's current score",
+  "properties_schema": {
+    "font_size": {
+      "type": "int",
+      "default": 24,
+      "description": "Font size in pixels"
+    },
+    "prefix_text": {
+      "type": "string",
+      "default": "Score: ",
+      "description": "Text shown before the score"
+    },
+    "text_color": {
+      "type": "color",
+      "default": [255, 255, 255],
+      "description": "RGB color of text"
+    },
+    "background_visible": {
+      "type": "bool",
+      "default": true,
+      "description": "Show background panel"
+    },
+    "background_color": {
+      "type": "color",
+      "default": [0, 0, 0, 128],
+      "description": "RGBA color of background"
+    }
+  }
+}

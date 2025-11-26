@@ -660,7 +660,59 @@
       }
     ]
   },
-  "monsters": [],
+  "fuds": [
+    {
+      "anchor": "TopLeft",
+      "name": "Health Bar",
+      "offset": {
+        "x": 41.0,
+        "y": 13.0
+      },
+      "properties": {
+        "background_color": [
+          64,
+          64,
+          64
+        ],
+        "bar_color": [
+          255,
+          0,
+          0
+        ],
+        "border_thickness": 2,
+        "max_value": 100,
+        "show_numbers": true
+      },
+      "size": {
+        "x": 200.0,
+        "y": 30.0
+      },
+      "type_id": "healthbar",
+      "visible": true
+    }
+  ],
+  "monsters": [
+    {
+      "preset_name": "poring",
+      "x": 7,
+      "y": 12
+    },
+    {
+      "preset_name": "poring",
+      "x": 10,
+      "y": 14
+    },
+    {
+      "preset_name": "poring",
+      "x": 13,
+      "y": 17
+    },
+    {
+      "preset_name": "poring",
+      "x": 15,
+      "y": 19
+    }
+  ],
   "name": "Untitled Level",
   "platforms": [
     {

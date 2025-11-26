@@ -272,9 +272,148 @@
         ],
         "parallax_factor": 0.5,
         "texture_file": ""
+      },
+      {
+        "depth": 0,
+        "name": "back",
+        "objects": [
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 320.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 320.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 320.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 320.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 320.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 800.0,
+            "y": 256.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 0.5680000185966492,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 640.0,
+            "y": 288.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 0.8560000061988831,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 256.0
+          }
+        ],
+        "parallax_factor": 0.8140000104904175,
+        "texture_file": ""
       }
     ]
   },
+  "fuds": [
+    {
+      "anchor": "TopLeft",
+      "name": "Player Health",
+      "offset": {
+        "x": 10.0,
+        "y": 10.0
+      },
+      "properties": {
+        "bar_color": [
+          255,
+          0,
+          0
+        ],
+        "max_value": 100,
+        "show_numbers": true
+      },
+      "size": {
+        "x": 200.0,
+        "y": 30.0
+      },
+      "type_id": "healthbar",
+      "visible": true
+    },
+    {
+      "anchor": "TopRight",
+      "name": "Score Display",
+      "offset": {
+        "x": -160.0,
+        "y": 10.0
+      },
+      "properties": {
+        "font_size": 24,
+        "prefix_text": "Score: "
+      },
+      "size": {
+        "x": 150.0,
+        "y": 40.0
+      },
+      "type_id": "score_display",
+      "visible": true
+    }
+  ],
   "monsters": [],
   "name": "Untitled Level",
   "platforms": [

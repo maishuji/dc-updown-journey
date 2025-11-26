@@ -82,6 +82,30 @@ struct BackgroundLayerData {
     std::vector<BackgroundObjectData> objects;
 };
 
+enum class FUDAnchor {
+    TopLeft,
+    TopCenter,
+    TopRight,
+    MiddleLeft,
+    MiddleCenter,
+    MiddleRight,
+    BottomLeft,
+    BottomCenter,
+    BottomRight
+};
+
+struct FUDData {
+    std::string name;
+    std::string type_id;
+    FUDAnchor anchor = FUDAnchor::TopLeft;
+    float offset_x = 0.0f;
+    float offset_y = 0.0f;
+    float size_x = 100.0f;
+    float size_y = 30.0f;
+    bool visible = true;
+    std::map<std::string, std::string> properties;  // Simplified for runtime
+};
+
 class Scene {
  public:
     Scene() = default;
@@ -103,6 +127,7 @@ class Scene {
     const std::vector<BackgroundLayerData>& get_background_layers() const {
         return m_background_layers;
     }
+    const std::vector<FUDData>& get_fuds() const { return m_fuds; }
     const std::string& get_name() const { return m_name; }
 
     // Setters
@@ -130,6 +155,7 @@ class Scene {
     PlayerSpawnData m_player_spawn{0, 0};
     std::vector<MonsterSpawnData> m_monster_spawns;
     std::vector<BackgroundLayerData> m_background_layers;
+    std::vector<FUDData> m_fuds;
     std::string m_name = "Unnamed Level";
 };
 

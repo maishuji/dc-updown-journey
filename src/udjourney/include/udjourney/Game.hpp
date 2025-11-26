@@ -57,6 +57,7 @@ class Game : public IGame, public IObserver {
     void draw() const;
     void draw_backgrounds() const;
     void draw_finish_line_() const;
+    void draw_fuds_() const;
     bool should_continue_scrolling_() const noexcept;
     void attack_nearby_monsters();
 

@@ -15,6 +15,7 @@
 #include "udjourney-editor/mode_handlers/SpawnModeHandler.hpp"
 #include "udjourney-editor/mode_handlers/MonsterModeHandler.hpp"
 #include "udjourney-editor/mode_handlers/BackgroundModeHandler.hpp"
+#include "udjourney-editor/mode_handlers/FUDModeHandler.hpp"
 
 namespace color {
 const ImU32 kColorRed = IM_COL32(255, 0, 0, 255);
@@ -31,6 +32,7 @@ EditorPanel::EditorPanel() {
     platform_handler_ = std::make_unique<PlatformModeHandler>();
     spawn_handler_ = std::make_unique<SpawnModeHandler>();
     monster_handler_ = std::make_unique<MonsterModeHandler>();
+    fud_handler_ = std::make_unique<FUDModeHandler>();
     // Background handler will be created when managers are set
 }
 
@@ -83,6 +85,7 @@ void EditorPanel::set_scale(float scale) noexcept {
     if (spawn_handler_) spawn_handler_->set_scale(scale);
     if (monster_handler_) monster_handler_->set_scale(scale);
     if (background_handler_) background_handler_->set_scale(scale);
+    if (fud_handler_) fud_handler_->set_scale(scale);
 }
 
 void EditorPanel::set_selected_monster(EditorMonster* monster) {
@@ -196,6 +199,11 @@ void EditorPanel::draw() {
         edit_mode = EditMode::Background;
     }
 
+    ImGui::SameLine();
+    if (ImGui::RadioButton("FUD", edit_mode == EditMode::FUD)) {
+        edit_mode = EditMode::FUD;
+    }
+
     ImGui::Separator();
 
     // Draw mode-specific UI
@@ -242,6 +250,11 @@ void EditorPanel::draw() {
                 selected_preset_idx_ =
                     background_handler_->get_selected_preset_idx();
                 new_bg_object_scale_ = background_handler_->get_object_scale();
+            }
+            break;
+        case EditMode::FUD:
+            if (fud_handler_) {
+                fud_handler_->render();
             }
             break;
     }
@@ -843,4 +856,64 @@ void EditorPanel::draw_background_mode() {
             }
         }
     }
+}
+
+// FUD editing methods
+void EditorPanel::set_selected_fud(FUDElement* fud) {
+    if (fud_handler_) {
+        fud_handler_->set_selected_fud(fud);
+    }
+}
+
+FUDElement* EditorPanel::get_selected_fud() const {
+    if (fud_handler_) {
+        return fud_handler_->get_selected_fud();
+    }
+    return nullptr;
+}
+
+const std::string& EditorPanel::get_selected_fud_preset() const {
+    if (fud_handler_) {
+        return fud_handler_->get_selected_fud_preset();
+    }
+    static std::string empty;
+    return empty;
+}
+
+bool EditorPanel::should_delete_selected_fud() const {
+    if (fud_handler_) {
+        return fud_handler_->should_delete_selected_fud();
+    }
+    return false;
+}
+
+void EditorPanel::clear_fud_delete_flag() {
+    if (fud_handler_) {
+        fud_handler_->clear_delete_flag();
+    }
+}
+
+bool EditorPanel::should_add_fud() const {
+    if (fud_handler_) {
+        return fud_handler_->should_add_fud();
+    }
+    return false;
+}
+
+void EditorPanel::clear_fud_add_flag() {
+    if (fud_handler_) {
+        fud_handler_->clear_add_flag();
+    }
+}
+
+FUDElement EditorPanel::create_fud_from_preset() const {
+    if (fud_handler_) {
+        return fud_handler_->create_fud_from_preset();
+    }
+    // Return default FUD if handler not available
+    return FUDElement("New FUD",
+                      "unknown",
+                      FUDAnchor::TopLeft,
+                      ImVec2(10, 10),
+                      ImVec2(100, 30));
 }
