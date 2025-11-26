@@ -57,6 +57,24 @@ struct FUDElement {
     bool visible;
     nlohmann::json properties;  // Instance-specific properties
 
+    // Background sprite configuration
+    std::string background_sheet;
+    int background_tile_size = 32;
+    int background_tile_row = 0;
+    int background_tile_col = 0;
+    int background_tile_width = 1;
+    int background_tile_height = 1;
+
+    // Foreground sprite configuration
+    std::string foreground_sheet;
+    int foreground_tile_size = 32;
+    int foreground_tile_row = 0;
+    int foreground_tile_col = 0;
+    int foreground_tile_width = 1;
+    int foreground_tile_height = 1;
+
+    float image_scale = 1.0f;
+
     FUDElement() :
         anchor(FUDAnchor::TopLeft),
         offset(0, 0),

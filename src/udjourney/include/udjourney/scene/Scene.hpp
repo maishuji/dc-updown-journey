@@ -104,6 +104,26 @@ struct FUDData {
     float size_y = 30.0f;
     bool visible = true;
     std::map<std::string, std::string> properties;  // Simplified for runtime
+
+    // Background sprite configuration
+    std::string background_image;    // Single image file (legacy)
+    std::string background_sheet;    // Sprite sheet file
+    int background_tile_size = 32;   // Size of each tile in sheet
+    int background_tile_row = 0;     // Row in sprite sheet
+    int background_tile_col = 0;     // Column in sprite sheet
+    int background_tile_width = 1;   // Width in tiles (for multi-tile sprites)
+    int background_tile_height = 1;  // Height in tiles (for multi-tile sprites)
+
+    // Foreground sprite configuration
+    std::string foreground_image;    // Single image file (legacy)
+    std::string foreground_sheet;    // Sprite sheet file
+    int foreground_tile_size = 32;   // Size of each tile in sheet
+    int foreground_tile_row = 0;     // Row in sprite sheet
+    int foreground_tile_col = 0;     // Column in sprite sheet
+    int foreground_tile_width = 1;   // Width in tiles (for multi-tile sprites)
+    int foreground_tile_height = 1;  // Height in tiles (for multi-tile sprites)
+
+    float image_scale = 1.0f;  // Scale for images
 };
 
 class Scene {

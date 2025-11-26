@@ -230,6 +230,50 @@ bool Scene::load_from_file(const std::string& filename) {
 
                 fud.visible = fud_json.value("visible", true);
 
+                // Load background image/sprite sheet configuration
+                if (fud_json.contains("background_image")) {
+                    fud.background_image =
+                        fud_json["background_image"].get<std::string>();
+                }
+                if (fud_json.contains("background_sheet")) {
+                    fud.background_sheet =
+                        fud_json["background_sheet"].get<std::string>();
+                    fud.background_tile_size =
+                        fud_json.value("background_tile_size", 32);
+                    fud.background_tile_row =
+                        fud_json.value("background_tile_row", 0);
+                    fud.background_tile_col =
+                        fud_json.value("background_tile_col", 0);
+                    fud.background_tile_width =
+                        fud_json.value("background_tile_width", 1);
+                    fud.background_tile_height =
+                        fud_json.value("background_tile_height", 1);
+                }
+
+                // Load foreground image/sprite sheet configuration
+                if (fud_json.contains("foreground_image")) {
+                    fud.foreground_image =
+                        fud_json["foreground_image"].get<std::string>();
+                }
+                if (fud_json.contains("foreground_sheet")) {
+                    fud.foreground_sheet =
+                        fud_json["foreground_sheet"].get<std::string>();
+                    fud.foreground_tile_size =
+                        fud_json.value("foreground_tile_size", 32);
+                    fud.foreground_tile_row =
+                        fud_json.value("foreground_tile_row", 0);
+                    fud.foreground_tile_col =
+                        fud_json.value("foreground_tile_col", 0);
+                    fud.foreground_tile_width =
+                        fud_json.value("foreground_tile_width", 1);
+                    fud.foreground_tile_height =
+                        fud_json.value("foreground_tile_height", 1);
+                }
+
+                if (fud_json.contains("image_scale")) {
+                    fud.image_scale = fud_json["image_scale"].get<float>();
+                }
+
                 // Load properties as strings (simplified for game runtime)
                 if (fud_json.contains("properties")) {
                     for (const auto& [key, value] :

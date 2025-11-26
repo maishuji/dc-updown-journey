@@ -7,6 +7,7 @@
 #include "udjourney-editor/mode_handlers/IModeHandler.hpp"
 #include "udjourney-editor/Level.hpp"
 #include "udjourney-editor/fud/FUDPresetManager.hpp"
+#include "udjourney-editor/fud/UIAtlasPresetManager.hpp"
 
 /**
  * @brief Handler for FUD (Fixed UI Display) edit mode
@@ -54,8 +55,14 @@ class FUDModeHandler : public IModeHandler {
     bool add_fud_requested_ = false;
 
     FUDPresetManager fud_preset_manager_;
+    UIAtlasPresetManager ui_atlas_manager_;
+
+    int selected_background_sprite_ = -1;
+    int selected_foreground_sprite_ = -1;
 
     void render_fud_editor();
     void render_fud_preset_selector();
     void render_fud_properties();
+    void render_sprite_selector(const char* label, bool is_background);
+    void render_property_editor();
 };

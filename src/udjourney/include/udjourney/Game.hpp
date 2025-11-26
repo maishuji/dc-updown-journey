@@ -81,4 +81,6 @@ class Game : public IGame, public IObserver {
     udjourney::WorldBounds m_world_bounds;  // World boundary management
     mutable std::map<std::string, Texture2D>
         m_background_textures;  // Cache for background textures
+    mutable std::map<std::string, Texture2D>
+        m_fud_textures;  // Cache for FUD textures
 };

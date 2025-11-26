@@ -1576,14 +1576,163 @@ void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
         FUDElement* selected = editor_panel.get_selected_fud();
         bool is_selected = (selected == &level.fuds[i]);
 
-        // Draw FUD rectangle
+        // Draw background sprite if set
+        if (!fud.background_sheet.empty()) {
+            Texture2D texture = load_texture_cached(fud.background_sheet);
+            if (texture.id > 0) {
+                // Calculate source rect in sprite sheet
+                float tile_w = static_cast<float>(fud.background_tile_size);
+                float tile_h = static_cast<float>(fud.background_tile_size);
+                ImVec2 uv0((fud.background_tile_col * tile_w) / texture.width,
+                           (fud.background_tile_row * tile_h) / texture.height);
+                ImVec2 uv1(uv0.x + ((fud.background_tile_width * tile_w) /
+                                    texture.width),
+                           uv0.y + ((fud.background_tile_height * tile_h) /
+                                    texture.height));
+
+                draw_list->AddImage(
+                    static_cast<ImTextureID>(static_cast<intptr_t>(texture.id)),
+                    fud_pos,
+                    fud_end,
+                    uv0,
+                    uv1,
+                    IM_COL32(255, 255, 255, 180)  // Slight transparency
+                );
+            }
+        }
+
+        // Draw FUD content preview based on type
+        if (fud.type_id == "heart_health") {
+            // Draw hearts preview
+            int max_hearts = 3;
+            int heart_spacing = 32;
+            std::string heart_sheet = "ui/ui_elements.png";
+            int heart_tile_size = 32;
+            int full_col = 0, full_row = 3;
+
+            try {
+                if (fud.properties.count("max_hearts")) {
+                    auto& prop = fud.properties.at("max_hearts");
+                    if (prop.is_number_integer()) {
+                        max_hearts = prop.get<int>();
+                    } else if (prop.is_string()) {
+                        max_hearts = std::stoi(prop.get<std::string>());
+                    }
+                }
+                if (fud.properties.count("heart_spacing")) {
+                    auto& prop = fud.properties.at("heart_spacing");
+                    if (prop.is_number_integer()) {
+                        heart_spacing = prop.get<int>();
+                    } else if (prop.is_string()) {
+                        heart_spacing = std::stoi(prop.get<std::string>());
+                    }
+                }
+
+                // Try to parse heart sprite config
+                if (fud.properties.count("heart_full_sprite")) {
+                    try {
+                        auto sprite_obj =
+                            fud.properties.at("heart_full_sprite");
+                        if (sprite_obj.is_object()) {
+                            heart_sheet =
+                                sprite_obj.value("sheet", heart_sheet);
+                            heart_tile_size =
+                                sprite_obj.value("tile_size", heart_tile_size);
+                            full_col = sprite_obj.value("tile_col", full_col);
+                            full_row = sprite_obj.value("tile_row", full_row);
+                        }
+                    } catch (...) {
+                    }
+                }
+            } catch (...) {
+            }
+
+            // Try to render with actual sprites
+            Texture2D heart_tex = load_texture_cached(heart_sheet);
+            if (heart_tex.id > 0) {
+                for (int h = 0; h < max_hearts; ++h) {
+                    float hx = fud_pos.x + (h * heart_spacing);
+                    float hy = fud_pos.y;
+
+                    ImVec2 uv0((full_col * heart_tile_size) /
+                                   static_cast<float>(heart_tex.width),
+                               (full_row * heart_tile_size) /
+                                   static_cast<float>(heart_tex.height));
+                    ImVec2 uv1(uv0.x + (heart_tile_size /
+                                        static_cast<float>(heart_tex.width)),
+                               uv0.y + (heart_tile_size /
+                                        static_cast<float>(heart_tex.height)));
+
+                    draw_list->AddImage(
+                        static_cast<ImTextureID>(
+                            static_cast<intptr_t>(heart_tex.id)),
+                        ImVec2(hx, hy),
+                        ImVec2(hx + heart_spacing, hy + heart_spacing),
+                        uv0,
+                        uv1,
+                        IM_COL32(255, 255, 255, 200));
+                }
+            } else {
+                // Fallback to circles if sprite not available
+                for (int h = 0; h < max_hearts; ++h) {
+                    float hx = fud_pos.x + (h * heart_spacing) + 16;
+                    float hy = fud_pos.y + 16;
+                    draw_list->AddCircleFilled(
+                        ImVec2(hx, hy), 10.0f, IM_COL32(255, 50, 50, 150));
+                }
+            }
+        } else if (fud.type_id == "healthbar" || fud.type_id == "mana_bar") {
+            // Draw bar preview
+            ImU32 bar_color = (fud.type_id == "healthbar")
+                                  ? IM_COL32(255, 0, 0, 150)
+                                  : IM_COL32(0, 100, 255, 150);
+
+            float bar_width = (fud.size.x - 8) * 0.8f;  // 80% filled
+            ImVec2 bar_start(fud_pos.x + 4, fud_pos.y + 4);
+            ImVec2 bar_end(fud_pos.x + 4 + bar_width, fud_end.y - 4);
+
+            draw_list->AddRectFilled(bar_start, bar_end, bar_color);
+        } else if (fud.type_id == "score_display") {
+            // Draw score text preview
+            draw_list->AddText(ImVec2(fud_pos.x + 10, fud_pos.y + 10),
+                               IM_COL32(255, 255, 255, 200),
+                               "Score: 1234");
+        } else if (fud.type_id == "timer") {
+            // Draw timer preview
+            draw_list->AddText(ImVec2(fud_pos.x + 10, fud_pos.y + 10),
+                               IM_COL32(255, 255, 0, 200),
+                               "03:00");
+        }
+
+        // Draw foreground sprite if set
+        if (!fud.foreground_sheet.empty()) {
+            Texture2D texture = load_texture_cached(fud.foreground_sheet);
+            if (texture.id > 0) {
+                // Calculate source rect in sprite sheet
+                float tile_w = static_cast<float>(fud.foreground_tile_size);
+                float tile_h = static_cast<float>(fud.foreground_tile_size);
+                ImVec2 uv0((fud.foreground_tile_col * tile_w) / texture.width,
+                           (fud.foreground_tile_row * tile_h) / texture.height);
+                ImVec2 uv1(uv0.x + ((fud.foreground_tile_width * tile_w) /
+                                    texture.width),
+                           uv0.y + ((fud.foreground_tile_height * tile_h) /
+                                    texture.height));
+
+                draw_list->AddImage(
+                    static_cast<ImTextureID>(static_cast<intptr_t>(texture.id)),
+                    fud_pos,
+                    fud_end,
+                    uv0,
+                    uv1,
+                    IM_COL32(255, 255, 255, 200));
+            }
+        }
+
+        // Draw FUD border
         ImU32 border_color =
             is_selected ? IM_COL32(0, 255, 0, 255)     // Green for selected
                         : IM_COL32(255, 255, 0, 200);  // Yellow for normal
-        ImU32 fill_color =
-            IM_COL32(255, 255, 0, 50);  // Semi-transparent yellow fill
 
-        draw_list->AddRectFilled(fud_pos, fud_end, fill_color);
         draw_list->AddRect(fud_pos, fud_end, border_color, 0.0f, 0, 2.0f);
 
         // Draw anchor point (small circle)

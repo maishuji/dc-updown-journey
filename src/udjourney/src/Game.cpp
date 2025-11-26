@@ -692,8 +692,202 @@ void Game::draw_fuds_() const {
         float fud_x = anchor_x + fud.offset_x;
         float fud_y = anchor_y + fud.offset_y;
 
+        // Draw background image/sprite if specified
+        if (!fud.background_sheet.empty()) {
+            // Load sprite sheet if not cached
+            if (m_fud_textures.find(fud.background_sheet) ==
+                m_fud_textures.end()) {
+                std::string texture_path =
+                    std::string(ASSETS_BASE_PATH) + fud.background_sheet;
+                Texture2D tex = LoadTexture(texture_path.c_str());
+                if (tex.id > 0) {
+                    m_fud_textures[fud.background_sheet] = tex;
+                    udj::core::Logger::info("Loaded FUD sprite sheet: %",
+                                            texture_path);
+                } else {
+                    udj::core::Logger::error(
+                        "Failed to load FUD sprite sheet: %", texture_path);
+                }
+            }
+
+            // Draw sprite from sheet
+            if (m_fud_textures[fud.background_sheet].id > 0) {
+                const auto &tex = m_fud_textures[fud.background_sheet];
+
+                // Calculate source rectangle in sprite sheet
+                Rectangle source = {
+                    static_cast<float>(fud.background_tile_col *
+                                       fud.background_tile_size),
+                    static_cast<float>(fud.background_tile_row *
+                                       fud.background_tile_size),
+                    static_cast<float>(fud.background_tile_width *
+                                       fud.background_tile_size),
+                    static_cast<float>(fud.background_tile_height *
+                                       fud.background_tile_size)};
+
+                Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
+                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
+            }
+        } else if (!fud.background_image.empty()) {
+            // Legacy: single image file
+            if (m_fud_textures.find(fud.background_image) ==
+                m_fud_textures.end()) {
+                std::string texture_path =
+                    std::string(ASSETS_BASE_PATH) + fud.background_image;
+                Texture2D tex = LoadTexture(texture_path.c_str());
+                if (tex.id > 0) {
+                    m_fud_textures[fud.background_image] = tex;
+                    udj::core::Logger::info("Loaded FUD texture: %",
+                                            texture_path);
+                } else {
+                    udj::core::Logger::error("Failed to load FUD texture: %",
+                                             texture_path);
+                }
+            }
+
+            if (m_fud_textures[fud.background_image].id > 0) {
+                const auto &tex = m_fud_textures[fud.background_image];
+                Rectangle source = {0,
+                                    0,
+                                    static_cast<float>(tex.width),
+                                    static_cast<float>(tex.height)};
+                Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
+                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
+            }
+        }
+
         // Draw FUD based on type
-        if (fud.type_id == "healthbar" || fud.type_id == "mana_bar") {
+        if (fud.type_id == "heart_health") {
+            // Draw health as hearts (Zelda-style)
+            // Parse properties
+            int max_hearts = 3;
+            int current_hearts = 3;  // In real game, get from player health
+            int heart_spacing = 32;
+            bool show_empty = true;
+
+            // Heart sprite configuration
+            std::string heart_sheet = "ui/ui_elements.png";
+            int heart_tile_size = 32;
+            int full_col = 0, full_row = 3;
+            int half_col = 3, half_row = 3;
+            int empty_col = 4, empty_row = 3;
+
+            try {
+                if (fud.properties.count("max_hearts")) {
+                    max_hearts = std::stoi(fud.properties.at("max_hearts"));
+                }
+                if (fud.properties.count("current_hearts")) {
+                    current_hearts =
+                        std::stoi(fud.properties.at("current_hearts"));
+                }
+                if (fud.properties.count("heart_spacing")) {
+                    heart_spacing =
+                        std::stoi(fud.properties.at("heart_spacing"));
+                }
+                if (fud.properties.count("show_empty_hearts")) {
+                    show_empty =
+                        (fud.properties.at("show_empty_hearts") == "true");
+                }
+
+                // Parse heart sprite configurations from JSON
+                if (fud.properties.count("heart_full_sprite")) {
+                    try {
+                        auto sprite_json = nlohmann::json::parse(
+                            fud.properties.at("heart_full_sprite"));
+                        heart_sheet = sprite_json.value("sheet", heart_sheet);
+                        heart_tile_size =
+                            sprite_json.value("tile_size", heart_tile_size);
+                        full_col = sprite_json.value("tile_col", full_col);
+                        full_row = sprite_json.value("tile_row", full_row);
+                    } catch (...) {
+                    }
+                }
+                if (fud.properties.count("heart_empty_sprite")) {
+                    try {
+                        auto sprite_json = nlohmann::json::parse(
+                            fud.properties.at("heart_empty_sprite"));
+                        empty_col = sprite_json.value("tile_col", empty_col);
+                        empty_row = sprite_json.value("tile_row", empty_row);
+                    } catch (...) {
+                    }
+                }
+            } catch (...) {
+                // Use defaults if parsing fails
+            }
+
+            // Load heart sprite sheet
+            if (m_fud_textures.find(heart_sheet) == m_fud_textures.end()) {
+                std::string texture_path =
+                    std::string(ASSETS_BASE_PATH) + heart_sheet;
+                Texture2D tex = LoadTexture(texture_path.c_str());
+                if (tex.id > 0) {
+                    m_fud_textures[heart_sheet] = tex;
+                    udj::core::Logger::info("Loaded heart sprite sheet: %",
+                                            texture_path);
+                } else {
+                    udj::core::Logger::error(
+                        "Failed to load heart sprite sheet: %", texture_path);
+                }
+            }
+
+            // Draw hearts horizontally
+            if (m_fud_textures[heart_sheet].id > 0) {
+                const auto &tex = m_fud_textures[heart_sheet];
+
+                for (int i = 0; i < max_hearts; ++i) {
+                    float heart_x = fud_x + (i * heart_spacing);
+                    float heart_y = fud_y;
+
+                    // Determine which heart sprite to draw
+                    int sprite_col =
+                        (i < current_hearts) ? full_col : empty_col;
+                    int sprite_row =
+                        (i < current_hearts) ? full_row : empty_row;
+
+                    if (!show_empty && i >= current_hearts) {
+                        continue;  // Skip empty hearts if not showing them
+                    }
+
+                    // Calculate source rectangle in sprite sheet
+                    Rectangle source = {
+                        static_cast<float>(sprite_col * heart_tile_size),
+                        static_cast<float>(sprite_row * heart_tile_size),
+                        static_cast<float>(heart_tile_size),
+                        static_cast<float>(heart_tile_size)};
+
+                    Rectangle dest = {heart_x,
+                                      heart_y,
+                                      static_cast<float>(heart_spacing),
+                                      static_cast<float>(heart_spacing)};
+
+                    DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
+                }
+            } else {
+                // Fallback: draw circles if texture not available
+                for (int i = 0; i < max_hearts; ++i) {
+                    float heart_x = fud_x + (i * heart_spacing);
+                    float heart_y = fud_y;
+
+                    bool is_filled = (i < current_hearts);
+
+                    if (is_filled) {
+                        DrawCircle(static_cast<int>(heart_x + 16),
+                                   static_cast<int>(heart_y + 16),
+                                   12,
+                                   RED);
+                    } else if (show_empty) {
+                        DrawCircle(static_cast<int>(heart_x + 16),
+                                   static_cast<int>(heart_y + 16),
+                                   12,
+                                   ColorAlpha(RED, 0.3f));
+                        DrawCircleLines(static_cast<int>(heart_x + 16),
+                                        static_cast<int>(heart_y + 16),
+                                        12,
+                                        RED);
+                    }
+                }
+            }
+        } else if (fud.type_id == "healthbar" || fud.type_id == "mana_bar") {
             // Draw a simple health/mana bar
             Color bar_color = fud.type_id == "healthbar" ? RED : BLUE;
             Color bg_color = DARKGRAY;
@@ -777,6 +971,70 @@ void Game::draw_fuds_() const {
                      static_cast<int>(fud_y + 5),
                      12,
                      WHITE);
+        }
+
+        // Draw foreground image/sprite if specified (overlays on top)
+        if (!fud.foreground_sheet.empty()) {
+            // Load sprite sheet if not cached
+            if (m_fud_textures.find(fud.foreground_sheet) ==
+                m_fud_textures.end()) {
+                std::string texture_path =
+                    std::string(ASSETS_BASE_PATH) + fud.foreground_sheet;
+                Texture2D tex = LoadTexture(texture_path.c_str());
+                if (tex.id > 0) {
+                    m_fud_textures[fud.foreground_sheet] = tex;
+                    udj::core::Logger::info("Loaded FUD sprite sheet: %",
+                                            texture_path);
+                } else {
+                    udj::core::Logger::error(
+                        "Failed to load FUD sprite sheet: %", texture_path);
+                }
+            }
+
+            // Draw sprite from sheet
+            if (m_fud_textures[fud.foreground_sheet].id > 0) {
+                const auto &tex = m_fud_textures[fud.foreground_sheet];
+
+                // Calculate source rectangle in sprite sheet
+                Rectangle source = {
+                    static_cast<float>(fud.foreground_tile_col *
+                                       fud.foreground_tile_size),
+                    static_cast<float>(fud.foreground_tile_row *
+                                       fud.foreground_tile_size),
+                    static_cast<float>(fud.foreground_tile_width *
+                                       fud.foreground_tile_size),
+                    static_cast<float>(fud.foreground_tile_height *
+                                       fud.foreground_tile_size)};
+
+                Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
+                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
+            }
+        } else if (!fud.foreground_image.empty()) {
+            // Legacy: single image file
+            if (m_fud_textures.find(fud.foreground_image) ==
+                m_fud_textures.end()) {
+                std::string texture_path =
+                    std::string(ASSETS_BASE_PATH) + fud.foreground_image;
+                Texture2D tex = LoadTexture(texture_path.c_str());
+                if (tex.id > 0) {
+                    m_fud_textures[fud.foreground_image] = tex;
+                    udj::core::Logger::info("Loaded FUD texture: %",
+                                            texture_path);
+                } else {
+                    udj::core::Logger::error("Failed to load FUD texture: %",
+                                             texture_path);
+                }
+            }
+
+            if (m_fud_textures[fud.foreground_image].id > 0) {
+                const auto &tex = m_fud_textures[fud.foreground_image];
+                Rectangle source = {0,
+                                    0,
+                                    static_cast<float>(tex.width),
+                                    static_cast<float>(tex.height)};
+                Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
+                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
+            }
         }
     }
 }

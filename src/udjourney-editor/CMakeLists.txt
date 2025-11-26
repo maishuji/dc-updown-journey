@@ -67,6 +67,7 @@ add_library(udjourney_editor_lib
   src/mode_handlers/FUDModeHandler.cpp
   src/fud/FUDElement.cpp
   src/fud/FUDPresetManager.cpp
+  src/fud/UIAtlasPresetManager.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -115,6 +116,7 @@ add_library(udjourney_editor_lib_test STATIC
   src/mode_handlers/FUDModeHandler.cpp
   src/fud/FUDElement.cpp
   src/fud/FUDPresetManager.cpp
+  src/fud/UIAtlasPresetManager.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -179,6 +181,8 @@ add_executable(editorpanel_tests
   src/mode_handlers/FUDModeHandler.cpp
   src/fud/FUDElement.cpp
   src/fud/FUDPresetManager.cpp
+  src/fud/UIAtlasPresetManager.cpp
+  src/fud/UIAtlasPresetManager.cpp
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
   ${imgui_SOURCE_DIR}/imgui_tables.cpp

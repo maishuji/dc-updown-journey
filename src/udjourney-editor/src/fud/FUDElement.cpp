@@ -74,6 +74,27 @@ void to_json(nlohmann::json& j, const FUDElement& fud) {
                        {"size", {{"x", fud.size.x}, {"y", fud.size.y}}},
                        {"visible", fud.visible},
                        {"properties", fud.properties}};
+
+    // Add sprite sheet fields if set
+    if (!fud.background_sheet.empty()) {
+        j["background_sheet"] = fud.background_sheet;
+        j["background_tile_size"] = fud.background_tile_size;
+        j["background_tile_row"] = fud.background_tile_row;
+        j["background_tile_col"] = fud.background_tile_col;
+        j["background_tile_width"] = fud.background_tile_width;
+        j["background_tile_height"] = fud.background_tile_height;
+    }
+    if (!fud.foreground_sheet.empty()) {
+        j["foreground_sheet"] = fud.foreground_sheet;
+        j["foreground_tile_size"] = fud.foreground_tile_size;
+        j["foreground_tile_row"] = fud.foreground_tile_row;
+        j["foreground_tile_col"] = fud.foreground_tile_col;
+        j["foreground_tile_width"] = fud.foreground_tile_width;
+        j["foreground_tile_height"] = fud.foreground_tile_height;
+    }
+    if (fud.image_scale != 1.0f) {
+        j["image_scale"] = fud.image_scale;
+    }
 }
 
 void from_json(const nlohmann::json& j, FUDElement& fud) {
@@ -86,4 +107,23 @@ void from_json(const nlohmann::json& j, FUDElement& fud) {
     fud.size.y = j.at("size").at("y").get<float>();
     fud.visible = j.at("visible").get<bool>();
     fud.properties = j.at("properties");
+
+    // Load sprite sheet fields if present
+    if (j.contains("background_sheet")) {
+        fud.background_sheet = j["background_sheet"].get<std::string>();
+        fud.background_tile_size = j.value("background_tile_size", 32);
+        fud.background_tile_row = j.value("background_tile_row", 0);
+        fud.background_tile_col = j.value("background_tile_col", 0);
+        fud.background_tile_width = j.value("background_tile_width", 1);
+        fud.background_tile_height = j.value("background_tile_height", 1);
+    }
+    if (j.contains("foreground_sheet")) {
+        fud.foreground_sheet = j["foreground_sheet"].get<std::string>();
+        fud.foreground_tile_size = j.value("foreground_tile_size", 32);
+        fud.foreground_tile_row = j.value("foreground_tile_row", 0);
+        fud.foreground_tile_col = j.value("foreground_tile_col", 0);
+        fud.foreground_tile_width = j.value("foreground_tile_width", 1);
+        fud.foreground_tile_height = j.value("foreground_tile_height", 1);
+    }
+    fud.image_scale = j.value("image_scale", 1.0f);
 }

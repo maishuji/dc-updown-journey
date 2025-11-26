@@ -374,6 +374,19 @@
   "fuds": [
     {
       "anchor": "TopLeft",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_size": 32,
+      "background_tile_col": 0,
+      "background_tile_row": 0,
+      "background_tile_width": 7,
+      "background_tile_height": 1,
+      "foreground_sheet": "ui/ui_elements.png",
+      "foreground_tile_size": 32,
+      "foreground_tile_col": 8,
+      "foreground_tile_row": 0,
+      "foreground_tile_width": 7,
+      "foreground_tile_height": 1,
+      "image_scale": 1.0,
       "name": "Player Health",
       "offset": {
         "x": 10.0,
@@ -389,8 +402,8 @@
         "show_numbers": true
       },
       "size": {
-        "x": 200.0,
-        "y": 30.0
+        "x": 224.0,
+        "y": 32.0
       },
       "type_id": "healthbar",
       "visible": true
