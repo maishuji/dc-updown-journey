@@ -1130,7 +1130,15 @@ void Game::draw() const {
 
     switch (m_state) {
         case GameState::TITLE:
-            draw_title_();
+            // Draw scrolling backgrounds
+            draw_backgrounds();
+            
+            // Draw widgets (menu buttons)
+            for (const auto &actor : m_actors) {
+                if (actor->get_group_id() == 4) {  // Widget group ID
+                    actor->draw();
+                }
+            }
             break;
         case GameState::PLAY: {
             // Draw backgrounds first (behind everything)
@@ -1179,6 +1187,60 @@ void Game::draw() const {
 
 void Game::update() {
     static double last_update_time = 0.0;
+
+    // Widget input handling for TITLE state
+    if (m_state == GameState::TITLE) {
+        // Collect all widgets from m_actors
+        std::vector<IWidget*> widgets;
+        for (const auto& actor : m_actors) {
+            if (actor->get_group_id() == 4) {  // Widget group ID
+                widgets.push_back(static_cast<IWidget*>(actor.get()));
+            }
+        }
+
+        if (!widgets.empty()) {
+            // Keyboard navigation: Z = up, S = down
+            if (IsKeyPressed(KEY_Z)) {
+                m_selected_widget_index = (m_selected_widget_index - 1 + static_cast<int>(widgets.size())) % static_cast<int>(widgets.size());
+            }
+            if (IsKeyPressed(KEY_S)) {
+                m_selected_widget_index = (m_selected_widget_index + 1) % static_cast<int>(widgets.size());
+            }
+
+            // Update focus state for all widgets
+            for (size_t i = 0; i < widgets.size(); ++i) {
+                widgets[i]->set_focused(static_cast<int>(i) == m_selected_widget_index);
+            }
+
+            // Activate selected widget with Enter or Space
+            if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+                widgets[m_selected_widget_index]->on_click();
+                
+                // IMPORTANT: Return immediately if state changed
+                // Widget action may have triggered state change and called initialize_gameplay()
+                // which removes widgets. Continuing would access deleted memory.
+                if (m_state != GameState::TITLE) {
+                    return;
+                }
+            }
+
+            // Mouse input
+            Vector2 mouse_pos = GetMousePosition();
+            for (auto* widget : widgets) {
+                if (widget->contains_point(mouse_pos)) {
+                    widget->on_hover();
+                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                        widget->on_click();
+                        
+                        // IMPORTANT: Return immediately if state changed
+                        if (m_state != GameState::TITLE) {
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     // Update actors
     if (m_state == GameState::PLAY) {
