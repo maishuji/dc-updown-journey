@@ -328,12 +328,6 @@ void Game::process_input() {
     // Pause / Unpause the game
     auto start_pressed = input_mapping.pressed_start();
     if (start_pressed) {
-        if (m_state == GameState::GAMEOVER) {
-            // Restart the level (resets health, position, monsters, etc.)
-            restart_level();
-            return;
-        }
-
         if (m_state == GameState::PLAY) {
             m_state = GameState::PAUSE;
         } else if (m_state == GameState::PAUSE && !m_showing_level_select) {
@@ -1147,7 +1141,20 @@ void Game::draw() const {
             draw_pause_();
             break;
         case GameState::GAMEOVER:
-            draw_game_over_(m_score_history);
+            // Draw scrolling backgrounds
+            draw_backgrounds();
+            
+            // Draw FUDs (game over message and score)
+            if (m_current_scene) {
+                draw_fuds_();
+            }
+            
+            // Draw widgets (menu buttons)
+            for (const auto &actor : m_actors) {
+                if (actor->get_group_id() == 4) {  // Widget group ID
+                    actor->draw();
+                }
+            }
             break;
         case GameState::WIN:
             // Draw scrolling backgrounds
@@ -1182,8 +1189,8 @@ void Game::draw() const {
 void Game::update() {
     static double last_update_time = 0.0;
 
-    // Widget input handling for TITLE and WIN states
-    if (m_state == GameState::TITLE || m_state == GameState::WIN) {
+    // Widget input handling for TITLE, WIN, and GAMEOVER states
+    if (m_state == GameState::TITLE || m_state == GameState::WIN || m_state == GameState::GAMEOVER) {
         // Collect all widgets from m_actors
         std::vector<IWidget *> widgets;
         for (const auto &actor : m_actors) {
@@ -1218,7 +1225,7 @@ void Game::update() {
                 // Widget action may have triggered state change and called
                 // initialize_gameplay() which removes widgets. Continuing would
                 // access deleted memory.
-                if (m_state != GameState::TITLE && m_state != GameState::WIN) {
+                if (m_state != GameState::TITLE && m_state != GameState::WIN && m_state != GameState::GAMEOVER) {
                     return;
                 }
             }
@@ -1232,7 +1239,7 @@ void Game::update() {
                         widget->on_click();
 
                         // IMPORTANT: Return immediately if state changed
-                        if (m_state != GameState::TITLE && m_state != GameState::WIN) {
+                        if (m_state != GameState::TITLE && m_state != GameState::WIN && m_state != GameState::GAMEOVER) {
                             return;
                         }
                     }
@@ -1462,6 +1469,26 @@ void Game::on_notify(const std::string &iEvent) {
                 auto *score_hud = static_cast<ScoreHUD *>(comp);
                 m_score_history.add_score(score_hud->get_score());
                 score_hud->set_score(0);  // Reset HUD
+            }
+            
+            // Load game over screen with widgets
+            std::string gameover_path = udjourney::coreutils::get_assets_path("levels/game_over_screen.json");
+            if (load_scene(gameover_path)) {
+                // Clean up gameplay objects
+                m_player.reset();
+                m_hud_manager.clear_background_huds();
+                
+                // Remove all actors except widgets
+                m_actors.erase(
+                    std::remove_if(m_actors.begin(), m_actors.end(),
+                        [](const std::unique_ptr<IActor> &actor) {
+                            return actor->get_group_id() != 4;  // Keep widgets only
+                        }),
+                    m_actors.end());
+                
+                // Load game over screen widgets
+                load_widgets_from_scene();
+                m_rect.y = 0;  // Reset camera
             }
         } break;
         case kModeScoring:

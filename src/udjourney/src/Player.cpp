@@ -1,6 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/Player.hpp"
 
+#include <udj-core/Logger.hpp>
+
 #include <algorithm>
 #include <functional>
 #include <iostream>
@@ -260,6 +262,8 @@ void Player::resolve_collision(const IActor &iActor) noexcept {
  */
 void Player::handle_collision(
     const std::vector<std::unique_ptr<IActor>> &platforms) noexcept {
+    udj::core::Logger::debug("Player::handle_collision called");
+
     const auto &gameRect = get_game().get_rectangle();
 
     // Dont check collision if the player is out of the screen at the top
