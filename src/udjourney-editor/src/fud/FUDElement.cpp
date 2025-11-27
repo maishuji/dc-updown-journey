@@ -1,5 +1,6 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney-editor/fud/FUDElement.hpp"
+#include <string>
 
 std::string fud_anchor_to_string(FUDAnchor anchor) {
     switch (anchor) {
