@@ -390,8 +390,8 @@
       "foreground_tile_width": 1,
       "name": "Player Health",
       "offset": {
-        "x": 10.0,
-        "y": 10.0
+        "x": 360.0,
+        "y": 77.0
       },
       "properties": {
         "background_color": [
@@ -409,8 +409,8 @@
         "show_numbers": true
       },
       "size": {
-        "x": 330.0,
-        "y": 64.0
+        "x": 187.0,
+        "y": 30.0
       },
       "type_id": "healthbar",
       "visible": true
@@ -432,9 +432,145 @@
       },
       "type_id": "score_display",
       "visible": true
+    },
+    {
+      "anchor": "TopLeft",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 7,
+      "background_tile_size": 32,
+      "background_tile_width": 1,
+      "name": "Heart Health",
+      "offset": {
+        "x": 29.0,
+        "y": 25.0
+      },
+      "properties": {
+        "current_hearts": 3,
+        "heart_empty_sprite": {
+          "sheet": "ui/ui_elements.png",
+          "tile_col": 1,
+          "tile_row": 1,
+          "tile_size": 64
+        },
+        "heart_full_sprite": {
+          "sheet": "ui/ui_elements.png",
+          "tile_col": 0,
+          "tile_row": 1,
+          "tile_size": 64
+        },
+        "heart_half_sprite": {
+          "sheet": "ui/ui_elements.png",
+          "tile_col": 3,
+          "tile_row": 3,
+          "tile_size": 32
+        },
+        "heart_spacing": 32,
+        "max_hearts": 3,
+        "show_empty_hearts": true
+      },
+      "size": {
+        "x": 32.0,
+        "y": 32.0
+      },
+      "type_id": "heart_health",
+      "visible": true
     }
   ],
-  "monsters": [],
+  "monsters": [
+    {
+      "preset_name": "poring",
+      "x": 5,
+      "y": 16
+    },
+    {
+      "preset_name": "poring",
+      "x": 10,
+      "y": 13
+    },
+    {
+      "preset_name": "poring",
+      "x": 13,
+      "y": 17
+    },
+    {
+      "preset_name": "poring",
+      "x": 4,
+      "y": 11
+    },
+    {
+      "preset_name": "poring",
+      "x": 10,
+      "y": 24
+    },
+    {
+      "preset_name": "poring",
+      "x": 8,
+      "y": 21
+    },
+    {
+      "preset_name": "poring",
+      "x": 2,
+      "y": 26
+    },
+    {
+      "preset_name": "poring",
+      "x": 16,
+      "y": 28
+    },
+    {
+      "preset_name": "poring",
+      "x": 9,
+      "y": 13
+    },
+    {
+      "preset_name": "poring",
+      "x": 11,
+      "y": 13
+    },
+    {
+      "preset_name": "poring",
+      "x": 8,
+      "y": 3
+    },
+    {
+      "preset_name": "poring",
+      "x": 11,
+      "y": 3
+    },
+    {
+      "preset_name": "poring",
+      "x": 15,
+      "y": 4
+    },
+    {
+      "preset_name": "poring",
+      "x": 19,
+      "y": 3
+    },
+    {
+      "preset_name": "poring",
+      "x": 16,
+      "y": 5
+    },
+    {
+      "preset_name": "poring",
+      "x": 11,
+      "y": 5
+    },
+    {
+      "preset_name": "poring",
+      "x": 9,
+      "y": 5
+    },
+    {
+      "preset_name": "poring",
+      "x": 6,
+      "y": 3
+    }
+  ],
   "name": "Untitled Level",
   "platforms": [
     {
@@ -513,6 +649,62 @@
       "width": 5.0,
       "x": 4,
       "y": 46
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 10,
+      "y": 15
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 13,
+      "y": 19
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 2,
+      "y": 27
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 10,
+      "y": 49
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 13,
+      "y": 52
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 7,
+      "y": 54
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 3,
+      "y": 56
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 14,
+      "y": 58
     }
   ],
   "player_spawn": {

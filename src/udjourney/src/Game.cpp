@@ -39,6 +39,7 @@
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
 #include "udjourney/platform/features/CheckpointFeature.hpp"
 #include "udjourney/platform/features/PlatformFeatureBase.hpp"
+#include "udjourney/components/HealthComponent.hpp"
 #include "udjourney/platform/features/SpikeFeature.hpp"
 #include "udjourney/platform/reuse_strategies/NoReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
@@ -331,10 +332,8 @@ void Game::process_input() {
     auto start_pressed = input_mapping.pressed_start();
     if (start_pressed) {
         if (m_state == GameState::GAMEOVER) {
-            // Set a counter of invicibility for the player when starting a new
-            // game
-            m_player->set_invicibility(1.8F);
-            m_state = GameState::PLAY;
+            // Restart the level (resets health, position, monsters, etc.)
+            restart_level();
             return;
         }
 
@@ -761,9 +760,33 @@ void Game::draw_fuds_() const {
             // Draw health as hearts (Zelda-style)
             // Parse properties
             int max_hearts = 3;
-            int current_hearts = 3;  // In real game, get from player health
             int heart_spacing = 32;
             bool show_empty = true;
+            int current_half_hearts = 6;  // Track half-hearts
+
+            // Get current health from player's HealthComponent
+            if (m_player) {
+                if (auto *health = m_player->get_component<HealthComponent>()) {
+                    // Health is stored as half-hearts (2 per full heart)
+                    current_half_hearts = health->get_health();
+                    max_hearts = (health->get_max_health() + 1) / 2;
+
+                    // Debug output
+                    static int last_health = -1;
+                    if (current_half_hearts != last_health) {
+                        std::cout
+                            << "FUD Drawing - Health: " << current_half_hearts
+                            << "/" << health->get_max_health() << std::endl;
+                        last_health = current_half_hearts;
+                    }
+                } else {
+                    std::cout << "WARNING: Player has no HealthComponent!"
+                              << std::endl;
+                }
+            } else {
+                std::cout << "WARNING: No player found for FUD health display!"
+                          << std::endl;
+            }
 
             // Heart sprite configuration
             std::string heart_sheet = "ui/ui_elements.png";
@@ -776,10 +799,9 @@ void Game::draw_fuds_() const {
                 if (fud.properties.count("max_hearts")) {
                     max_hearts = std::stoi(fud.properties.at("max_hearts"));
                 }
-                if (fud.properties.count("current_hearts")) {
-                    current_hearts =
-                        std::stoi(fud.properties.at("current_hearts"));
-                }
+                // NOTE: current_hearts is NOT loaded from JSON - it's read from
+                // Player's HealthComponent Removed the property parsing that
+                // was overwriting the player's health value
                 if (fud.properties.count("heart_spacing")) {
                     heart_spacing =
                         std::stoi(fud.properties.at("heart_spacing"));
@@ -838,13 +860,26 @@ void Game::draw_fuds_() const {
                     float heart_x = fud_x + (i * heart_spacing);
                     float heart_y = fud_y;
 
-                    // Determine which heart sprite to draw
-                    int sprite_col =
-                        (i < current_hearts) ? full_col : empty_col;
-                    int sprite_row =
-                        (i < current_hearts) ? full_row : empty_row;
+                    // Determine which heart sprite to draw based on half-hearts
+                    int half_hearts_for_this_position =
+                        current_half_hearts - (i * 2);
+                    int sprite_col, sprite_row;
 
-                    if (!show_empty && i >= current_hearts) {
+                    if (half_hearts_for_this_position >= 2) {
+                        // Full heart
+                        sprite_col = full_col;
+                        sprite_row = full_row;
+                    } else if (half_hearts_for_this_position == 1) {
+                        // Half heart
+                        sprite_col = half_col;
+                        sprite_row = half_row;
+                    } else {
+                        // Empty heart
+                        sprite_col = empty_col;
+                        sprite_row = empty_row;
+                    }
+
+                    if (!show_empty && half_hearts_for_this_position <= 0) {
                         continue;  // Skip empty hearts if not showing them
                     }
 
@@ -868,13 +903,30 @@ void Game::draw_fuds_() const {
                     float heart_x = fud_x + (i * heart_spacing);
                     float heart_y = fud_y;
 
-                    bool is_filled = (i < current_hearts);
+                    int half_hearts_for_this_position =
+                        current_half_hearts - (i * 2);
+                    bool is_full = (half_hearts_for_this_position >= 2);
+                    bool is_half = (half_hearts_for_this_position == 1);
 
-                    if (is_filled) {
+                    if (is_full) {
                         DrawCircle(static_cast<int>(heart_x + 16),
                                    static_cast<int>(heart_y + 16),
                                    12,
                                    RED);
+                    } else if (is_half) {
+                        DrawCircleSector(Vector2{heart_x + 16, heart_y + 16},
+                                         12,
+                                         90,
+                                         270,
+                                         16,
+                                         RED);
+                        DrawCircleSectorLines(
+                            Vector2{heart_x + 16, heart_y + 16},
+                            12,
+                            90,
+                            270,
+                            16,
+                            RED);
                     } else if (show_empty) {
                         DrawCircle(static_cast<int>(heart_x + 16),
                                    static_cast<int>(heart_y + 16),
@@ -899,8 +951,15 @@ void Game::draw_fuds_() const {
                           static_cast<int>(fud.size_y),
                           bg_color);
 
-            // Bar (80% filled for demo)
-            float fill_percent = 0.8f;
+            // Get fill percentage from player health for healthbar
+            float fill_percent = 0.8f;  // Default for mana_bar or if no health
+            if (fud.type_id == "healthbar" && m_player) {
+                if (auto *health = m_player->get_component<HealthComponent>()) {
+                    fill_percent = health->get_health_percentage();
+                }
+            }
+
+            // Bar
             DrawRectangle(static_cast<int>(fud_x + 2),
                           static_cast<int>(fud_y + 2),
                           static_cast<int>((fud.size_x - 4) * fill_percent),
@@ -1667,6 +1726,11 @@ void Game::restart_level() {
         m_player->set_rectangle(
             Rectangle{m_last_checkpoint.x, m_last_checkpoint.y, 20, 20});
         m_player->set_invicibility(1.8f);  // Brief invincibility after restart
+
+        // Reset player health to full
+        if (auto *health = m_player->get_component<HealthComponent>()) {
+            health->heal(health->get_max_health());  // Restore to max health
+        }
     }
 
     // Reset game rect position
