@@ -35,6 +35,16 @@ enum class FUDCategory {
 std::string fud_category_to_string(FUDCategory category);
 FUDCategory fud_category_from_string(const std::string& str);
 
+// Image render mode for background/foreground
+enum class FUDImageRenderMode {
+    Stretch,  // Scale to fit FUD size
+    Tile,     // Repeat/tile the image
+    Center    // Center without scaling
+};
+
+std::string fud_image_render_mode_to_string(FUDImageRenderMode mode);
+FUDImageRenderMode fud_image_render_mode_from_string(const std::string& str);
+
 // FUD preset loaded from JSON
 struct FUDPreset {
     std::string type_id;       // e.g., "healthbar", "score_display"
@@ -64,6 +74,7 @@ struct FUDElement {
     int background_tile_col = 0;
     int background_tile_width = 1;
     int background_tile_height = 1;
+    FUDImageRenderMode background_render_mode = FUDImageRenderMode::Stretch;
 
     // Foreground sprite configuration
     std::string foreground_sheet;
@@ -72,6 +83,7 @@ struct FUDElement {
     int foreground_tile_col = 0;
     int foreground_tile_width = 1;
     int foreground_tile_height = 1;
+    FUDImageRenderMode foreground_render_mode = FUDImageRenderMode::Stretch;
 
     float image_scale = 1.0f;
 

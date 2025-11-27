@@ -184,10 +184,44 @@ void FUDModeHandler::render_fud_properties() {
     if (ImGui::CollapsingHeader("Background Sprite",
                                 ImGuiTreeNodeFlags_DefaultOpen)) {
         render_sprite_selector("Background", true);
+
+        // Render mode dropdown
+        if (!selected_fud_->background_sheet.empty()) {
+            ImGui::Text("Render Mode:");
+            const char* modes[] = {"Stretch", "Tile", "Center"};
+            int current_mode =
+                static_cast<int>(selected_fud_->background_render_mode);
+            if (ImGui::Combo("##BgRenderMode", &current_mode, modes, 3)) {
+                selected_fud_->background_render_mode =
+                    static_cast<FUDImageRenderMode>(current_mode);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip(
+                    "Stretch: Scale to fit\nTile: Repeat pattern\nCenter: No "
+                    "scaling");
+            }
+        }
     }
 
     if (ImGui::CollapsingHeader("Foreground Sprite")) {
         render_sprite_selector("Foreground", false);
+
+        // Render mode dropdown
+        if (!selected_fud_->foreground_sheet.empty()) {
+            ImGui::Text("Render Mode:");
+            const char* modes[] = {"Stretch", "Tile", "Center"};
+            int current_mode =
+                static_cast<int>(selected_fud_->foreground_render_mode);
+            if (ImGui::Combo("##FgRenderMode", &current_mode, modes, 3)) {
+                selected_fud_->foreground_render_mode =
+                    static_cast<FUDImageRenderMode>(current_mode);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip(
+                    "Stretch: Scale to fit\nTile: Repeat pattern\nCenter: No "
+                    "scaling");
+            }
+        }
     }
 
     ImGui::Spacing();

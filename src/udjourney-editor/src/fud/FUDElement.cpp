@@ -66,6 +66,25 @@ FUDCategory fud_category_from_string(const std::string& str) {
     return FUDCategory::Custom;
 }
 
+std::string fud_image_render_mode_to_string(FUDImageRenderMode mode) {
+    switch (mode) {
+        case FUDImageRenderMode::Stretch:
+            return "Stretch";
+        case FUDImageRenderMode::Tile:
+            return "Tile";
+        case FUDImageRenderMode::Center:
+            return "Center";
+        default:
+            return "Stretch";
+    }
+}
+
+FUDImageRenderMode fud_image_render_mode_from_string(const std::string& str) {
+    if (str == "Tile") return FUDImageRenderMode::Tile;
+    if (str == "Center") return FUDImageRenderMode::Center;
+    return FUDImageRenderMode::Stretch;
+}
+
 void to_json(nlohmann::json& j, const FUDElement& fud) {
     j = nlohmann::json{{"name", fud.name},
                        {"type_id", fud.type_id},
@@ -83,6 +102,8 @@ void to_json(nlohmann::json& j, const FUDElement& fud) {
         j["background_tile_col"] = fud.background_tile_col;
         j["background_tile_width"] = fud.background_tile_width;
         j["background_tile_height"] = fud.background_tile_height;
+        j["background_render_mode"] =
+            fud_image_render_mode_to_string(fud.background_render_mode);
     }
     if (!fud.foreground_sheet.empty()) {
         j["foreground_sheet"] = fud.foreground_sheet;
@@ -91,6 +112,8 @@ void to_json(nlohmann::json& j, const FUDElement& fud) {
         j["foreground_tile_col"] = fud.foreground_tile_col;
         j["foreground_tile_width"] = fud.foreground_tile_width;
         j["foreground_tile_height"] = fud.foreground_tile_height;
+        j["foreground_render_mode"] =
+            fud_image_render_mode_to_string(fud.foreground_render_mode);
     }
     if (fud.image_scale != 1.0f) {
         j["image_scale"] = fud.image_scale;
@@ -116,6 +139,8 @@ void from_json(const nlohmann::json& j, FUDElement& fud) {
         fud.background_tile_col = j.value("background_tile_col", 0);
         fud.background_tile_width = j.value("background_tile_width", 1);
         fud.background_tile_height = j.value("background_tile_height", 1);
+        fud.background_render_mode = fud_image_render_mode_from_string(
+            j.value("background_render_mode", "Stretch"));
     }
     if (j.contains("foreground_sheet")) {
         fud.foreground_sheet = j["foreground_sheet"].get<std::string>();
@@ -124,6 +149,8 @@ void from_json(const nlohmann::json& j, FUDElement& fud) {
         fud.foreground_tile_col = j.value("foreground_tile_col", 0);
         fud.foreground_tile_width = j.value("foreground_tile_width", 1);
         fud.foreground_tile_height = j.value("foreground_tile_height", 1);
+        fud.foreground_render_mode = fud_image_render_mode_from_string(
+            j.value("foreground_render_mode", "Stretch"));
     }
     fud.image_scale = j.value("image_scale", 1.0f);
 }

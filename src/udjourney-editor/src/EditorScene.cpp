@@ -154,6 +154,52 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
 
     // Render FUD elements
     ImVec2 viewport_size = ImGui::GetContentRegionAvail();
+
+    // Draw screen boundaries when in FUD mode (Dreamcast resolution: 640x480)
+    if (editor_panel.get_edit_mode() == EditMode::FUD) {
+        const float screen_width = 640.0f;
+        const float screen_height = 480.0f;
+
+        // Position screen at world origin (0, 0) - this stays fixed when
+        // panning
+        ImVec2 screen_origin(origin.x, origin.y);
+        ImVec2 screen_end(screen_origin.x + screen_width,
+                          screen_origin.y + screen_height);
+
+        // Draw outer boundary (bright yellow)
+        draw_list->AddRect(screen_origin,
+                           screen_end,
+                           IM_COL32(255, 255, 0, 255),
+                           0.0f,
+                           0,
+                           4.0f);
+
+        // Draw inner safe area guide (dimmer yellow, 10px inset)
+        ImVec2 safe_origin(screen_origin.x + 10, screen_origin.y + 10);
+        ImVec2 safe_end(screen_end.x - 10, screen_end.y - 10);
+        draw_list->AddRect(
+            safe_origin, safe_end, IM_COL32(255, 255, 0, 100), 0.0f, 0, 1.0f);
+
+        // Draw center crosshair
+        float center_x = screen_origin.x + screen_width * 0.5f;
+        float center_y = screen_origin.y + screen_height * 0.5f;
+        draw_list->AddLine(ImVec2(center_x - 10, center_y),
+                           ImVec2(center_x + 10, center_y),
+                           IM_COL32(255, 255, 0, 150),
+                           1.0f);
+        draw_list->AddLine(ImVec2(center_x, center_y - 10),
+                           ImVec2(center_x, center_y + 10),
+                           IM_COL32(255, 255, 0, 150),
+                           1.0f);
+
+        // Label the resolution
+        char res_label[32];
+        snprintf(res_label, sizeof(res_label), "640x480");
+        draw_list->AddText(ImVec2(screen_origin.x + 5, screen_origin.y + 5),
+                           IM_COL32(255, 255, 0, 200),
+                           res_label);
+    }
+
     render_fuds(level, editor_panel, draw_list, origin, viewport_size);
 
     // Handle mouse input and selection based on current mode
@@ -1555,6 +1601,14 @@ void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
         return;
     }
 
+    // Use Dreamcast screen dimensions for FUD positioning
+    const float screen_width = 640.0f;
+    const float screen_height = 480.0f;
+    ImVec2 screen_size(screen_width, screen_height);
+
+    // Screen origin is at world origin (same as the scene grid)
+    ImVec2 screen_origin = origin;
+
     for (size_t i = 0; i < level.fuds.size(); ++i) {
         const auto& fud = level.fuds[i];
 
@@ -1562,13 +1616,13 @@ void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
             continue;
         }
 
-        // Calculate anchor position
+        // Calculate anchor position relative to screen dimensions
         ImVec2 anchor_pos =
-            calculate_fud_anchor_position(fud.anchor, viewport_size);
+            calculate_fud_anchor_position(fud.anchor, screen_size);
 
-        // Add origin and offset
-        ImVec2 fud_pos = ImVec2(origin.x + anchor_pos.x + fud.offset.x,
-                                origin.y + anchor_pos.y + fud.offset.y);
+        // Add screen origin and offset
+        ImVec2 fud_pos = ImVec2(screen_origin.x + anchor_pos.x + fud.offset.x,
+                                screen_origin.y + anchor_pos.y + fud.offset.y);
 
         ImVec2 fud_end = ImVec2(fud_pos.x + fud.size.x, fud_pos.y + fud.size.y);
 
@@ -1590,14 +1644,63 @@ void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
                            uv0.y + ((fud.background_tile_height * tile_h) /
                                     texture.height));
 
-                draw_list->AddImage(
-                    static_cast<ImTextureID>(static_cast<intptr_t>(texture.id)),
-                    fud_pos,
-                    fud_end,
-                    uv0,
-                    uv1,
-                    IM_COL32(255, 255, 255, 180)  // Slight transparency
-                );
+                float sprite_w = fud.background_tile_width * tile_w;
+                float sprite_h = fud.background_tile_height * tile_h;
+
+                if (fud.background_render_mode == FUDImageRenderMode::Tile) {
+                    // Tile mode: repeat the sprite
+                    float fud_w = fud.size.x;
+                    float fud_h = fud.size.y;
+
+                    for (float y = 0; y < fud_h; y += sprite_h) {
+                        for (float x = 0; x < fud_w; x += sprite_w) {
+                            float draw_w = std::min(sprite_w, fud_w - x);
+                            float draw_h = std::min(sprite_h, fud_h - y);
+
+                            // Calculate UV for potentially clipped tile
+                            float uv_w = (draw_w / sprite_w) *
+                                         (fud.background_tile_width * tile_w /
+                                          texture.width);
+                            float uv_h = (draw_h / sprite_h) *
+                                         (fud.background_tile_height * tile_h /
+                                          texture.height);
+                            ImVec2 tile_uv1(uv0.x + uv_w, uv0.y + uv_h);
+
+                            draw_list->AddImage(
+                                static_cast<ImTextureID>(
+                                    static_cast<intptr_t>(texture.id)),
+                                ImVec2(fud_pos.x + x, fud_pos.y + y),
+                                ImVec2(fud_pos.x + x + draw_w,
+                                       fud_pos.y + y + draw_h),
+                                uv0,
+                                tile_uv1,
+                                IM_COL32(255, 255, 255, 180));
+                        }
+                    }
+                } else if (fud.background_render_mode ==
+                           FUDImageRenderMode::Center) {
+                    // Center mode: draw at natural size, centered
+                    float center_x = fud_pos.x + (fud.size.x - sprite_w) * 0.5f;
+                    float center_y = fud_pos.y + (fud.size.y - sprite_h) * 0.5f;
+
+                    draw_list->AddImage(
+                        static_cast<ImTextureID>(
+                            static_cast<intptr_t>(texture.id)),
+                        ImVec2(center_x, center_y),
+                        ImVec2(center_x + sprite_w, center_y + sprite_h),
+                        uv0,
+                        uv1,
+                        IM_COL32(255, 255, 255, 180));
+                } else {
+                    // Stretch mode (default): scale to fit FUD size
+                    draw_list->AddImage(static_cast<ImTextureID>(
+                                            static_cast<intptr_t>(texture.id)),
+                                        fud_pos,
+                                        fud_end,
+                                        uv0,
+                                        uv1,
+                                        IM_COL32(255, 255, 255, 180));
+                }
             }
         }
 
@@ -1718,13 +1821,63 @@ void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
                            uv0.y + ((fud.foreground_tile_height * tile_h) /
                                     texture.height));
 
-                draw_list->AddImage(
-                    static_cast<ImTextureID>(static_cast<intptr_t>(texture.id)),
-                    fud_pos,
-                    fud_end,
-                    uv0,
-                    uv1,
-                    IM_COL32(255, 255, 255, 200));
+                float sprite_w = fud.foreground_tile_width * tile_w;
+                float sprite_h = fud.foreground_tile_height * tile_h;
+
+                if (fud.foreground_render_mode == FUDImageRenderMode::Tile) {
+                    // Tile mode: repeat the sprite
+                    float fud_w = fud.size.x;
+                    float fud_h = fud.size.y;
+
+                    for (float y = 0; y < fud_h; y += sprite_h) {
+                        for (float x = 0; x < fud_w; x += sprite_w) {
+                            float draw_w = std::min(sprite_w, fud_w - x);
+                            float draw_h = std::min(sprite_h, fud_h - y);
+
+                            // Calculate UV for potentially clipped tile
+                            float uv_w = (draw_w / sprite_w) *
+                                         (fud.foreground_tile_width * tile_w /
+                                          texture.width);
+                            float uv_h = (draw_h / sprite_h) *
+                                         (fud.foreground_tile_height * tile_h /
+                                          texture.height);
+                            ImVec2 tile_uv1(uv0.x + uv_w, uv0.y + uv_h);
+
+                            draw_list->AddImage(
+                                static_cast<ImTextureID>(
+                                    static_cast<intptr_t>(texture.id)),
+                                ImVec2(fud_pos.x + x, fud_pos.y + y),
+                                ImVec2(fud_pos.x + x + draw_w,
+                                       fud_pos.y + y + draw_h),
+                                uv0,
+                                tile_uv1,
+                                IM_COL32(255, 255, 255, 200));
+                        }
+                    }
+                } else if (fud.foreground_render_mode ==
+                           FUDImageRenderMode::Center) {
+                    // Center mode: draw at natural size, centered
+                    float center_x = fud_pos.x + (fud.size.x - sprite_w) * 0.5f;
+                    float center_y = fud_pos.y + (fud.size.y - sprite_h) * 0.5f;
+
+                    draw_list->AddImage(
+                        static_cast<ImTextureID>(
+                            static_cast<intptr_t>(texture.id)),
+                        ImVec2(center_x, center_y),
+                        ImVec2(center_x + sprite_w, center_y + sprite_h),
+                        uv0,
+                        uv1,
+                        IM_COL32(255, 255, 255, 200));
+                } else {
+                    // Stretch mode (default): scale to fit FUD size
+                    draw_list->AddImage(static_cast<ImTextureID>(
+                                            static_cast<intptr_t>(texture.id)),
+                                        fud_pos,
+                                        fud_end,
+                                        uv0,
+                                        uv1,
+                                        IM_COL32(255, 255, 255, 200));
+                }
             }
         }
 
@@ -1793,6 +1946,14 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
     if (left_clicked) {
         ImVec2 viewport_size = ImGui::GetContentRegionAvail();
 
+        // Use Dreamcast screen dimensions for FUD positioning
+        const float screen_width = 640.0f;
+        const float screen_height = 480.0f;
+        ImVec2 screen_size(screen_width, screen_height);
+
+        // Screen origin is at world origin (same as the scene grid)
+        ImVec2 screen_origin = origin;
+
         // Check if mouse clicked on any FUD
         for (size_t i = 0; i < level.fuds.size(); ++i) {
             auto& fud = level.fuds[i];
@@ -1801,11 +1962,12 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
                 continue;
             }
 
-            // Calculate FUD position
+            // Calculate FUD position relative to screen dimensions
             ImVec2 anchor_pos =
-                calculate_fud_anchor_position(fud.anchor, viewport_size);
-            ImVec2 fud_pos = ImVec2(origin.x + anchor_pos.x + fud.offset.x,
-                                    origin.y + anchor_pos.y + fud.offset.y);
+                calculate_fud_anchor_position(fud.anchor, screen_size);
+            ImVec2 fud_pos =
+                ImVec2(screen_origin.x + anchor_pos.x + fud.offset.x,
+                       screen_origin.y + anchor_pos.y + fud.offset.y);
             ImVec2 fud_end =
                 ImVec2(fud_pos.x + fud.size.x, fud_pos.y + fud.size.y);
 
