@@ -1,0 +1,120 @@
+{
+  "name": "Title Screen",
+  "tile_cols": 20,
+  "tile_rows": 15,
+  "player_spawn": {
+    "tile_x": 0,
+    "tile_y": 0
+  },
+  "platforms": [],
+  "monsters": [],
+  "backgrounds": {
+    "layers": [
+      {
+        "name": "Scrolling Stars",
+        "texture_file": "backgrounds/stars.png",
+        "depth": 0,
+        "parallax_factor": 1.0,
+        "auto_scroll_enabled": true,
+        "scroll_velocity": {
+          "x": 0,
+          "y": -30
+        },
+        "wrap_x": false,
+        "wrap_y": true,
+        "objects": []
+      },
+      {
+        "name": "Scrolling Clouds",
+        "texture_file": "backgrounds/clouds.png",
+        "depth": 1,
+        "parallax_factor": 0.8,
+        "auto_scroll_enabled": true,
+        "scroll_velocity": {
+          "x": 0,
+          "y": -50
+        },
+        "wrap_x": false,
+        "wrap_y": true,
+        "objects": []
+      }
+    ]
+  },
+  "fuds": [
+    {
+      "name": "Title Logo",
+      "type_id": "custom",
+      "anchor": "TopCenter",
+      "offset": {
+        "x": 0,
+        "y": 80
+      },
+      "size": {
+        "x": 400,
+        "y": 100
+      },
+      "visible": true,
+      "properties": {}
+    },
+    {
+      "name": "Start Game Button",
+      "type_id": "menu_button",
+      "anchor": "MiddleCenter",
+      "offset": {
+        "x": 0,
+        "y": 0
+      },
+      "size": {
+        "x": 200,
+        "y": 50
+      },
+      "visible": true,
+      "properties": {
+        "text": "START GAME",
+        "button_action": "start_game",
+        "font_size": "24",
+        "border_thickness": "2"
+      }
+    },
+    {
+      "name": "Load Level Button",
+      "type_id": "menu_button",
+      "anchor": "MiddleCenter",
+      "offset": {
+        "x": 0,
+        "y": 70
+      },
+      "size": {
+        "x": 200,
+        "y": 50
+      },
+      "visible": true,
+      "properties": {
+        "text": "LEVEL SELECT",
+        "button_action": "load_level:level1",
+        "font_size": "20",
+        "border_thickness": "2"
+      }
+    },
+    {
+      "name": "Quit Button",
+      "type_id": "menu_button",
+      "anchor": "MiddleCenter",
+      "offset": {
+        "x": 0,
+        "y": 140
+      },
+      "size": {
+        "x": 200,
+        "y": 50
+      },
+      "visible": true,
+      "properties": {
+        "text": "QUIT",
+        "button_action": "quit_game",
+        "font_size": "20",
+        "border_thickness": "2"
+      }
+    }
+  ]
+}
