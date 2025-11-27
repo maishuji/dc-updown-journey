@@ -209,8 +209,8 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     register_menu_actions();
 
     // Load title screen scene
-    if (!load_scene(
-            udjourney::coreutils::get_assets_path("levels/title_screen.json"))) {
+    if (!load_scene(udjourney::coreutils::get_assets_path(
+            "levels/title_screen.json"))) {
         std::cout << "ERROR: Could not load title_screen.json" << std::endl;
     }
 }
@@ -261,19 +261,6 @@ void Game::run() {
 
     SetTargetFPS(60);
     m_last_update_time = GetTime();
-
-    auto dialog_hud =
-        std::make_unique<DialogBoxHUD>(Rectangle{300, 400, 200, 80});
-
-    dialog_hud->set_on_finished_callback([this]() {
-        m_state = GameState::PLAY;
-        m_hud_manager.pop_foreground_hud();
-    });
-
-    dialog_hud->set_on_next_callback(
-        [this]() { udjourney::Logger::info("Next page in dialog box"); });
-
-    m_hud_manager.push_foreground_hud(std::move(dialog_hud));
 
     while (is_running) {
         update();
@@ -343,12 +330,6 @@ void Game::process_input() {
     if (start_pressed) {
         if (m_state == GameState::GAMEOVER) {
             // Restart the level (resets health, position, monsters, etc.)
-            restart_level();
-            return;
-        }
-
-        if (m_state == GameState::WIN) {
-            // Restart the level
             restart_level();
             return;
         }
@@ -1132,7 +1113,7 @@ void Game::draw() const {
         case GameState::TITLE:
             // Draw scrolling backgrounds
             draw_backgrounds();
-            
+
             // Draw widgets (menu buttons)
             for (const auto &actor : m_actors) {
                 if (actor->get_group_id() == 4) {  // Widget group ID
@@ -1169,7 +1150,20 @@ void Game::draw() const {
             draw_game_over_(m_score_history);
             break;
         case GameState::WIN:
-            draw_win_screen_();
+            // Draw scrolling backgrounds
+            draw_backgrounds();
+            
+            // Draw FUDs (victory messages)
+            if (m_current_scene) {
+                draw_fuds_();
+            }
+            
+            // Draw widgets (menu buttons)
+            for (const auto &actor : m_actors) {
+                if (actor->get_group_id() == 4) {  // Widget group ID
+                    actor->draw();
+                }
+            }
             break;
     }
     m_hud_manager.draw();
@@ -1188,52 +1182,57 @@ void Game::draw() const {
 void Game::update() {
     static double last_update_time = 0.0;
 
-    // Widget input handling for TITLE state
-    if (m_state == GameState::TITLE) {
+    // Widget input handling for TITLE and WIN states
+    if (m_state == GameState::TITLE || m_state == GameState::WIN) {
         // Collect all widgets from m_actors
-        std::vector<IWidget*> widgets;
-        for (const auto& actor : m_actors) {
+        std::vector<IWidget *> widgets;
+        for (const auto &actor : m_actors) {
             if (actor->get_group_id() == 4) {  // Widget group ID
-                widgets.push_back(static_cast<IWidget*>(actor.get()));
+                widgets.push_back(static_cast<IWidget *>(actor.get()));
             }
         }
 
         if (!widgets.empty()) {
             // Keyboard navigation: Z = up, S = down
             if (IsKeyPressed(KEY_Z)) {
-                m_selected_widget_index = (m_selected_widget_index - 1 + static_cast<int>(widgets.size())) % static_cast<int>(widgets.size());
+                m_selected_widget_index = (m_selected_widget_index - 1 +
+                                           static_cast<int>(widgets.size())) %
+                                          static_cast<int>(widgets.size());
             }
             if (IsKeyPressed(KEY_S)) {
-                m_selected_widget_index = (m_selected_widget_index + 1) % static_cast<int>(widgets.size());
+                m_selected_widget_index = (m_selected_widget_index + 1) %
+                                          static_cast<int>(widgets.size());
             }
 
             // Update focus state for all widgets
             for (size_t i = 0; i < widgets.size(); ++i) {
-                widgets[i]->set_focused(static_cast<int>(i) == m_selected_widget_index);
+                widgets[i]->set_focused(static_cast<int>(i) ==
+                                        m_selected_widget_index);
             }
 
             // Activate selected widget with Enter or Space
             if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
                 widgets[m_selected_widget_index]->on_click();
-                
+
                 // IMPORTANT: Return immediately if state changed
-                // Widget action may have triggered state change and called initialize_gameplay()
-                // which removes widgets. Continuing would access deleted memory.
-                if (m_state != GameState::TITLE) {
+                // Widget action may have triggered state change and called
+                // initialize_gameplay() which removes widgets. Continuing would
+                // access deleted memory.
+                if (m_state != GameState::TITLE && m_state != GameState::WIN) {
                     return;
                 }
             }
 
             // Mouse input
             Vector2 mouse_pos = GetMousePosition();
-            for (auto* widget : widgets) {
+            for (auto *widget : widgets) {
                 if (widget->contains_point(mouse_pos)) {
                     widget->on_hover();
                     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
                         widget->on_click();
-                        
+
                         // IMPORTANT: Return immediately if state changed
-                        if (m_state != GameState::TITLE) {
+                        if (m_state != GameState::TITLE && m_state != GameState::WIN) {
                             return;
                         }
                     }
@@ -1330,6 +1329,26 @@ void Game::update() {
                 // platform area before winning
                 if (player_bottom >= m_level_height * 0.98f) {
                     m_state = GameState::WIN;
+                    
+                    // Load win screen with widgets
+                    std::string win_path = udjourney::coreutils::get_assets_path("levels/win_screen.json");
+                    if (load_scene(win_path)) {
+                        // Clean up gameplay objects
+                        m_player.reset();
+                        m_hud_manager.clear_background_huds();
+                        
+                        // Remove all actors except widgets
+                        m_actors.erase(
+                            std::remove_if(m_actors.begin(), m_actors.end(),
+                                [](const std::unique_ptr<IActor> &actor) {
+                                    return actor->get_group_id() != 4;  // Keep widgets only
+                                }),
+                            m_actors.end());
+                        
+                        // Load win screen widgets
+                        load_widgets_from_scene();
+                        m_rect.y = 0;  // Reset camera
+                    }
                 }
             }
         }
@@ -1931,10 +1950,10 @@ void Game::load_widgets_from_scene() {
 
 void Game::register_menu_actions() {
     // Start Game action
-    ActionDispatcher::register_action("start_game", 
-        [](IGame* game, const std::vector<std::string>& params) {
+    ActionDispatcher::register_action(
+        "start_game", [](IGame *game, const std::vector<std::string> &params) {
             std::cout << "[ACTION] Start Game triggered" << std::endl;
-            auto* g = dynamic_cast<Game*>(game);
+            auto *g = dynamic_cast<Game *>(game);
             if (g) {
                 g->m_state = GameState::PLAY;
                 g->initialize_gameplay();
@@ -1942,14 +1961,15 @@ void Game::register_menu_actions() {
         });
 
     // Load Level action (format: "load_level:level_name")
-    ActionDispatcher::register_action("load_level", 
-        [](IGame* game, const std::vector<std::string>& params) {
+    ActionDispatcher::register_action(
+        "load_level", [](IGame *game, const std::vector<std::string> &params) {
             if (params.size() < 2) return;
             std::cout << "[ACTION] Load Level: " << params[1] << std::endl;
-            
-            auto* g = dynamic_cast<Game*>(game);
+
+            auto *g = dynamic_cast<Game *>(game);
             if (g) {
-                std::string level_path = udjourney::coreutils::get_assets_path("levels/" + params[1] + ".json");
+                std::string level_path = udjourney::coreutils::get_assets_path(
+                    "levels/" + params[1] + ".json");
                 if (g->load_scene(level_path)) {
                     g->m_state = GameState::PLAY;
                     g->initialize_gameplay();
@@ -1958,8 +1978,8 @@ void Game::register_menu_actions() {
         });
 
     // Quit Game action
-    ActionDispatcher::register_action("quit_game", 
-        [](IGame* game, const std::vector<std::string>& params) {
+    ActionDispatcher::register_action(
+        "quit_game", [](IGame *game, const std::vector<std::string> &params) {
             std::cout << "[ACTION] Quit Game triggered" << std::endl;
 #ifndef PLATFORM_DREAMCAST
             CloseWindow();
@@ -1967,33 +1987,40 @@ void Game::register_menu_actions() {
         });
 
     // Show Options action (placeholder)
-    ActionDispatcher::register_action("show_options", 
-        [](IGame* game, const std::vector<std::string>& params) {
-            std::cout << "[ACTION] Show Options triggered (not implemented)" << std::endl;
+    ActionDispatcher::register_action(
+        "show_options",
+        [](IGame *game, const std::vector<std::string> &params) {
+            std::cout << "[ACTION] Show Options triggered (not implemented)"
+                      << std::endl;
         });
 
     // Return to Title action
-    ActionDispatcher::register_action("return_to_title", 
-        [](IGame* game, const std::vector<std::string>& params) {
+    ActionDispatcher::register_action(
+        "return_to_title",
+        [](IGame *game, const std::vector<std::string> &params) {
             std::cout << "[ACTION] Return to Title triggered" << std::endl;
-            auto* g = dynamic_cast<Game*>(game);
+            auto *g = dynamic_cast<Game *>(game);
             if (g) {
-                std::string title_path = udjourney::coreutils::get_assets_path("levels/title_screen.json");
+                std::string title_path = udjourney::coreutils::get_assets_path(
+                    "levels/title_screen.json");
                 if (g->load_scene(title_path)) {
                     g->m_state = GameState::TITLE;
-                    
+
                     // Clean up gameplay objects
                     g->m_player.reset();
                     g->m_hud_manager.clear_background_huds();
-                    
+
                     // Remove all actors except widgets
                     g->m_actors.erase(
-                        std::remove_if(g->m_actors.begin(), g->m_actors.end(),
+                        std::remove_if(
+                            g->m_actors.begin(),
+                            g->m_actors.end(),
                             [](const std::unique_ptr<IActor> &actor) {
-                                return actor->get_group_id() != 4;  // Keep widgets only
+                                return actor->get_group_id() !=
+                                       4;  // Keep widgets only
                             }),
                         g->m_actors.end());
-                    
+
                     // Load title screen widgets
                     g->load_widgets_from_scene();
                     g->m_rect.y = 0;  // Reset camera
@@ -2004,12 +2031,13 @@ void Game::register_menu_actions() {
 
 void Game::initialize_gameplay() {
     // Remove all widgets from m_actors
-    m_actors.erase(
-        std::remove_if(m_actors.begin(), m_actors.end(),
-            [](const std::unique_ptr<IActor> &actor) {
-                return actor->get_group_id() == 4;  // Remove widgets
-            }),
-        m_actors.end());
+    m_actors.erase(std::remove_if(m_actors.begin(),
+                                  m_actors.end(),
+                                  [](const std::unique_ptr<IActor> &actor) {
+                                      return actor->get_group_id() ==
+                                             4;  // Remove widgets
+                                  }),
+                   m_actors.end());
 
     // Clear background HUDs
     m_hud_manager.clear_background_huds();

@@ -60,7 +60,7 @@ class Game : public IGame, public IObserver {
     void draw_fuds_() const;
     bool should_continue_scrolling_() const noexcept;
     void attack_nearby_monsters();
-    
+
     // Widget and scene management
     void load_widgets_from_scene();
     void register_menu_actions();
@@ -87,6 +87,6 @@ class Game : public IGame, public IObserver {
     mutable std::map<std::string, Texture2D>
         m_background_textures;  // Cache for background textures
     mutable std::map<std::string, Texture2D>
-        m_fud_textures;  // Cache for FUD textures
+        m_fud_textures;               // Cache for FUD textures
     int m_selected_widget_index = 0;  // Currently focused widget
 };

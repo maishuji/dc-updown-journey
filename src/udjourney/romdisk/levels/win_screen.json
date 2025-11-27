@@ -1,0 +1,143 @@
+{
+  "name": "Win Screen",
+  "tile_cols": 20,
+  "tile_rows": 15,
+  "player_spawn": {
+    "tile_x": 0,
+    "tile_y": 0
+  },
+  "platforms": [],
+  "monsters": [],
+  "backgrounds": {
+    "layers": [
+      {
+        "name": "Celebration Stars",
+        "texture_file": "backgrounds/stars.png",
+        "depth": 0,
+        "parallax_factor": 1.0,
+        "auto_scroll_enabled": true,
+        "scroll_velocity": {
+          "x": 10,
+          "y": -20
+        },
+        "wrap_x": true,
+        "wrap_y": true,
+        "objects": []
+      },
+      {
+        "name": "Victory Clouds",
+        "texture_file": "backgrounds/clouds.png",
+        "depth": 1,
+        "parallax_factor": 0.9,
+        "auto_scroll_enabled": true,
+        "scroll_velocity": {
+          "x": -5,
+          "y": -15
+        },
+        "wrap_x": true,
+        "wrap_y": true,
+        "objects": []
+      }
+    ]
+  },
+  "fuds": [
+    {
+      "name": "Victory Title",
+      "type_id": "custom",
+      "anchor": "TopCenter",
+      "offset": {
+        "x": 0,
+        "y": 60
+      },
+      "size": {
+        "x": 500,
+        "y": 80
+      },
+      "visible": true,
+      "properties": {
+        "text": "CONGRATULATIONS!",
+        "font_size": "40",
+        "color": "GOLD"
+      }
+    },
+    {
+      "name": "Victory Message",
+      "type_id": "custom",
+      "anchor": "TopCenter",
+      "offset": {
+        "x": 0,
+        "y": 150
+      },
+      "size": {
+        "x": 400,
+        "y": 50
+      },
+      "visible": true,
+      "properties": {
+        "text": "YOU COMPLETED THE LEVEL!",
+        "font_size": "25",
+        "color": "GREEN"
+      }
+    },
+    {
+      "name": "Play Again Button",
+      "type_id": "menu_button",
+      "anchor": "MiddleCenter",
+      "offset": {
+        "x": 0,
+        "y": 50
+      },
+      "size": {
+        "x": 250,
+        "y": 50
+      },
+      "visible": true,
+      "properties": {
+        "text": "PLAY AGAIN",
+        "button_action": "start_game",
+        "font_size": "24",
+        "border_thickness": "2"
+      }
+    },
+    {
+      "name": "Return to Title Button",
+      "type_id": "menu_button",
+      "anchor": "MiddleCenter",
+      "offset": {
+        "x": 0,
+        "y": 120
+      },
+      "size": {
+        "x": 250,
+        "y": 50
+      },
+      "visible": true,
+      "properties": {
+        "text": "RETURN TO TITLE",
+        "button_action": "return_to_title",
+        "font_size": "20",
+        "border_thickness": "2"
+      }
+    },
+    {
+      "name": "Quit Button",
+      "type_id": "menu_button",
+      "anchor": "MiddleCenter",
+      "offset": {
+        "x": 0,
+        "y": 190
+      },
+      "size": {
+        "x": 250,
+        "y": 50
+      },
+      "visible": true,
+      "properties": {
+        "text": "QUIT",
+        "button_action": "quit_game",
+        "font_size": "20",
+        "border_thickness": "2"
+      }
+    }
+  ]
+}

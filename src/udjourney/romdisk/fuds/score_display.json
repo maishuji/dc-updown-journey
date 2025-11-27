@@ -21,7 +21,11 @@
     },
     "text_color": {
       "type": "color",
-      "default": [255, 255, 255],
+      "default": [
+        255,
+        255,
+        255
+      ],
       "description": "RGB color of text"
     },
     "background_visible": {
@@ -31,7 +35,12 @@
     },
     "background_color": {
       "type": "color",
-      "default": [0, 0, 0, 128],
+      "default": [
+        0,
+        0,
+        0,
+        128
+      ],
       "description": "RGBA color of background"
     }
   }
