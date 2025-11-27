@@ -56,6 +56,11 @@ class EditorScene {
     FUDElement* selected_fud_ = nullptr;
     int selected_fud_idx_ = -1;
 
+    // FUD dragging state
+    bool dragging_fud_ = false;
+    ImVec2 fud_drag_start_mouse_;
+    ImVec2 fud_drag_start_offset_;
+
     // Internal rendering methods
     void setup_scene_window(const ImGuiIO& io);
     void render_background(BackgroundManager* bg_manager, ImDrawList* draw_list,

@@ -721,9 +721,21 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
     bool left_clicked = ImGui::IsMouseClicked(0);
     bool right_clicked = ImGui::IsMouseClicked(1);
 
+    // FUD mode needs to handle dragging even when not clicking
+    EditMode mode = editor_panel.get_edit_mode();
+    if (mode == EditMode::FUD) {
+        handle_fud_mode_input(level,
+                              editor_panel,
+                              mouse_pos,
+                              origin,
+                              left_clicked,
+                              right_clicked);
+        return;
+    }
+
     if (!hovered || (!left_clicked && !right_clicked)) {
         // Still need to handle tile mode drag behavior
-        if (editor_panel.get_edit_mode() == EditMode::Tiles) {
+        if (mode == EditMode::Tiles) {
             handle_tile_mode_input(level, editor_panel, draw_list, origin);
         }
         return;
@@ -731,7 +743,6 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
 
     if (right_clicked) {
         // Allow right-click for modes that use context menus
-        EditMode mode = editor_panel.get_edit_mode();
         if (mode != EditMode::Platforms && mode != EditMode::Monsters &&
             mode != EditMode::Background) {
             // Open context menu for other modes
@@ -741,7 +752,7 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
     }
 
     // Handle input based on current edit mode
-    switch (editor_panel.get_edit_mode()) {
+    switch (mode) {
         case EditMode::Tiles:
             if (left_clicked) {
                 handle_tile_mode_input(level, editor_panel, draw_list, origin);
@@ -767,14 +778,6 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
             if (left_clicked) {
                 handle_background_mode_input(editor_panel, mouse_pos, origin);
             }
-            break;
-        case EditMode::FUD:
-            handle_fud_mode_input(level,
-                                  editor_panel,
-                                  mouse_pos,
-                                  origin,
-                                  left_clicked,
-                                  right_clicked);
             break;
     }
 }
@@ -1942,18 +1945,37 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
         return;
     }
 
-    // Handle FUD selection
+    ImVec2 viewport_size = ImGui::GetContentRegionAvail();
+    const float screen_width = 640.0f;
+    const float screen_height = 480.0f;
+    ImVec2 screen_size(screen_width, screen_height);
+    ImVec2 screen_origin = origin;
+
+    FUDElement* selected = editor_panel.get_selected_fud();
+
+    // Handle mouse release - stop dragging
+    if (!ImGui::IsMouseDown(0)) {
+        if (dragging_fud_) {
+            printf("Stopped dragging\n");
+        }
+        dragging_fud_ = false;
+    }
+
+    // Handle ongoing drag
+    if (dragging_fud_ && selected && ImGui::IsMouseDown(0)) {
+        // Update offset based on mouse movement
+        ImVec2 mouse_delta = ImVec2(mouse_pos.x - fud_drag_start_mouse_.x,
+                                    mouse_pos.y - fud_drag_start_mouse_.y);
+
+        printf("Dragging: delta=(%.1f, %.1f)\n", mouse_delta.x, mouse_delta.y);
+
+        selected->offset.x = fud_drag_start_offset_.x + mouse_delta.x;
+        selected->offset.y = fud_drag_start_offset_.y + mouse_delta.y;
+        return;
+    }
+
+    // Handle click to select or prepare to drag
     if (left_clicked) {
-        ImVec2 viewport_size = ImGui::GetContentRegionAvail();
-
-        // Use Dreamcast screen dimensions for FUD positioning
-        const float screen_width = 640.0f;
-        const float screen_height = 480.0f;
-        ImVec2 screen_size(screen_width, screen_height);
-
-        // Screen origin is at world origin (same as the scene grid)
-        ImVec2 screen_origin = origin;
-
         // Check if mouse clicked on any FUD
         for (size_t i = 0; i < level.fuds.size(); ++i) {
             auto& fud = level.fuds[i];
@@ -1975,11 +1997,47 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
             if (mouse_pos.x >= fud_pos.x && mouse_pos.x <= fud_end.x &&
                 mouse_pos.y >= fud_pos.y && mouse_pos.y <= fud_end.y) {
                 editor_panel.set_selected_fud(&fud);
+
+                // Always prepare for potential drag when clicking on a FUD
+                fud_drag_start_mouse_ = mouse_pos;
+                fud_drag_start_offset_ = fud.offset;
+                dragging_fud_ = false;  // Reset drag state
+                printf("Clicked FUD at (%.1f, %.1f), offset=(%.1f, %.1f)\n",
+                       mouse_pos.x,
+                       mouse_pos.y,
+                       fud.offset.x,
+                       fud.offset.y);
                 return;
             }
         }
 
         // Clicked on empty space - deselect
         editor_panel.set_selected_fud(nullptr);
+        dragging_fud_ = false;
+        return;
+    }
+
+    // Check if we should start dragging (button held and mouse moved)
+    if (!dragging_fud_ && selected && ImGui::IsMouseDown(0) && !left_clicked) {
+        // Check if mouse has moved enough to start dragging
+        ImVec2 mouse_delta = ImVec2(mouse_pos.x - fud_drag_start_mouse_.x,
+                                    mouse_pos.y - fud_drag_start_mouse_.y);
+        float dist_sq =
+            mouse_delta.x * mouse_delta.x + mouse_delta.y * mouse_delta.y;
+
+        printf(
+            "Check drag: dist_sq=%.2f, delta=(%.1f, %.1f), start=(%.1f, "
+            "%.1f)\n",
+            dist_sq,
+            mouse_delta.x,
+            mouse_delta.y,
+            fud_drag_start_mouse_.x,
+            fud_drag_start_mouse_.y);
+
+        // Start dragging if moved more than 2 pixels
+        if (dist_sq > 4.0f) {
+            printf("Started dragging!\n");
+            dragging_fud_ = true;
+        }
     }
 }
