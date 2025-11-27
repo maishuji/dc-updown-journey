@@ -1352,7 +1352,11 @@ void Game::update() {
                 }
             }
         }
-        m_player->handle_collision(m_actors);
+        
+        // Only handle collisions if player exists (not in WIN/TITLE state)
+        if (m_player) {
+            m_player->handle_collision(m_actors);
+        }
 
         // Handle collision for all monsters
         for (auto &actor : m_actors) {
