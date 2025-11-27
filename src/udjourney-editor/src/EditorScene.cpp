@@ -152,6 +152,56 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
     // Render player spawn position
     render_player_spawn(level, draw_list, origin);
 
+    // Render FUD elements
+    ImVec2 viewport_size = ImGui::GetContentRegionAvail();
+
+    // Draw screen boundaries when in FUD mode (Dreamcast resolution: 640x480)
+    if (editor_panel.get_edit_mode() == EditMode::FUD) {
+        const float screen_width = 640.0f;
+        const float screen_height = 480.0f;
+
+        // Position screen at world origin (0, 0) - this stays fixed when
+        // panning
+        ImVec2 screen_origin(origin.x, origin.y);
+        ImVec2 screen_end(screen_origin.x + screen_width,
+                          screen_origin.y + screen_height);
+
+        // Draw outer boundary (bright yellow)
+        draw_list->AddRect(screen_origin,
+                           screen_end,
+                           IM_COL32(255, 255, 0, 255),
+                           0.0f,
+                           0,
+                           4.0f);
+
+        // Draw inner safe area guide (dimmer yellow, 10px inset)
+        ImVec2 safe_origin(screen_origin.x + 10, screen_origin.y + 10);
+        ImVec2 safe_end(screen_end.x - 10, screen_end.y - 10);
+        draw_list->AddRect(
+            safe_origin, safe_end, IM_COL32(255, 255, 0, 100), 0.0f, 0, 1.0f);
+
+        // Draw center crosshair
+        float center_x = screen_origin.x + screen_width * 0.5f;
+        float center_y = screen_origin.y + screen_height * 0.5f;
+        draw_list->AddLine(ImVec2(center_x - 10, center_y),
+                           ImVec2(center_x + 10, center_y),
+                           IM_COL32(255, 255, 0, 150),
+                           1.0f);
+        draw_list->AddLine(ImVec2(center_x, center_y - 10),
+                           ImVec2(center_x, center_y + 10),
+                           IM_COL32(255, 255, 0, 150),
+                           1.0f);
+
+        // Label the resolution
+        char res_label[32];
+        snprintf(res_label, sizeof(res_label), "640x480");
+        draw_list->AddText(ImVec2(screen_origin.x + 5, screen_origin.y + 5),
+                           IM_COL32(255, 255, 0, 200),
+                           res_label);
+    }
+
+    render_fuds(level, editor_panel, draw_list, origin, viewport_size);
+
     // Handle mouse input and selection based on current mode
     handle_mouse_input(level, editor_panel, draw_list, origin);
 
@@ -671,9 +721,22 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
     bool left_clicked = ImGui::IsMouseClicked(0);
     bool right_clicked = ImGui::IsMouseClicked(1);
 
+    // FUD mode needs to handle dragging even when not clicking, but only when
+    // hovered
+    EditMode mode = editor_panel.get_edit_mode();
+    if (mode == EditMode::FUD && hovered) {
+        handle_fud_mode_input(level,
+                              editor_panel,
+                              mouse_pos,
+                              origin,
+                              left_clicked,
+                              right_clicked);
+        return;
+    }
+
     if (!hovered || (!left_clicked && !right_clicked)) {
         // Still need to handle tile mode drag behavior
-        if (editor_panel.get_edit_mode() == EditMode::Tiles) {
+        if (mode == EditMode::Tiles) {
             handle_tile_mode_input(level, editor_panel, draw_list, origin);
         }
         return;
@@ -681,7 +744,6 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
 
     if (right_clicked) {
         // Allow right-click for modes that use context menus
-        EditMode mode = editor_panel.get_edit_mode();
         if (mode != EditMode::Platforms && mode != EditMode::Monsters &&
             mode != EditMode::Background) {
             // Open context menu for other modes
@@ -691,7 +753,7 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
     }
 
     // Handle input based on current edit mode
-    switch (editor_panel.get_edit_mode()) {
+    switch (mode) {
         case EditMode::Tiles:
             if (left_clicked) {
                 handle_tile_mode_input(level, editor_panel, draw_list, origin);
@@ -1495,5 +1557,488 @@ void EditorScene::render_background_placement_preview(
     if (ImGui::IsKeyPressed(ImGuiKey_Escape) ||
         ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
         editor_panel.clear_background_placing_mode();
+    }
+}
+
+// Helper to calculate FUD anchor position based on viewport
+ImVec2 EditorScene::calculate_fud_anchor_position(
+    FUDAnchor anchor, const ImVec2& viewport_size) const {
+    ImVec2 pos(0, 0);
+
+    switch (anchor) {
+        case FUDAnchor::TopLeft:
+            pos = ImVec2(0, 0);
+            break;
+        case FUDAnchor::TopCenter:
+            pos = ImVec2(viewport_size.x / 2, 0);
+            break;
+        case FUDAnchor::TopRight:
+            pos = ImVec2(viewport_size.x, 0);
+            break;
+        case FUDAnchor::MiddleLeft:
+            pos = ImVec2(0, viewport_size.y / 2);
+            break;
+        case FUDAnchor::MiddleCenter:
+            pos = ImVec2(viewport_size.x / 2, viewport_size.y / 2);
+            break;
+        case FUDAnchor::MiddleRight:
+            pos = ImVec2(viewport_size.x, viewport_size.y / 2);
+            break;
+        case FUDAnchor::BottomLeft:
+            pos = ImVec2(0, viewport_size.y);
+            break;
+        case FUDAnchor::BottomCenter:
+            pos = ImVec2(viewport_size.x / 2, viewport_size.y);
+            break;
+        case FUDAnchor::BottomRight:
+            pos = ImVec2(viewport_size.x, viewport_size.y);
+            break;
+    }
+
+    return pos;
+}
+
+void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
+                              ImDrawList* draw_list, const ImVec2& origin,
+                              const ImVec2& viewport_size) {
+    if (level.fuds.empty()) {
+        return;
+    }
+
+    // Use Dreamcast screen dimensions for FUD positioning
+    const float screen_width = 640.0f;
+    const float screen_height = 480.0f;
+    ImVec2 screen_size(screen_width, screen_height);
+
+    // Screen origin is at world origin (same as the scene grid)
+    ImVec2 screen_origin = origin;
+
+    for (size_t i = 0; i < level.fuds.size(); ++i) {
+        const auto& fud = level.fuds[i];
+
+        if (!fud.visible) {
+            continue;
+        }
+
+        // Calculate anchor position relative to screen dimensions
+        ImVec2 anchor_pos =
+            calculate_fud_anchor_position(fud.anchor, screen_size);
+
+        // Add screen origin and offset
+        ImVec2 fud_pos = ImVec2(screen_origin.x + anchor_pos.x + fud.offset.x,
+                                screen_origin.y + anchor_pos.y + fud.offset.y);
+
+        ImVec2 fud_end = ImVec2(fud_pos.x + fud.size.x, fud_pos.y + fud.size.y);
+
+        // Determine if this FUD is selected
+        FUDElement* selected = editor_panel.get_selected_fud();
+        bool is_selected = (selected == &level.fuds[i]);
+
+        // Draw background sprite if set
+        if (!fud.background_sheet.empty()) {
+            Texture2D texture = load_texture_cached(fud.background_sheet);
+            if (texture.id > 0) {
+                // Calculate source rect in sprite sheet
+                float tile_w = static_cast<float>(fud.background_tile_size);
+                float tile_h = static_cast<float>(fud.background_tile_size);
+                ImVec2 uv0((fud.background_tile_col * tile_w) / texture.width,
+                           (fud.background_tile_row * tile_h) / texture.height);
+                ImVec2 uv1(uv0.x + ((fud.background_tile_width * tile_w) /
+                                    texture.width),
+                           uv0.y + ((fud.background_tile_height * tile_h) /
+                                    texture.height));
+
+                float sprite_w = fud.background_tile_width * tile_w;
+                float sprite_h = fud.background_tile_height * tile_h;
+
+                if (fud.background_render_mode == FUDImageRenderMode::Tile) {
+                    // Tile mode: repeat the sprite
+                    float fud_w = fud.size.x;
+                    float fud_h = fud.size.y;
+
+                    for (float y = 0; y < fud_h; y += sprite_h) {
+                        for (float x = 0; x < fud_w; x += sprite_w) {
+                            float draw_w = std::min(sprite_w, fud_w - x);
+                            float draw_h = std::min(sprite_h, fud_h - y);
+
+                            // Calculate UV for potentially clipped tile
+                            float uv_w = (draw_w / sprite_w) *
+                                         (fud.background_tile_width * tile_w /
+                                          texture.width);
+                            float uv_h = (draw_h / sprite_h) *
+                                         (fud.background_tile_height * tile_h /
+                                          texture.height);
+                            ImVec2 tile_uv1(uv0.x + uv_w, uv0.y + uv_h);
+
+                            draw_list->AddImage(
+                                static_cast<ImTextureID>(
+                                    static_cast<intptr_t>(texture.id)),
+                                ImVec2(fud_pos.x + x, fud_pos.y + y),
+                                ImVec2(fud_pos.x + x + draw_w,
+                                       fud_pos.y + y + draw_h),
+                                uv0,
+                                tile_uv1,
+                                IM_COL32(255, 255, 255, 180));
+                        }
+                    }
+                } else if (fud.background_render_mode ==
+                           FUDImageRenderMode::Center) {
+                    // Center mode: draw at natural size, centered
+                    float center_x = fud_pos.x + (fud.size.x - sprite_w) * 0.5f;
+                    float center_y = fud_pos.y + (fud.size.y - sprite_h) * 0.5f;
+
+                    draw_list->AddImage(
+                        static_cast<ImTextureID>(
+                            static_cast<intptr_t>(texture.id)),
+                        ImVec2(center_x, center_y),
+                        ImVec2(center_x + sprite_w, center_y + sprite_h),
+                        uv0,
+                        uv1,
+                        IM_COL32(255, 255, 255, 180));
+                } else {
+                    // Stretch mode (default): scale to fit FUD size
+                    draw_list->AddImage(static_cast<ImTextureID>(
+                                            static_cast<intptr_t>(texture.id)),
+                                        fud_pos,
+                                        fud_end,
+                                        uv0,
+                                        uv1,
+                                        IM_COL32(255, 255, 255, 180));
+                }
+            }
+        }
+
+        // Draw FUD content preview based on type
+        if (fud.type_id == "heart_health") {
+            // Draw hearts preview
+            int max_hearts = 3;
+            int heart_spacing = 32;
+            std::string heart_sheet = "ui/ui_elements.png";
+            int heart_tile_size = 32;
+            int full_col = 0, full_row = 3;
+
+            try {
+                if (fud.properties.count("max_hearts")) {
+                    auto& prop = fud.properties.at("max_hearts");
+                    if (prop.is_number_integer()) {
+                        max_hearts = prop.get<int>();
+                    } else if (prop.is_string()) {
+                        max_hearts = std::stoi(prop.get<std::string>());
+                    }
+                }
+                if (fud.properties.count("heart_spacing")) {
+                    auto& prop = fud.properties.at("heart_spacing");
+                    if (prop.is_number_integer()) {
+                        heart_spacing = prop.get<int>();
+                    } else if (prop.is_string()) {
+                        heart_spacing = std::stoi(prop.get<std::string>());
+                    }
+                }
+
+                // Try to parse heart sprite config
+                if (fud.properties.count("heart_full_sprite")) {
+                    try {
+                        auto sprite_obj =
+                            fud.properties.at("heart_full_sprite");
+                        if (sprite_obj.is_object()) {
+                            heart_sheet =
+                                sprite_obj.value("sheet", heart_sheet);
+                            heart_tile_size =
+                                sprite_obj.value("tile_size", heart_tile_size);
+                            full_col = sprite_obj.value("tile_col", full_col);
+                            full_row = sprite_obj.value("tile_row", full_row);
+                        }
+                    } catch (...) {
+                    }
+                }
+            } catch (...) {
+            }
+
+            // Try to render with actual sprites
+            Texture2D heart_tex = load_texture_cached(heart_sheet);
+            if (heart_tex.id > 0) {
+                for (int h = 0; h < max_hearts; ++h) {
+                    float hx = fud_pos.x + (h * heart_spacing);
+                    float hy = fud_pos.y;
+
+                    ImVec2 uv0((full_col * heart_tile_size) /
+                                   static_cast<float>(heart_tex.width),
+                               (full_row * heart_tile_size) /
+                                   static_cast<float>(heart_tex.height));
+                    ImVec2 uv1(uv0.x + (heart_tile_size /
+                                        static_cast<float>(heart_tex.width)),
+                               uv0.y + (heart_tile_size /
+                                        static_cast<float>(heart_tex.height)));
+
+                    draw_list->AddImage(
+                        static_cast<ImTextureID>(
+                            static_cast<intptr_t>(heart_tex.id)),
+                        ImVec2(hx, hy),
+                        ImVec2(hx + heart_spacing, hy + heart_spacing),
+                        uv0,
+                        uv1,
+                        IM_COL32(255, 255, 255, 200));
+                }
+            } else {
+                // Fallback to circles if sprite not available
+                for (int h = 0; h < max_hearts; ++h) {
+                    float hx = fud_pos.x + (h * heart_spacing) + 16;
+                    float hy = fud_pos.y + 16;
+                    draw_list->AddCircleFilled(
+                        ImVec2(hx, hy), 10.0f, IM_COL32(255, 50, 50, 150));
+                }
+            }
+        } else if (fud.type_id == "healthbar" || fud.type_id == "mana_bar") {
+            // Draw bar preview
+            ImU32 bar_color = (fud.type_id == "healthbar")
+                                  ? IM_COL32(255, 0, 0, 150)
+                                  : IM_COL32(0, 100, 255, 150);
+
+            float bar_width = (fud.size.x - 8) * 0.8f;  // 80% filled
+            ImVec2 bar_start(fud_pos.x + 4, fud_pos.y + 4);
+            ImVec2 bar_end(fud_pos.x + 4 + bar_width, fud_end.y - 4);
+
+            draw_list->AddRectFilled(bar_start, bar_end, bar_color);
+        } else if (fud.type_id == "score_display") {
+            // Draw score text preview
+            draw_list->AddText(ImVec2(fud_pos.x + 10, fud_pos.y + 10),
+                               IM_COL32(255, 255, 255, 200),
+                               "Score: 1234");
+        } else if (fud.type_id == "timer") {
+            // Draw timer preview
+            draw_list->AddText(ImVec2(fud_pos.x + 10, fud_pos.y + 10),
+                               IM_COL32(255, 255, 0, 200),
+                               "03:00");
+        }
+
+        // Draw foreground sprite if set
+        if (!fud.foreground_sheet.empty()) {
+            Texture2D texture = load_texture_cached(fud.foreground_sheet);
+            if (texture.id > 0) {
+                // Calculate source rect in sprite sheet
+                float tile_w = static_cast<float>(fud.foreground_tile_size);
+                float tile_h = static_cast<float>(fud.foreground_tile_size);
+                ImVec2 uv0((fud.foreground_tile_col * tile_w) / texture.width,
+                           (fud.foreground_tile_row * tile_h) / texture.height);
+                ImVec2 uv1(uv0.x + ((fud.foreground_tile_width * tile_w) /
+                                    texture.width),
+                           uv0.y + ((fud.foreground_tile_height * tile_h) /
+                                    texture.height));
+
+                float sprite_w = fud.foreground_tile_width * tile_w;
+                float sprite_h = fud.foreground_tile_height * tile_h;
+
+                if (fud.foreground_render_mode == FUDImageRenderMode::Tile) {
+                    // Tile mode: repeat the sprite
+                    float fud_w = fud.size.x;
+                    float fud_h = fud.size.y;
+
+                    for (float y = 0; y < fud_h; y += sprite_h) {
+                        for (float x = 0; x < fud_w; x += sprite_w) {
+                            float draw_w = std::min(sprite_w, fud_w - x);
+                            float draw_h = std::min(sprite_h, fud_h - y);
+
+                            // Calculate UV for potentially clipped tile
+                            float uv_w = (draw_w / sprite_w) *
+                                         (fud.foreground_tile_width * tile_w /
+                                          texture.width);
+                            float uv_h = (draw_h / sprite_h) *
+                                         (fud.foreground_tile_height * tile_h /
+                                          texture.height);
+                            ImVec2 tile_uv1(uv0.x + uv_w, uv0.y + uv_h);
+
+                            draw_list->AddImage(
+                                static_cast<ImTextureID>(
+                                    static_cast<intptr_t>(texture.id)),
+                                ImVec2(fud_pos.x + x, fud_pos.y + y),
+                                ImVec2(fud_pos.x + x + draw_w,
+                                       fud_pos.y + y + draw_h),
+                                uv0,
+                                tile_uv1,
+                                IM_COL32(255, 255, 255, 200));
+                        }
+                    }
+                } else if (fud.foreground_render_mode ==
+                           FUDImageRenderMode::Center) {
+                    // Center mode: draw at natural size, centered
+                    float center_x = fud_pos.x + (fud.size.x - sprite_w) * 0.5f;
+                    float center_y = fud_pos.y + (fud.size.y - sprite_h) * 0.5f;
+
+                    draw_list->AddImage(
+                        static_cast<ImTextureID>(
+                            static_cast<intptr_t>(texture.id)),
+                        ImVec2(center_x, center_y),
+                        ImVec2(center_x + sprite_w, center_y + sprite_h),
+                        uv0,
+                        uv1,
+                        IM_COL32(255, 255, 255, 200));
+                } else {
+                    // Stretch mode (default): scale to fit FUD size
+                    draw_list->AddImage(static_cast<ImTextureID>(
+                                            static_cast<intptr_t>(texture.id)),
+                                        fud_pos,
+                                        fud_end,
+                                        uv0,
+                                        uv1,
+                                        IM_COL32(255, 255, 255, 200));
+                }
+            }
+        }
+
+        // Draw FUD border
+        ImU32 border_color =
+            is_selected ? IM_COL32(0, 255, 0, 255)     // Green for selected
+                        : IM_COL32(255, 255, 0, 200);  // Yellow for normal
+
+        draw_list->AddRect(fud_pos, fud_end, border_color, 0.0f, 0, 2.0f);
+
+        // Draw anchor point (small circle)
+        ImVec2 anchor_screen_pos =
+            ImVec2(origin.x + anchor_pos.x, origin.y + anchor_pos.y);
+        draw_list->AddCircleFilled(
+            anchor_screen_pos, 4.0f, IM_COL32(255, 0, 0, 200));
+
+        // Draw label
+        char label[128];
+        snprintf(label, sizeof(label), "%s", fud.name.c_str());
+        ImVec2 text_pos = ImVec2(fud_pos.x + 5, fud_pos.y + 5);
+        draw_list->AddText(text_pos, IM_COL32(255, 255, 255, 255), label);
+
+        // Draw type info
+        snprintf(label, sizeof(label), "Type: %s", fud.type_id.c_str());
+        ImVec2 type_pos = ImVec2(fud_pos.x + 5, fud_pos.y + 20);
+        draw_list->AddText(type_pos, IM_COL32(200, 200, 200, 255), label);
+    }
+}
+
+void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
+                                        const ImVec2& mouse_pos,
+                                        const ImVec2& origin, bool left_clicked,
+                                        bool right_clicked) {
+    // Handle "Add FUD" button click from panel
+    if (editor_panel.should_add_fud()) {
+        FUDElement new_fud = editor_panel.create_fud_from_preset();
+        level.add_fud(new_fud);
+        editor_panel.clear_fud_add_flag();
+
+        // Select the newly added FUD
+        if (!level.fuds.empty()) {
+            editor_panel.set_selected_fud(&level.fuds.back());
+        }
+        return;
+    }
+
+    // Handle FUD deletion
+    if (editor_panel.should_delete_selected_fud()) {
+        FUDElement* selected = editor_panel.get_selected_fud();
+
+        if (selected) {
+            // Find and remove the selected FUD
+            for (size_t i = 0; i < level.fuds.size(); ++i) {
+                if (&level.fuds[i] == selected) {
+                    level.remove_fud(i);
+                    break;
+                }
+            }
+        }
+
+        editor_panel.clear_fud_delete_flag();
+        return;
+    }
+
+    ImVec2 viewport_size = ImGui::GetContentRegionAvail();
+    const float screen_width = 640.0f;
+    const float screen_height = 480.0f;
+    ImVec2 screen_size(screen_width, screen_height);
+    ImVec2 screen_origin = origin;
+
+    FUDElement* selected = editor_panel.get_selected_fud();
+
+    // Handle mouse release - stop dragging
+    if (!ImGui::IsMouseDown(0)) {
+        if (dragging_fud_) {
+            printf("Stopped dragging\n");
+        }
+        dragging_fud_ = false;
+    }
+
+    // Handle ongoing drag
+    if (dragging_fud_ && selected && ImGui::IsMouseDown(0)) {
+        // Update offset based on mouse movement
+        ImVec2 mouse_delta = ImVec2(mouse_pos.x - fud_drag_start_mouse_.x,
+                                    mouse_pos.y - fud_drag_start_mouse_.y);
+
+        printf("Dragging: delta=(%.1f, %.1f)\n", mouse_delta.x, mouse_delta.y);
+
+        selected->offset.x = fud_drag_start_offset_.x + mouse_delta.x;
+        selected->offset.y = fud_drag_start_offset_.y + mouse_delta.y;
+        return;
+    }
+
+    // Handle click to select or prepare to drag
+    if (left_clicked) {
+        // Check if mouse clicked on any FUD
+        for (size_t i = 0; i < level.fuds.size(); ++i) {
+            auto& fud = level.fuds[i];
+
+            if (!fud.visible) {
+                continue;
+            }
+
+            // Calculate FUD position relative to screen dimensions
+            ImVec2 anchor_pos =
+                calculate_fud_anchor_position(fud.anchor, screen_size);
+            ImVec2 fud_pos =
+                ImVec2(screen_origin.x + anchor_pos.x + fud.offset.x,
+                       screen_origin.y + anchor_pos.y + fud.offset.y);
+            ImVec2 fud_end =
+                ImVec2(fud_pos.x + fud.size.x, fud_pos.y + fud.size.y);
+
+            // Check if mouse is inside FUD bounds
+            if (mouse_pos.x >= fud_pos.x && mouse_pos.x <= fud_end.x &&
+                mouse_pos.y >= fud_pos.y && mouse_pos.y <= fud_end.y) {
+                editor_panel.set_selected_fud(&fud);
+
+                // Always prepare for potential drag when clicking on a FUD
+                fud_drag_start_mouse_ = mouse_pos;
+                fud_drag_start_offset_ = fud.offset;
+                dragging_fud_ = false;  // Reset drag state
+                printf("Clicked FUD at (%.1f, %.1f), offset=(%.1f, %.1f)\n",
+                       mouse_pos.x,
+                       mouse_pos.y,
+                       fud.offset.x,
+                       fud.offset.y);
+                return;
+            }
+        }
+
+        // Clicked on empty space - deselect
+        editor_panel.set_selected_fud(nullptr);
+        dragging_fud_ = false;
+        return;
+    }
+
+    // Check if we should start dragging (button held and mouse moved)
+    if (!dragging_fud_ && selected && ImGui::IsMouseDown(0) && !left_clicked) {
+        // Check if mouse has moved enough to start dragging
+        ImVec2 mouse_delta = ImVec2(mouse_pos.x - fud_drag_start_mouse_.x,
+                                    mouse_pos.y - fud_drag_start_mouse_.y);
+        float dist_sq =
+            mouse_delta.x * mouse_delta.x + mouse_delta.y * mouse_delta.y;
+
+        printf(
+            "Check drag: dist_sq=%.2f, delta=(%.1f, %.1f), start=(%.1f, "
+            "%.1f)\n",
+            dist_sq,
+            mouse_delta.x,
+            mouse_delta.y,
+            fud_drag_start_mouse_.x,
+            fud_drag_start_mouse_.y);
+
+        // Start dragging if moved more than 2 pixels
+        if (dist_sq > 4.0f) {
+            printf("Started dragging!\n");
+            dragging_fud_ = true;
+        }
     }
 }

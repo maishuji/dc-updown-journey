@@ -178,6 +178,20 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
             bg_manager_->from_json(jlevel["backgrounds"]);
         }
 
+        // Import FUDs
+        if (jlevel.contains("fuds") && jlevel["fuds"].is_array()) {
+            for (const auto& jfud : jlevel["fuds"]) {
+                try {
+                    FUDElement fud;
+                    from_json(jfud, fud);  // Explicit call to from_json
+                    level.fuds.push_back(fud);
+                } catch (const std::exception& e) {
+                    std::cerr << "Warning: Failed to load FUD: " << e.what()
+                              << std::endl;
+                }
+            }
+        }
+
         import_success_ = true;
         std::cout << "Successfully imported level from: " << file_path_
                   << std::endl;

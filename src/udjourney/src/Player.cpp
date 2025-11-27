@@ -16,6 +16,7 @@
 #include "udjourney/Monster.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/WorldBounds.hpp"
+#include "udjourney/components/HealthComponent.hpp"
 
 Player::~Player() = default;
 
@@ -96,6 +97,9 @@ Player::Player(const IGame &iGame, Rectangle iRect,
         auto &texture_manager = TextureManager::get_instance();
         m_texture = texture_manager.get_texture("placeholder.png");
     }
+
+    // Add health component - 3 hearts = 6 half-hearts
+    add_component(std::make_unique<HealthComponent>(6, 6));
 }
 
 void Player::draw() const {
@@ -115,6 +119,9 @@ void Player::draw() const {
 }
 
 void Player::update(float iDelta) {
+    // Update all components
+    update_components(iDelta);
+
     if (m_invincibility_timer > 0.0F) {
         m_invincibility_timer -= iDelta;
     } else {
@@ -276,10 +283,27 @@ void Player::handle_collision(
                 m_dispatcher.dispatch(score_event);
                 platform->set_state(ActorState::CONSUMED);
             } else if (platform->get_group_id() == MONSTER_TYPE_ID) {
-                // Monster collision - kill the monster to trigger death
-                // animation
+                // Monster collision - damage player and kill the monster
                 Monster *monster = dynamic_cast<Monster *>(platform.get());
-                if (monster) {
+                if (monster && !is_invincible()) {
+                    // Damage player using health component
+                    if (auto *health = get_component<HealthComponent>()) {
+                        health->take_damage(1);  // 1 = half heart
+
+                        // Check if player died
+                        if (!health->is_alive()) {
+                            std::cout << "Player died! Health: "
+                                      << health->get_health() << std::endl;
+                            notify("12");  // Game over event
+                        } else {
+                            std::cout << "Player took damage! Health: "
+                                      << health->get_health() << "/"
+                                      << health->get_max_health() << std::endl;
+                        }
+                    }
+
+                    // Grant invincibility and kill the monster
+                    set_invicibility(2.0f);
                     std::cout << "Player collided with monster! Triggering "
                                  "death animation..."
                               << std::endl;
@@ -300,11 +324,8 @@ void Player::handle_collision(
         Platform *plat = dynamic_cast<Platform *>(platform.get());
 
         if (plat) {
-            if (is_invincible()) {
-                // No collision when invincible
-                return;
-            }
-
+            // Platform collision features always apply (even when invincible)
+            // Invincibility only prevents damage from monsters, not physics
             for (const auto &feature : plat->get_features()) {
                 feature->handle_collision(*plat, *this);
             }

@@ -203,6 +203,13 @@ void Editor::export_platform_level_json(const std::string &export_path) {
     // Export background data
     jlevel["backgrounds"] = pimpl->background_manager.to_json();
 
+    // Export FUDs
+    jlevel["fuds"] = nlohmann::json::array();
+    for (const auto &fud : pimpl->level.fuds) {
+        nlohmann::json jfud = fud;  // Uses to_json from FUDElement
+        jlevel["fuds"].push_back(jfud);
+    }
+
     std::ofstream out(export_path);
     out << jlevel.dump(2);
     out.close();

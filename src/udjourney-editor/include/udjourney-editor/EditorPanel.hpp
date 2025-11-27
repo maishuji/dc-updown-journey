@@ -20,6 +20,7 @@ class PlatformModeHandler;
 class SpawnModeHandler;
 class MonsterModeHandler;
 class BackgroundModeHandler;
+class FUDModeHandler;
 
 namespace color {
 extern const ImU32 kColorRed;
@@ -36,7 +37,8 @@ enum class EditMode {
     PlayerSpawn,
     Monsters,
     Npc,
-    Background
+    Background,
+    FUD
 };
 
 class EditorPanel {
@@ -97,6 +99,16 @@ class EditorPanel {
     // Background control
     void clear_background_placing_mode();
 
+    // FUD editing
+    void set_selected_fud(FUDElement* fud);
+    FUDElement* get_selected_fud() const;
+    const std::string& get_selected_fud_preset() const;
+    bool should_delete_selected_fud() const;
+    void clear_fud_delete_flag();
+    bool should_add_fud() const;
+    void clear_fud_add_flag();
+    FUDElement create_fud_from_preset() const;
+
  private:
     float scale = 1.0f;  // Default scale
     EditMode edit_mode = EditMode::Tiles;
@@ -107,6 +119,7 @@ class EditorPanel {
     std::unique_ptr<SpawnModeHandler> spawn_handler_;
     std::unique_ptr<MonsterModeHandler> monster_handler_;
     std::unique_ptr<BackgroundModeHandler> background_handler_;
+    std::unique_ptr<FUDModeHandler> fud_handler_;
 
     // Legacy members kept for compatibility (TODO: fully migrate to handlers)
     ImU32 cur_color = IM_COL32(255, 255, 255, 255);
@@ -147,4 +160,5 @@ class EditorPanel {
     void draw_monsters_mode();
     void draw_monster_editor();
     void draw_background_mode();
+    void draw_fud_mode();
 };

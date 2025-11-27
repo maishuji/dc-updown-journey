@@ -1,0 +1,38 @@
+{
+  "type_id": "mana_bar",
+  "display_name": "Mana Bar",
+  "category": "StatusDisplay",
+  "default_size": {
+    "x": 200,
+    "y": 25
+  },
+  "default_anchor": "TopLeft",
+  "description": "Displays player's magic/mana as a horizontal bar",
+  "properties_schema": {
+    "max_value": {
+      "type": "int",
+      "default": 100,
+      "description": "Maximum mana value"
+    },
+    "show_numbers": {
+      "type": "bool",
+      "default": true,
+      "description": "Show numeric mana value"
+    },
+    "bar_color": {
+      "type": "color",
+      "default": [0, 100, 255],
+      "description": "RGB color of mana bar (blue)"
+    },
+    "background_color": {
+      "type": "color",
+      "default": [64, 64, 64],
+      "description": "RGB color of background"
+    },
+    "border_thickness": {
+      "type": "int",
+      "default": 2,
+      "description": "Border thickness in pixels"
+    }
+  }
+}

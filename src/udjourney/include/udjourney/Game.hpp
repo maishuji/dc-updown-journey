@@ -57,6 +57,7 @@ class Game : public IGame, public IObserver {
     void draw() const;
     void draw_backgrounds() const;
     void draw_finish_line_() const;
+    void draw_fuds_() const;
     bool should_continue_scrolling_() const noexcept;
     void attack_nearby_monsters();
 
@@ -80,4 +81,6 @@ class Game : public IGame, public IObserver {
     udjourney::WorldBounds m_world_bounds;  // World boundary management
     mutable std::map<std::string, Texture2D>
         m_background_textures;  // Cache for background textures
+    mutable std::map<std::string, Texture2D>
+        m_fud_textures;  // Cache for FUD textures
 };
