@@ -299,6 +299,7 @@ void Player::handle_collision(
                             std::cout << "Player died! Health: "
                                       << health->get_health() << std::endl;
                             notify("12");  // Game over event
+                            return;  // Stop processing - actors vector is being modified
                         } else {
                             std::cout << "Player took damage! Health: "
                                       << health->get_health() << "/"
