@@ -278,8 +278,12 @@ bool Scene::load_from_file(const std::string& filename) {
                 if (fud_json.contains("properties")) {
                     for (const auto& [key, value] :
                          fud_json["properties"].items()) {
-                        fud.properties[key] =
-                            value.dump();  // Store as JSON string
+                        // Store as plain string, not JSON-encoded
+                        if (value.is_string()) {
+                            fud.properties[key] = value.get<std::string>();
+                        } else {
+                            fud.properties[key] = value.dump();
+                        }
                     }
                 }
 

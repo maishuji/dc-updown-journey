@@ -29,6 +29,9 @@
 #include <udj-core/Logger.hpp>
 #include "udjourney/hud/DialogBoxHUD.hpp"
 #include "udjourney/hud/HUDComponent.hpp"
+#include "udjourney/ActionDispatcher.hpp"
+#include "udjourney/widgets/IWidget.hpp"
+#include "udjourney/widgets/WidgetFactory.hpp"
 #include "udjourney/hud/LevelSelectHUD.hpp"
 #include "udjourney/hud/ScoreHUD.hpp"
 #include "udjourney/interfaces/IActor.hpp"
@@ -202,12 +205,13 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     m_world_bounds.set_bounds(
         0.0f, static_cast<float>(iWidth), 0.0f, static_cast<float>(iHeight));
 
-    // Try to load Level 1, fallback to random generation if it fails
+    // Register menu action callbacks
+    register_menu_actions();
+
+    // Load title screen scene
     if (!load_scene(
-            udjourney::coreutils::get_assets_path("levels/level1.json"))) {
-        std::cout
-            << "Warning: Could not load level1.json, using random generation"
-            << std::endl;
+            udjourney::coreutils::get_assets_path("levels/title_screen.json"))) {
+        std::cout << "ERROR: Could not load title_screen.json" << std::endl;
     }
 }
 
@@ -219,39 +223,44 @@ void Game::run() {
                static_cast<int>(m_rect.height),
                "Up-Down Journey");
 
-    // Create platforms from scene or fallback to random generation
-    create_platforms_from_scene();
+    // Only initialize gameplay if not in TITLE state
+    if (m_state != GameState::TITLE) {
+        // Create platforms from scene or fallback to random generation
+        create_platforms_from_scene();
 
-    // Spawn monsters from scene
-    create_monsters_from_scene();
+        // Spawn monsters from scene
+        create_monsters_from_scene();
 
-    // Spawn player at scene-defined location or default position
-    Vector2 player_spawn_pos{320, 240};  // Default position
-    if (m_current_scene) {
-        auto spawn_data = m_current_scene->get_player_spawn();
-        player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
-            spawn_data.tile_x, spawn_data.tile_y);
+        // Spawn player at scene-defined location or default position
+        Vector2 player_spawn_pos{320, 240};  // Default position
+        if (m_current_scene) {
+            auto spawn_data = m_current_scene->get_player_spawn();
+            player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
+                spawn_data.tile_x, spawn_data.tile_y);
+        }
+
+        m_player = std::make_unique<Player>(
+            *this,
+            Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
+            m_event_dispatcher,
+            create_player_animation_controller());
+        m_player->add_observer(static_cast<IObserver *>(this));
+
+        m_actors.emplace_back(
+            std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
+
+        m_bonus_manager.add_observer(static_cast<IObserver *>(this));
+
+        auto score_hud =
+            std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
+        m_hud_manager.add_background_hud(std::move(score_hud));
+    } else {
+        // Load widgets from title screen scene
+        load_widgets_from_scene();
     }
-
-    m_player = std::make_unique<Player>(
-        *this,
-        Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
-        m_event_dispatcher,
-        create_player_animation_controller());
-    m_player->add_observer(static_cast<IObserver *>(this));
-
-    m_actors.emplace_back(
-        std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
 
     SetTargetFPS(60);
     m_last_update_time = GetTime();
-    m_state = GameState::PLAY;
-
-    m_bonus_manager.add_observer(static_cast<IObserver *>(this));
-
-    auto score_hud =
-        std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
-    m_hud_manager.add_background_hud(std::move(score_hud));
 
     auto dialog_hud =
         std::make_unique<DialogBoxHUD>(Rectangle{300, 400, 200, 80});
@@ -1837,4 +1846,144 @@ void Game::attack_nearby_monsters() {
     } else {
         std::cout << "Hit " << monsters_hit << " monsters!" << std::endl;
     }
+}
+
+void Game::load_widgets_from_scene() {
+    if (!m_current_scene) {
+        return;
+    }
+
+    // Extract menu_button FUD elements
+    const auto &fuds = m_current_scene->get_fuds();
+    for (const auto &fud : fuds) {
+        if (fud.type_id == "menu_button") {
+            auto widget = WidgetFactory::create_from_fud(fud, *this);
+            if (widget) {
+                m_actors.push_back(std::move(widget));
+            }
+        }
+    }
+
+    m_selected_widget_index = 0;
+}
+
+void Game::register_menu_actions() {
+    // Start Game action
+    ActionDispatcher::register_action("start_game", 
+        [](IGame* game, const std::vector<std::string>& params) {
+            std::cout << "[ACTION] Start Game triggered" << std::endl;
+            auto* g = dynamic_cast<Game*>(game);
+            if (g) {
+                g->m_state = GameState::PLAY;
+                g->initialize_gameplay();
+            }
+        });
+
+    // Load Level action (format: "load_level:level_name")
+    ActionDispatcher::register_action("load_level", 
+        [](IGame* game, const std::vector<std::string>& params) {
+            if (params.size() < 2) return;
+            std::cout << "[ACTION] Load Level: " << params[1] << std::endl;
+            
+            auto* g = dynamic_cast<Game*>(game);
+            if (g) {
+                std::string level_path = udjourney::coreutils::get_assets_path("levels/" + params[1] + ".json");
+                if (g->load_scene(level_path)) {
+                    g->m_state = GameState::PLAY;
+                    g->initialize_gameplay();
+                }
+            }
+        });
+
+    // Quit Game action
+    ActionDispatcher::register_action("quit_game", 
+        [](IGame* game, const std::vector<std::string>& params) {
+            std::cout << "[ACTION] Quit Game triggered" << std::endl;
+#ifndef PLATFORM_DREAMCAST
+            CloseWindow();
+#endif
+        });
+
+    // Show Options action (placeholder)
+    ActionDispatcher::register_action("show_options", 
+        [](IGame* game, const std::vector<std::string>& params) {
+            std::cout << "[ACTION] Show Options triggered (not implemented)" << std::endl;
+        });
+
+    // Return to Title action
+    ActionDispatcher::register_action("return_to_title", 
+        [](IGame* game, const std::vector<std::string>& params) {
+            std::cout << "[ACTION] Return to Title triggered" << std::endl;
+            auto* g = dynamic_cast<Game*>(game);
+            if (g) {
+                std::string title_path = udjourney::coreutils::get_assets_path("levels/title_screen.json");
+                if (g->load_scene(title_path)) {
+                    g->m_state = GameState::TITLE;
+                    
+                    // Clean up gameplay objects
+                    g->m_player.reset();
+                    g->m_hud_manager.clear_background_huds();
+                    
+                    // Remove all actors except widgets
+                    g->m_actors.erase(
+                        std::remove_if(g->m_actors.begin(), g->m_actors.end(),
+                            [](const std::unique_ptr<IActor> &actor) {
+                                return actor->get_group_id() != 4;  // Keep widgets only
+                            }),
+                        g->m_actors.end());
+                    
+                    // Load title screen widgets
+                    g->load_widgets_from_scene();
+                    g->m_rect.y = 0;  // Reset camera
+                }
+            }
+        });
+}
+
+void Game::initialize_gameplay() {
+    // Remove all widgets from m_actors
+    m_actors.erase(
+        std::remove_if(m_actors.begin(), m_actors.end(),
+            [](const std::unique_ptr<IActor> &actor) {
+                return actor->get_group_id() == 4;  // Remove widgets
+            }),
+        m_actors.end());
+
+    // Clear background HUDs
+    m_hud_manager.clear_background_huds();
+
+    // Create platforms from scene
+    create_platforms_from_scene();
+
+    // Spawn monsters from scene
+    create_monsters_from_scene();
+
+    // Spawn player at scene-defined location or default position
+    Vector2 player_spawn_pos{320, 240};  // Default position
+    if (m_current_scene) {
+        auto spawn_data = m_current_scene->get_player_spawn();
+        player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
+            spawn_data.tile_x, spawn_data.tile_y);
+    }
+
+    m_player = std::make_unique<Player>(
+        *this,
+        Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
+        m_event_dispatcher,
+        create_player_animation_controller());
+    m_player->add_observer(static_cast<IObserver *>(this));
+
+    // Add bonus item
+    m_actors.emplace_back(
+        std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
+
+    // Reset score and camera
+    m_score = 0;
+    m_rect.y = 0;
+    m_last_checkpoint = Vector2{320, 240};
+
+    // Add score HUD
+    auto score_hud =
+        std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
+    m_hud_manager.add_background_hud(std::move(score_hud));
 }

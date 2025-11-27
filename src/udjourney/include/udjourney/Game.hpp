@@ -60,6 +60,11 @@ class Game : public IGame, public IObserver {
     void draw_fuds_() const;
     bool should_continue_scrolling_() const noexcept;
     void attack_nearby_monsters();
+    
+    // Widget and scene management
+    void load_widgets_from_scene();
+    void register_menu_actions();
+    void initialize_gameplay();
 
     std::unique_ptr<Player> m_player;  // Player is now a member
     std::vector<std::unique_ptr<IActor>> m_pending_actors;
@@ -83,4 +88,5 @@ class Game : public IGame, public IObserver {
         m_background_textures;  // Cache for background textures
     mutable std::map<std::string, Texture2D>
         m_fud_textures;  // Cache for FUD textures
+    int m_selected_widget_index = 0;  // Currently focused widget
 };
