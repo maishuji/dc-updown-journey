@@ -3,6 +3,7 @@
 
 #include <imgui.h>
 #include <raylib/raylib.h>
+#include <cstdio>
 #include <string>
 #include <vector>
 #include <unordered_map>

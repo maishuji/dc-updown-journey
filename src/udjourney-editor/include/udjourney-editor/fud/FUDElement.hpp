@@ -1,9 +1,9 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 
+#include <imgui.h>
 #include <string>
 #include <nlohmann/json.hpp>
-#include <imgui.h>
 
 // FUD anchor position on screen
 enum class FUDAnchor {

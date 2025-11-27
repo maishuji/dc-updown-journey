@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <vector>
 #include <nlohmann/json.hpp>
 
 namespace fs = std::filesystem;

@@ -1,8 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
-
-#include <memory>
 #include <raylib/raylib.h>
+#include <memory>
+#include <string>
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/components/HealthComponent.hpp"
 #include "udjourney/components/MovementComponent.hpp"

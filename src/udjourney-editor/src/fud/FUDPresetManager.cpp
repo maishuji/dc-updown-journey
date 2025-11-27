@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <string>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -83,7 +85,6 @@ bool FUDPresetManager::load_preset_from_file(const std::string& filepath) {
 
         presets_.push_back(preset);
         return true;
-
     } catch (const std::exception& e) {
         std::cerr << "[FUDPresetManager] Error loading " << filepath << ": "
                   << e.what() << std::endl;
