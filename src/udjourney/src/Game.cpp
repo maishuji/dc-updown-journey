@@ -1959,8 +1959,13 @@ void Game::register_menu_actions() {
             std::cout << "[ACTION] Start Game triggered" << std::endl;
             auto *g = dynamic_cast<Game *>(game);
             if (g) {
-                g->m_state = GameState::PLAY;
-                g->initialize_gameplay();
+                // Load level1 scene first
+                std::string level_path = udjourney::coreutils::get_assets_path(
+                    "levels/level1.json");
+                if (g->load_scene(level_path)) {
+                    g->m_state = GameState::PLAY;
+                    g->initialize_gameplay();
+                }
             }
         });
 
