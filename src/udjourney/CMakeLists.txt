@@ -49,6 +49,9 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/loaders/AnimationConfigLoader.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/factories/ActorFactory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/WorldBounds.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ActionDispatcher.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/ButtonWidget.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/widgets/WidgetFactory.cpp
 )
 
 if (NOT PLATFORM_DREAMCAST)
