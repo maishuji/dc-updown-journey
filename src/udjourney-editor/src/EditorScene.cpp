@@ -721,9 +721,10 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
     bool left_clicked = ImGui::IsMouseClicked(0);
     bool right_clicked = ImGui::IsMouseClicked(1);
 
-    // FUD mode needs to handle dragging even when not clicking
+    // FUD mode needs to handle dragging even when not clicking, but only when
+    // hovered
     EditMode mode = editor_panel.get_edit_mode();
-    if (mode == EditMode::FUD) {
+    if (mode == EditMode::FUD && hovered) {
         handle_fud_mode_input(level,
                               editor_panel,
                               mouse_pos,
