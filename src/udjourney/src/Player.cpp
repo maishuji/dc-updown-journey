@@ -314,6 +314,8 @@ void Player::handle_collision(
                     monster->take_damage(
                         1000.0f);  // Enough damage to kill the monster
                 }
+                // Skip further processing of this monster
+                continue;
             } else if (platform->get_group_id() == PLATFORM_TYPE_ID) {
                 // Check grounded
                 if (r.y < platform->get_rectangle().y) {
