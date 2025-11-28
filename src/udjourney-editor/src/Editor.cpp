@@ -130,12 +130,18 @@ void Editor::export_platform_level_json(const std::string &export_path) {
 
     // Level metadata
     jlevel["name"] = "Untitled Level";
+    
+    // Scene type
+    jlevel["scene_type"] = (pimpl->level.scene_type == SceneType::UI_SCREEN) ? "ui_screen" : "level";
 
-    // Player spawn position
-    jlevel["player_spawn"] = {{"x", pimpl->level.player_spawn_x},
-                              {"y", pimpl->level.player_spawn_y}};
+    // Player spawn position (only for levels)
+    if (pimpl->level.scene_type == SceneType::LEVEL) {
+        jlevel["player_spawn"] = {{"x", pimpl->level.player_spawn_x},
+                                  {"y", pimpl->level.player_spawn_y}};
+    }
 
-    // Platforms array
+    // Platforms array (only for levels)
+    if (pimpl->level.scene_type == SceneType::LEVEL) {
     jlevel["platforms"] = nlohmann::json::array();
 
     for (const auto &platform : pimpl->level.platforms) {
@@ -180,8 +186,10 @@ void Editor::export_platform_level_json(const std::string &export_path) {
 
         jlevel["platforms"].push_back(jplatform);
     }
+    }  // end LEVEL-only platforms
 
-    // Monsters array
+    // Monsters array (only for levels)
+    if (pimpl->level.scene_type == SceneType::LEVEL) {
     jlevel["monsters"] = nlohmann::json::array();
     for (const auto &monster : pimpl->level.monsters) {
         nlohmann::json jmonster;
@@ -199,8 +207,9 @@ void Editor::export_platform_level_json(const std::string &export_path) {
 
         jlevel["monsters"].push_back(jmonster);
     }
+    }  // end LEVEL-only monsters
 
-    // Export background data
+    // Export background data (always - used by both levels and UI screens)
     jlevel["backgrounds"] = pimpl->background_manager.to_json();
 
     // Export FUDs
@@ -408,6 +417,19 @@ void Editor::run() {
             }
 
             if (ImGui::BeginMenu("Settings")) {
+                // Scene Type toggle
+                if (ImGui::BeginMenu("Scene Type")) {
+                    if (ImGui::MenuItem("Level (Gameplay)", nullptr, 
+                                       pimpl->level.scene_type == SceneType::LEVEL)) {
+                        pimpl->level.scene_type = SceneType::LEVEL;
+                    }
+                    if (ImGui::MenuItem("UI Screen (Menus)", nullptr, 
+                                       pimpl->level.scene_type == SceneType::UI_SCREEN)) {
+                        pimpl->level.scene_type = SceneType::UI_SCREEN;
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::Separator();
                 // ...inside ImGui::BeginMenu("File")...
                 if (ImGui::BeginMenu("UI Scale")) {
                     float scales[] = {1.0f, 1.5f, 2.0f, 2.5f, 3.0f};
@@ -485,6 +507,9 @@ void Editor::run() {
             }
             ImGuiFileDialog::Instance()->Close();
         }
+
+        // Set current level for editor panel (for scene type awareness)
+        pimpl->editor_panel.set_current_level(&pimpl->level);
 
         pimpl->editor_panel.draw();
 

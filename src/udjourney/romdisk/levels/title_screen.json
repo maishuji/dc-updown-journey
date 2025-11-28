@@ -1,5 +1,6 @@
 {
   "name": "Title Screen",
+  "scene_type": "ui_screen",
   "tile_cols": 20,
   "tile_rows": 15,
   "player_spawn": {

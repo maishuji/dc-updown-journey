@@ -174,10 +174,27 @@ void EditorPanel::draw() {
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
                            "Press F1 to focus this panel");
     }
+    
+    // Show scene type indicator
+    if (current_level_) {
+        ImGui::Separator();
+        if (current_level_->scene_type == SceneType::LEVEL) {
+            ImGui::TextColored(ImVec4(0.0f, 0.8f, 1.0f, 1.0f), "Scene: LEVEL (Gameplay)");
+            ImGui::Text("All modes available");
+        } else {
+            ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "Scene: UI SCREEN (Menu)");
+            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Platforms/Monsters/Spawn disabled");
+        }
+    }
     ImGui::Separator();
 
-    // Mode selection
+    // Mode selection - disable some modes for UI screens
+    bool is_ui_screen = current_level_ && current_level_->scene_type == SceneType::UI_SCREEN;
+    
     ImGui::Text("Edit Mode:");
+    
+    // Tiles mode - only for levels
+    ImGui::BeginDisabled(is_ui_screen);
     if (ImGui::RadioButton("Tiles", edit_mode == EditMode::Tiles)) {
         edit_mode = EditMode::Tiles;
     }
@@ -185,15 +202,18 @@ void EditorPanel::draw() {
     if (ImGui::RadioButton("Platforms", edit_mode == EditMode::Platforms)) {
         edit_mode = EditMode::Platforms;
     }
-    // ImGui::SameLine();
+    ImGui::EndDisabled();
+    
+    // Spawn mode - only for levels
+    ImGui::BeginDisabled(is_ui_screen);
     if (ImGui::RadioButton("Spawn", edit_mode == EditMode::PlayerSpawn)) {
         edit_mode = EditMode::PlayerSpawn;
     }
-
     ImGui::SameLine();
     if (ImGui::RadioButton("Monsters", edit_mode == EditMode::Monsters)) {
         edit_mode = EditMode::Monsters;
     }
+    ImGui::EndDisabled();
 
     if (ImGui::RadioButton("Background", edit_mode == EditMode::Background)) {
         edit_mode = EditMode::Background;
