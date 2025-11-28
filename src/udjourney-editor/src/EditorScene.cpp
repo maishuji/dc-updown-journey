@@ -17,6 +17,14 @@
 #include <nlohmann/json.hpp>
 #include "udj-core/CoreUtils.hpp"
 
+// FUD Renderer includes
+#include "udjourney-editor/fud/IFUDRenderer.hpp"
+#include "udjourney-editor/fud/ButtonFUDRenderer.hpp"
+#include "udjourney-editor/fud/HealthBarFUDRenderer.hpp"
+#include "udjourney-editor/fud/HeartHealthFUDRenderer.hpp"
+#include "udjourney-editor/fud/ScoreDisplayFUDRenderer.hpp"
+#include "udjourney-editor/fud/TimerFUDRenderer.hpp"
+
 // Simple texture cache for editor
 static std::unordered_map<std::string, Texture2D> texture_cache;
 
@@ -81,7 +89,42 @@ struct EditorScene::PImpl {
     // Implementation details can be added here in the future
 };
 
-EditorScene::EditorScene() : pimpl_(std::make_unique<PImpl>()) {}
+// Initialize FUD renderers on first use
+static void initialize_fud_renderers() {
+    static bool initialized = false;
+    if (initialized) return;
+
+    auto& factory = FUDRendererFactory::instance();
+
+    // Register button renderers
+    factory.register_renderer("menu_button",
+                              std::make_unique<ButtonFUDRenderer>());
+    factory.register_renderer("small_button",
+                              std::make_unique<ButtonFUDRenderer>());
+    factory.register_renderer("large_button",
+                              std::make_unique<ButtonFUDRenderer>());
+    factory.register_renderer("icon_button",
+                              std::make_unique<ButtonFUDRenderer>());
+    factory.register_renderer("textured_button",
+                              std::make_unique<ButtonFUDRenderer>());
+
+    // Register health/display renderers
+    factory.register_renderer("heart_health",
+                              std::make_unique<HeartHealthFUDRenderer>());
+    factory.register_renderer("healthbar",
+                              std::make_unique<HealthBarFUDRenderer>());
+    factory.register_renderer("mana_bar",
+                              std::make_unique<HealthBarFUDRenderer>());
+    factory.register_renderer("score_display",
+                              std::make_unique<ScoreDisplayFUDRenderer>());
+    factory.register_renderer("timer", std::make_unique<TimerFUDRenderer>());
+
+    initialized = true;
+}
+
+EditorScene::EditorScene() : pimpl_(std::make_unique<PImpl>()) {
+    initialize_fud_renderers();
+}
 
 EditorScene::~EditorScene() = default;
 
@@ -1634,255 +1677,12 @@ void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
         FUDElement* selected = editor_panel.get_selected_fud();
         bool is_selected = (selected == &level.fuds[i]);
 
-        // Draw background sprite if set
-        if (!fud.background_sheet.empty()) {
-            Texture2D texture = load_texture_cached(fud.background_sheet);
-            if (texture.id > 0) {
-                // Calculate source rect in sprite sheet
-                float tile_w = static_cast<float>(fud.background_tile_size);
-                float tile_h = static_cast<float>(fud.background_tile_size);
-                ImVec2 uv0((fud.background_tile_col * tile_w) / texture.width,
-                           (fud.background_tile_row * tile_h) / texture.height);
-                ImVec2 uv1(uv0.x + ((fud.background_tile_width * tile_w) /
-                                    texture.width),
-                           uv0.y + ((fud.background_tile_height * tile_h) /
-                                    texture.height));
-
-                float sprite_w = fud.background_tile_width * tile_w;
-                float sprite_h = fud.background_tile_height * tile_h;
-
-                if (fud.background_render_mode == FUDImageRenderMode::Tile) {
-                    // Tile mode: repeat the sprite
-                    float fud_w = fud.size.x;
-                    float fud_h = fud.size.y;
-
-                    for (float y = 0; y < fud_h; y += sprite_h) {
-                        for (float x = 0; x < fud_w; x += sprite_w) {
-                            float draw_w = std::min(sprite_w, fud_w - x);
-                            float draw_h = std::min(sprite_h, fud_h - y);
-
-                            // Calculate UV for potentially clipped tile
-                            float uv_w = (draw_w / sprite_w) *
-                                         (fud.background_tile_width * tile_w /
-                                          texture.width);
-                            float uv_h = (draw_h / sprite_h) *
-                                         (fud.background_tile_height * tile_h /
-                                          texture.height);
-                            ImVec2 tile_uv1(uv0.x + uv_w, uv0.y + uv_h);
-
-                            draw_list->AddImage(
-                                static_cast<ImTextureID>(
-                                    static_cast<intptr_t>(texture.id)),
-                                ImVec2(fud_pos.x + x, fud_pos.y + y),
-                                ImVec2(fud_pos.x + x + draw_w,
-                                       fud_pos.y + y + draw_h),
-                                uv0,
-                                tile_uv1,
-                                IM_COL32(255, 255, 255, 180));
-                        }
-                    }
-                } else if (fud.background_render_mode ==
-                           FUDImageRenderMode::Center) {
-                    // Center mode: draw at natural size, centered
-                    float center_x = fud_pos.x + (fud.size.x - sprite_w) * 0.5f;
-                    float center_y = fud_pos.y + (fud.size.y - sprite_h) * 0.5f;
-
-                    draw_list->AddImage(
-                        static_cast<ImTextureID>(
-                            static_cast<intptr_t>(texture.id)),
-                        ImVec2(center_x, center_y),
-                        ImVec2(center_x + sprite_w, center_y + sprite_h),
-                        uv0,
-                        uv1,
-                        IM_COL32(255, 255, 255, 180));
-                } else {
-                    // Stretch mode (default): scale to fit FUD size
-                    draw_list->AddImage(static_cast<ImTextureID>(
-                                            static_cast<intptr_t>(texture.id)),
-                                        fud_pos,
-                                        fud_end,
-                                        uv0,
-                                        uv1,
-                                        IM_COL32(255, 255, 255, 180));
-                }
-            }
-        }
-
-        // Draw FUD content preview based on type
-        if (fud.type_id == "heart_health") {
-            // Draw hearts preview
-            int max_hearts = 3;
-            int heart_spacing = 32;
-            std::string heart_sheet = "ui/ui_elements.png";
-            int heart_tile_size = 32;
-            int full_col = 0, full_row = 3;
-
-            try {
-                if (fud.properties.count("max_hearts")) {
-                    auto& prop = fud.properties.at("max_hearts");
-                    if (prop.is_number_integer()) {
-                        max_hearts = prop.get<int>();
-                    } else if (prop.is_string()) {
-                        max_hearts = std::stoi(prop.get<std::string>());
-                    }
-                }
-                if (fud.properties.count("heart_spacing")) {
-                    auto& prop = fud.properties.at("heart_spacing");
-                    if (prop.is_number_integer()) {
-                        heart_spacing = prop.get<int>();
-                    } else if (prop.is_string()) {
-                        heart_spacing = std::stoi(prop.get<std::string>());
-                    }
-                }
-
-                // Try to parse heart sprite config
-                if (fud.properties.count("heart_full_sprite")) {
-                    try {
-                        auto sprite_obj =
-                            fud.properties.at("heart_full_sprite");
-                        if (sprite_obj.is_object()) {
-                            heart_sheet =
-                                sprite_obj.value("sheet", heart_sheet);
-                            heart_tile_size =
-                                sprite_obj.value("tile_size", heart_tile_size);
-                            full_col = sprite_obj.value("tile_col", full_col);
-                            full_row = sprite_obj.value("tile_row", full_row);
-                        }
-                    } catch (...) {
-                    }
-                }
-            } catch (...) {
-            }
-
-            // Try to render with actual sprites
-            Texture2D heart_tex = load_texture_cached(heart_sheet);
-            if (heart_tex.id > 0) {
-                for (int h = 0; h < max_hearts; ++h) {
-                    float hx = fud_pos.x + (h * heart_spacing);
-                    float hy = fud_pos.y;
-
-                    ImVec2 uv0((full_col * heart_tile_size) /
-                                   static_cast<float>(heart_tex.width),
-                               (full_row * heart_tile_size) /
-                                   static_cast<float>(heart_tex.height));
-                    ImVec2 uv1(uv0.x + (heart_tile_size /
-                                        static_cast<float>(heart_tex.width)),
-                               uv0.y + (heart_tile_size /
-                                        static_cast<float>(heart_tex.height)));
-
-                    draw_list->AddImage(
-                        static_cast<ImTextureID>(
-                            static_cast<intptr_t>(heart_tex.id)),
-                        ImVec2(hx, hy),
-                        ImVec2(hx + heart_spacing, hy + heart_spacing),
-                        uv0,
-                        uv1,
-                        IM_COL32(255, 255, 255, 200));
-                }
-            } else {
-                // Fallback to circles if sprite not available
-                for (int h = 0; h < max_hearts; ++h) {
-                    float hx = fud_pos.x + (h * heart_spacing) + 16;
-                    float hy = fud_pos.y + 16;
-                    draw_list->AddCircleFilled(
-                        ImVec2(hx, hy), 10.0f, IM_COL32(255, 50, 50, 150));
-                }
-            }
-        } else if (fud.type_id == "healthbar" || fud.type_id == "mana_bar") {
-            // Draw bar preview
-            ImU32 bar_color = (fud.type_id == "healthbar")
-                                  ? IM_COL32(255, 0, 0, 150)
-                                  : IM_COL32(0, 100, 255, 150);
-
-            float bar_width = (fud.size.x - 8) * 0.8f;  // 80% filled
-            ImVec2 bar_start(fud_pos.x + 4, fud_pos.y + 4);
-            ImVec2 bar_end(fud_pos.x + 4 + bar_width, fud_end.y - 4);
-
-            draw_list->AddRectFilled(bar_start, bar_end, bar_color);
-        } else if (fud.type_id == "score_display") {
-            // Draw score text preview
-            draw_list->AddText(ImVec2(fud_pos.x + 10, fud_pos.y + 10),
-                               IM_COL32(255, 255, 255, 200),
-                               "Score: 1234");
-        } else if (fud.type_id == "timer") {
-            // Draw timer preview
-            draw_list->AddText(ImVec2(fud_pos.x + 10, fud_pos.y + 10),
-                               IM_COL32(255, 255, 0, 200),
-                               "03:00");
-        }
-
-        // Draw foreground sprite if set
-        if (!fud.foreground_sheet.empty()) {
-            Texture2D texture = load_texture_cached(fud.foreground_sheet);
-            if (texture.id > 0) {
-                // Calculate source rect in sprite sheet
-                float tile_w = static_cast<float>(fud.foreground_tile_size);
-                float tile_h = static_cast<float>(fud.foreground_tile_size);
-                ImVec2 uv0((fud.foreground_tile_col * tile_w) / texture.width,
-                           (fud.foreground_tile_row * tile_h) / texture.height);
-                ImVec2 uv1(uv0.x + ((fud.foreground_tile_width * tile_w) /
-                                    texture.width),
-                           uv0.y + ((fud.foreground_tile_height * tile_h) /
-                                    texture.height));
-
-                float sprite_w = fud.foreground_tile_width * tile_w;
-                float sprite_h = fud.foreground_tile_height * tile_h;
-
-                if (fud.foreground_render_mode == FUDImageRenderMode::Tile) {
-                    // Tile mode: repeat the sprite
-                    float fud_w = fud.size.x;
-                    float fud_h = fud.size.y;
-
-                    for (float y = 0; y < fud_h; y += sprite_h) {
-                        for (float x = 0; x < fud_w; x += sprite_w) {
-                            float draw_w = std::min(sprite_w, fud_w - x);
-                            float draw_h = std::min(sprite_h, fud_h - y);
-
-                            // Calculate UV for potentially clipped tile
-                            float uv_w = (draw_w / sprite_w) *
-                                         (fud.foreground_tile_width * tile_w /
-                                          texture.width);
-                            float uv_h = (draw_h / sprite_h) *
-                                         (fud.foreground_tile_height * tile_h /
-                                          texture.height);
-                            ImVec2 tile_uv1(uv0.x + uv_w, uv0.y + uv_h);
-
-                            draw_list->AddImage(
-                                static_cast<ImTextureID>(
-                                    static_cast<intptr_t>(texture.id)),
-                                ImVec2(fud_pos.x + x, fud_pos.y + y),
-                                ImVec2(fud_pos.x + x + draw_w,
-                                       fud_pos.y + y + draw_h),
-                                uv0,
-                                tile_uv1,
-                                IM_COL32(255, 255, 255, 200));
-                        }
-                    }
-                } else if (fud.foreground_render_mode ==
-                           FUDImageRenderMode::Center) {
-                    // Center mode: draw at natural size, centered
-                    float center_x = fud_pos.x + (fud.size.x - sprite_w) * 0.5f;
-                    float center_y = fud_pos.y + (fud.size.y - sprite_h) * 0.5f;
-
-                    draw_list->AddImage(
-                        static_cast<ImTextureID>(
-                            static_cast<intptr_t>(texture.id)),
-                        ImVec2(center_x, center_y),
-                        ImVec2(center_x + sprite_w, center_y + sprite_h),
-                        uv0,
-                        uv1,
-                        IM_COL32(255, 255, 255, 200));
-                } else {
-                    // Stretch mode (default): scale to fit FUD size
-                    draw_list->AddImage(static_cast<ImTextureID>(
-                                            static_cast<intptr_t>(texture.id)),
-                                        fud_pos,
-                                        fud_end,
-                                        uv0,
-                                        uv1,
-                                        IM_COL32(255, 255, 255, 200));
-                }
-            }
+        // Use strategy pattern to render FUD content
+        // Renderers handle background, content, and foreground sprites
+        auto& factory = FUDRendererFactory::instance();
+        IFUDRenderer* renderer = factory.get_renderer(fud.type_id);
+        if (renderer) {
+            renderer->render(fud, draw_list, fud_pos, fud_end, is_selected);
         }
 
         // Draw FUD border
@@ -1898,16 +1698,27 @@ void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
         draw_list->AddCircleFilled(
             anchor_screen_pos, 4.0f, IM_COL32(255, 0, 0, 200));
 
-        // Draw label
-        char label[128];
-        snprintf(label, sizeof(label), "%s", fud.name.c_str());
-        ImVec2 text_pos = ImVec2(fud_pos.x + 5, fud_pos.y + 5);
-        draw_list->AddText(text_pos, IM_COL32(255, 255, 255, 255), label);
-
-        // Draw type info
-        snprintf(label, sizeof(label), "Type: %s", fud.type_id.c_str());
-        ImVec2 type_pos = ImVec2(fud_pos.x + 5, fud_pos.y + 20);
-        draw_list->AddText(type_pos, IM_COL32(200, 200, 200, 255), label);
+        // Show FUD info as tooltip on hover
+        ImVec2 mouse_pos = ImGui::GetMousePos();
+        if (mouse_pos.x >= fud_pos.x && mouse_pos.x <= fud_end.x &&
+            mouse_pos.y >= fud_pos.y && mouse_pos.y <= fud_end.y) {
+            ImGui::BeginTooltip();
+            ImGui::Text("Name: %s", fud.name.c_str());
+            ImGui::Text("Type: %s", fud.type_id.c_str());
+            ImGui::Text("Size: %.0fx%.0f", fud.size.x, fud.size.y);
+            ImGui::Text("Anchor: %s",
+                        fud.anchor == FUDAnchor::TopLeft        ? "TopLeft"
+                        : fud.anchor == FUDAnchor::TopCenter    ? "TopCenter"
+                        : fud.anchor == FUDAnchor::TopRight     ? "TopRight"
+                        : fud.anchor == FUDAnchor::MiddleLeft   ? "MiddleLeft"
+                        : fud.anchor == FUDAnchor::MiddleCenter ? "MiddleCenter"
+                        : fud.anchor == FUDAnchor::MiddleRight  ? "MiddleRight"
+                        : fud.anchor == FUDAnchor::BottomLeft   ? "BottomLeft"
+                        : fud.anchor == FUDAnchor::BottomCenter
+                            ? "BottomCenter"
+                            : "BottomRight");
+            ImGui::EndTooltip();
+        }
     }
 }
 

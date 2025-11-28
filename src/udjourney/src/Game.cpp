@@ -505,8 +505,14 @@ void Game::draw_backgrounds() const {
 
     // Get camera position for parallax effect
     // Only vertical scrolling in this game - horizontal camera is fixed at 0
-    // Use m_rect.y for vertical scroll offset
-    Vector2 camera_pos = {0, m_rect.y};
+    // For UI screens (TITLE, GAMEOVER, WIN), use scrolling background offset
+    // For gameplay, use m_rect.y for vertical scroll offset
+    float scroll_y =
+        (m_state == GameState::TITLE || m_state == GameState::GAMEOVER ||
+         m_state == GameState::WIN)
+            ? m_ui_background_scroll_y
+            : m_rect.y;
+    Vector2 camera_pos = {0, scroll_y};
 
     // Sort layers by depth (lower depth = further back)
     std::vector<const udjourney::scene::BackgroundLayerData *> sorted_layers;
@@ -548,10 +554,31 @@ void Game::draw_backgrounds() const {
             // Draw the texture if loaded
             if (m_background_textures[layer->texture_file].id > 0) {
                 const auto &tex = m_background_textures[layer->texture_file];
-                DrawTexture(tex,
+
+                // For UI screens with scrolling backgrounds, tile vertically
+                if (m_state == GameState::TITLE ||
+                    m_state == GameState::GAMEOVER ||
+                    m_state == GameState::WIN) {
+                    // Wrap the offset to create seamless tiling
+                    float wrapped_offset_y = fmod(
+                        -parallax_offset_y, static_cast<float>(tex.height));
+                    if (wrapped_offset_y > 0) wrapped_offset_y -= tex.height;
+
+                    // Draw multiple copies to cover the screen
+                    for (int i = -1; i <= 2; i++) {
+                        DrawTexture(
+                            tex,
                             static_cast<int>(-parallax_offset_x),
-                            static_cast<int>(-parallax_offset_y),
+                            static_cast<int>(wrapped_offset_y + i * tex.height),
                             WHITE);
+                    }
+                } else {
+                    // Normal single draw for gameplay
+                    DrawTexture(tex,
+                                static_cast<int>(-parallax_offset_x),
+                                static_cast<int>(-parallax_offset_y),
+                                WHITE);
+                }
             }
         }
 
@@ -1143,12 +1170,12 @@ void Game::draw() const {
         case GameState::GAMEOVER:
             // Draw scrolling backgrounds
             draw_backgrounds();
-            
+
             // Draw FUDs (game over message and score)
             if (m_current_scene) {
                 draw_fuds_();
             }
-            
+
             // Draw widgets (menu buttons)
             for (const auto &actor : m_actors) {
                 if (actor->get_group_id() == 4) {  // Widget group ID
@@ -1159,12 +1186,12 @@ void Game::draw() const {
         case GameState::WIN:
             // Draw scrolling backgrounds
             draw_backgrounds();
-            
+
             // Draw FUDs (victory messages)
             if (m_current_scene) {
                 draw_fuds_();
             }
-            
+
             // Draw widgets (menu buttons)
             for (const auto &actor : m_actors) {
                 if (actor->get_group_id() == 4) {  // Widget group ID
@@ -1176,7 +1203,9 @@ void Game::draw() const {
     m_hud_manager.draw();
 
     // Draw FUDs (Fixed UI Displays) from current scene
-    if (m_current_scene) {
+    // Skip for states that handle their own FUD/widget drawing
+    if (m_current_scene && m_state != GameState::TITLE &&
+        m_state != GameState::GAMEOVER && m_state != GameState::WIN) {
         draw_fuds_();
     }
 
@@ -1189,8 +1218,20 @@ void Game::draw() const {
 void Game::update() {
     static double last_update_time = 0.0;
 
+    // Update background scroll for UI screens
+    if (m_state == GameState::TITLE || m_state == GameState::WIN ||
+        m_state == GameState::GAMEOVER) {
+        // Scroll background downward at 30 pixels per second
+        m_ui_background_scroll_y += 30.0f * GetFrameTime();
+        // Wrap around to create infinite scroll effect
+        if (m_ui_background_scroll_y > 480.0f) {
+            m_ui_background_scroll_y -= 480.0f;
+        }
+    }
+
     // Widget input handling for TITLE, WIN, and GAMEOVER states
-    if (m_state == GameState::TITLE || m_state == GameState::WIN || m_state == GameState::GAMEOVER) {
+    if (m_state == GameState::TITLE || m_state == GameState::WIN ||
+        m_state == GameState::GAMEOVER) {
         // Collect all widgets from m_actors
         std::vector<IWidget *> widgets;
         for (const auto &actor : m_actors) {
@@ -1225,7 +1266,8 @@ void Game::update() {
                 // Widget action may have triggered state change and called
                 // initialize_gameplay() which removes widgets. Continuing would
                 // access deleted memory.
-                if (m_state != GameState::TITLE && m_state != GameState::WIN && m_state != GameState::GAMEOVER) {
+                if (m_state != GameState::TITLE && m_state != GameState::WIN &&
+                    m_state != GameState::GAMEOVER) {
                     return;
                 }
             }
@@ -1239,7 +1281,9 @@ void Game::update() {
                         widget->on_click();
 
                         // IMPORTANT: Return immediately if state changed
-                        if (m_state != GameState::TITLE && m_state != GameState::WIN && m_state != GameState::GAMEOVER) {
+                        if (m_state != GameState::TITLE &&
+                            m_state != GameState::WIN &&
+                            m_state != GameState::GAMEOVER) {
                             return;
                         }
                     }
@@ -1336,22 +1380,27 @@ void Game::update() {
                 // platform area before winning
                 if (player_bottom >= m_level_height * 0.98f) {
                     m_state = GameState::WIN;
-                    
+
                     // Load win screen with widgets
-                    std::string win_path = udjourney::coreutils::get_assets_path("levels/win_screen.json");
+                    std::string win_path =
+                        udjourney::coreutils::get_assets_path(
+                            "levels/win_screen.json");
                     if (load_scene(win_path)) {
                         // Clean up gameplay objects
                         m_player.reset();
                         m_hud_manager.clear_background_huds();
-                        
+
                         // Remove all actors except widgets
                         m_actors.erase(
-                            std::remove_if(m_actors.begin(), m_actors.end(),
+                            std::remove_if(
+                                m_actors.begin(),
+                                m_actors.end(),
                                 [](const std::unique_ptr<IActor> &actor) {
-                                    return actor->get_group_id() != 4;  // Keep widgets only
+                                    return actor->get_group_id() !=
+                                           4;  // Keep widgets only
                                 }),
                             m_actors.end());
-                        
+
                         // Load win screen widgets
                         load_widgets_from_scene();
                         m_rect.y = 0;  // Reset camera
@@ -1359,7 +1408,7 @@ void Game::update() {
                 }
             }
         }
-        
+
         // Only handle collisions if player exists (not in WIN/TITLE state)
         if (m_player) {
             m_player->handle_collision(m_actors);
@@ -1470,22 +1519,25 @@ void Game::on_notify(const std::string &iEvent) {
                 m_score_history.add_score(score_hud->get_score());
                 score_hud->set_score(0);  // Reset HUD
             }
-            
+
             // Load game over screen with widgets
-            std::string gameover_path = udjourney::coreutils::get_assets_path("levels/game_over_screen.json");
+            std::string gameover_path = udjourney::coreutils::get_assets_path(
+                "levels/game_over_screen.json");
             if (load_scene(gameover_path)) {
                 // Clean up gameplay objects
                 m_player.reset();
                 m_hud_manager.clear_background_huds();
-                
+
                 // Remove all actors except widgets
                 m_actors.erase(
-                    std::remove_if(m_actors.begin(), m_actors.end(),
-                        [](const std::unique_ptr<IActor> &actor) {
-                            return actor->get_group_id() != 4;  // Keep widgets only
-                        }),
+                    std::remove_if(m_actors.begin(),
+                                   m_actors.end(),
+                                   [](const std::unique_ptr<IActor> &actor) {
+                                       return actor->get_group_id() !=
+                                              4;  // Keep widgets only
+                                   }),
                     m_actors.end());
-                
+
                 // Load game over screen widgets
                 load_widgets_from_scene();
                 m_rect.y = 0;  // Reset camera
@@ -1965,10 +2017,12 @@ void Game::load_widgets_from_scene() {
         return;
     }
 
-    // Extract menu_button FUD elements
+    // Extract button FUD elements (menu_button, icon_button, etc.)
     const auto &fuds = m_current_scene->get_fuds();
     for (const auto &fud : fuds) {
-        if (fud.type_id == "menu_button") {
+        if (fud.type_id == "menu_button" || fud.type_id == "icon_button" ||
+            fud.type_id == "small_button" || fud.type_id == "large_button" ||
+            fud.type_id == "textured_button") {
             auto widget = WidgetFactory::create_from_fud(fud, *this);
             if (widget) {
                 m_actors.push_back(std::move(widget));
@@ -1987,8 +2041,8 @@ void Game::register_menu_actions() {
             auto *g = dynamic_cast<Game *>(game);
             if (g) {
                 // Load level1 scene first
-                std::string level_path = udjourney::coreutils::get_assets_path(
-                    "levels/level1.json");
+                std::string level_path =
+                    udjourney::coreutils::get_assets_path("levels/level1.json");
                 if (g->load_scene(level_path)) {
                     g->m_state = GameState::PLAY;
                     g->initialize_gameplay();

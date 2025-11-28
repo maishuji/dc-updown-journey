@@ -75,5 +75,16 @@
     "tile_height": 1,
     "category": "Timer",
     "description": "1-tile wide timer background"
+  },
+  {
+    "name": "Button Background",
+    "sprite_sheet": "ui/ui_buttons_atlas.png",
+    "tile_size": 64,
+    "tile_row": 0,
+    "tile_col": 0,
+    "tile_width": 2,
+    "tile_height": 1,
+    "category": "Timer",
+    "description": "1-tile wide timer background"
   }
 ]

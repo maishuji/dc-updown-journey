@@ -1,0 +1,55 @@
+{
+  "type_id": "icon_button",
+  "display_name": "Icon Button",
+  "category": "UI",
+  "default_size": {
+    "x": 48,
+    "y": 48
+  },
+  "default_anchor": "TopRight",
+  "description": "Square button for icons (settings, close, etc.)",
+  "properties_schema": {
+    "text": {
+      "type": "string",
+      "default": "X",
+      "description": "Icon symbol or single letter"
+    },
+    "button_action": {
+      "type": "string",
+      "default": "none",
+      "description": "Action to execute"
+    },
+    "font_size": {
+      "type": "int",
+      "default": 24,
+      "description": "Font size for icon"
+    },
+    "normal_color": {
+      "type": "color",
+      "default": [255, 255, 255],
+      "description": "Icon color in normal state"
+    },
+    "hover_color": {
+      "type": "color",
+      "default": [255, 0, 0],
+      "description": "Icon color when hovered"
+    },
+    "border_thickness": {
+      "type": "int",
+      "default": 2,
+      "description": "Border width in pixels"
+    }
+  },
+  "texture_support": {
+    "foreground_sheet": {
+      "type": "string",
+      "optional": true,
+      "description": "Sprite sheet for icon graphics"
+    },
+    "foreground_tile_size": {
+      "type": "int",
+      "default": 32,
+      "description": "Size of icon tile"
+    }
+  }
+}

@@ -1,121 +1,678 @@
 {
-  "name": "Title Screen",
-  "scene_type": "ui_screen",
-  "tile_cols": 20,
-  "tile_rows": 15,
-  "player_spawn": {
-    "tile_x": 0,
-    "tile_y": 0
-  },
-  "platforms": [],
-  "monsters": [],
   "backgrounds": {
     "layers": [
       {
-        "name": "Scrolling Stars",
-        "texture_file": "backgrounds/stars.png",
         "depth": 0,
-        "parallax_factor": 1.0,
-        "auto_scroll_enabled": true,
-        "scroll_velocity": {
-          "x": 0,
-          "y": -30
-        },
-        "wrap_x": false,
-        "wrap_y": true,
-        "objects": []
+        "name": "Scrolling Stars",
+        "objects": [
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 544.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 352.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 544.0,
+            "y": 352.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 352.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 224.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 544.0,
+            "y": 224.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 224.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 96.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 544.0,
+            "y": 96.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 96.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 544.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": -32.0
+          }
+        ],
+        "parallax_factor": 0.5,
+        "texture_file": "backgrounds/stars.png"
       },
       {
-        "name": "Scrolling Clouds",
-        "texture_file": "backgrounds/clouds.png",
+        "depth": 0,
+        "name": "main",
+        "objects": [
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 1216.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 1216.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 1216.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 1216.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Mountain Top 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 1216.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 1280.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 1280.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 1280.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 1280.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush Top",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 1280.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 1408.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 1408.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 608.0,
+            "y": 1408.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 1408.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 1408.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 1408.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 1536.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 1536.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 1536.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 736.0,
+            "y": 1536.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 1536.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Rock",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 1536.0
+          }
+        ],
+        "parallax_factor": 0.2549999952316284,
+        "texture_file": ""
+      },
+      {
         "depth": 1,
-        "parallax_factor": 0.8,
-        "auto_scroll_enabled": true,
-        "scroll_velocity": {
-          "x": 0,
-          "y": -50
-        },
-        "wrap_x": false,
-        "wrap_y": true,
-        "objects": []
+        "name": "Scrolling Clouds",
+        "objects": [],
+        "parallax_factor": 0.800000011920929,
+        "texture_file": "backgrounds/clouds.png"
       }
     ]
   },
   "fuds": [
     {
-      "name": "Title Logo",
-      "type_id": "custom",
       "anchor": "TopCenter",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 2,
+      "background_tile_size": 64,
+      "background_tile_width": 1,
+      "name": "Title Logo",
       "offset": {
-        "x": 0,
-        "y": 80
+        "x": -128.0,
+        "y": 93.0
       },
+      "properties": {},
       "size": {
-        "x": 400,
-        "y": 100
+        "x": 64.0,
+        "y": 64.0
       },
-      "visible": true,
-      "properties": {}
+      "type_id": "custom",
+      "visible": true
     },
     {
+      "anchor": "MiddleCenter",
       "name": "Start Game Button",
-      "type_id": "menu_button",
-      "anchor": "MiddleCenter",
       "offset": {
-        "x": 0,
-        "y": 0
+        "x": -101.0,
+        "y": -17.0
       },
-      "size": {
-        "x": 200,
-        "y": 50
-      },
-      "visible": true,
       "properties": {
-        "text": "START GAME",
+        "border_thickness": "2",
         "button_action": "start_game",
+        "click_color": [
+          0,
+          255,
+          0
+        ],
         "font_size": "24",
-        "border_thickness": "2"
-      }
+        "hover_color": [
+          255,
+          255,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "text": "START GAME"
+      },
+      "size": {
+        "x": 200.0,
+        "y": 50.0
+      },
+      "type_id": "menu_button",
+      "visible": true
     },
     {
+      "anchor": "MiddleCenter",
       "name": "Load Level Button",
-      "type_id": "menu_button",
-      "anchor": "MiddleCenter",
       "offset": {
-        "x": 0,
-        "y": 70
+        "x": -98.0,
+        "y": 73.0
+      },
+      "properties": {
+        "border_thickness": "2",
+        "button_action": "load_level:level1",
+        "click_color": [
+          0,
+          255,
+          0
+        ],
+        "font_size": "20",
+        "hover_color": [
+          255,
+          255,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "text": "LEVEL SELECT"
       },
       "size": {
-        "x": 200,
-        "y": 50
+        "x": 200.0,
+        "y": 50.0
       },
-      "visible": true,
-      "properties": {
-        "text": "LEVEL SELECT",
-        "button_action": "load_level:level1",
-        "font_size": "20",
-        "border_thickness": "2"
-      }
+      "type_id": "menu_button",
+      "visible": true
     },
     {
-      "name": "Quit Button",
-      "type_id": "menu_button",
       "anchor": "MiddleCenter",
+      "name": "Quit Button",
       "offset": {
-        "x": 0,
-        "y": 140
+        "x": -96.0,
+        "y": 152.0
+      },
+      "properties": {
+        "border_thickness": "2",
+        "button_action": "quit_game",
+        "click_color": [
+          0,
+          255,
+          0
+        ],
+        "font_size": "20",
+        "hover_color": [
+          255,
+          255,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "text": "QUIT"
       },
       "size": {
-        "x": 200,
-        "y": 50
+        "x": 200.0,
+        "y": 50.0
       },
-      "visible": true,
+      "type_id": "menu_button",
+      "visible": true
+    },
+    {
+      "anchor": "TopRight",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 1,
+      "background_tile_size": 64,
+      "background_tile_width": 1,
+      "name": "Icon Button",
+      "offset": {
+        "x": -407.0,
+        "y": 45.0
+      },
       "properties": {
-        "text": "QUIT",
-        "button_action": "quit_game",
-        "font_size": "20",
-        "border_thickness": "2"
-      }
+        "border_thickness": 2,
+        "button_action": "none",
+        "font_size": 24,
+        "hover_color": [
+          255,
+          0,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "text": "X"
+      },
+      "size": {
+        "x": 176.0,
+        "y": 164.0
+      },
+      "type_id": "icon_button",
+      "visible": true
+    },
+    {
+      "anchor": "TopRight",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 2,
+      "background_tile_size": 64,
+      "background_tile_width": 1,
+      "name": "Icon Button",
+      "offset": {
+        "x": -212.0,
+        "y": 63.0
+      },
+      "properties": {
+        "border_thickness": 2,
+        "button_action": "none",
+        "font_size": 24,
+        "hover_color": [
+          255,
+          0,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "text": "X"
+      },
+      "size": {
+        "x": 139.0,
+        "y": 123.0
+      },
+      "type_id": "icon_button",
+      "visible": true
+    },
+    {
+      "anchor": "TopRight",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 1,
+      "background_tile_height": 1,
+      "background_tile_row": 1,
+      "background_tile_size": 64,
+      "background_tile_width": 1,
+      "name": "Icon Button",
+      "offset": {
+        "x": -543.0,
+        "y": 78.0
+      },
+      "properties": {
+        "border_thickness": 2,
+        "button_action": "none",
+        "font_size": 24,
+        "hover_color": [
+          255,
+          0,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "text": "X"
+      },
+      "size": {
+        "x": 123.0,
+        "y": 107.0
+      },
+      "type_id": "icon_button",
+      "visible": true
     }
-  ]
+  ],
+  "name": "Untitled Level",
+  "scene_type": "ui_screen"
 }

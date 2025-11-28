@@ -1,0 +1,72 @@
+{
+  "type_id": "textured_button",
+  "display_name": "Textured Button",
+  "category": "UI",
+  "default_size": {
+    "x": 200,
+    "y": 50
+  },
+  "default_anchor": "MiddleCenter",
+  "description": "Button with custom texture graphics for all states",
+  "properties_schema": {
+    "text": {
+      "type": "string",
+      "default": "Button",
+      "description": "Button text label"
+    },
+    "button_action": {
+      "type": "string",
+      "default": "none",
+      "description": "Action to execute"
+    },
+    "font_size": {
+      "type": "int",
+      "default": 24,
+      "description": "Font size for button text"
+    },
+    "normal_color": {
+      "type": "color",
+      "default": [255, 255, 255],
+      "description": "Text color"
+    },
+    "hover_tile_col": {
+      "type": "int",
+      "default": 1,
+      "description": "Hover state sprite column"
+    },
+    "hover_tile_row": {
+      "type": "int",
+      "default": 0,
+      "description": "Hover state sprite row"
+    },
+    "focused_tile_col": {
+      "type": "int",
+      "default": 2,
+      "description": "Focused/selected state sprite column"
+    },
+    "focused_tile_row": {
+      "type": "int",
+      "default": 0,
+      "description": "Focused/selected state sprite row"
+    },
+    "pressed_tile_col": {
+      "type": "int",
+      "default": 3,
+      "description": "Pressed state sprite column"
+    },
+    "pressed_tile_row": {
+      "type": "int",
+      "default": 0,
+      "description": "Pressed state sprite row"
+    }
+  },
+  "default_texture": {
+    "background_sheet": "ui_buttons.png",
+    "background_tile_size": 64,
+    "background_tile_col": 0,
+    "background_tile_row": 0,
+    "background_tile_width": 3,
+    "background_tile_height": 1,
+    "description": "Configure sprite sheet path in JSON or use placeholder"
+  }
+}

@@ -12,8 +12,8 @@ namespace udjourney {
 namespace scene {
 
 enum class SceneType {
-    LEVEL,      // Regular gameplay level with platforms/monsters
-    UI_SCREEN   // UI screen for menus (title/win/gameover)
+    LEVEL,     // Regular gameplay level with platforms/monsters
+    UI_SCREEN  // UI screen for menus (title/win/gameover)
 };
 
 enum class PlatformBehaviorType {
@@ -184,7 +184,8 @@ class Scene {
     std::vector<BackgroundLayerData> m_background_layers;
     std::vector<FUDData> m_fuds;
     std::string m_name = "Unnamed Level";
-    SceneType m_scene_type = SceneType::LEVEL;  // Default to level for backward compatibility
+    SceneType m_scene_type =
+        SceneType::LEVEL;  // Default to level for backward compatibility
 };
 
 }  // namespace scene

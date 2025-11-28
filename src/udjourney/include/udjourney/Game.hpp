@@ -89,4 +89,6 @@ class Game : public IGame, public IObserver {
     mutable std::map<std::string, Texture2D>
         m_fud_textures;               // Cache for FUD textures
     int m_selected_widget_index = 0;  // Currently focused widget
+    float m_ui_background_scroll_y =
+        0.0f;  // Scroll offset for UI screen backgrounds
 };
