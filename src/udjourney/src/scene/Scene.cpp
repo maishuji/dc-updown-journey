@@ -23,10 +23,15 @@ Scene::Scene(const std::string& filename) { load_from_file(filename); }
 
 Rectangle Scene::tile_to_world_rect(int tile_x, int tile_y, float width_tiles,
                                     float height_tiles) {
-    return Rectangle{static_cast<float>(tile_x) * kTileSize,
-                     static_cast<float>(tile_y) * kTileSize,
-                     width_tiles * kTileSize,
-                     height_tiles * kTileSize};
+    // Platform is centered on the tile position
+    // tile_x, tile_y represent the CENTER of the platform
+    float center_x = static_cast<float>(tile_x) * kTileSize + kTileSize / 2;
+    float center_y = static_cast<float>(tile_y) * kTileSize + kTileSize / 2;
+    float width = width_tiles * kTileSize;
+    float height = height_tiles * kTileSize;
+
+    return Rectangle{
+        center_x - width / 2, center_y - height / 2, width, height};
 }
 
 Vector2 Scene::tile_to_world_pos(int tile_x, int tile_y) {

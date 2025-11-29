@@ -14,9 +14,11 @@ inline const float kDefaultOffset = 100.0F;
 class HorizontalBehaviorStrategy : public PlatformBehaviorStrategy {
  public:
     HorizontalBehaviorStrategy(float speed_x = internal::kDefaultSpeed,
-                               float max_offset = internal::kDefaultOffset);
+                               float max_offset = internal::kDefaultOffset,
+                               float initial_offset = 0.0f);
     ~HorizontalBehaviorStrategy() override;
     void update(Platform& platform, float delta) override;
+    void reset() override;
 
  private:
     struct PImpl;

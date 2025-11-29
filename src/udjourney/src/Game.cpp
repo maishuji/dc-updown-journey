@@ -1165,6 +1165,22 @@ void Game::draw() const {
 
             break;
         case GameState::PAUSE:
+            // Draw the game world in background
+            draw_backgrounds();
+
+            for (const auto &actor : m_actors) {
+                actor->draw();
+            }
+            if (m_player) {
+                m_player->draw();
+            }
+
+            // Draw finish line for level-based gameplay
+            if (m_current_scene && m_level_height > 0) {
+                draw_finish_line_();
+            }
+
+            // Draw pause overlay on top
             draw_pause_();
             break;
         case GameState::GAMEOVER:
@@ -1210,6 +1226,22 @@ void Game::draw() const {
     }
 
     rlPopMatrix();
+
+    // Draw left and right borders
+    // Left border (from screen left to game area left)
+    if (offset_x > 0) {
+        DrawRectangle(
+            0, 0, static_cast<int>(offset_x), GetScreenHeight(), BLACK);
+    }
+    // Right border (from game area right to screen right)
+    if (offset_x > 0) {
+        DrawRectangle(static_cast<int>(offset_x + kBaseWidth * scale),
+                      0,
+                      static_cast<int>(offset_x + 1),
+                      GetScreenHeight(),
+                      BLACK);
+    }
+
     DrawText(kResolutions[current_resolution_idx].label, 10, 10, 20, YELLOW);
 
     EndDrawing();
@@ -1354,78 +1386,84 @@ void Game::update() {
 
     process_input();
 
+    // Only update game time when not paused
     double cur_update_time = GetTime();
     auto delta = static_cast<float>(cur_update_time - last_update_time);
 
-    if (m_state == GameState::PLAY) {
-        m_bonus_manager.update(delta);
-        if (cur_update_time - last_update_time > kUpdateInterval) {
-            // Only scroll if finish line hasn't reached middle of screen
-            if (should_continue_scrolling_()) {
-                m_rect.y += 1;
+    if (m_state != GameState::PAUSE) {
+        if (m_state == GameState::PLAY) {
+            m_bonus_manager.update(delta);
+            if (cur_update_time - last_update_time > kUpdateInterval) {
+                // Only scroll if finish line hasn't reached middle of screen
+                if (should_continue_scrolling_()) {
+                    m_rect.y += 1;
+                }
+                for (auto &actor : m_actors) {
+                    actor->update(delta);
+                }
+                m_player->update(delta);
+                last_update_time = cur_update_time;
+
+                // Check win condition: player reached bottom of level
+                if (m_current_scene && m_player) {
+                    Rectangle player_rect = m_player->get_rectangle();
+                    float player_bottom = player_rect.y + player_rect.height;
+
+                    // Win if player reaches 98% of the level height (very close
+                    // to actual bottom) This ensures player actually reaches
+                    // the final platform area before winning
+                    if (player_bottom >= m_level_height * 0.98f) {
+                        m_state = GameState::WIN;
+
+                        // Load win screen with widgets
+                        std::string win_path =
+                            udjourney::coreutils::get_assets_path(
+                                "levels/win_screen.json");
+                        if (load_scene(win_path)) {
+                            // Clean up gameplay objects
+                            m_player.reset();
+                            m_hud_manager.clear_background_huds();
+
+                            // Remove all actors except widgets
+                            m_actors.erase(
+                                std::remove_if(
+                                    m_actors.begin(),
+                                    m_actors.end(),
+                                    [](const std::unique_ptr<IActor> &actor) {
+                                        return actor->get_group_id() !=
+                                               4;  // Keep widgets only
+                                    }),
+                                m_actors.end());
+
+                            // Load win screen widgets
+                            load_widgets_from_scene();
+                            m_rect.y = 0;  // Reset camera
+                        }
+                    }
+                }
             }
+
+            // Only handle collisions if player exists (not in WIN/TITLE state)
+            if (m_player) {
+                m_player->handle_collision(m_actors);
+            }
+
+            // Handle collision for all monsters
             for (auto &actor : m_actors) {
-                actor->update(delta);
-            }
-            m_player->update(delta);
-            last_update_time = cur_update_time;
-
-            // Check win condition: player reached bottom of level
-            if (m_current_scene && m_player) {
-                Rectangle player_rect = m_player->get_rectangle();
-                float player_bottom = player_rect.y + player_rect.height;
-
-                // Win if player reaches 98% of the level height (very close to
-                // actual bottom) This ensures player actually reaches the final
-                // platform area before winning
-                if (player_bottom >= m_level_height * 0.98f) {
-                    m_state = GameState::WIN;
-
-                    // Load win screen with widgets
-                    std::string win_path =
-                        udjourney::coreutils::get_assets_path(
-                            "levels/win_screen.json");
-                    if (load_scene(win_path)) {
-                        // Clean up gameplay objects
-                        m_player.reset();
-                        m_hud_manager.clear_background_huds();
-
-                        // Remove all actors except widgets
-                        m_actors.erase(
-                            std::remove_if(
-                                m_actors.begin(),
-                                m_actors.end(),
-                                [](const std::unique_ptr<IActor> &actor) {
-                                    return actor->get_group_id() !=
-                                           4;  // Keep widgets only
-                                }),
-                            m_actors.end());
-
-                        // Load win screen widgets
-                        load_widgets_from_scene();
-                        m_rect.y = 0;  // Reset camera
+                if (actor->get_group_id() == 3) {  // Monster group ID
+                    Monster *monster = dynamic_cast<Monster *>(actor.get());
+                    if (monster) {
+                        monster->handle_collision(m_actors);
                     }
                 }
             }
         }
 
-        // Only handle collisions if player exists (not in WIN/TITLE state)
-        if (m_player) {
-            m_player->handle_collision(m_actors);
-        }
-
-        // Handle collision for all monsters
-        for (auto &actor : m_actors) {
-            if (actor->get_group_id() == 3) {  // Monster group ID
-                Monster *monster = dynamic_cast<Monster *>(actor.get());
-                if (monster) {
-                    monster->handle_collision(m_actors);
-                }
-            }
-        }
+        m_hud_manager.update(delta);
+    } else {
+        // Game is paused, reset the timer to avoid time jump when resuming
+        last_update_time = cur_update_time;
     }
-
-    m_hud_manager.update(delta);
 
     draw();
 }
@@ -1682,8 +1720,9 @@ void Game::create_platforms_from_scene() {
         // Set behavior based on platform data
         switch (platform_data.behavior_type) {
             case udjourney::scene::PlatformBehaviorType::Horizontal: {
-                float speed = 50.0f;   // Default speed
-                float range = 100.0f;  // Default range
+                float speed = 50.0f;          // Default speed
+                float range = 100.0f;         // Default range
+                float initial_offset = 0.0f;  // Default starting offset
 
                 if (platform_data.behavior_params.count("speed")) {
                     speed = platform_data.behavior_params.at("speed") *
@@ -1693,9 +1732,15 @@ void Game::create_platforms_from_scene() {
                     range = platform_data.behavior_params.at("range") *
                             32.0f;  // Convert tiles to pixels
                 }
+                if (platform_data.behavior_params.count("initial_offset")) {
+                    initial_offset =
+                        platform_data.behavior_params.at("initial_offset") *
+                        32.0f;  // Convert tiles to pixels
+                }
 
                 platform->set_behavior(
-                    std::make_unique<HorizontalBehaviorStrategy>(speed, range));
+                    std::make_unique<HorizontalBehaviorStrategy>(
+                        speed, range, initial_offset));
                 break;
             }
             case udjourney::scene::PlatformBehaviorType::EightTurnHorizontal: {
