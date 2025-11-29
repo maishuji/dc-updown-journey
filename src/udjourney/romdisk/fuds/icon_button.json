@@ -38,6 +38,11 @@
       "type": "int",
       "default": 2,
       "description": "Border width in pixels"
+    },
+    "selectable": {
+      "type": "bool",
+      "default": false,
+      "description": "Whether button can be selected with keyboard navigation"
     }
   },
   "texture_support": {

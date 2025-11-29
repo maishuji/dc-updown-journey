@@ -1264,11 +1264,14 @@ void Game::update() {
     // Widget input handling for TITLE, WIN, and GAMEOVER states
     if (m_state == GameState::TITLE || m_state == GameState::WIN ||
         m_state == GameState::GAMEOVER) {
-        // Collect all widgets from m_actors
+        // Collect all selectable widgets from m_actors
         std::vector<IWidget *> widgets;
         for (const auto &actor : m_actors) {
             if (actor->get_group_id() == 4) {  // Widget group ID
-                widgets.push_back(static_cast<IWidget *>(actor.get()));
+                IWidget *widget = static_cast<IWidget *>(actor.get());
+                if (widget->is_selectable()) {
+                    widgets.push_back(widget);
+                }
             }
         }
 

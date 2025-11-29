@@ -85,6 +85,11 @@ ButtonWidget::ButtonWidget(const IGame& game,
             border_thickness_ =
                 std::stoi(fud.properties.at("border_thickness"));
         }
+        if (fud.properties.count("selectable")) {
+            std::string selectable_str = fud.properties.at("selectable");
+            is_selectable_ =
+                (selectable_str == "true" || selectable_str == "1");
+        }
 
         // Parse colors if provided
         if (fud.properties.count("normal_color")) {
