@@ -23,6 +23,7 @@
 #include "udjourney-editor/fud/HealthBarFUDRenderer.hpp"
 #include "udjourney-editor/fud/HeartHealthFUDRenderer.hpp"
 #include "udjourney-editor/fud/ScoreDisplayFUDRenderer.hpp"
+#include "udjourney-editor/fud/ScrollableListFUDRenderer.hpp"
 #include "udjourney-editor/fud/TimerFUDRenderer.hpp"
 
 // Simple texture cache for editor
@@ -118,6 +119,10 @@ static void initialize_fud_renderers() {
     factory.register_renderer("score_display",
                               std::make_unique<ScoreDisplayFUDRenderer>());
     factory.register_renderer("timer", std::make_unique<TimerFUDRenderer>());
+
+    // Register list renderer
+    factory.register_renderer("scrollable_list",
+                              std::make_unique<ScrollableListFUDRenderer>());
 
     initialized = true;
 }

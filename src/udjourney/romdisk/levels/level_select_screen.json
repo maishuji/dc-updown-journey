@@ -1,97 +1,109 @@
 {
-    "name": "Level Select",
-    "scene_type": "ui_screen",
-    "backgrounds": {
-        "layers": [
-            {
-                "texture_file": "backgrounds/stars.png",
-                "scroll_speed_x": 0.0,
-                "scroll_speed_y": 30.0,
-                "parallax_factor": 0.5,
-                "render_mode": "tile"
-            }
-        ]
-    },
-    "fuds": [
-        {
-            "name": "Title",
-            "type_id": "menu_button",
-            "anchor": "TopCenter",
-            "offset_x": 0,
-            "offset_y": 30,
-            "size_x": 400,
-            "size_y": 60,
-            "visible": true,
-            "properties": {
-                "text": "SELECT LEVEL",
-                "font_size": "40",
-                "normal_color": [
-                    255,
-                    255,
-                    255
-                ],
-                "hover_color": [
-                    255,
-                    255,
-                    0
-                ],
-                "click_color": [
-                    0,
-                    255,
-                    0
-                ],
-                "button_action": "none",
-                "selectable": "false"
-            }
-        },
-        {
-            "name": "Level List",
-            "type_id": "scrollable_list",
-            "anchor": "MiddleCenter",
-            "offset_x": -200,
-            "offset_y": -120,
-            "size_x": 400,
-            "size_y": 300,
-            "visible": true,
-            "properties": {
-                "data_source": "levels",
-                "item_action": "load_level:{filename}",
-                "item_height": "80",
-                "font_size": "24",
-                "subtitle_font_size": "16",
-                "visible_items": "5"
-            }
-        },
-        {
-            "name": "Back Button",
-            "type_id": "menu_button",
-            "anchor": "BottomCenter",
-            "offset_x": -100,
-            "offset_y": -60,
-            "size_x": 200,
-            "size_y": 50,
-            "visible": true,
-            "properties": {
-                "text": "BACK",
-                "button_action": "return_to_title",
-                "font_size": "24",
-                "normal_color": [
-                    255,
-                    255,
-                    255
-                ],
-                "hover_color": [
-                    255,
-                    255,
-                    0
-                ],
-                "click_color": [
-                    0,
-                    255,
-                    0
-                ],
-                "selectable": "true"
-            }
-        }
+  "backgrounds": {
+    "layers": [
+      {
+        "depth": 0,
+        "name": "Unnamed Layer",
+        "objects": [],
+        "parallax_factor": 0.5,
+        "texture_file": "backgrounds/stars.png"
+      }
     ]
+  },
+  "fuds": [
+    {
+      "anchor": "TopCenter",
+      "name": "Title",
+      "offset": {
+        "x": -194.0,
+        "y": 33.0
+      },
+      "properties": {
+        "button_action": "none",
+        "click_color": [
+          0,
+          255,
+          0
+        ],
+        "font_size": "40",
+        "hover_color": [
+          255,
+          255,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "selectable": "false",
+        "text": "SELECT LEVEL"
+      },
+      "size": {
+        "x": 400.0,
+        "y": 60.0
+      },
+      "type_id": "menu_button",
+      "visible": true
+    },
+    {
+      "anchor": "MiddleCenter",
+      "name": "Level List",
+      "offset": {
+        "x": -287.0,
+        "y": -115.0
+      },
+      "properties": {
+        "data_source": "levels",
+        "font_size": "24",
+        "item_action": "load_level:{filename}",
+        "item_height": "80",
+        "subtitle_font_size": "16",
+        "visible_items": "5"
+      },
+      "size": {
+        "x": 385.0,
+        "y": 304.0
+      },
+      "type_id": "scrollable_list",
+      "visible": true
+    },
+    {
+      "anchor": "BottomCenter",
+      "name": "Back Button",
+      "offset": {
+        "x": 111.0,
+        "y": -96.0
+      },
+      "properties": {
+        "button_action": "return_to_title",
+        "click_color": [
+          0,
+          255,
+          0
+        ],
+        "font_size": "24",
+        "hover_color": [
+          255,
+          255,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "selectable": "true",
+        "text": "BACK"
+      },
+      "size": {
+        "x": 200.0,
+        "y": 50.0
+      },
+      "type_id": "menu_button",
+      "visible": true
+    }
+  ],
+  "name": "Untitled Level",
+  "scene_type": "ui_screen"
 }

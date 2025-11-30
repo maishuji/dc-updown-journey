@@ -73,6 +73,7 @@ add_library(udjourney_editor_lib
   src/fud/HealthBarFUDRenderer.cpp
   src/fud/HeartHealthFUDRenderer.cpp
   src/fud/ScoreDisplayFUDRenderer.cpp
+  src/fud/ScrollableListFUDRenderer.cpp
   src/fud/TimerFUDRenderer.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
@@ -128,6 +129,7 @@ add_library(udjourney_editor_lib_test STATIC
   src/fud/HealthBarFUDRenderer.cpp
   src/fud/HeartHealthFUDRenderer.cpp
   src/fud/ScoreDisplayFUDRenderer.cpp
+  src/fud/ScrollableListFUDRenderer.cpp
   src/fud/TimerFUDRenderer.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
@@ -199,6 +201,7 @@ add_executable(editorpanel_tests
   src/fud/HealthBarFUDRenderer.cpp
   src/fud/HeartHealthFUDRenderer.cpp
   src/fud/ScoreDisplayFUDRenderer.cpp
+  src/fud/ScrollableListFUDRenderer.cpp
   src/fud/TimerFUDRenderer.cpp
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp

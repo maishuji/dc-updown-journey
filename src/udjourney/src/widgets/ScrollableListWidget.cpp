@@ -124,39 +124,44 @@ ScrollableListWidget::ScrollableListWidget(
         items_.size());
 }
 
+void load_data_from_level_source_(
+    std::vector<ScrollableListWidget::ListItem>& items) {
+    // Load levels
+    auto levels = udjourney::LevelMetadata::load_all_levels();
+
+    for (const auto& level : levels) {
+        ScrollableListWidget::ListItem item;
+        item.id = level.id;
+        item.display_text = level.display_name;
+
+        // Build subtitle with difficulty stars
+        std::string stars(level.difficulty, '*');
+        item.subtitle = stars;
+
+        if (level.completed) {
+            item.subtitle += " [COMPLETED]";
+        }
+
+        item.selectable = level.unlocked;
+        item.locked = !level.unlocked;
+        item.text_color = level.unlocked ? WHITE : GRAY;
+
+        // Store level metadata
+        item.metadata["filename"] = level.filename;
+        item.metadata["difficulty"] = level.difficulty;
+        item.metadata["completed"] = level.completed;
+        item.metadata["best_time"] = level.best_time;
+
+        items.push_back(item);
+    }
+}
+
 void ScrollableListWidget::load_data_from_source(
     const std::string& source_type) {
     items_.clear();
 
     if (source_type == "levels") {
-        // Load levels
-        auto levels = udjourney::LevelMetadata::load_all_levels();
-
-        for (const auto& level : levels) {
-            ListItem item;
-            item.id = level.id;
-            item.display_text = level.display_name;
-
-            // Build subtitle with difficulty stars
-            std::string stars(level.difficulty, '*');
-            item.subtitle = stars;
-
-            if (level.completed) {
-                item.subtitle += " [COMPLETED]";
-            }
-
-            item.selectable = level.unlocked;
-            item.locked = !level.unlocked;
-            item.text_color = level.unlocked ? WHITE : GRAY;
-
-            // Store level metadata
-            item.metadata["filename"] = level.filename;
-            item.metadata["difficulty"] = level.difficulty;
-            item.metadata["completed"] = level.completed;
-            item.metadata["best_time"] = level.best_time;
-
-            items_.push_back(item);
-        }
+        load_data_from_level_source_(items_);
     } else if (source_type == "settings") {
         // Example: Settings menu
         items_ = {{"sound",
