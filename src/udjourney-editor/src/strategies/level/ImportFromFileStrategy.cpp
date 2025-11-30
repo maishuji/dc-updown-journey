@@ -33,11 +33,14 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
 
         // Clear existing data
         level.clear();
-        
+
         // Load scene type (defaults to LEVEL)
         if (jlevel.contains("scene_type")) {
-            std::string scene_type_str = jlevel["scene_type"].get<std::string>();
-            level.scene_type = (scene_type_str == "ui_screen") ? SceneType::UI_SCREEN : SceneType::LEVEL;
+            std::string scene_type_str =
+                jlevel["scene_type"].get<std::string>();
+            level.scene_type = (scene_type_str == "ui_screen")
+                                   ? SceneType::UI_SCREEN
+                                   : SceneType::LEVEL;
             std::cout << "Loaded scene type: " << scene_type_str << std::endl;
         } else {
             level.scene_type = SceneType::LEVEL;
@@ -61,7 +64,8 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
         }
 
         // Import player spawn position (only for levels)
-        if (level.scene_type == SceneType::LEVEL && jlevel.contains("player_spawn") &&
+        if (level.scene_type == SceneType::LEVEL &&
+            jlevel.contains("player_spawn") &&
             jlevel["player_spawn"].is_object()) {
             const auto& spawn = jlevel["player_spawn"];
             if (spawn.contains("x") && spawn.contains("y")) {
@@ -71,7 +75,8 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
         }
 
         // Import platforms (only for levels)
-        if (level.scene_type == SceneType::LEVEL && jlevel.contains("platforms") && jlevel["platforms"].is_array()) {
+        if (level.scene_type == SceneType::LEVEL &&
+            jlevel.contains("platforms") && jlevel["platforms"].is_array()) {
             for (const auto& jplatform : jlevel["platforms"]) {
                 // Skip invalid platform entries
                 if (!jplatform.is_object() || !jplatform.contains("x") ||
@@ -152,7 +157,8 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
         }
 
         // Import monsters (only for levels)
-        if (level.scene_type == SceneType::LEVEL && jlevel.contains("monsters")) {
+        if (level.scene_type == SceneType::LEVEL &&
+            jlevel.contains("monsters")) {
             for (const auto& jmonster : jlevel["monsters"]) {
                 EditorMonster monster;
                 monster.tile_x = jmonster["x"].get<int>();

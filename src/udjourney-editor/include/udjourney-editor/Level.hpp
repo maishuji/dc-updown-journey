@@ -49,8 +49,8 @@ struct Cell {
 
 // Scene type enum - matches udjourney::scene::SceneType
 enum class SceneType {
-    LEVEL,      // Regular gameplay level with platforms/monsters
-    UI_SCREEN   // UI screen for menus (title/win/gameover)
+    LEVEL,     // Regular gameplay level with platforms/monsters
+    UI_SCREEN  // UI screen for menus (title/win/gameover)
 };
 
 struct Level {

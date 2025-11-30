@@ -26,7 +26,11 @@
     },
     "normal_color": {
       "type": "color",
-      "default": [255, 255, 255],
+      "default": [
+        255,
+        255,
+        255
+      ],
       "description": "Text color"
     },
     "hover_tile_col": {

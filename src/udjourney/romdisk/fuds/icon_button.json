@@ -26,12 +26,20 @@
     },
     "normal_color": {
       "type": "color",
-      "default": [255, 255, 255],
+      "default": [
+        255,
+        255,
+        255
+      ],
       "description": "Icon color in normal state"
     },
     "hover_color": {
       "type": "color",
-      "default": [255, 0, 0],
+      "default": [
+        255,
+        0,
+        0
+      ],
       "description": "Icon color when hovered"
     },
     "border_thickness": {

@@ -252,21 +252,8 @@ void ScrollableListWidget::draw() const {
             return;
         }
 
-        // NOTE: Scissor mode is disabled because it doesn't work correctly with
-        // the scaled rendering The scissor rectangle needs screen pixel
-        // coordinates, not game coordinates
-        // TODO: Fix scissor mode to work with scaling/translation matrix
-        /*
-        // Set scissor mode to clip items outside the list
-        BeginScissorMode(
-            static_cast<int>(screen_rect.x),
-            static_cast<int>(screen_rect.y),
-            static_cast<int>(screen_rect.width),
-            static_cast<int>(screen_rect.height)
-        );
-        */
-
-        // Draw scrollable items
+        // Draw scrollable items with manual clipping
+        // We clip by only drawing items that are within the visible bounds
         int start_index = scroll_offset_ / item_height_;
         int end_index = std::min(start_index + visible_items_ + 1,
                                  static_cast<int>(items_.size()));
@@ -276,18 +263,38 @@ void ScrollableListWidget::draw() const {
 
             // Calculate item position
             float item_y = screen_rect.y + (i * item_height_) - scroll_offset_;
+
+            // Manual clipping: Skip items that are completely outside bounds
+            if (item_y + item_height_ < screen_rect.y ||
+                item_y > screen_rect.y + screen_rect.height) {
+                continue;
+            }
+
+            // Clip the item rectangle to the container bounds
             Rectangle item_rect = {screen_rect.x,
                                    item_y,
                                    screen_rect.width,
                                    static_cast<float>(item_height_)};
+
+            // Adjust rectangle if partially visible at top
+            if (item_rect.y < screen_rect.y) {
+                float clip_amount = screen_rect.y - item_rect.y;
+                item_rect.y = screen_rect.y;
+                item_rect.height -= clip_amount;
+            }
+
+            // Adjust rectangle if partially visible at bottom
+            if (item_rect.y + item_rect.height >
+                screen_rect.y + screen_rect.height) {
+                item_rect.height =
+                    (screen_rect.y + screen_rect.height) - item_rect.y;
+            }
 
             bool is_selected = (i == selected_index_);
             bool is_hovered = false;
 
             draw_list_item(item, item_rect, is_selected, is_hovered);
         }
-
-        // EndScissorMode();  // Disabled - see comment above
 
         // Draw scrollbar if needed
         int total_height = items_.size() * item_height_;

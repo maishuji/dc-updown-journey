@@ -52,7 +52,7 @@ class EditorPanel {
     EditorPanel(EditorPanel&&) = delete;
     EditorPanel& operator=(EditorPanel&&) = delete;
     void draw();
-    
+
     // Set the current level for scene type awareness
     void set_current_level(Level* level) { current_level_ = level; }
 

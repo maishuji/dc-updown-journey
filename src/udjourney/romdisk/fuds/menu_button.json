@@ -26,17 +26,29 @@
     },
     "normal_color": {
       "type": "color",
-      "default": [255, 255, 255],
+      "default": [
+        255,
+        255,
+        255
+      ],
       "description": "Text color in normal state"
     },
     "hover_color": {
       "type": "color",
-      "default": [255, 255, 0],
+      "default": [
+        255,
+        255,
+        0
+      ],
       "description": "Text color when hovered"
     },
     "click_color": {
       "type": "color",
-      "default": [0, 255, 0],
+      "default": [
+        0,
+        255,
+        0
+      ],
       "description": "Text color when clicked"
     },
     "border_thickness": {

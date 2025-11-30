@@ -189,13 +189,14 @@ void Monster::take_damage(float damage) {
 
     if (health_ <= 0.0f) {
         health_ = 0.0f;
-        
+
         // Check if death state exists before trying to use it
         if (states_.find("death") != states_.end()) {
             change_state("death");
         } else {
             // No death state defined, just mark as consumed
-            std::cout << "Monster killed (no death animation available)" << std::endl;
+            std::cout << "Monster killed (no death animation available)"
+                      << std::endl;
             set_state(ActorState::CONSUMED);
         }
         velocity_x_ = 0.0f;
