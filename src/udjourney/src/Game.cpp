@@ -19,6 +19,8 @@
 #include <utility>
 #include <vector>
 
+#include "udjourney/widgets/ScrollableListWidget.hpp"
+
 #include "udjourney/Bonus.hpp"
 #include <udj-core/CoreUtils.hpp>
 #include "udjourney/Monster.hpp"
@@ -1264,67 +1266,134 @@ void Game::update() {
     // Widget input handling for TITLE, WIN, and GAMEOVER states
     if (m_state == GameState::TITLE || m_state == GameState::WIN ||
         m_state == GameState::GAMEOVER) {
-        // Collect all selectable widgets from m_actors
-        std::vector<IWidget *> widgets;
-        for (const auto &actor : m_actors) {
-            if (actor->get_group_id() == 4) {  // Widget group ID
-                IWidget *widget = static_cast<IWidget *>(actor.get());
-                if (widget->is_selectable()) {
-                    widgets.push_back(widget);
+        // Increment frame counter
+        m_frames_since_scene_load++;
+
+        // Skip input for first 3 frames after scene load to prevent key
+        // bleed-through
+        if (m_frames_since_scene_load < 3) {
+            // Still update widget focus visuals but don't process activation
+            std::vector<IWidget *> widgets;
+            for (const auto &actor : m_actors) {
+                if (!actor) continue;
+                if (actor->get_group_id() == 4) {
+                    IWidget *widget = static_cast<IWidget *>(actor.get());
+                    if (widget && widget->is_selectable()) {
+                        widgets.push_back(widget);
+                    }
                 }
             }
-        }
-
-        if (!widgets.empty()) {
-            // Keyboard navigation: Z = up, S = down
-            if (IsKeyPressed(KEY_Z)) {
-                m_selected_widget_index = (m_selected_widget_index - 1 +
-                                           static_cast<int>(widgets.size())) %
-                                          static_cast<int>(widgets.size());
-            }
-            if (IsKeyPressed(KEY_S)) {
-                m_selected_widget_index = (m_selected_widget_index + 1) %
-                                          static_cast<int>(widgets.size());
-            }
-
-            // Update focus state for all widgets
             for (size_t i = 0; i < widgets.size(); ++i) {
                 widgets[i]->set_focused(static_cast<int>(i) ==
                                         m_selected_widget_index);
             }
+        } else {
+            // Handle keyboard input first (doesn't require collecting widgets)
+            bool keyboard_input_handled = false;
 
-            // Activate selected widget with Enter or Space
-            if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
-                widgets[m_selected_widget_index]->on_click();
-
-                // IMPORTANT: Return immediately if state changed
-                // Widget action may have triggered state change and called
-                // initialize_gameplay() which removes widgets. Continuing would
-                // access deleted memory.
-                if (m_state != GameState::TITLE && m_state != GameState::WIN &&
-                    m_state != GameState::GAMEOVER) {
-                    return;
-                }
-            }
-
-            // Mouse input
-            Vector2 mouse_pos = GetMousePosition();
-            for (auto *widget : widgets) {
-                if (widget->contains_point(mouse_pos)) {
-                    widget->on_hover();
-                    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
-                        widget->on_click();
-
-                        // IMPORTANT: Return immediately if state changed
-                        if (m_state != GameState::TITLE &&
-                            m_state != GameState::WIN &&
-                            m_state != GameState::GAMEOVER) {
-                            return;
+            if (IsKeyPressed(KEY_Z) || IsKeyPressed(KEY_S) ||
+                IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE) ||
+                IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN) ||
+                IsKeyPressed(KEY_PAGE_UP) || IsKeyPressed(KEY_PAGE_DOWN) ||
+                GetMouseWheelMove() != 0.0f) {
+                // Collect widgets for keyboard/wheel input
+                std::vector<IWidget *> widgets;
+                for (const auto &actor : m_actors) {
+                    if (!actor) continue;
+                    if (actor->get_group_id() == 4) {
+                        IWidget *widget = static_cast<IWidget *>(actor.get());
+                        if (widget && widget->is_selectable()) {
+                            widgets.push_back(widget);
                         }
                     }
                 }
+
+                if (!widgets.empty()) {
+                    // Keyboard navigation: Z = up, S = down
+                    if (IsKeyPressed(KEY_Z)) {
+                        m_selected_widget_index =
+                            (m_selected_widget_index - 1 +
+                             static_cast<int>(widgets.size())) %
+                            static_cast<int>(widgets.size());
+                    }
+                    if (IsKeyPressed(KEY_S)) {
+                        m_selected_widget_index =
+                            (m_selected_widget_index + 1) %
+                            static_cast<int>(widgets.size());
+                    }
+
+                    // Update focus state for all widgets
+                    for (size_t i = 0; i < widgets.size(); ++i) {
+                        widgets[i]->set_focused(static_cast<int>(i) ==
+                                                m_selected_widget_index);
+                    }
+
+                    // Handle ScrollableListWidget-specific input FIRST (before
+                    // Enter activation) This allows Up/Down to change selection
+                    // before Enter loads a level Only process list input if the
+                    // list widget is focused
+                    bool list_input_handled = false;
+                    for (auto &actor : m_actors) {
+                        if (!actor) continue;
+                        if (actor->get_group_id() == 4) {
+                            if (auto *list =
+                                    dynamic_cast<ScrollableListWidget *>(
+                                        actor.get())) {
+                                // Only handle list input if this list widget is
+                                // focused
+                                if (list->is_focused()) {
+                                    if (IsKeyPressed(KEY_UP)) {
+                                        list->scroll_up();
+                                        list_input_handled = true;
+                                    }
+                                    if (IsKeyPressed(KEY_DOWN)) {
+                                        list->scroll_down();
+                                        list_input_handled = true;
+                                    }
+                                    if (IsKeyPressed(KEY_PAGE_UP)) {
+                                        list->page_up();
+                                        list_input_handled = true;
+                                    }
+                                    if (IsKeyPressed(KEY_PAGE_DOWN)) {
+                                        list->page_down();
+                                        list_input_handled = true;
+                                    }
+
+                                    float wheel = GetMouseWheelMove();
+                                    if (wheel > 0) {
+                                        list->scroll_up();
+                                        list_input_handled = true;
+                                    } else if (wheel < 0) {
+                                        list->scroll_down();
+                                        list_input_handled = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Only activate widget with Enter/Space if no list
+                    // navigation happened This prevents immediate activation
+                    // when transitioning screens
+                    if (!list_input_handled &&
+                        (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE))) {
+                        IWidget *focused_widget =
+                            widgets[m_selected_widget_index];
+
+                        // Only activate if the focused widget is NOT a
+                        // ScrollableListWidget or if it IS a
+                        // ScrollableListWidget (to load selected level)
+                        focused_widget->on_click();
+                        keyboard_input_handled = true;
+
+                        // Return immediately - action may have changed state
+                        return;
+                    }
+                }
             }
-        }
+
+            // Mouse input is disabled - keyboard-only navigation
+        }  // End frame skip check
     }
 
     // Update actors
@@ -1342,6 +1411,16 @@ void Game::update() {
             m_actors.push_back(std::move(pending_actor));
         }
         m_pending_actors.clear();
+    } else if (m_state == GameState::TITLE || m_state == GameState::WIN ||
+               m_state == GameState::GAMEOVER) {
+        // Update widgets for animations (e.g., ScrollableListWidget scroll
+        // animation)
+        float delta = GetFrameTime();
+        for (auto &actor : m_actors) {
+            if (actor && actor->get_group_id() == 4) {  // Widget group ID
+                actor->update(delta);
+            }
+        }
     }  // GameState::PLAY
 
     // Removing CONSUMED actors (DEAD and ready for removing)
@@ -2065,16 +2144,13 @@ void Game::load_widgets_from_scene() {
         return;
     }
 
-    // Extract button FUD elements (menu_button, icon_button, etc.)
+    // Extract ALL widget FUD elements
     const auto &fuds = m_current_scene->get_fuds();
     for (const auto &fud : fuds) {
-        if (fud.type_id == "menu_button" || fud.type_id == "icon_button" ||
-            fud.type_id == "small_button" || fud.type_id == "large_button" ||
-            fud.type_id == "textured_button") {
-            auto widget = WidgetFactory::create_from_fud(fud, *this);
-            if (widget) {
-                m_actors.push_back(std::move(widget));
-            }
+        // Try to create widget using factory (supports all widget types)
+        auto widget = WidgetFactory::create_from_fud(fud, *this);
+        if (widget) {
+            m_actors.push_back(std::move(widget));
         }
     }
 
@@ -2101,16 +2177,78 @@ void Game::register_menu_actions() {
     // Load Level action (format: "load_level:level_name")
     ActionDispatcher::register_action(
         "load_level", [](IGame *game, const std::vector<std::string> &params) {
-            if (params.size() < 2) return;
-            std::cout << "[ACTION] Load Level: " << params[1] << std::endl;
+            if (params.empty()) return;
+
+            // params[0] is the filename (e.g., "level1.json")
+            std::string filename = params[0];
+            std::cout << "[ACTION] Load Level: " << filename << std::endl;
 
             auto *g = dynamic_cast<Game *>(game);
             if (g) {
-                std::string level_path = udjourney::coreutils::get_assets_path(
-                    "levels/" + params[1] + ".json");
+                std::string level_path =
+                    udjourney::coreutils::get_assets_path("levels/" + filename);
                 if (g->load_scene(level_path)) {
                     g->m_state = GameState::PLAY;
                     g->initialize_gameplay();
+                }
+            }
+        });
+
+    // Show Level Select action
+    ActionDispatcher::register_action(
+        "show_level_select",
+        [](IGame *game, const std::vector<std::string> &params) {
+            std::cout << "[ACTION] ===== Show Level Select triggered ====="
+                      << std::endl;
+            auto *g = dynamic_cast<Game *>(game);
+            if (g) {
+                std::string level_select_path =
+                    udjourney::coreutils::get_assets_path(
+                        "levels/level_select_screen.json");
+
+                // Clean up ALL actors first (including old widgets)
+                g->m_player.reset();
+                g->m_hud_manager.clear_background_huds();
+                g->m_actors.clear();
+
+                // Now load the new scene
+                if (g->load_scene(level_select_path)) {
+                    g->m_state = GameState::TITLE;
+
+                    // Load level select screen widgets
+                    g->load_widgets_from_scene();
+
+                    // Set focus to the ScrollableListWidget (should be the
+                    // first selectable widget) Find the index of the
+                    // ScrollableListWidget in the selectable widgets
+                    std::vector<IWidget *> selectable_widgets;
+                    int list_index = -1;
+                    for (const auto &actor : g->m_actors) {
+                        if (actor && actor->get_group_id() == 4) {
+                            IWidget *widget =
+                                static_cast<IWidget *>(actor.get());
+                            if (widget && widget->is_selectable()) {
+                                if (dynamic_cast<ScrollableListWidget *>(
+                                        widget)) {
+                                    list_index = static_cast<int>(
+                                        selectable_widgets.size());
+                                }
+                                selectable_widgets.push_back(widget);
+                            }
+                        }
+                    }
+
+                    // Focus the list widget (or default to 0 if not found)
+                    g->m_selected_widget_index =
+                        (list_index >= 0) ? list_index : 0;
+
+                    // Reset frame counter to prevent immediate input
+                    g->m_frames_since_scene_load = 0;
+
+                    std::cout << "[ACTION] Level select screen loaded with "
+                              << g->m_actors.size()
+                              << " actors, focus on widget "
+                              << g->m_selected_widget_index << std::endl;
                 }
             }
         });

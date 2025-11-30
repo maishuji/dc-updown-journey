@@ -107,10 +107,9 @@ ButtonWidget::ButtonWidget(const IGame& game,
 }
 
 void ButtonWidget::draw() const {
-    // Convert to screen coordinates
+    // Widgets are drawn in screen space (no camera offset needed for UI
+    // screens)
     Rectangle screen_rect = rect_;
-    screen_rect.x -= get_game().get_rectangle().x;
-    screen_rect.y -= get_game().get_rectangle().y;
 
     if (use_textures_) {
         // Draw texture-based button
@@ -193,8 +192,12 @@ void ButtonWidget::process_input() {
 
 void ButtonWidget::on_click() {
     if (!action_.empty()) {
+        std::cout << "[DEBUG] Button clicked with action: " << action_
+                  << std::endl;
         // Execute the action through ActionDispatcher
         ActionDispatcher::execute(action_, const_cast<IGame*>(&get_game()));
+    } else {
+        std::cout << "[DEBUG] Button clicked but no action set!" << std::endl;
     }
     is_pressed_ = true;
 }
@@ -204,12 +207,9 @@ void ButtonWidget::on_hover() { is_hovered_ = true; }
 void ButtonWidget::on_focus() { is_focused_ = true; }
 
 bool ButtonWidget::contains_point(Vector2 point) const {
-    // Convert point to world coordinates
-    Vector2 world_point = point;
-    world_point.x += get_game().get_rectangle().x;
-    world_point.y += get_game().get_rectangle().y;
-
-    return CheckCollisionPointRec(world_point, rect_);
+    // Point is already in game coordinates from Game::update's mouse
+    // transformation Just check collision directly
+    return CheckCollisionPointRec(point, rect_);
 }
 
 void ButtonWidget::load_button_textures(const udjourney::scene::FUDData& fud) {

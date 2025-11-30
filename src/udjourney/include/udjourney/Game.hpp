@@ -91,4 +91,6 @@ class Game : public IGame, public IObserver {
     int m_selected_widget_index = 0;  // Currently focused widget
     float m_ui_background_scroll_y =
         0.0f;  // Scroll offset for UI screen backgrounds
+    int m_frames_since_scene_load =
+        0;  // Prevent immediate input after scene transition
 };

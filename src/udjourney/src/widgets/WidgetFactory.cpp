@@ -1,6 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/widgets/WidgetFactory.hpp"
 #include "udjourney/widgets/ButtonWidget.hpp"
+#include "udjourney/widgets/ScrollableListWidget.hpp"
 #include <udj-core/Logger.hpp>
 
 std::unique_ptr<IWidget> WidgetFactory::create_from_fud(
@@ -11,6 +12,13 @@ std::unique_ptr<IWidget> WidgetFactory::create_from_fud(
         fud.type_id == "textured_button") {
         udjourney::Logger::debug("Creating ButtonWidget from FUD: %", fud.name);
         return std::make_unique<ButtonWidget>(game, fud);
+    }
+
+    // Scrollable list widget for levels, settings, etc.
+    if (fud.type_id == "scrollable_list") {
+        udjourney::Logger::debug("Creating ScrollableListWidget from FUD: %",
+                                 fud.name);
+        return std::make_unique<ScrollableListWidget>(game, fud);
     }
 
     // Add more widget types here as needed:

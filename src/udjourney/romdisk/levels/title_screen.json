@@ -500,7 +500,7 @@
       },
       "properties": {
         "border_thickness": "2",
-        "button_action": "load_level:level1",
+        "button_action": "show_level_select",
         "click_color": [
           0,
           255,

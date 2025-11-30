@@ -571,7 +571,12 @@
       "y": 3
     }
   ],
-  "name": "Untitled Level",
+  "name": "Winter Forest",
+  "metadata": {
+    "display_name": "Winter Forest",
+    "difficulty": 2,
+    "thumbnail": ""
+  },
   "platforms": [
     {
       "behavior": "horizontal",
