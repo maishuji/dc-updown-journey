@@ -188,6 +188,13 @@ bool Scene::load_from_file(const std::string& filename) {
                     layer_json.value("parallax_factor", 1.0f);
                 layer.depth = layer_json.value("depth", 0);
 
+                // Load auto-scroll properties
+                layer.auto_scroll_enabled =
+                    layer_json.value("auto_scroll_enabled", true);
+                layer.scroll_speed_x = layer_json.value("scroll_speed_x", 0.0f);
+                layer.scroll_speed_y = layer_json.value("scroll_speed_y", 0.0f);
+                layer.repeat = layer_json.value("repeat", false);
+
                 // Load background objects
                 if (layer_json.contains("objects")) {
                     for (const auto& obj_json : layer_json["objects"]) {

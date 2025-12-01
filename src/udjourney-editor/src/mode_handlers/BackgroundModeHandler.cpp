@@ -167,6 +167,75 @@ void BackgroundModeHandler::render_layer_list() {
     if (layers.empty()) {
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No layers yet");
     }
+
+    ImGui::Separator();
+
+    // Layer Properties Section
+    if (selected.has_value()) {
+        BackgroundLayer* layer =
+            background_manager_->get_layer(selected.value());
+        if (layer) {
+            ImGui::Text("Layer Properties");
+
+            char name_buf[128];
+            std::strncpy(
+                name_buf, layer->get_name().c_str(), sizeof(name_buf) - 1);
+            name_buf[sizeof(name_buf) - 1] = '\0';
+            if (ImGui::InputText("Layer Name", name_buf, sizeof(name_buf))) {
+                layer->set_name(name_buf);
+            }
+
+            char texture_buf[256];
+            std::strncpy(texture_buf,
+                         layer->get_texture_file().c_str(),
+                         sizeof(texture_buf) - 1);
+            texture_buf[sizeof(texture_buf) - 1] = '\0';
+            if (ImGui::InputText(
+                    "Texture File", texture_buf, sizeof(texture_buf))) {
+                layer->set_texture_file(texture_buf);
+            }
+
+            float parallax = layer->get_parallax_factor();
+            if (ImGui::SliderFloat("Parallax Factor", &parallax, 0.0f, 1.0f)) {
+                layer->set_parallax_factor(parallax);
+            }
+
+            int depth = layer->get_depth();
+            if (ImGui::InputInt("Depth", &depth)) {
+                layer->set_depth(depth);
+            }
+
+            ImGui::Separator();
+            ImGui::Text("Auto-Scroll Settings");
+
+            bool auto_scroll = layer->get_auto_scroll_enabled();
+            if (ImGui::Checkbox("Auto Scroll Enabled", &auto_scroll)) {
+                layer->set_auto_scroll_enabled(auto_scroll);
+            }
+
+            float scroll_speed_x = layer->get_scroll_speed_x();
+            if (ImGui::InputFloat("Scroll Speed X", &scroll_speed_x)) {
+                layer->set_scroll_speed_x(scroll_speed_x);
+            }
+
+            float scroll_speed_y = layer->get_scroll_speed_y();
+            if (ImGui::InputFloat("Scroll Speed Y", &scroll_speed_y)) {
+                layer->set_scroll_speed_y(scroll_speed_y);
+            }
+
+            bool repeat = layer->get_repeat();
+            if (ImGui::Checkbox("Repeat", &repeat)) {
+                layer->set_repeat(repeat);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip(
+                    "Enable infinite looping when scrolling (otherwise stops "
+                    "at texture edge)");
+            }
+
+            ImGui::Separator();
+        }
+    }
 }
 
 void BackgroundModeHandler::render_object_controls() {

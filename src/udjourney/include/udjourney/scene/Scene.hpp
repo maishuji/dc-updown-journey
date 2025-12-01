@@ -84,6 +84,10 @@ struct BackgroundLayerData {
     std::string texture_file;
     float parallax_factor = 1.0f;
     int depth = 0;
+    bool auto_scroll_enabled = true;  // Enable/disable automatic scrolling
+    float scroll_speed_x = 0.0f;      // Horizontal scroll speed (pixels/sec)
+    float scroll_speed_y = 0.0f;      // Vertical scroll speed (pixels/sec)
+    bool repeat = false;  // True = infinite loop, False = stop at texture edge
     std::vector<BackgroundObjectData> objects;
 };
 

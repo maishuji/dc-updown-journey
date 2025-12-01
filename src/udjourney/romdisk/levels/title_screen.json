@@ -2,6 +2,7 @@
   "backgrounds": {
     "layers": [
       {
+        "auto_scroll_enabled": true,
         "depth": 0,
         "name": "Scrolling Stars",
         "objects": [
@@ -169,12 +170,181 @@
             "tile_size": 128,
             "x": 704.0,
             "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 608.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 544.0,
+            "y": 608.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 608.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 736.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 544.0,
+            "y": 736.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 736.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 864.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 544.0,
+            "y": 864.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 0,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 864.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 992.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 544.0,
+            "y": 992.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Autumn",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 992.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 384.0,
+            "y": 1120.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 544.0,
+            "y": 1120.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 1120.0
           }
         ],
         "parallax_factor": 0.5,
-        "texture_file": "backgrounds/stars.png"
+        "scroll_speed_x": 0.0,
+        "scroll_speed_y": 100.0,
+        "texture_file": "placeholder.png",
+        "repeat": true
       },
       {
+        "auto_scroll_enabled": true,
         "depth": 0,
         "name": "main",
         "objects": [
@@ -422,14 +592,21 @@
           }
         ],
         "parallax_factor": 0.2549999952316284,
-        "texture_file": ""
+        "scroll_speed_x": 0.0,
+        "scroll_speed_y": 80.0,
+        "texture_file": "",
+        "repeat": false
       },
       {
+        "auto_scroll_enabled": true,
         "depth": 1,
         "name": "Scrolling Clouds",
         "objects": [],
         "parallax_factor": 0.800000011920929,
-        "texture_file": "backgrounds/clouds.png"
+        "scroll_speed_x": 0.0,
+        "scroll_speed_y": 80.0,
+        "texture_file": "background/trees.png",
+        "repeat": true
       }
     ]
   },

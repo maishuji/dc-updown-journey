@@ -140,6 +140,33 @@ void BackgroundPanel::render_layer_properties() {
         layer->set_depth(depth);
     }
 
+    ImGui::Separator();
+    ImGui::Text("Auto-Scroll Settings");
+
+    bool auto_scroll = layer->get_auto_scroll_enabled();
+    if (ImGui::Checkbox("Auto Scroll Enabled", &auto_scroll)) {
+        layer->set_auto_scroll_enabled(auto_scroll);
+    }
+
+    float scroll_speed_x = layer->get_scroll_speed_x();
+    if (ImGui::InputFloat("Scroll Speed X", &scroll_speed_x)) {
+        layer->set_scroll_speed_x(scroll_speed_x);
+    }
+
+    float scroll_speed_y = layer->get_scroll_speed_y();
+    if (ImGui::InputFloat("Scroll Speed Y", &scroll_speed_y)) {
+        layer->set_scroll_speed_y(scroll_speed_y);
+    }
+
+    bool repeat = layer->get_repeat();
+    if (ImGui::Checkbox("Repeat", &repeat)) {
+        layer->set_repeat(repeat);
+    }
+    if (ImGui::IsItemHovered()) {
+        ImGui::SetTooltip("Enable infinite looping when scrolling");
+    }
+
+    ImGui::Separator();
     ImGui::Text("Objects: %zu", layer->get_objects().size());
 }
 
