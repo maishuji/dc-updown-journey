@@ -13,6 +13,15 @@ void ButtonFUDRenderer::render(const FUDElement& fud, ImDrawList* draw_list,
     // Draw button text
     std::string text = get_button_text(fud);
     ImU32 text_color = get_text_color(fud);
+    int font_size = get_font_size(fud);
+
+    // Raylib's default font is slightly larger than ImGui's at the same nominal
+    // size Apply a scaling factor to approximate Raylib's text rendering Raylib
+    // uses a bitmap font that's approximately 1.2x larger than ImGui's for the
+    // same point size
+    float raylib_scale_factor = 1.2f;
+    float scaled_font_size =
+        static_cast<float>(font_size) * raylib_scale_factor;
 
     if (fud.background_sheet.empty()) {
         const ImGuiStyle& style = ImGui::GetStyle();
@@ -22,8 +31,10 @@ void ButtonFUDRenderer::render(const FUDElement& fud, ImDrawList* draw_list,
         draw_list->AddRectFilled(fud_pos, fud_end, bg_color, 5.0f);
     }
 
-    // Calculate centered text position
-    ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
+    // Calculate text size with Raylib-approximated scaling
+    ImFont* font = ImGui::GetFont();
+    ImVec2 text_size =
+        font->CalcTextSizeA(scaled_font_size, FLT_MAX, 0.0f, text.c_str());
     float text_x = fud_pos.x + (fud.size.x - text_size.x) * 0.5f;
     float text_y = fud_pos.y + (fud.size.y - text_size.y) * 0.5f;
 
@@ -32,8 +43,12 @@ void ButtonFUDRenderer::render(const FUDElement& fud, ImDrawList* draw_list,
         is_selected ? IM_COL32(0, 255, 0, 255) : IM_COL32(200, 0, 0, 255);
     draw_list->AddRect(fud_pos, fud_end, border_color, 5.0f, 0, 2.0f);
 
-    // Draw text
-    draw_list->AddText(ImVec2(text_x, text_y), text_color, text.c_str());
+    // Draw text with Raylib-approximated size
+    draw_list->AddText(font,
+                       scaled_font_size,
+                       ImVec2(text_x, text_y),
+                       text_color,
+                       text.c_str());
 
     // Render foreground sprite on top
     render_foreground_sprite(fud, draw_list, fud_pos, fud_end);

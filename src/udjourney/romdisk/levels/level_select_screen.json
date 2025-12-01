@@ -13,44 +13,59 @@
   "fuds": [
     {
       "anchor": "TopCenter",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_buttons_atlas.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 0,
+      "background_tile_size": 64,
+      "background_tile_width": 2,
       "name": "Title",
       "offset": {
         "x": -194.0,
         "y": 33.0
       },
       "properties": {
+        "border_thickness": 0,
         "button_action": "none",
         "click_color": [
           0,
           255,
           0
         ],
-        "font_size": "40",
+        "font_size": 29,
         "hover_color": [
           255,
           255,
           0
         ],
         "normal_color": [
-          255,
-          255,
-          255
+          219,
+          89,
+          195
         ],
         "selectable": "false",
         "text": "SELECT LEVEL"
       },
       "size": {
-        "x": 400.0,
-        "y": 60.0
+        "x": 204.0,
+        "y": 64.0
       },
       "type_id": "menu_button",
       "visible": true
     },
     {
       "anchor": "MiddleCenter",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_buttons_atlas.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 0,
+      "background_tile_size": 64,
+      "background_tile_width": 2,
       "name": "Level List",
       "offset": {
-        "x": -287.0,
+        "x": -285.0,
         "y": -115.0
       },
       "properties": {
@@ -62,8 +77,8 @@
         "visible_items": "5"
       },
       "size": {
-        "x": 385.0,
-        "y": 304.0
+        "x": 365.0,
+        "y": 330.0
       },
       "type_id": "scrollable_list",
       "visible": true
@@ -101,6 +116,82 @@
         "y": 50.0
       },
       "type_id": "menu_button",
+      "visible": true
+    },
+    {
+      "anchor": "TopRight",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 1,
+      "background_tile_size": 64,
+      "background_tile_width": 1,
+      "name": "Icon Button",
+      "offset": {
+        "x": -306.0,
+        "y": 35.0
+      },
+      "properties": {
+        "border_thickness": 2,
+        "button_action": "none",
+        "font_size": 24,
+        "hover_color": [
+          255,
+          0,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "selectable": false,
+        "text": ""
+      },
+      "size": {
+        "x": 64.0,
+        "y": 64.0
+      },
+      "type_id": "icon_button",
+      "visible": true
+    },
+    {
+      "anchor": "TopRight",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 1,
+      "background_tile_size": 64,
+      "background_tile_width": 1,
+      "name": "Icon Button",
+      "offset": {
+        "x": -580.0,
+        "y": 34.0
+      },
+      "properties": {
+        "border_thickness": 2,
+        "button_action": "none",
+        "font_size": 24,
+        "hover_color": [
+          255,
+          0,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "selectable": false,
+        "text": ""
+      },
+      "size": {
+        "x": 64.0,
+        "y": 64.0
+      },
+      "type_id": "icon_button",
       "visible": true
     }
   ],

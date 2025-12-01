@@ -4,7 +4,29 @@
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include <udj-core/CoreUtils.hpp>
+#include <nlohmann/json.hpp>
 #include <iostream>
+
+// Helper function to parse color from JSON array string
+static Color parse_color_from_property(const std::string& color_str) {
+    try {
+        // Parse JSON array string like "[255,255,0]" or "[255,255,0,255]"
+        auto color_json = nlohmann::json::parse(color_str);
+        if (color_json.is_array() && color_json.size() >= 3) {
+            int r = color_json[0].get<int>();
+            int g = color_json[1].get<int>();
+            int b = color_json[2].get<int>();
+            int a = (color_json.size() >= 4) ? color_json[3].get<int>() : 255;
+            return Color{static_cast<unsigned char>(r),
+                         static_cast<unsigned char>(g),
+                         static_cast<unsigned char>(b),
+                         static_cast<unsigned char>(a)};
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error parsing color: " << e.what() << std::endl;
+    }
+    return WHITE;  // Default fallback
+}
 
 ButtonWidget::ButtonWidget(const IGame& game,
                            const udjourney::scene::FUDData& fud) :
@@ -93,9 +115,20 @@ ButtonWidget::ButtonWidget(const IGame& game,
 
         // Parse colors if provided
         if (fud.properties.count("normal_color")) {
-            auto color_str = fud.properties.at("normal_color");
-            // Parse color from array format [r,g,b,a]
-            // Simple implementation - you may want to enhance this
+            normal_color_ =
+                parse_color_from_property(fud.properties.at("normal_color"));
+        }
+        if (fud.properties.count("hover_color")) {
+            hover_color_ =
+                parse_color_from_property(fud.properties.at("hover_color"));
+        }
+        if (fud.properties.count("click_color")) {
+            click_color_ =
+                parse_color_from_property(fud.properties.at("click_color"));
+        }
+        if (fud.properties.count("focused_color")) {
+            focused_color_ =
+                parse_color_from_property(fud.properties.at("focused_color"));
         }
     } catch (const std::exception& e) {
         std::cerr << "Error loading button properties: " << e.what()
