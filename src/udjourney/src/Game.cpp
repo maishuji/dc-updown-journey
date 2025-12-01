@@ -2286,20 +2286,14 @@ void Game::register_menu_actions() {
                     g->m_player.reset();
                     g->m_hud_manager.clear_background_huds();
 
-                    // Remove all actors except widgets
-                    g->m_actors.erase(
-                        std::remove_if(
-                            g->m_actors.begin(),
-                            g->m_actors.end(),
-                            [](const std::unique_ptr<IActor> &actor) {
-                                return actor->get_group_id() !=
-                                       4;  // Keep widgets only
-                            }),
-                        g->m_actors.end());
+                    // Remove ALL actors (including old widgets)
+                    g->m_actors.clear();
 
                     // Load title screen widgets
                     g->load_widgets_from_scene();
-                    g->m_rect.y = 0;  // Reset camera
+                    g->m_rect.y = 0;                   // Reset camera
+                    g->m_selected_widget_index = 0;    // Reset widget selection
+                    g->m_frames_since_scene_load = 0;  // Reset frame counter
                 }
             }
         });
