@@ -1,8 +1,9 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 
-#include "IFUDRenderer.hpp"
 #include <raylib/raylib.h>
+
+#include "udjourney-editor/fud/IFUDRenderer.hpp"
 
 /**
  * @brief Renderer for heart-based health display FUD elements

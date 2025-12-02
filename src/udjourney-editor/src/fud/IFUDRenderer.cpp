@@ -1,9 +1,11 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney-editor/fud/IFUDRenderer.hpp"
-#include "udjourney-editor/Level.hpp"
 
 #include <raylib/raylib.h>
+
 #include <algorithm>
+
+#include "udjourney-editor/Level.hpp"
 
 FUDRendererFactory& FUDRendererFactory::instance() {
     static FUDRendererFactory factory;

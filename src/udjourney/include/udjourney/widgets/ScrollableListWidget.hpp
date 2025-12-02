@@ -1,11 +1,16 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
-#include "udjourney/widgets/IWidget.hpp"
-#include "udjourney/scene/Scene.hpp"
+
 #include <raylib.h>
-#include <vector>
+
 #include <functional>
+#include <string>
+#include <vector>
+
 #include <nlohmann/json.hpp>
+
+#include "udjourney/scene/Scene.hpp"
+#include "udjourney/widgets/IWidget.hpp"
 
 /**
  * @brief Generic scrollable list widget that can display any type of items

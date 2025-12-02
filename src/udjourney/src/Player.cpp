@@ -1,24 +1,25 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/Player.hpp"
 
-#include <udj-core/Logger.hpp>
-
 #include <algorithm>
 #include <functional>
 #include <iostream>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "raylib/raymath.h"
 #include "raylib/rlgl.h"
+
 #include <udj-core/CoreUtils.hpp>
-#include "udjourney/core/events/ScoreEvent.hpp"
-#include "udjourney/managers/TextureManager.hpp"
+#include <udj-core/Logger.hpp>
+
 #include "udjourney/Monster.hpp"
-#include "udjourney/platform/Platform.hpp"
 #include "udjourney/WorldBounds.hpp"
 #include "udjourney/components/HealthComponent.hpp"
+#include "udjourney/core/events/ScoreEvent.hpp"
+#include "udjourney/managers/TextureManager.hpp"
+#include "udjourney/platform/Platform.hpp"
 
 Player::~Player() = default;
 

@@ -15,7 +15,7 @@ class IGame;
  */
 class IWidget : public IActor {
  public:
-    IWidget(const IGame& game) : IActor(game) {}
+    explicit IWidget(const IGame& game) : IActor(game) {}
     virtual ~IWidget() = default;
 
     // Widget-specific interface

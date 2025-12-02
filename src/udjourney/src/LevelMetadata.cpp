@@ -1,9 +1,11 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/LevelMetadata.hpp"
+
+#include <filesystem>
+#include <fstream>
+
 #include <nlohmann/json.hpp>
 #include <udj-core/Logger.hpp>
-#include <fstream>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 
@@ -53,7 +55,6 @@ std::vector<LevelMetadata> LevelMetadata::load_all_levels() {
         }
 
         Logger::info("Loaded % level(s) from directory", levels.size());
-
     } catch (const std::exception& e) {
         Logger::error("Error scanning levels directory: %", e.what());
     }
@@ -94,20 +95,16 @@ LevelMetadata LevelMetadata::load_from_file(const std::string& filename) {
         }
 
         // Load save data (unlocked, completed, best_time)
-        // TODO: Implement save file system to persist unlock/completion status
-        // For now, all levels are unlocked
         metadata.unlocked = true;
         metadata.completed = false;
         metadata.best_time = 0;
 
         Logger::debug(
             "Loaded level metadata: % (%)", metadata.display_name, metadata.id);
-
     } catch (const std::exception& e) {
         Logger::error(
             "Error loading level metadata from %: %", filename, e.what());
     }
-
     return metadata;
 }
 

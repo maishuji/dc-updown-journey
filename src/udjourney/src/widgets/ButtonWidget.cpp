@@ -1,11 +1,12 @@
 // Copyright 2025 Quentin Cartier
+#include <iostream>
+#include <udj-core/CoreUtils.hpp>
+#include <nlohmann/json.hpp>
+
 #include "udjourney/widgets/ButtonWidget.hpp"
 #include "udjourney/ActionDispatcher.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/managers/TextureManager.hpp"
-#include <udj-core/CoreUtils.hpp>
-#include <nlohmann/json.hpp>
-#include <iostream>
 
 // Helper function to parse color from JSON array string
 static Color parse_color_from_property(const std::string& color_str) {
@@ -334,9 +335,8 @@ void ButtonWidget::load_button_textures(const udjourney::scene::FUDData& fud) {
                       << "' loaded texture from sheet: " << fud.background_sheet
                       << std::endl;
         }
-    }
-    // Load individual images (legacy support)
-    else if (!fud.background_image.empty()) {
+    } else if (!fud.background_image.empty()) {
+        // Load individual images (legacy support)
         idle_texture_ = texture_manager.get_texture(fud.background_image);
 
         if (idle_texture_.id != 0) {

@@ -1,7 +1,9 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 
-#include "IFUDRenderer.hpp"
+#include <string>
+
+#include "udjourney-editor/fud/IFUDRenderer.hpp"
 
 /**
  * @brief Renderer for scrollable list FUD elements

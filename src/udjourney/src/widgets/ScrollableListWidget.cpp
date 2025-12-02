@@ -1,10 +1,12 @@
 // Copyright 2025 Quentin Cartier
+
+#include <algorithm>
+
 #include "udjourney/widgets/ScrollableListWidget.hpp"
 #include "udjourney/ActionDispatcher.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/LevelMetadata.hpp"
 #include <udj-core/Logger.hpp>
-#include <algorithm>
 
 ScrollableListWidget::ScrollableListWidget(
     const IGame& game, const udjourney::scene::FUDData& fud) :
@@ -316,7 +318,6 @@ void ScrollableListWidget::draw() const {
 
             DrawRectangleRec(scrollbar, ColorAlpha(WHITE, 0.5f));
         }
-
     } catch (const std::exception& e) {
         udjourney::Logger::error("Exception in ScrollableListWidget::draw(): %",
                                  e.what());
@@ -407,16 +408,15 @@ void ScrollableListWidget::on_click() {
 
     udj::core::Logger::info("Loading level: %", item->display_text);
 
-    // Execute action if template is defined
     if (!item_action_template_.empty()) {
+        // Execute action if template is defined
         execute_item_action(*item);
-    }
-    // Otherwise use callback if set
-    else if (on_item_selected_) {
+    } else if (on_item_selected_) {
+        // Otherwise use callback if set
         on_item_selected_(*item, const_cast<IGame*>(&get_game()));
-    }
-    // Default behavior for levels
-    else if (data_source_ == "levels" && item->metadata.contains("filename")) {
+    } else if (data_source_ == "levels" &&
+               item->metadata.contains("filename")) {
+        // Default behavior for levels
         std::string filename = item->metadata["filename"].get<std::string>();
         std::string action = "load_level:" + filename;
         ActionDispatcher::execute(action, const_cast<IGame*>(&get_game()));
