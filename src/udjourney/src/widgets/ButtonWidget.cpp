@@ -1,5 +1,6 @@
 // Copyright 2025 Quentin Cartier
 #include <iostream>
+#include <string>
 #include <udj-core/CoreUtils.hpp>
 #include <nlohmann/json.hpp>
 

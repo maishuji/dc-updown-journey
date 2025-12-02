@@ -1,5 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney-editor/fud/ButtonFUDRenderer.hpp"
+
+#include <string>
+
 #include "udjourney-editor/Level.hpp"
 
 #include <nlohmann/json.hpp>

@@ -1,6 +1,8 @@
 // Copyright 2025 Quentin Cartier
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include "udjourney/widgets/ScrollableListWidget.hpp"
 #include "udjourney/ActionDispatcher.hpp"

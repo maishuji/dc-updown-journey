@@ -1,5 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/widgets/WidgetFactory.hpp"
+
+#include <memory>
+
 #include "udjourney/widgets/ButtonWidget.hpp"
 #include "udjourney/widgets/ScrollableListWidget.hpp"
 #include <udj-core/Logger.hpp>

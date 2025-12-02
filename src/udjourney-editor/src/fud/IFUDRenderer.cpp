@@ -4,6 +4,9 @@
 #include <raylib/raylib.h>
 
 #include <algorithm>
+#include <memory>
+#include <string>
+#include <utility>
 
 #include "udjourney-editor/Level.hpp"
 

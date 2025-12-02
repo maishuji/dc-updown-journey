@@ -3,6 +3,8 @@
 
 #include <filesystem>
 #include <fstream>
+#include <string>
+#include <vector>
 
 #include <nlohmann/json.hpp>
 #include <udj-core/Logger.hpp>

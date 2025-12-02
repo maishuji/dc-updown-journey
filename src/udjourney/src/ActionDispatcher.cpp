@@ -2,6 +2,10 @@
 #include "udjourney/ActionDispatcher.hpp"
 #include <sstream>
 #include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <string>
+
 #include <udj-core/Logger.hpp>
 
 std::unordered_map<std::string, ActionDispatcher::ActionCallback>
