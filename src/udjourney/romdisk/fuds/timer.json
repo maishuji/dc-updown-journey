@@ -31,12 +31,20 @@
     },
     "text_color": {
       "type": "color",
-      "default": [255, 255, 0],
+      "default": [
+        255,
+        255,
+        0
+      ],
       "description": "RGB color of timer text"
     },
     "warning_color": {
       "type": "color",
-      "default": [255, 0, 0],
+      "default": [
+        255,
+        0,
+        0
+      ],
       "description": "RGB color when time is low"
     },
     "warning_threshold": {

@@ -5,18 +5,21 @@
 #include <functional>
 #include <iostream>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "raylib/raymath.h"
 #include "raylib/rlgl.h"
+
 #include <udj-core/CoreUtils.hpp>
-#include "udjourney/core/events/ScoreEvent.hpp"
-#include "udjourney/managers/TextureManager.hpp"
+#include <udj-core/Logger.hpp>
+
 #include "udjourney/Monster.hpp"
-#include "udjourney/platform/Platform.hpp"
 #include "udjourney/WorldBounds.hpp"
 #include "udjourney/components/HealthComponent.hpp"
+#include "udjourney/core/events/ScoreEvent.hpp"
+#include "udjourney/managers/TextureManager.hpp"
+#include "udjourney/platform/Platform.hpp"
 
 Player::~Player() = default;
 
@@ -260,6 +263,8 @@ void Player::resolve_collision(const IActor &iActor) noexcept {
  */
 void Player::handle_collision(
     const std::vector<std::unique_ptr<IActor>> &platforms) noexcept {
+    udj::core::Logger::debug("Player::handle_collision called");
+
     const auto &gameRect = get_game().get_rectangle();
 
     // Dont check collision if the player is out of the screen at the top
@@ -295,6 +300,8 @@ void Player::handle_collision(
                             std::cout << "Player died! Health: "
                                       << health->get_health() << std::endl;
                             notify("12");  // Game over event
+                            return;  // Stop processing - actors vector is being
+                                     // modified
                         } else {
                             std::cout << "Player took damage! Health: "
                                       << health->get_health() << "/"
@@ -310,6 +317,8 @@ void Player::handle_collision(
                     monster->take_damage(
                         1000.0f);  // Enough damage to kill the monster
                 }
+                // Skip further processing of this monster
+                continue;
             } else if (platform->get_group_id() == PLATFORM_TYPE_ID) {
                 // Check grounded
                 if (r.y < platform->get_rectangle().y) {

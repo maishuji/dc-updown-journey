@@ -61,6 +61,11 @@ class Game : public IGame, public IObserver {
     bool should_continue_scrolling_() const noexcept;
     void attack_nearby_monsters();
 
+    // Widget and scene management
+    void load_widgets_from_scene();
+    void register_menu_actions();
+    void initialize_gameplay();
+
     std::unique_ptr<Player> m_player;  // Player is now a member
     std::vector<std::unique_ptr<IActor>> m_pending_actors;
     std::vector<std::unique_ptr<IActor>> m_actors;
@@ -82,5 +87,10 @@ class Game : public IGame, public IObserver {
     mutable std::map<std::string, Texture2D>
         m_background_textures;  // Cache for background textures
     mutable std::map<std::string, Texture2D>
-        m_fud_textures;  // Cache for FUD textures
+        m_fud_textures;               // Cache for FUD textures
+    int m_selected_widget_index = 0;  // Currently focused widget
+    float m_ui_background_scroll_y =
+        0.0f;  // Scroll offset for UI screen backgrounds
+    int m_frames_since_scene_load =
+        0;  // Prevent immediate input after scene transition
 };

@@ -11,6 +11,11 @@
 namespace udjourney {
 namespace scene {
 
+enum class SceneType {
+    LEVEL,     // Regular gameplay level with platforms/monsters
+    UI_SCREEN  // UI screen for menus (title/win/gameover)
+};
+
 enum class PlatformBehaviorType {
     Static,
     Horizontal,
@@ -79,6 +84,10 @@ struct BackgroundLayerData {
     std::string texture_file;
     float parallax_factor = 1.0f;
     int depth = 0;
+    bool auto_scroll_enabled = true;  // Enable/disable automatic scrolling
+    float scroll_speed_x = 0.0f;      // Horizontal scroll speed (pixels/sec)
+    float scroll_speed_y = 0.0f;      // Vertical scroll speed (pixels/sec)
+    bool repeat = false;  // True = infinite loop, False = stop at texture edge
     std::vector<BackgroundObjectData> objects;
 };
 
@@ -149,9 +158,11 @@ class Scene {
     }
     const std::vector<FUDData>& get_fuds() const { return m_fuds; }
     const std::string& get_name() const { return m_name; }
+    SceneType get_type() const { return m_scene_type; }
 
     // Setters
     void set_name(const std::string& name) { m_name = name; }
+    void set_type(SceneType type) { m_scene_type = type; }
     void add_platform(const PlatformData& platform) {
         m_platforms.push_back(platform);
     }
@@ -177,6 +188,8 @@ class Scene {
     std::vector<BackgroundLayerData> m_background_layers;
     std::vector<FUDData> m_fuds;
     std::string m_name = "Unnamed Level";
+    SceneType m_scene_type =
+        SceneType::LEVEL;  // Default to level for backward compatibility
 };
 
 }  // namespace scene

@@ -47,6 +47,12 @@ struct Cell {
     ImU32 color = IM_COL32(255, 255, 255, 255);  // Default color for the cell
 };
 
+// Scene type enum - matches udjourney::scene::SceneType
+enum class SceneType {
+    LEVEL,     // Regular gameplay level with platforms/monsters
+    UI_SCREEN  // UI screen for menus (title/win/gameover)
+};
+
 struct Level {
     std::vector<Cell> tiles;
     std::vector<EditorPlatform> platforms;
@@ -56,6 +62,7 @@ struct Level {
     size_t col_cnt = 0;
     int player_spawn_x = 2;
     int player_spawn_y = 8;
+    SceneType scene_type = SceneType::LEVEL;  // Default to level
 
     void clear() {
         tiles.clear();

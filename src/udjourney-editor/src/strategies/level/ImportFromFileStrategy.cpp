@@ -34,6 +34,18 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
         // Clear existing data
         level.clear();
 
+        // Load scene type (defaults to LEVEL)
+        if (jlevel.contains("scene_type")) {
+            std::string scene_type_str =
+                jlevel["scene_type"].get<std::string>();
+            level.scene_type = (scene_type_str == "ui_screen")
+                                   ? SceneType::UI_SCREEN
+                                   : SceneType::LEVEL;
+            std::cout << "Loaded scene type: " << scene_type_str << std::endl;
+        } else {
+            level.scene_type = SceneType::LEVEL;
+        }
+
         // Get level dimensions from JSON if available, otherwise use provided
         int level_rows = tiles_y;
         int level_cols = tiles_x;
@@ -51,8 +63,9 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
             level.push_back(empty_cell);
         }
 
-        // Import player spawn position
-        if (jlevel.contains("player_spawn") &&
+        // Import player spawn position (only for levels)
+        if (level.scene_type == SceneType::LEVEL &&
+            jlevel.contains("player_spawn") &&
             jlevel["player_spawn"].is_object()) {
             const auto& spawn = jlevel["player_spawn"];
             if (spawn.contains("x") && spawn.contains("y")) {
@@ -61,8 +74,9 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
             }
         }
 
-        // Import platforms
-        if (jlevel.contains("platforms") && jlevel["platforms"].is_array()) {
+        // Import platforms (only for levels)
+        if (level.scene_type == SceneType::LEVEL &&
+            jlevel.contains("platforms") && jlevel["platforms"].is_array()) {
             for (const auto& jplatform : jlevel["platforms"]) {
                 // Skip invalid platform entries
                 if (!jplatform.is_object() || !jplatform.contains("x") ||
@@ -142,8 +156,9 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
             }
         }
 
-        // Import monsters
-        if (jlevel.contains("monsters")) {
+        // Import monsters (only for levels)
+        if (level.scene_type == SceneType::LEVEL &&
+            jlevel.contains("monsters")) {
             for (const auto& jmonster : jlevel["monsters"]) {
                 EditorMonster monster;
                 monster.tile_x = jmonster["x"].get<int>();

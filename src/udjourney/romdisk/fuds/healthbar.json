@@ -21,12 +21,20 @@
     },
     "bar_color": {
       "type": "color",
-      "default": [255, 0, 0],
+      "default": [
+        255,
+        0,
+        0
+      ],
       "description": "RGB color of health bar"
     },
     "background_color": {
       "type": "color",
-      "default": [64, 64, 64],
+      "default": [
+        64,
+        64,
+        64
+      ],
       "description": "RGB color of background"
     },
     "border_thickness": {

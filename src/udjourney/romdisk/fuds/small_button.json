@@ -1,0 +1,56 @@
+{
+  "type_id": "small_button",
+  "display_name": "Small Button",
+  "category": "UI",
+  "default_size": {
+    "x": 120,
+    "y": 40
+  },
+  "default_anchor": "MiddleCenter",
+  "description": "Compact button for dialogs and secondary actions",
+  "properties_schema": {
+    "text": {
+      "type": "string",
+      "default": "OK",
+      "description": "Button text label"
+    },
+    "button_action": {
+      "type": "string",
+      "default": "none",
+      "description": "Action to execute"
+    },
+    "font_size": {
+      "type": "int",
+      "default": 18,
+      "description": "Font size for button text"
+    },
+    "normal_color": {
+      "type": "color",
+      "default": [
+        255,
+        255,
+        255
+      ],
+      "description": "Text color in normal state"
+    },
+    "hover_color": {
+      "type": "color",
+      "default": [
+        255,
+        255,
+        0
+      ],
+      "description": "Text color when hovered"
+    },
+    "border_thickness": {
+      "type": "int",
+      "default": 1,
+      "description": "Border width in pixels"
+    },
+    "selectable": {
+      "type": "bool",
+      "default": true,
+      "description": "Whether button can be selected with keyboard navigation"
+    }
+  }
+}

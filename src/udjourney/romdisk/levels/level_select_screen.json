@@ -1,0 +1,200 @@
+{
+  "backgrounds": {
+    "layers": [
+      {
+        "depth": 0,
+        "name": "Unnamed Layer",
+        "objects": [],
+        "parallax_factor": 0.5,
+        "texture_file": "backgrounds/stars.png"
+      }
+    ]
+  },
+  "fuds": [
+    {
+      "anchor": "TopCenter",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_buttons_atlas.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 0,
+      "background_tile_size": 64,
+      "background_tile_width": 2,
+      "name": "Title",
+      "offset": {
+        "x": -194.0,
+        "y": 33.0
+      },
+      "properties": {
+        "border_thickness": 0,
+        "button_action": "none",
+        "click_color": [
+          0,
+          255,
+          0
+        ],
+        "font_size": 29,
+        "hover_color": [
+          255,
+          255,
+          0
+        ],
+        "normal_color": [
+          219,
+          89,
+          195
+        ],
+        "selectable": "false",
+        "text": "SELECT LEVEL"
+      },
+      "size": {
+        "x": 204.0,
+        "y": 64.0
+      },
+      "type_id": "menu_button",
+      "visible": true
+    },
+    {
+      "anchor": "MiddleCenter",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_buttons_atlas.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 0,
+      "background_tile_size": 64,
+      "background_tile_width": 2,
+      "name": "Level List",
+      "offset": {
+        "x": -285.0,
+        "y": -115.0
+      },
+      "properties": {
+        "data_source": "levels",
+        "font_size": "24",
+        "item_action": "load_level:{filename}",
+        "item_height": "80",
+        "subtitle_font_size": "16",
+        "visible_items": "5"
+      },
+      "size": {
+        "x": 365.0,
+        "y": 330.0
+      },
+      "type_id": "scrollable_list",
+      "visible": true
+    },
+    {
+      "anchor": "BottomCenter",
+      "name": "Back Button",
+      "offset": {
+        "x": 111.0,
+        "y": -96.0
+      },
+      "properties": {
+        "button_action": "return_to_title",
+        "click_color": [
+          0,
+          255,
+          0
+        ],
+        "font_size": "24",
+        "hover_color": [
+          255,
+          255,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "selectable": "true",
+        "text": "BACK"
+      },
+      "size": {
+        "x": 200.0,
+        "y": 50.0
+      },
+      "type_id": "menu_button",
+      "visible": true
+    },
+    {
+      "anchor": "TopRight",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 1,
+      "background_tile_size": 64,
+      "background_tile_width": 1,
+      "name": "Icon Button",
+      "offset": {
+        "x": -306.0,
+        "y": 35.0
+      },
+      "properties": {
+        "border_thickness": 2,
+        "button_action": "none",
+        "font_size": 24,
+        "hover_color": [
+          255,
+          0,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "selectable": false,
+        "text": ""
+      },
+      "size": {
+        "x": 64.0,
+        "y": 64.0
+      },
+      "type_id": "icon_button",
+      "visible": true
+    },
+    {
+      "anchor": "TopRight",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 1,
+      "background_tile_size": 64,
+      "background_tile_width": 1,
+      "name": "Icon Button",
+      "offset": {
+        "x": -580.0,
+        "y": 34.0
+      },
+      "properties": {
+        "border_thickness": 2,
+        "button_action": "none",
+        "font_size": 24,
+        "hover_color": [
+          255,
+          0,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "selectable": false,
+        "text": ""
+      },
+      "size": {
+        "x": 64.0,
+        "y": 64.0
+      },
+      "type_id": "icon_button",
+      "visible": true
+    }
+  ],
+  "name": "Untitled Level",
+  "scene_type": "ui_screen"
+}

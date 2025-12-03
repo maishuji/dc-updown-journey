@@ -23,10 +23,15 @@ Scene::Scene(const std::string& filename) { load_from_file(filename); }
 
 Rectangle Scene::tile_to_world_rect(int tile_x, int tile_y, float width_tiles,
                                     float height_tiles) {
-    return Rectangle{static_cast<float>(tile_x) * kTileSize,
-                     static_cast<float>(tile_y) * kTileSize,
-                     width_tiles * kTileSize,
-                     height_tiles * kTileSize};
+    // Platform is centered on the tile position
+    // tile_x, tile_y represent the CENTER of the platform
+    float center_x = static_cast<float>(tile_x) * kTileSize + kTileSize / 2;
+    float center_y = static_cast<float>(tile_y) * kTileSize + kTileSize / 2;
+    float width = width_tiles * kTileSize;
+    float height = height_tiles * kTileSize;
+
+    return Rectangle{
+        center_x - width / 2, center_y - height / 2, width, height};
 }
 
 Vector2 Scene::tile_to_world_pos(int tile_x, int tile_y) {
@@ -49,16 +54,33 @@ bool Scene::load_from_file(const std::string& filename) {
         // Load scene metadata
         m_name = scene_data.value("name", "Unnamed Level");
 
-        // Load player spawn
-        if (scene_data.contains("player_spawn")) {
+        // Load scene type (defaults to LEVEL for backward compatibility)
+        if (scene_data.contains("scene_type")) {
+            std::string type_str = scene_data["scene_type"].get<std::string>();
+            if (type_str == "ui_screen") {
+                m_scene_type = SceneType::UI_SCREEN;
+            } else {
+                m_scene_type = SceneType::LEVEL;
+            }
+        } else {
+            m_scene_type = SceneType::LEVEL;
+        }
+
+        Logger::info("Scene type: %",
+                     m_scene_type == SceneType::LEVEL ? "LEVEL" : "UI_SCREEN");
+
+        // Load player spawn (only for levels)
+        if (m_scene_type == SceneType::LEVEL &&
+            scene_data.contains("player_spawn")) {
             const auto& spawn = scene_data["player_spawn"];
             m_player_spawn.tile_x = spawn.value("x", 0);
             m_player_spawn.tile_y = spawn.value("y", 0);
         }
 
-        // Load platforms
+        // Load platforms (only for levels)
         m_platforms.clear();
-        if (scene_data.contains("platforms")) {
+        if (m_scene_type == SceneType::LEVEL &&
+            scene_data.contains("platforms")) {
             for (const auto& platform_json : scene_data["platforms"]) {
                 PlatformData platform;
 
@@ -128,9 +150,10 @@ bool Scene::load_from_file(const std::string& filename) {
             }
         }
 
-        // Load monster spawns
+        // Load monster spawns (only for levels)
         m_monster_spawns.clear();
-        if (scene_data.contains("monsters")) {
+        if (m_scene_type == SceneType::LEVEL &&
+            scene_data.contains("monsters")) {
             for (const auto& monster_json : scene_data["monsters"]) {
                 MonsterSpawnData monster;
                 monster.tile_x = monster_json.value("x", 0);
@@ -164,6 +187,13 @@ bool Scene::load_from_file(const std::string& filename) {
                 layer.parallax_factor =
                     layer_json.value("parallax_factor", 1.0f);
                 layer.depth = layer_json.value("depth", 0);
+
+                // Load auto-scroll properties
+                layer.auto_scroll_enabled =
+                    layer_json.value("auto_scroll_enabled", true);
+                layer.scroll_speed_x = layer_json.value("scroll_speed_x", 0.0f);
+                layer.scroll_speed_y = layer_json.value("scroll_speed_y", 0.0f);
+                layer.repeat = layer_json.value("repeat", false);
 
                 // Load background objects
                 if (layer_json.contains("objects")) {
@@ -278,8 +308,12 @@ bool Scene::load_from_file(const std::string& filename) {
                 if (fud_json.contains("properties")) {
                     for (const auto& [key, value] :
                          fud_json["properties"].items()) {
-                        fud.properties[key] =
-                            value.dump();  // Store as JSON string
+                        // Store as plain string, not JSON-encoded
+                        if (value.is_string()) {
+                            fud.properties[key] = value.get<std::string>();
+                        } else {
+                            fud.properties[key] = value.dump();
+                        }
                     }
                 }
 
@@ -301,78 +335,91 @@ bool Scene::save_to_file(const std::string& filename) const {
         json scene_data;
 
         scene_data["name"] = m_name;
-        scene_data["player_spawn"]["x"] = m_player_spawn.tile_x;
-        scene_data["player_spawn"]["y"] = m_player_spawn.tile_y;
 
-        json platforms_json = json::array();
-        for (const auto& platform : m_platforms) {
-            json platform_json;
-            platform_json["x"] = platform.tile_x;
-            platform_json["y"] = platform.tile_y;
-            platform_json["width"] = platform.width_tiles;
-            platform_json["height"] = platform.height_tiles;
+        // Save scene type
+        scene_data["scene_type"] =
+            (m_scene_type == SceneType::UI_SCREEN) ? "ui_screen" : "level";
 
-            // Save behavior type
-            switch (platform.behavior_type) {
-                case PlatformBehaviorType::Horizontal:
-                    platform_json["behavior"] = "horizontal";
-                    break;
-                case PlatformBehaviorType::EightTurnHorizontal:
-                    platform_json["behavior"] = "eight_turn";
-                    break;
-                case PlatformBehaviorType::OscillatingSize:
-                    platform_json["behavior"] = "oscillating_size";
-                    break;
-                default:
-                    platform_json["behavior"] = "static";
-                    break;
-            }
+        // Save player spawn (only for levels)
+        if (m_scene_type == SceneType::LEVEL) {
+            scene_data["player_spawn"]["x"] = m_player_spawn.tile_x;
+            scene_data["player_spawn"]["y"] = m_player_spawn.tile_y;
+        }
 
-            // Save behavior parameters
-            if (!platform.behavior_params.empty()) {
-                platform_json["behavior_params"] = platform.behavior_params;
-            }
+        // Save platforms (only for levels)
+        if (m_scene_type == SceneType::LEVEL) {
+            json platforms_json = json::array();
+            for (const auto& platform : m_platforms) {
+                json platform_json;
+                platform_json["x"] = platform.tile_x;
+                platform_json["y"] = platform.tile_y;
+                platform_json["width"] = platform.width_tiles;
+                platform_json["height"] = platform.height_tiles;
 
-            // Save features
-            json features_json = json::array();
-            for (auto feature : platform.features) {
-                if (feature == PlatformFeatureType::Spikes) {
-                    features_json.push_back("spikes");
-                } else if (feature == PlatformFeatureType::Checkpoint) {
-                    features_json.push_back("checkpoint");
+                // Save behavior type
+                switch (platform.behavior_type) {
+                    case PlatformBehaviorType::Horizontal:
+                        platform_json["behavior"] = "horizontal";
+                        break;
+                    case PlatformBehaviorType::EightTurnHorizontal:
+                        platform_json["behavior"] = "eight_turn";
+                        break;
+                    case PlatformBehaviorType::OscillatingSize:
+                        platform_json["behavior"] = "oscillating_size";
+                        break;
+                    default:
+                        platform_json["behavior"] = "static";
+                        break;
                 }
+
+                // Save behavior parameters
+                if (!platform.behavior_params.empty()) {
+                    platform_json["behavior_params"] = platform.behavior_params;
+                }
+
+                // Save features
+                json features_json = json::array();
+                for (auto feature : platform.features) {
+                    if (feature == PlatformFeatureType::Spikes) {
+                        features_json.push_back("spikes");
+                    } else if (feature == PlatformFeatureType::Checkpoint) {
+                        features_json.push_back("checkpoint");
+                    }
+                }
+                if (!features_json.empty()) {
+                    platform_json["features"] = features_json;
+                }
+
+                // Save feature parameters
+                if (!platform.feature_params.empty()) {
+                    platform_json["feature_params"] = platform.feature_params;
+                }
+
+                platforms_json.push_back(platform_json);
             }
-            if (!features_json.empty()) {
-                platform_json["features"] = features_json;
+            scene_data["platforms"] = platforms_json;
+        }  // end LEVEL-only platforms
+
+        // Save monster spawns (only for levels)
+        if (m_scene_type == SceneType::LEVEL) {
+            json monsters_json = json::array();
+            for (const auto& monster : m_monster_spawns) {
+                json monster_json;
+                monster_json["x"] = monster.tile_x;
+                monster_json["y"] = monster.tile_y;
+                monster_json["preset_name"] = monster.preset_name;
+
+                // Include legacy fields for backward compatibility
+                monster_json["patrol_range"] = monster.patrol_range;
+                monster_json["chase_range"] = monster.chase_range;
+                monster_json["attack_range"] = monster.attack_range;
+                monster_json["sprite_sheet"] = monster.sprite_sheet;
+                monsters_json.push_back(monster_json);
             }
-
-            // Save feature parameters
-            if (!platform.feature_params.empty()) {
-                platform_json["feature_params"] = platform.feature_params;
+            if (!monsters_json.empty()) {
+                scene_data["monsters"] = monsters_json;
             }
-
-            platforms_json.push_back(platform_json);
-        }
-        scene_data["platforms"] = platforms_json;
-
-        // Save monster spawns
-        json monsters_json = json::array();
-        for (const auto& monster : m_monster_spawns) {
-            json monster_json;
-            monster_json["x"] = monster.tile_x;
-            monster_json["y"] = monster.tile_y;
-            monster_json["preset_name"] = monster.preset_name;
-
-            // Include legacy fields for backward compatibility
-            monster_json["patrol_range"] = monster.patrol_range;
-            monster_json["chase_range"] = monster.chase_range;
-            monster_json["attack_range"] = monster.attack_range;
-            monster_json["sprite_sheet"] = monster.sprite_sheet;
-            monsters_json.push_back(monster_json);
-        }
-        if (!monsters_json.empty()) {
-            scene_data["monsters"] = monsters_json;
-        }
+        }  // end LEVEL-only monsters
 
         std::ofstream file(filename);
         if (!file.is_open()) {

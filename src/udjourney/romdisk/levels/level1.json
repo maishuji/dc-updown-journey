@@ -571,7 +571,12 @@
       "y": 3
     }
   ],
-  "name": "Untitled Level",
+  "name": "Winter Forest",
+  "metadata": {
+    "display_name": "Winter Forest",
+    "difficulty": 2,
+    "thumbnail": ""
+  },
   "platforms": [
     {
       "behavior": "horizontal",
@@ -705,10 +710,102 @@
       "width": 5.0,
       "x": 14,
       "y": 58
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.599999904632568,
+      "x": 0,
+      "y": 15
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 0,
+      "y": 16
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 0,
+      "y": 19
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 0,
+      "y": 18
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 0,
+      "y": 17
+    },
+    {
+      "behavior": "horizontal",
+      "height": 1.0,
+      "width": 3.5,
+      "x": 0,
+      "y": 14
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 1,
+      "y": 14
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 12,
+      "y": 6
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 19,
+      "y": 7
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 13,
+      "y": 8
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 16,
+      "y": 9
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 0,
+      "y": 20
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 15,
+      "y": 22
     }
   ],
   "player_spawn": {
     "x": 2,
     "y": 8
-  }
+  },
+  "scene_type": "level"
 }

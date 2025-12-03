@@ -53,6 +53,9 @@ class EditorPanel {
     EditorPanel& operator=(EditorPanel&&) = delete;
     void draw();
 
+    // Set the current level for scene type awareness
+    void set_current_level(Level* level) { current_level_ = level; }
+
     // Set background managers (called from Editor)
     void set_background_managers(BackgroundManager* bg_manager,
                                  BackgroundObjectPresetManager* preset_manager);
@@ -112,6 +115,7 @@ class EditorPanel {
  private:
     float scale = 1.0f;  // Default scale
     EditMode edit_mode = EditMode::Tiles;
+    Level* current_level_ = nullptr;  // For scene type awareness
 
     // Mode handlers (Strategy pattern)
     std::unique_ptr<TileModeHandler> tile_handler_;

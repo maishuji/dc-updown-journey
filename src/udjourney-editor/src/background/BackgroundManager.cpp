@@ -116,6 +116,13 @@ void BackgroundManager::load_from_file(const std::string& filename) {
                 layer_json.value("parallax_factor", 0.5f));
             layer.set_depth(layer_json.value("depth", 0));
 
+            // Load auto-scroll properties
+            layer.set_auto_scroll_enabled(
+                layer_json.value("auto_scroll_enabled", true));
+            layer.set_scroll_speed_x(layer_json.value("scroll_speed_x", 0.0f));
+            layer.set_scroll_speed_y(layer_json.value("scroll_speed_y", 0.0f));
+            layer.set_repeat(layer_json.value("repeat", false));
+
             if (layer_json.contains("objects")) {
                 for (const auto& obj_json : layer_json["objects"]) {
                     BackgroundObject obj;
@@ -165,6 +172,12 @@ nlohmann::json BackgroundManager::to_json() const {
         layer_json["parallax_factor"] = layer.get_parallax_factor();
         layer_json["depth"] = layer.get_depth();
 
+        // Auto-scroll properties
+        layer_json["auto_scroll_enabled"] = layer.get_auto_scroll_enabled();
+        layer_json["scroll_speed_x"] = layer.get_scroll_speed_x();
+        layer_json["scroll_speed_y"] = layer.get_scroll_speed_y();
+        layer_json["repeat"] = layer.get_repeat();
+
         layer_json["objects"] = nlohmann::json::array();
         for (const auto& obj : layer.get_objects()) {
             nlohmann::json obj_json;
@@ -205,6 +218,13 @@ void BackgroundManager::from_json(const nlohmann::json& j) {
             layer.set_parallax_factor(
                 layer_json.value("parallax_factor", 1.0f));
             layer.set_depth(layer_json.value("depth", 0));
+
+            // Load auto-scroll properties
+            layer.set_auto_scroll_enabled(
+                layer_json.value("auto_scroll_enabled", true));
+            layer.set_scroll_speed_x(layer_json.value("scroll_speed_x", 0.0f));
+            layer.set_scroll_speed_y(layer_json.value("scroll_speed_y", 0.0f));
+            layer.set_repeat(layer_json.value("repeat", false));
 
             // Load objects
             if (layer_json.contains("objects") &&

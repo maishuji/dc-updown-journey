@@ -125,10 +125,25 @@ void from_json(const nlohmann::json& j, FUDElement& fud) {
     fud.name = j.at("name").get<std::string>();
     fud.type_id = j.at("type_id").get<std::string>();
     fud.anchor = fud_anchor_from_string(j.at("anchor").get<std::string>());
-    fud.offset.x = j.at("offset").at("x").get<float>();
-    fud.offset.y = j.at("offset").at("y").get<float>();
-    fud.size.x = j.at("size").at("x").get<float>();
-    fud.size.y = j.at("size").at("y").get<float>();
+
+    // Handle both nested offset object and flat offset_x/offset_y
+    if (j.contains("offset") && j["offset"].is_object()) {
+        fud.offset.x = j["offset"].at("x").get<float>();
+        fud.offset.y = j["offset"].at("y").get<float>();
+    } else {
+        fud.offset.x = j.value("offset_x", 0.0f);
+        fud.offset.y = j.value("offset_y", 0.0f);
+    }
+
+    // Handle both nested size object and flat size_x/size_y
+    if (j.contains("size") && j["size"].is_object()) {
+        fud.size.x = j["size"].at("x").get<float>();
+        fud.size.y = j["size"].at("y").get<float>();
+    } else {
+        fud.size.x = j.value("size_x", 100.0f);
+        fud.size.y = j.value("size_y", 30.0f);
+    }
+
     fud.visible = j.at("visible").get<bool>();
     fud.properties = j.at("properties");
 

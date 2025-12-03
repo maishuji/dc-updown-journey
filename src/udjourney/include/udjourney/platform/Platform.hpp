@@ -66,6 +66,12 @@ class Platform : public IActor {
         return m_behavior.get();
     }
 
+    void reset_behavior() {
+        if (m_behavior) {
+            m_behavior->reset();
+        }
+    }
+
     void move(float iValX, float iValY) noexcept;
     void resize(float iNewWidth, float iNewHeight) noexcept;
 

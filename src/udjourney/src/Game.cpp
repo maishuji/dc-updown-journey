@@ -19,6 +19,8 @@
 #include <utility>
 #include <vector>
 
+#include "udjourney/widgets/ScrollableListWidget.hpp"
+
 #include "udjourney/Bonus.hpp"
 #include <udj-core/CoreUtils.hpp>
 #include "udjourney/Monster.hpp"
@@ -29,6 +31,9 @@
 #include <udj-core/Logger.hpp>
 #include "udjourney/hud/DialogBoxHUD.hpp"
 #include "udjourney/hud/HUDComponent.hpp"
+#include "udjourney/ActionDispatcher.hpp"
+#include "udjourney/widgets/IWidget.hpp"
+#include "udjourney/widgets/WidgetFactory.hpp"
 #include "udjourney/hud/LevelSelectHUD.hpp"
 #include "udjourney/hud/ScoreHUD.hpp"
 #include "udjourney/interfaces/IActor.hpp"
@@ -202,12 +207,13 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     m_world_bounds.set_bounds(
         0.0f, static_cast<float>(iWidth), 0.0f, static_cast<float>(iHeight));
 
-    // Try to load Level 1, fallback to random generation if it fails
-    if (!load_scene(
-            udjourney::coreutils::get_assets_path("levels/level1.json"))) {
-        std::cout
-            << "Warning: Could not load level1.json, using random generation"
-            << std::endl;
+    // Register menu action callbacks
+    register_menu_actions();
+
+    // Load title screen scene
+    if (!load_scene(udjourney::coreutils::get_assets_path(
+            "levels/title_screen.json"))) {
+        std::cout << "ERROR: Could not load title_screen.json" << std::endl;
     }
 }
 
@@ -219,52 +225,44 @@ void Game::run() {
                static_cast<int>(m_rect.height),
                "Up-Down Journey");
 
-    // Create platforms from scene or fallback to random generation
-    create_platforms_from_scene();
+    // Only initialize gameplay if not in TITLE state
+    if (m_state != GameState::TITLE) {
+        // Create platforms from scene or fallback to random generation
+        create_platforms_from_scene();
 
-    // Spawn monsters from scene
-    create_monsters_from_scene();
+        // Spawn monsters from scene
+        create_monsters_from_scene();
 
-    // Spawn player at scene-defined location or default position
-    Vector2 player_spawn_pos{320, 240};  // Default position
-    if (m_current_scene) {
-        auto spawn_data = m_current_scene->get_player_spawn();
-        player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
-            spawn_data.tile_x, spawn_data.tile_y);
+        // Spawn player at scene-defined location or default position
+        Vector2 player_spawn_pos{320, 240};  // Default position
+        if (m_current_scene) {
+            auto spawn_data = m_current_scene->get_player_spawn();
+            player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
+                spawn_data.tile_x, spawn_data.tile_y);
+        }
+
+        m_player = std::make_unique<Player>(
+            *this,
+            Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
+            m_event_dispatcher,
+            create_player_animation_controller());
+        m_player->add_observer(static_cast<IObserver *>(this));
+
+        m_actors.emplace_back(
+            std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
+
+        m_bonus_manager.add_observer(static_cast<IObserver *>(this));
+
+        auto score_hud =
+            std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
+        m_hud_manager.add_background_hud(std::move(score_hud));
+    } else {
+        // Load widgets from title screen scene
+        load_widgets_from_scene();
     }
-
-    m_player = std::make_unique<Player>(
-        *this,
-        Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
-        m_event_dispatcher,
-        create_player_animation_controller());
-    m_player->add_observer(static_cast<IObserver *>(this));
-
-    m_actors.emplace_back(
-        std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
 
     SetTargetFPS(60);
     m_last_update_time = GetTime();
-    m_state = GameState::PLAY;
-
-    m_bonus_manager.add_observer(static_cast<IObserver *>(this));
-
-    auto score_hud =
-        std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
-    m_hud_manager.add_background_hud(std::move(score_hud));
-
-    auto dialog_hud =
-        std::make_unique<DialogBoxHUD>(Rectangle{300, 400, 200, 80});
-
-    dialog_hud->set_on_finished_callback([this]() {
-        m_state = GameState::PLAY;
-        m_hud_manager.pop_foreground_hud();
-    });
-
-    dialog_hud->set_on_next_callback(
-        [this]() { udjourney::Logger::info("Next page in dialog box"); });
-
-    m_hud_manager.push_foreground_hud(std::move(dialog_hud));
 
     while (is_running) {
         update();
@@ -332,18 +330,6 @@ void Game::process_input() {
     // Pause / Unpause the game
     auto start_pressed = input_mapping.pressed_start();
     if (start_pressed) {
-        if (m_state == GameState::GAMEOVER) {
-            // Restart the level (resets health, position, monsters, etc.)
-            restart_level();
-            return;
-        }
-
-        if (m_state == GameState::WIN) {
-            // Restart the level
-            restart_level();
-            return;
-        }
-
         if (m_state == GameState::PLAY) {
             m_state = GameState::PAUSE;
         } else if (m_state == GameState::PAUSE && !m_showing_level_select) {
@@ -521,8 +507,14 @@ void Game::draw_backgrounds() const {
 
     // Get camera position for parallax effect
     // Only vertical scrolling in this game - horizontal camera is fixed at 0
-    // Use m_rect.y for vertical scroll offset
-    Vector2 camera_pos = {0, m_rect.y};
+    // For UI screens (TITLE, GAMEOVER, WIN), use scrolling background offset
+    // For gameplay, use m_rect.y for vertical scroll offset
+    float scroll_y =
+        (m_state == GameState::TITLE || m_state == GameState::GAMEOVER ||
+         m_state == GameState::WIN)
+            ? m_ui_background_scroll_y
+            : m_rect.y;
+    Vector2 camera_pos = {0, scroll_y};
 
     // Sort layers by depth (lower depth = further back)
     std::vector<const udjourney::scene::BackgroundLayerData *> sorted_layers;
@@ -543,33 +535,8 @@ void Game::draw_backgrounds() const {
         float parallax_offset_y =
             camera_pos.y * (1.0f - layer->parallax_factor);
 
-        // Draw layer texture if it exists
-        if (!layer->texture_file.empty()) {
-            // Load texture if not cached
-            if (m_background_textures.find(layer->texture_file) ==
-                m_background_textures.end()) {
-                std::string texture_path =
-                    std::string(ASSETS_BASE_PATH) + layer->texture_file;
-                Texture2D tex = LoadTexture(texture_path.c_str());
-                if (tex.id > 0) {
-                    m_background_textures[layer->texture_file] = tex;
-                    udj::core::Logger::info("Loaded background texture: %",
-                                            texture_path);
-                } else {
-                    udj::core::Logger::error(
-                        "Failed to load background texture: %", texture_path);
-                }
-            }
-
-            // Draw the texture if loaded
-            if (m_background_textures[layer->texture_file].id > 0) {
-                const auto &tex = m_background_textures[layer->texture_file];
-                DrawTexture(tex,
-                            static_cast<int>(-parallax_offset_x),
-                            static_cast<int>(-parallax_offset_y),
-                            WHITE);
-            }
-        }
+        // Note: texture_file at layer level is not used for rendering
+        // Background rendering is done through objects in the layer
 
         // Draw background objects in this layer
         for (const auto &obj : layer->objects) {
@@ -609,7 +576,55 @@ void Game::draw_backgrounds() const {
                     constexpr float BG_CENTER_OFFSET = 320.0f;
                     float screen_x =
                         obj.x - parallax_offset_x - BG_CENTER_OFFSET;
-                    float screen_y = obj.y - parallax_offset_y;
+
+                    float screen_y;
+                    // For UI screens with auto-scroll enabled, apply scroll to
+                    // objects
+                    if (m_current_scene->get_type() ==
+                            udjourney::scene::SceneType::UI_SCREEN &&
+                        layer->auto_scroll_enabled) {
+                        // Apply scroll offset to objects for auto-scrolling
+                        // layers
+                        float base_y = obj.y - m_ui_background_scroll_y;
+
+                        // If repeat is enabled, wrap the objects vertically
+                        if (layer->repeat) {
+                            // Calculate wrap height based on object positions
+                            // in the layer Use 1280.0f as the wrap boundary
+                            // (screen height * 2)
+                            float wrap_height = 1280.0f;
+
+                            // Wrap: when object goes off bottom (base_y >
+                            // screen_height), bring it back to top (base_y -
+                            // wrap_height)
+                            screen_y = fmod(base_y, wrap_height);
+                            if (screen_y < -128.0f) {
+                                screen_y += wrap_height;
+                            }
+
+                            // Draw a second copy for seamless wrapping
+                            Rectangle dest_wrap = {
+                                screen_x,
+                                screen_y - wrap_height,
+                                static_cast<float>(obj.tile_size * obj.scale),
+                                static_cast<float>(obj.tile_size * obj.scale)};
+                            DrawTexturePro(tex,
+                                           source,
+                                           dest_wrap,
+                                           {0, 0},
+                                           obj.rotation,
+                                           WHITE);
+                        } else {
+                            screen_y = base_y;
+                        }
+                    } else if (m_current_scene->get_type() ==
+                               udjourney::scene::SceneType::UI_SCREEN) {
+                        // Static UI screen objects (no auto-scroll)
+                        screen_y = obj.y;
+                    } else {
+                        // Gameplay levels: apply parallax for scrolling
+                        screen_y = obj.y - parallax_offset_y;
+                    }
 
                     // Calculate destination rectangle with scale
                     float scaled_size = obj.tile_size * obj.scale;
@@ -1121,7 +1136,15 @@ void Game::draw() const {
 
     switch (m_state) {
         case GameState::TITLE:
-            draw_title_();
+            // Draw scrolling backgrounds
+            draw_backgrounds();
+
+            // Draw widgets (menu buttons)
+            for (const auto &actor : m_actors) {
+                if (actor->get_group_id() == 4) {  // Widget group ID
+                    actor->draw();
+                }
+            }
             break;
         case GameState::PLAY: {
             // Draw backgrounds first (behind everything)
@@ -1146,23 +1169,83 @@ void Game::draw() const {
 
             break;
         case GameState::PAUSE:
+            // Draw the game world in background
+            draw_backgrounds();
+
+            for (const auto &actor : m_actors) {
+                actor->draw();
+            }
+            if (m_player) {
+                m_player->draw();
+            }
+
+            // Draw finish line for level-based gameplay
+            if (m_current_scene && m_level_height > 0) {
+                draw_finish_line_();
+            }
+
+            // Draw pause overlay on top
             draw_pause_();
             break;
         case GameState::GAMEOVER:
-            draw_game_over_(m_score_history);
+            // Draw scrolling backgrounds
+            draw_backgrounds();
+
+            // Draw FUDs (game over message and score)
+            if (m_current_scene) {
+                draw_fuds_();
+            }
+
+            // Draw widgets (menu buttons)
+            for (const auto &actor : m_actors) {
+                if (actor->get_group_id() == 4) {  // Widget group ID
+                    actor->draw();
+                }
+            }
             break;
         case GameState::WIN:
-            draw_win_screen_();
+            // Draw scrolling backgrounds
+            draw_backgrounds();
+
+            // Draw FUDs (victory messages)
+            if (m_current_scene) {
+                draw_fuds_();
+            }
+
+            // Draw widgets (menu buttons)
+            for (const auto &actor : m_actors) {
+                if (actor->get_group_id() == 4) {  // Widget group ID
+                    actor->draw();
+                }
+            }
             break;
     }
     m_hud_manager.draw();
 
     // Draw FUDs (Fixed UI Displays) from current scene
-    if (m_current_scene) {
+    // Skip for states that handle their own FUD/widget drawing
+    if (m_current_scene && m_state != GameState::TITLE &&
+        m_state != GameState::GAMEOVER && m_state != GameState::WIN) {
         draw_fuds_();
     }
 
     rlPopMatrix();
+
+    // Draw left and right borders
+    // Left border (from screen left to game area left)
+    if (offset_x > 0) {
+        DrawRectangle(
+            0, 0, static_cast<int>(offset_x), GetScreenHeight(), BLACK);
+    }
+    // Right border (from game area right to screen right)
+    if (offset_x > 0) {
+        DrawRectangle(static_cast<int>(offset_x + kBaseWidth * scale),
+                      0,
+                      static_cast<int>(offset_x + 1),
+                      GetScreenHeight(),
+                      BLACK);
+    }
+
     DrawText(kResolutions[current_resolution_idx].label, 10, 10, 20, YELLOW);
 
     EndDrawing();
@@ -1170,6 +1253,201 @@ void Game::draw() const {
 
 void Game::update() {
     static double last_update_time = 0.0;
+
+    // Update background scroll for UI screens
+    if (m_current_scene &&
+        m_current_scene->get_type() == udjourney::scene::SceneType::UI_SCREEN) {
+        // Use per-layer auto-scroll settings from scene data
+        const auto &layers = m_current_scene->get_background_layers();
+        // Check all layers with auto-scroll enabled
+        float default_scroll_speed = 0.0f;
+        float max_scroll_limit = 0.0f;
+        bool should_clamp = false;
+
+        for (const auto &layer : layers) {
+            if (layer.auto_scroll_enabled) {
+                // Use first non-zero scroll speed found
+                if (default_scroll_speed == 0.0f &&
+                    layer.scroll_speed_y != 0.0f) {
+                    default_scroll_speed = layer.scroll_speed_y;
+                }
+
+                // Check if we should clamp scrolling for layers without repeat
+                if (!layer.repeat && !layer.objects.empty()) {
+                    should_clamp = true;
+                    // Calculate max Y position from objects in this layer
+                    // The layer stops when bottom of layer reaches bottom of
+                    // screen
+                    float max_y = 0.0f;
+                    for (const auto &obj : layer.objects) {
+                        float obj_bottom = obj.y + (obj.tile_size * obj.scale);
+                        max_y = std::max(max_y, obj_bottom);
+                    }
+                    // Scroll stops when bottom of content reaches bottom of
+                    // screen (kBaseHeight)
+                    if (max_y > static_cast<float>(kBaseHeight)) {
+                        float scroll_limit =
+                            max_y - static_cast<float>(kBaseHeight);
+                        max_scroll_limit =
+                            std::max(max_scroll_limit, scroll_limit);
+                    }
+                }
+            }
+        }
+
+        // If no explicit scroll speed, use default for backward compatibility
+        if (default_scroll_speed == 0.0f) {
+            // Check if any layer has auto-scroll enabled (legacy mode)
+            for (const auto &layer : layers) {
+                if (layer.auto_scroll_enabled) {
+                    default_scroll_speed = 30.0f;
+                    break;
+                }
+            }
+        }
+
+        // Update scroll position
+        m_ui_background_scroll_y += default_scroll_speed * GetFrameTime();
+
+        // Clamp to calculated scroll limit
+        if (should_clamp && max_scroll_limit > 0.0f) {
+            m_ui_background_scroll_y =
+                std::min(m_ui_background_scroll_y, max_scroll_limit);
+        }
+    }
+
+    // Widget input handling for TITLE, WIN, and GAMEOVER states
+    if (m_state == GameState::TITLE || m_state == GameState::WIN ||
+        m_state == GameState::GAMEOVER) {
+        // Increment frame counter
+        m_frames_since_scene_load++;
+
+        // Skip input for first 3 frames after scene load to prevent key
+        // bleed-through
+        if (m_frames_since_scene_load < 3) {
+            // Still update widget focus visuals but don't process activation
+            std::vector<IWidget *> widgets;
+            for (const auto &actor : m_actors) {
+                if (!actor) continue;
+                if (actor->get_group_id() == 4) {
+                    IWidget *widget = static_cast<IWidget *>(actor.get());
+                    if (widget && widget->is_selectable()) {
+                        widgets.push_back(widget);
+                    }
+                }
+            }
+            for (size_t i = 0; i < widgets.size(); ++i) {
+                widgets[i]->set_focused(static_cast<int>(i) ==
+                                        m_selected_widget_index);
+            }
+        } else {
+            // Handle keyboard input first (doesn't require collecting widgets)
+            bool keyboard_input_handled = false;
+
+            if (IsKeyPressed(KEY_Z) || IsKeyPressed(KEY_S) ||
+                IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE) ||
+                IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN) ||
+                IsKeyPressed(KEY_PAGE_UP) || IsKeyPressed(KEY_PAGE_DOWN) ||
+                GetMouseWheelMove() != 0.0f) {
+                // Collect widgets for keyboard/wheel input
+                std::vector<IWidget *> widgets;
+                for (const auto &actor : m_actors) {
+                    if (!actor) continue;
+                    if (actor->get_group_id() == 4) {
+                        IWidget *widget = static_cast<IWidget *>(actor.get());
+                        if (widget && widget->is_selectable()) {
+                            widgets.push_back(widget);
+                        }
+                    }
+                }
+
+                if (!widgets.empty()) {
+                    // Keyboard navigation: Z = up, S = down
+                    if (IsKeyPressed(KEY_Z)) {
+                        m_selected_widget_index =
+                            (m_selected_widget_index - 1 +
+                             static_cast<int>(widgets.size())) %
+                            static_cast<int>(widgets.size());
+                    }
+                    if (IsKeyPressed(KEY_S)) {
+                        m_selected_widget_index =
+                            (m_selected_widget_index + 1) %
+                            static_cast<int>(widgets.size());
+                    }
+
+                    // Update focus state for all widgets
+                    for (size_t i = 0; i < widgets.size(); ++i) {
+                        widgets[i]->set_focused(static_cast<int>(i) ==
+                                                m_selected_widget_index);
+                    }
+
+                    // Handle ScrollableListWidget-specific input FIRST (before
+                    // Enter activation) This allows Up/Down to change selection
+                    // before Enter loads a level Only process list input if the
+                    // list widget is focused
+                    bool list_input_handled = false;
+                    for (auto &actor : m_actors) {
+                        if (!actor) continue;
+                        if (actor->get_group_id() == 4) {
+                            if (auto *list =
+                                    dynamic_cast<ScrollableListWidget *>(
+                                        actor.get())) {
+                                // Only handle list input if this list widget is
+                                // focused
+                                if (list->is_focused()) {
+                                    if (IsKeyPressed(KEY_UP)) {
+                                        list->scroll_up();
+                                        list_input_handled = true;
+                                    }
+                                    if (IsKeyPressed(KEY_DOWN)) {
+                                        list->scroll_down();
+                                        list_input_handled = true;
+                                    }
+                                    if (IsKeyPressed(KEY_PAGE_UP)) {
+                                        list->page_up();
+                                        list_input_handled = true;
+                                    }
+                                    if (IsKeyPressed(KEY_PAGE_DOWN)) {
+                                        list->page_down();
+                                        list_input_handled = true;
+                                    }
+
+                                    float wheel = GetMouseWheelMove();
+                                    if (wheel > 0) {
+                                        list->scroll_up();
+                                        list_input_handled = true;
+                                    } else if (wheel < 0) {
+                                        list->scroll_down();
+                                        list_input_handled = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Only activate widget with Enter/Space if no list
+                    // navigation happened This prevents immediate activation
+                    // when transitioning screens
+                    if (!list_input_handled &&
+                        (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE))) {
+                        IWidget *focused_widget =
+                            widgets[m_selected_widget_index];
+
+                        // Only activate if the focused widget is NOT a
+                        // ScrollableListWidget or if it IS a
+                        // ScrollableListWidget (to load selected level)
+                        focused_widget->on_click();
+                        keyboard_input_handled = true;
+
+                        // Return immediately - action may have changed state
+                        return;
+                    }
+                }
+            }
+
+            // Mouse input is disabled - keyboard-only navigation
+        }  // End frame skip check
+    }
 
     // Update actors
     if (m_state == GameState::PLAY) {
@@ -1186,6 +1464,16 @@ void Game::update() {
             m_actors.push_back(std::move(pending_actor));
         }
         m_pending_actors.clear();
+    } else if (m_state == GameState::TITLE || m_state == GameState::WIN ||
+               m_state == GameState::GAMEOVER) {
+        // Update widgets for animations (e.g., ScrollableListWidget scroll
+        // animation)
+        float delta = GetFrameTime();
+        for (auto &actor : m_actors) {
+            if (actor && actor->get_group_id() == 4) {  // Widget group ID
+                actor->update(delta);
+            }
+        }
     }  // GameState::PLAY
 
     // Removing CONSUMED actors (DEAD and ready for removing)
@@ -1233,49 +1521,84 @@ void Game::update() {
 
     process_input();
 
+    // Only update game time when not paused
     double cur_update_time = GetTime();
     auto delta = static_cast<float>(cur_update_time - last_update_time);
 
-    if (m_state == GameState::PLAY) {
-        m_bonus_manager.update(delta);
-        if (cur_update_time - last_update_time > kUpdateInterval) {
-            // Only scroll if finish line hasn't reached middle of screen
-            if (should_continue_scrolling_()) {
-                m_rect.y += 1;
+    if (m_state != GameState::PAUSE) {
+        if (m_state == GameState::PLAY) {
+            m_bonus_manager.update(delta);
+            if (cur_update_time - last_update_time > kUpdateInterval) {
+                // Only scroll if finish line hasn't reached middle of screen
+                if (should_continue_scrolling_()) {
+                    m_rect.y += 1;
+                }
+                for (auto &actor : m_actors) {
+                    actor->update(delta);
+                }
+                m_player->update(delta);
+                last_update_time = cur_update_time;
+
+                // Check win condition: player reached bottom of level
+                if (m_current_scene && m_player) {
+                    Rectangle player_rect = m_player->get_rectangle();
+                    float player_bottom = player_rect.y + player_rect.height;
+
+                    // Win if player reaches 98% of the level height (very close
+                    // to actual bottom) This ensures player actually reaches
+                    // the final platform area before winning
+                    if (player_bottom >= m_level_height * 0.98f) {
+                        m_state = GameState::WIN;
+
+                        // Load win screen with widgets
+                        std::string win_path =
+                            udjourney::coreutils::get_assets_path(
+                                "levels/win_screen.json");
+                        if (load_scene(win_path)) {
+                            // Clean up gameplay objects
+                            m_player.reset();
+                            m_hud_manager.clear_background_huds();
+
+                            // Remove all actors except widgets
+                            m_actors.erase(
+                                std::remove_if(
+                                    m_actors.begin(),
+                                    m_actors.end(),
+                                    [](const std::unique_ptr<IActor> &actor) {
+                                        return actor->get_group_id() !=
+                                               4;  // Keep widgets only
+                                    }),
+                                m_actors.end());
+
+                            // Load win screen widgets
+                            load_widgets_from_scene();
+                            m_rect.y = 0;  // Reset camera
+                        }
+                    }
+                }
             }
+
+            // Only handle collisions if player exists (not in WIN/TITLE state)
+            if (m_player) {
+                m_player->handle_collision(m_actors);
+            }
+
+            // Handle collision for all monsters
             for (auto &actor : m_actors) {
-                actor->update(delta);
-            }
-            m_player->update(delta);
-            last_update_time = cur_update_time;
-
-            // Check win condition: player reached bottom of level
-            if (m_current_scene && m_player) {
-                Rectangle player_rect = m_player->get_rectangle();
-                float player_bottom = player_rect.y + player_rect.height;
-
-                // Win if player reaches 98% of the level height (very close to
-                // actual bottom) This ensures player actually reaches the final
-                // platform area before winning
-                if (player_bottom >= m_level_height * 0.98f) {
-                    m_state = GameState::WIN;
+                if (actor->get_group_id() == 3) {  // Monster group ID
+                    Monster *monster = dynamic_cast<Monster *>(actor.get());
+                    if (monster) {
+                        monster->handle_collision(m_actors);
+                    }
                 }
             }
         }
-        m_player->handle_collision(m_actors);
 
-        // Handle collision for all monsters
-        for (auto &actor : m_actors) {
-            if (actor->get_group_id() == 3) {  // Monster group ID
-                Monster *monster = dynamic_cast<Monster *>(actor.get());
-                if (monster) {
-                    monster->handle_collision(m_actors);
-                }
-            }
-        }
+        m_hud_manager.update(delta);
+    } else {
+        // Game is paused, reset the timer to avoid time jump when resuming
+        last_update_time = cur_update_time;
     }
-
-    m_hud_manager.update(delta);
 
     draw();
 }
@@ -1368,6 +1691,29 @@ void Game::on_notify(const std::string &iEvent) {
                 auto *score_hud = static_cast<ScoreHUD *>(comp);
                 m_score_history.add_score(score_hud->get_score());
                 score_hud->set_score(0);  // Reset HUD
+            }
+
+            // Load game over screen with widgets
+            std::string gameover_path = udjourney::coreutils::get_assets_path(
+                "levels/game_over_screen.json");
+            if (load_scene(gameover_path)) {
+                // Clean up gameplay objects
+                m_player.reset();
+                m_hud_manager.clear_background_huds();
+
+                // Remove all actors except widgets
+                m_actors.erase(
+                    std::remove_if(m_actors.begin(),
+                                   m_actors.end(),
+                                   [](const std::unique_ptr<IActor> &actor) {
+                                       return actor->get_group_id() !=
+                                              4;  // Keep widgets only
+                                   }),
+                    m_actors.end());
+
+                // Load game over screen widgets
+                load_widgets_from_scene();
+                m_rect.y = 0;  // Reset camera
             }
         } break;
         case kModeScoring:
@@ -1509,8 +1855,9 @@ void Game::create_platforms_from_scene() {
         // Set behavior based on platform data
         switch (platform_data.behavior_type) {
             case udjourney::scene::PlatformBehaviorType::Horizontal: {
-                float speed = 50.0f;   // Default speed
-                float range = 100.0f;  // Default range
+                float speed = 50.0f;          // Default speed
+                float range = 100.0f;         // Default range
+                float initial_offset = 0.0f;  // Default starting offset
 
                 if (platform_data.behavior_params.count("speed")) {
                     speed = platform_data.behavior_params.at("speed") *
@@ -1520,9 +1867,15 @@ void Game::create_platforms_from_scene() {
                     range = platform_data.behavior_params.at("range") *
                             32.0f;  // Convert tiles to pixels
                 }
+                if (platform_data.behavior_params.count("initial_offset")) {
+                    initial_offset =
+                        platform_data.behavior_params.at("initial_offset") *
+                        32.0f;  // Convert tiles to pixels
+                }
 
                 platform->set_behavior(
-                    std::make_unique<HorizontalBehaviorStrategy>(speed, range));
+                    std::make_unique<HorizontalBehaviorStrategy>(
+                        speed, range, initial_offset));
                 break;
             }
             case udjourney::scene::PlatformBehaviorType::EightTurnHorizontal: {
@@ -1837,4 +2190,213 @@ void Game::attack_nearby_monsters() {
     } else {
         std::cout << "Hit " << monsters_hit << " monsters!" << std::endl;
     }
+}
+
+void Game::load_widgets_from_scene() {
+    if (!m_current_scene) {
+        return;
+    }
+
+    // Extract ALL widget FUD elements
+    const auto &fuds = m_current_scene->get_fuds();
+    for (const auto &fud : fuds) {
+        // Try to create widget using factory (supports all widget types)
+        auto widget = WidgetFactory::create_from_fud(fud, *this);
+        if (widget) {
+            m_actors.push_back(std::move(widget));
+        }
+    }
+
+    m_selected_widget_index = 0;
+}
+
+void Game::register_menu_actions() {
+    // Start Game action
+    ActionDispatcher::register_action(
+        "start_game", [](IGame *game, const std::vector<std::string> &params) {
+            std::cout << "[ACTION] Start Game triggered" << std::endl;
+            auto *g = dynamic_cast<Game *>(game);
+            if (g) {
+                // Load level1 scene first
+                std::string level_path =
+                    udjourney::coreutils::get_assets_path("levels/level1.json");
+                if (g->load_scene(level_path)) {
+                    g->m_state = GameState::PLAY;
+                    g->initialize_gameplay();
+                }
+            }
+        });
+
+    // Load Level action (format: "load_level:level_name")
+    ActionDispatcher::register_action(
+        "load_level", [](IGame *game, const std::vector<std::string> &params) {
+            if (params.empty()) return;
+
+            // params[0] is the filename (e.g., "level1.json")
+            std::string filename = params[0];
+            std::cout << "[ACTION] Load Level: " << filename << std::endl;
+
+            auto *g = dynamic_cast<Game *>(game);
+            if (g) {
+                std::string level_path =
+                    udjourney::coreutils::get_assets_path("levels/" + filename);
+                if (g->load_scene(level_path)) {
+                    g->m_state = GameState::PLAY;
+                    g->initialize_gameplay();
+                }
+            }
+        });
+
+    // Show Level Select action
+    ActionDispatcher::register_action(
+        "show_level_select",
+        [](IGame *game, const std::vector<std::string> &params) {
+            std::cout << "[ACTION] ===== Show Level Select triggered ====="
+                      << std::endl;
+            auto *g = dynamic_cast<Game *>(game);
+            if (g) {
+                std::string level_select_path =
+                    udjourney::coreutils::get_assets_path(
+                        "levels/level_select_screen.json");
+
+                // Clean up ALL actors first (including old widgets)
+                g->m_player.reset();
+                g->m_hud_manager.clear_background_huds();
+                g->m_actors.clear();
+
+                // Now load the new scene
+                if (g->load_scene(level_select_path)) {
+                    g->m_state = GameState::TITLE;
+
+                    // Load level select screen widgets
+                    g->load_widgets_from_scene();
+
+                    // Set focus to the ScrollableListWidget (should be the
+                    // first selectable widget) Find the index of the
+                    // ScrollableListWidget in the selectable widgets
+                    std::vector<IWidget *> selectable_widgets;
+                    int list_index = -1;
+                    for (const auto &actor : g->m_actors) {
+                        if (actor && actor->get_group_id() == 4) {
+                            IWidget *widget =
+                                static_cast<IWidget *>(actor.get());
+                            if (widget && widget->is_selectable()) {
+                                if (dynamic_cast<ScrollableListWidget *>(
+                                        widget)) {
+                                    list_index = static_cast<int>(
+                                        selectable_widgets.size());
+                                }
+                                selectable_widgets.push_back(widget);
+                            }
+                        }
+                    }
+
+                    // Focus the list widget (or default to 0 if not found)
+                    g->m_selected_widget_index =
+                        (list_index >= 0) ? list_index : 0;
+
+                    // Reset frame counter to prevent immediate input
+                    g->m_frames_since_scene_load = 0;
+
+                    std::cout << "[ACTION] Level select screen loaded with "
+                              << g->m_actors.size()
+                              << " actors, focus on widget "
+                              << g->m_selected_widget_index << std::endl;
+                }
+            }
+        });
+
+    // Quit Game action
+    ActionDispatcher::register_action(
+        "quit_game", [](IGame *game, const std::vector<std::string> &params) {
+            std::cout << "[ACTION] Quit Game triggered" << std::endl;
+#ifndef PLATFORM_DREAMCAST
+            CloseWindow();
+#endif
+        });
+
+    // Show Options action (placeholder)
+    ActionDispatcher::register_action(
+        "show_options",
+        [](IGame *game, const std::vector<std::string> &params) {
+            std::cout << "[ACTION] Show Options triggered (not implemented)"
+                      << std::endl;
+        });
+
+    // Return to Title action
+    ActionDispatcher::register_action(
+        "return_to_title",
+        [](IGame *game, const std::vector<std::string> &params) {
+            std::cout << "[ACTION] Return to Title triggered" << std::endl;
+            auto *g = dynamic_cast<Game *>(game);
+            if (g) {
+                std::string title_path = udjourney::coreutils::get_assets_path(
+                    "levels/title_screen.json");
+                if (g->load_scene(title_path)) {
+                    g->m_state = GameState::TITLE;
+
+                    // Clean up gameplay objects
+                    g->m_player.reset();
+                    g->m_hud_manager.clear_background_huds();
+
+                    // Remove ALL actors (including old widgets)
+                    g->m_actors.clear();
+
+                    // Load title screen widgets
+                    g->load_widgets_from_scene();
+                    g->m_rect.y = 0;                   // Reset camera
+                    g->m_selected_widget_index = 0;    // Reset widget selection
+                    g->m_frames_since_scene_load = 0;  // Reset frame counter
+                }
+            }
+        });
+}
+
+void Game::initialize_gameplay() {
+    // Remove all widgets from m_actors
+    m_actors.erase(std::remove_if(m_actors.begin(),
+                                  m_actors.end(),
+                                  [](const std::unique_ptr<IActor> &actor) {
+                                      return actor->get_group_id() ==
+                                             4;  // Remove widgets
+                                  }),
+                   m_actors.end());
+
+    // Clear background HUDs
+    m_hud_manager.clear_background_huds();
+
+    // Create platforms from scene
+    create_platforms_from_scene();
+
+    // Spawn monsters from scene
+    create_monsters_from_scene();
+
+    // Spawn player at scene-defined location or default position
+    Vector2 player_spawn_pos{320, 240};  // Default position
+    if (m_current_scene) {
+        auto spawn_data = m_current_scene->get_player_spawn();
+        player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
+            spawn_data.tile_x, spawn_data.tile_y);
+    }
+
+    m_player = std::make_unique<Player>(
+        *this,
+        Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
+        m_event_dispatcher,
+        create_player_animation_controller());
+    m_player->add_observer(static_cast<IObserver *>(this));
+
+    // Add bonus item
+    m_actors.emplace_back(
+        std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
+
+    // Reset score and camera
+    m_score = 0;
+    m_rect.y = 0;
+    m_last_checkpoint = Vector2{320, 240};
+
+    // Add score HUD
+    auto score_hud =
+        std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
+    m_hud_manager.add_background_hud(std::move(score_hud));
 }

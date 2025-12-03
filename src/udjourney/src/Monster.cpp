@@ -189,10 +189,22 @@ void Monster::take_damage(float damage) {
 
     if (health_ <= 0.0f) {
         health_ = 0.0f;
-        change_state("death");
+
+        // Check if death state exists before trying to use it
+        if (states_.find("death") != states_.end()) {
+            change_state("death");
+        } else {
+            // No death state defined, just mark as consumed
+            std::cout << "Monster killed (no death animation available)"
+                      << std::endl;
+            set_state(ActorState::CONSUMED);
+        }
         velocity_x_ = 0.0f;
     } else {
-        change_state("hurt");
+        // Check if hurt state exists
+        if (states_.find("hurt") != states_.end()) {
+            change_state("hurt");
+        }
         // Knockback
         velocity_x_ = facing_right_ ? -speed_ * 2.0f : speed_ * 2.0f;
     }

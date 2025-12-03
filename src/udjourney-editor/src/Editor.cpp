@@ -131,76 +131,87 @@ void Editor::export_platform_level_json(const std::string &export_path) {
     // Level metadata
     jlevel["name"] = "Untitled Level";
 
-    // Player spawn position
-    jlevel["player_spawn"] = {{"x", pimpl->level.player_spawn_x},
-                              {"y", pimpl->level.player_spawn_y}};
+    // Scene type
+    jlevel["scene_type"] = (pimpl->level.scene_type == SceneType::UI_SCREEN)
+                               ? "ui_screen"
+                               : "level";
 
-    // Platforms array
-    jlevel["platforms"] = nlohmann::json::array();
+    // Player spawn position (only for levels)
+    if (pimpl->level.scene_type == SceneType::LEVEL) {
+        jlevel["player_spawn"] = {{"x", pimpl->level.player_spawn_x},
+                                  {"y", pimpl->level.player_spawn_y}};
+    }
 
-    for (const auto &platform : pimpl->level.platforms) {
-        nlohmann::json jplatform;
-        jplatform["x"] = platform.tile_x;
-        jplatform["y"] = platform.tile_y;
-        jplatform["width"] = platform.width_tiles;
-        jplatform["height"] = platform.height_tiles;
+    // Platforms array (only for levels)
+    if (pimpl->level.scene_type == SceneType::LEVEL) {
+        jlevel["platforms"] = nlohmann::json::array();
 
-        // Behavior type
-        switch (platform.behavior_type) {
-            case PlatformBehaviorType::Static:
-                jplatform["behavior"] = "static";
-                break;
-            case PlatformBehaviorType::Horizontal:
-                jplatform["behavior"] = "horizontal";
-                break;
-            case PlatformBehaviorType::EightTurnHorizontal:
-                jplatform["behavior"] = "eight_turn";
-                break;
-            case PlatformBehaviorType::OscillatingSize:
-                jplatform["behavior"] = "oscillating_size";
-                break;
-        }
+        for (const auto &platform : pimpl->level.platforms) {
+            nlohmann::json jplatform;
+            jplatform["x"] = platform.tile_x;
+            jplatform["y"] = platform.tile_y;
+            jplatform["width"] = platform.width_tiles;
+            jplatform["height"] = platform.height_tiles;
 
-        // Features
-        if (!platform.features.empty()) {
-            jplatform["features"] = nlohmann::json::array();
-            for (const auto &feature : platform.features) {
-                switch (feature) {
-                    case PlatformFeatureType::Spikes:
-                        jplatform["features"].push_back("spikes");
-                        break;
-                    case PlatformFeatureType::Checkpoint:
-                        jplatform["features"].push_back("checkpoint");
-                        break;
-                    case PlatformFeatureType::None:
-                        break;
+            // Behavior type
+            switch (platform.behavior_type) {
+                case PlatformBehaviorType::Static:
+                    jplatform["behavior"] = "static";
+                    break;
+                case PlatformBehaviorType::Horizontal:
+                    jplatform["behavior"] = "horizontal";
+                    break;
+                case PlatformBehaviorType::EightTurnHorizontal:
+                    jplatform["behavior"] = "eight_turn";
+                    break;
+                case PlatformBehaviorType::OscillatingSize:
+                    jplatform["behavior"] = "oscillating_size";
+                    break;
+            }
+
+            // Features
+            if (!platform.features.empty()) {
+                jplatform["features"] = nlohmann::json::array();
+                for (const auto &feature : platform.features) {
+                    switch (feature) {
+                        case PlatformFeatureType::Spikes:
+                            jplatform["features"].push_back("spikes");
+                            break;
+                        case PlatformFeatureType::Checkpoint:
+                            jplatform["features"].push_back("checkpoint");
+                            break;
+                        case PlatformFeatureType::None:
+                            break;
+                    }
                 }
             }
+
+            jlevel["platforms"].push_back(jplatform);
         }
+    }  // end LEVEL-only platforms
 
-        jlevel["platforms"].push_back(jplatform);
-    }
+    // Monsters array (only for levels)
+    if (pimpl->level.scene_type == SceneType::LEVEL) {
+        jlevel["monsters"] = nlohmann::json::array();
+        for (const auto &monster : pimpl->level.monsters) {
+            nlohmann::json jmonster;
+            jmonster["x"] = monster.tile_x;
+            jmonster["y"] = monster.tile_y;
+            jmonster["preset_name"] = monster.preset_name;
 
-    // Monsters array
-    jlevel["monsters"] = nlohmann::json::array();
-    for (const auto &monster : pimpl->level.monsters) {
-        nlohmann::json jmonster;
-        jmonster["x"] = monster.tile_x;
-        jmonster["y"] = monster.tile_y;
-        jmonster["preset_name"] = monster.preset_name;
+            // Only include overrides if they're set (not -1)
+            if (monster.health_override != -1) {
+                jmonster["health"] = monster.health_override;
+            }
+            if (monster.speed_override != -1) {
+                jmonster["speed"] = monster.speed_override;
+            }
 
-        // Only include overrides if they're set (not -1)
-        if (monster.health_override != -1) {
-            jmonster["health"] = monster.health_override;
+            jlevel["monsters"].push_back(jmonster);
         }
-        if (monster.speed_override != -1) {
-            jmonster["speed"] = monster.speed_override;
-        }
+    }  // end LEVEL-only monsters
 
-        jlevel["monsters"].push_back(jmonster);
-    }
-
-    // Export background data
+    // Export background data (always - used by both levels and UI screens)
     jlevel["backgrounds"] = pimpl->background_manager.to_json();
 
     // Export FUDs
@@ -408,6 +419,23 @@ void Editor::run() {
             }
 
             if (ImGui::BeginMenu("Settings")) {
+                // Scene Type toggle
+                if (ImGui::BeginMenu("Scene Type")) {
+                    if (ImGui::MenuItem(
+                            "Level (Gameplay)",
+                            nullptr,
+                            pimpl->level.scene_type == SceneType::LEVEL)) {
+                        pimpl->level.scene_type = SceneType::LEVEL;
+                    }
+                    if (ImGui::MenuItem(
+                            "UI Screen (Menus)",
+                            nullptr,
+                            pimpl->level.scene_type == SceneType::UI_SCREEN)) {
+                        pimpl->level.scene_type = SceneType::UI_SCREEN;
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::Separator();
                 // ...inside ImGui::BeginMenu("File")...
                 if (ImGui::BeginMenu("UI Scale")) {
                     float scales[] = {1.0f, 1.5f, 2.0f, 2.5f, 3.0f};
@@ -485,6 +513,9 @@ void Editor::run() {
             }
             ImGuiFileDialog::Instance()->Close();
         }
+
+        // Set current level for editor panel (for scene type awareness)
+        pimpl->editor_panel.set_current_level(&pimpl->level);
 
         pimpl->editor_panel.draw();
 

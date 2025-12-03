@@ -474,18 +474,43 @@ void FUDModeHandler::render_property_editor() {
         ImGui::PushID(prop_name.c_str());
 
         // Render appropriate UI control based on type
-        if (type == "integer") {
-            int value = selected_fud_->properties[prop_name].get<int>();
+        if (type == "integer" || type == "int") {
+            // Handle both string and number types
+            int value = 0;
+            if (selected_fud_->properties[prop_name].is_number_integer()) {
+                value = selected_fud_->properties[prop_name].get<int>();
+            } else if (selected_fud_->properties[prop_name].is_string()) {
+                value = std::stoi(
+                    selected_fud_->properties[prop_name].get<std::string>());
+            }
+
             if (ImGui::InputInt(prop_name.c_str(), &value)) {
                 selected_fud_->properties[prop_name] = value;
             }
         } else if (type == "float" || type == "number") {
-            float value = selected_fud_->properties[prop_name].get<float>();
+            // Handle both string and number types
+            float value = 0.0f;
+            if (selected_fud_->properties[prop_name].is_number()) {
+                value = selected_fud_->properties[prop_name].get<float>();
+            } else if (selected_fud_->properties[prop_name].is_string()) {
+                value = std::stof(
+                    selected_fud_->properties[prop_name].get<std::string>());
+            }
+
             if (ImGui::InputFloat(prop_name.c_str(), &value)) {
                 selected_fud_->properties[prop_name] = value;
             }
-        } else if (type == "boolean") {
-            bool value = selected_fud_->properties[prop_name].get<bool>();
+        } else if (type == "boolean" || type == "bool") {
+            // Handle both string and boolean types
+            bool value = false;
+            if (selected_fud_->properties[prop_name].is_boolean()) {
+                value = selected_fud_->properties[prop_name].get<bool>();
+            } else if (selected_fud_->properties[prop_name].is_string()) {
+                std::string str_val =
+                    selected_fud_->properties[prop_name].get<std::string>();
+                value = (str_val == "true" || str_val == "1");
+            }
+
             if (ImGui::Checkbox(prop_name.c_str(), &value)) {
                 selected_fud_->properties[prop_name] = value;
             }
@@ -498,6 +523,35 @@ void FUDModeHandler::render_property_editor() {
 
             if (ImGui::InputText(prop_name.c_str(), buffer, sizeof(buffer))) {
                 selected_fud_->properties[prop_name] = std::string(buffer);
+            }
+        } else if (type == "color") {
+            // Colors stored as [r, g, b] arrays with values 0-255
+            if (selected_fud_->properties[prop_name].is_array() &&
+                selected_fud_->properties[prop_name].size() == 3) {
+                // Safely convert to int (handle both string and number types)
+                auto get_color_value = [](const nlohmann::json& val) -> int {
+                    if (val.is_number_integer()) {
+                        return val.get<int>();
+                    } else if (val.is_string()) {
+                        return std::stoi(val.get<std::string>());
+                    }
+                    return 0;
+                };
+
+                float color[3] = {
+                    get_color_value(selected_fud_->properties[prop_name][0]) /
+                        255.0f,
+                    get_color_value(selected_fud_->properties[prop_name][1]) /
+                        255.0f,
+                    get_color_value(selected_fud_->properties[prop_name][2]) /
+                        255.0f};
+
+                if (ImGui::ColorEdit3(prop_name.c_str(), color)) {
+                    selected_fud_->properties[prop_name] = {
+                        static_cast<int>(color[0] * 255.0f),
+                        static_cast<int>(color[1] * 255.0f),
+                        static_cast<int>(color[2] * 255.0f)};
+                }
             }
         } else if (type == "object") {
             // For objects (like sprite configs), show as collapsing header

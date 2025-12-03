@@ -32,6 +32,7 @@ class HUDManager {
     void draw() const;
 
     HUDComponent* get_component_by_type(const std::string& type_str);
+    void clear_background_huds() { m_background_components.clear(); }
 
  private:
     std::vector<std::unique_ptr<HUDComponent>> m_background_components;
