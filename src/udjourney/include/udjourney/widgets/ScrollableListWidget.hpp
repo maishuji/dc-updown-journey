@@ -1,7 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 
-#include <raylib.h>
+#include <raylib/raylib.h>
 
 #include <functional>
 #include <string>
