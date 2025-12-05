@@ -61,8 +61,12 @@ class Player : public IActor, public IObservable {
     // Projectile shooting system
     void load_projectile_presets(const std::string &config_file);
     void set_current_projectile(const std::string &preset_name);
+    void cycle_projectile_type();
     bool can_shoot() const { return shoot_cooldown_ <= 0.0f; }
     const udjourney::ProjectilePreset *get_current_projectile_preset() const;
+    const std::string &get_current_projectile_name() const {
+        return current_projectile_preset_;
+    }
     void reset_shoot_cooldown();
     Vector2 get_shoot_position() const;
     Vector2 get_shoot_direction() const;

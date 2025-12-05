@@ -424,6 +424,31 @@ void Player::set_current_projectile(const std::string &preset_name) {
     }
 }
 
+void Player::cycle_projectile_type() {
+    if (!projectile_loader_) return;
+
+    auto preset_names = projectile_loader_->get_preset_names();
+    if (preset_names.empty()) return;
+
+    // Find current preset index
+    auto it = std::find(
+        preset_names.begin(), preset_names.end(), current_projectile_preset_);
+
+    // Cycle to next preset (wrap around to beginning)
+    if (it != preset_names.end()) {
+        ++it;
+        if (it == preset_names.end()) {
+            it = preset_names.begin();
+        }
+    } else {
+        it = preset_names.begin();
+    }
+
+    current_projectile_preset_ = *it;
+    std::cout << "Switched to projectile: " << current_projectile_preset_
+              << std::endl;
+}
+
 const udjourney::ProjectilePreset *Player::get_current_projectile_preset()
     const {
     if (!projectile_loader_) return nullptr;

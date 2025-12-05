@@ -52,8 +52,8 @@
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
 
-using udj::core::filesystem::get_assets_path;
 using udj::core::filesystem::file_exists;
+using udj::core::filesystem::get_assets_path;
 
 struct Resolution {
     int width;
@@ -372,9 +372,10 @@ void Game::process_input() {
             IsKeyPressed(KEY_E) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
 #endif
         if (shoot_pressed) {
-            udj::core::Logger::debug("E key pressed! Player: % Can shoot: %",
-                          (m_player ? "yes" : "no"),
-                          (m_player && m_player->can_shoot() ? "yes" : "no"));
+            udj::core::Logger::debug(
+                "E key pressed! Player: % Can shoot: %",
+                (m_player ? "yes" : "no"),
+                (m_player && m_player->can_shoot() ? "yes" : "no"));
         }
         if (shoot_pressed && m_player && m_player->can_shoot()) {
             const udjourney::ProjectilePreset *preset =
@@ -391,6 +392,17 @@ void Game::process_input() {
             } else {
                 udj::core::Logger::warning("No projectile preset found!");
             }
+        }
+
+        // Handle projectile type cycling (C key / Y button)
+        bool cycle_pressed = false;
+#ifdef PLATFORM_DREAMCAST
+        cycle_pressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_UP);
+#else
+        cycle_pressed = IsKeyPressed(KEY_C);
+#endif
+        if (cycle_pressed && m_player) {
+            m_player->cycle_projectile_type();
         }
     }
 }
