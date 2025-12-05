@@ -15,6 +15,8 @@
 #include <udj-core/Logger.hpp>
 
 #include "udjourney/Monster.hpp"
+#include "udjourney/Projectile.hpp"
+#include "udjourney/ProjectilePresetLoader.hpp"
 #include "udjourney/WorldBounds.hpp"
 #include "udjourney/components/HealthComponent.hpp"
 #include "udjourney/core/events/ScoreEvent.hpp"
@@ -129,6 +131,11 @@ void Player::update(float iDelta) {
         m_invincibility_timer -= iDelta;
     } else {
         m_invincibility_timer = 0.0F;
+    }
+
+    // Update shoot cooldown
+    if (shoot_cooldown_ > 0.0f) {
+        shoot_cooldown_ -= iDelta;
     }
 
     // Update animation state and controller
@@ -288,9 +295,14 @@ void Player::handle_collision(
                 m_dispatcher.dispatch(score_event);
                 platform->set_state(ActorState::CONSUMED);
             } else if (platform->get_group_id() == MONSTER_TYPE_ID) {
-                // Monster collision - damage player and kill the monster
+                // Monster collision - damage player (monster attacks)
                 Monster *monster = dynamic_cast<Monster *>(platform.get());
                 if (monster && !is_invincible()) {
+                    // Monster should be in attack state
+                    if (monster->is_alive()) {
+                        monster->change_state("attack");
+                    }
+
                     // Damage player using health component
                     if (auto *health = get_component<HealthComponent>()) {
                         health->take_damage(1);  // 1 = half heart
@@ -303,19 +315,15 @@ void Player::handle_collision(
                             return;  // Stop processing - actors vector is being
                                      // modified
                         } else {
-                            std::cout << "Player took damage! Health: "
-                                      << health->get_health() << "/"
-                                      << health->get_max_health() << std::endl;
+                            std::cout
+                                << "Player took damage from monster! Health: "
+                                << health->get_health() << "/"
+                                << health->get_max_health() << std::endl;
                         }
                     }
 
-                    // Grant invincibility and kill the monster
+                    // Grant invincibility after taking damage
                     set_invicibility(2.0f);
-                    std::cout << "Player collided with monster! Triggering "
-                                 "death animation..."
-                              << std::endl;
-                    monster->take_damage(
-                        1000.0f);  // Enough damage to kill the monster
                 }
                 // Skip further processing of this monster
                 continue;
@@ -396,4 +404,42 @@ void Player::attack_nearby_monsters() {
     std::cout << "Player attacking nearby monsters!" << std::endl;
     // Use the event system to notify the game of an attack
     notify("99;attack");  // Custom attack event with mode 99
+}
+
+void Player::load_projectile_presets(const std::string &config_file) {
+    std::cout << "Loading projectile presets from: " << config_file
+              << std::endl;
+    if (!projectile_loader_) {
+        projectile_loader_ =
+            std::make_unique<udjourney::ProjectilePresetLoader>();
+    }
+    bool success = projectile_loader_->load_from_file(config_file);
+    std::cout << "Projectile presets loaded: "
+              << (success ? "SUCCESS" : "FAILED") << std::endl;
+}
+
+void Player::set_current_projectile(const std::string &preset_name) {
+    if (projectile_loader_ && projectile_loader_->has_preset(preset_name)) {
+        current_projectile_preset_ = preset_name;
+    }
+}
+
+const udjourney::ProjectilePreset *Player::get_current_projectile_preset()
+    const {
+    if (!projectile_loader_) return nullptr;
+    return projectile_loader_->get_preset(current_projectile_preset_);
+}
+
+void Player::reset_shoot_cooldown() {
+    shoot_cooldown_ = SHOOT_COOLDOWN_DURATION;
+}
+
+Vector2 Player::get_shoot_position() const {
+    // Shoot from center-right or center-left of player
+    float offset_x = m_facing_right ? r.width : 0;
+    return Vector2{r.x + offset_x, r.y + r.height / 2.0f};
+}
+
+Vector2 Player::get_shoot_direction() const {
+    return Vector2{m_facing_right ? 1.0f : -1.0f, 0.0f};
 }

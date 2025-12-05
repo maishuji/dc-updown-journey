@@ -13,6 +13,12 @@
 #include "udjourney/interfaces/IObserver.hpp"
 #include "udjourney/AnimSpriteController.hpp"
 
+// Forward declarations
+namespace udjourney {
+class ProjectilePresetLoader;
+struct ProjectilePreset;
+}  // namespace udjourney
+
 class Player : public IActor, public IObservable {
  public:
     Player(const IGame &iGame, Rectangle iRect,
@@ -52,8 +58,23 @@ class Player : public IActor, public IObservable {
     // Attack system for testing
     void attack_nearby_monsters();
 
+    // Projectile shooting system
+    void load_projectile_presets(const std::string &config_file);
+    void set_current_projectile(const std::string &preset_name);
+    bool can_shoot() const { return shoot_cooldown_ <= 0.0f; }
+    const udjourney::ProjectilePreset *get_current_projectile_preset() const;
+    void reset_shoot_cooldown();
+    Vector2 get_shoot_position() const;
+    Vector2 get_shoot_direction() const;
+
  private:
     float m_invincibility_timer = 0.0F;
+
+    // Projectile system
+    std::unique_ptr<udjourney::ProjectilePresetLoader> projectile_loader_;
+    std::string current_projectile_preset_ = "bullet";
+    float shoot_cooldown_ = 0.0f;
+    static constexpr float SHOOT_COOLDOWN_DURATION = 0.3f;
 
     void _reset_jump() noexcept;
     Rectangle r;

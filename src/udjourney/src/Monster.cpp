@@ -181,17 +181,25 @@ Player* Monster::find_player() const {
 }
 
 void Monster::take_damage(float damage) {
+    std::cout << "Monster::take_damage called! Damage: " << damage
+              << " Current health: " << health_ << std::endl;
+
     if (anim_controller_.get_current_state_int() == ANIM_DEATH) {
+        std::cout << "Monster already in death animation, ignoring damage"
+                  << std::endl;
         return;
     }
 
     health_ -= damage;
+    std::cout << "After damage, health: " << health_ << std::endl;
 
     if (health_ <= 0.0f) {
         health_ = 0.0f;
+        std::cout << "Monster health <= 0, entering death state" << std::endl;
 
         // Check if death state exists before trying to use it
         if (states_.find("death") != states_.end()) {
+            std::cout << "Death state found, changing to death" << std::endl;
             change_state("death");
         } else {
             // No death state defined, just mark as consumed
@@ -201,6 +209,7 @@ void Monster::take_damage(float damage) {
         }
         velocity_x_ = 0.0f;
     } else {
+        std::cout << "Monster still alive, health: " << health_ << std::endl;
         // Check if hurt state exists
         if (states_.find("hurt") != states_.end()) {
             change_state("hurt");

@@ -1,0 +1,63 @@
+{
+  "projectiles": [
+    {
+      "name": "bullet",
+      "texture_file": "projectiles/bullet.png",
+      "trajectory": "linear",
+      "speed": 300.0,
+      "lifetime": 3.0,
+      "collision_bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 8,
+        "height": 8
+      },
+      "damage": 10
+    },
+    {
+      "name": "fireball",
+      "texture_file": "projectiles/fireball.png",
+      "trajectory": "arc",
+      "speed": 250.0,
+      "gravity": 500.0,
+      "lifetime": 5.0,
+      "collision_bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 16,
+        "height": 16
+      },
+      "damage": 25
+    },
+    {
+      "name": "wave_shot",
+      "texture_file": "projectiles/wave.png",
+      "trajectory": "sine_wave",
+      "speed": 200.0,
+      "amplitude": 20.0,
+      "frequency": 2.0,
+      "lifetime": 4.0,
+      "collision_bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 12,
+        "height": 12
+      },
+      "damage": 15
+    },
+    {
+      "name": "rocket",
+      "texture_file": "projectiles/rocket.png",
+      "trajectory": "linear",
+      "speed": 400.0,
+      "lifetime": 2.5,
+      "collision_bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 16,
+        "height": 8
+      },
+      "damage": 50
+    }
+  ]
+}
