@@ -67,6 +67,19 @@ Monster::Monster(const IGame& game, Rectangle rect,
     }
 }
 
+Rectangle Monster::get_rectangle() const {
+    // If animation has collision bounds, use those
+    if (anim_controller_.has_collision_bounds()) {
+        auto bounds = anim_controller_.get_collision_bounds();
+        return Rectangle{rect_.x + bounds.offset_x,
+                         rect_.y + bounds.offset_y,
+                         bounds.width,
+                         bounds.height};
+    }
+    // Otherwise, use the default rectangle
+    return rect_;
+}
+
 void Monster::draw() const {
     auto rect = rect_;
     const auto& game_rect = game_.get_rectangle();

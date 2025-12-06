@@ -35,9 +35,9 @@ class Monster : public IActor, public IObservable {
         const std::vector<std::unique_ptr<IActor>> &actors) noexcept;
 
     void set_rectangle(Rectangle rect) override { rect_ = rect; }
-    [[nodiscard]] Rectangle get_rectangle() const override { return rect_; }
+    [[nodiscard]] Rectangle get_rectangle() const override;
     [[nodiscard]] bool check_collision(const IActor &other) const override {
-        return CheckCollisionRecs(rect_, other.get_rectangle());
+        return CheckCollisionRecs(get_rectangle(), other.get_rectangle());
     }
 
     [[nodiscard]] inline constexpr uint8_t get_group_id() const override {

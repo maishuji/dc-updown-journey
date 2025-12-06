@@ -4,18 +4,45 @@
     {
       "name": "idle",
       "state_id": 10,
+      "collision_bounds": {
+        "offset_x": 16,
+        "offset_y": 20,
+        "width": 32,
+        "height": 40
+      },
       "sprite_config": {
         "filename": "poring1-Sheet.png",
         "sprite_width": 64,
         "sprite_height": 64,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3},
-          {"row": 0, "col": 4},
-          {"row": 0, "col": 5},
-          {"row": 0, "col": 6}
+          {
+            "row": 0,
+            "col": 0
+          },
+          {
+            "row": 0,
+            "col": 1
+          },
+          {
+            "row": 0,
+            "col": 2
+          },
+          {
+            "row": 0,
+            "col": 3
+          },
+          {
+            "row": 0,
+            "col": 4
+          },
+          {
+            "row": 0,
+            "col": 5
+          },
+          {
+            "row": 0,
+            "col": 6
+          }
         ],
         "frame_duration": 0.15,
         "loop": true
@@ -24,18 +51,45 @@
     {
       "name": "patrol",
       "state_id": 11,
+      "collision_bounds": {
+        "offset_x": 16,
+        "offset_y": 20,
+        "width": 32,
+        "height": 40
+      },
       "sprite_config": {
         "filename": "poring1-Sheet.png",
         "sprite_width": 64,
         "sprite_height": 64,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3},
-          {"row": 0, "col": 4},
-          {"row": 0, "col": 5},
-          {"row": 0, "col": 6}
+          {
+            "row": 0,
+            "col": 0
+          },
+          {
+            "row": 0,
+            "col": 1
+          },
+          {
+            "row": 0,
+            "col": 2
+          },
+          {
+            "row": 0,
+            "col": 3
+          },
+          {
+            "row": 0,
+            "col": 4
+          },
+          {
+            "row": 0,
+            "col": 5
+          },
+          {
+            "row": 0,
+            "col": 6
+          }
         ],
         "frame_duration": 0.075,
         "loop": true
@@ -44,18 +98,45 @@
     {
       "name": "chase",
       "state_id": 12,
+      "collision_bounds": {
+        "offset_x": 16,
+        "offset_y": 20,
+        "width": 32,
+        "height": 40
+      },
       "sprite_config": {
         "filename": "poring1-Sheet.png",
         "sprite_width": 64,
         "sprite_height": 64,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3},
-          {"row": 0, "col": 4},
-          {"row": 0, "col": 5},
-          {"row": 0, "col": 6}
+          {
+            "row": 0,
+            "col": 0
+          },
+          {
+            "row": 0,
+            "col": 1
+          },
+          {
+            "row": 0,
+            "col": 2
+          },
+          {
+            "row": 0,
+            "col": 3
+          },
+          {
+            "row": 0,
+            "col": 4
+          },
+          {
+            "row": 0,
+            "col": 5
+          },
+          {
+            "row": 0,
+            "col": 6
+          }
         ],
         "frame_duration": 0.0375,
         "loop": true
@@ -64,18 +145,45 @@
     {
       "name": "attack",
       "state_id": 13,
+      "collision_bounds": {
+        "offset_x": 8,
+        "offset_y": 16,
+        "width": 48,
+        "height": 44
+      },
       "sprite_config": {
         "filename": "poring1-Sheet.png",
         "sprite_width": 64,
         "sprite_height": 64,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3},
-          {"row": 0, "col": 4},
-          {"row": 0, "col": 5},
-          {"row": 0, "col": 6}
+          {
+            "row": 0,
+            "col": 0
+          },
+          {
+            "row": 0,
+            "col": 1
+          },
+          {
+            "row": 0,
+            "col": 2
+          },
+          {
+            "row": 0,
+            "col": 3
+          },
+          {
+            "row": 0,
+            "col": 4
+          },
+          {
+            "row": 0,
+            "col": 5
+          },
+          {
+            "row": 0,
+            "col": 6
+          }
         ],
         "frame_duration": 0.075,
         "loop": false
@@ -84,15 +192,33 @@
     {
       "name": "hurt",
       "state_id": 14,
+      "collision_bounds": {
+        "offset_x": 18,
+        "offset_y": 22,
+        "width": 28,
+        "height": 36
+      },
       "sprite_config": {
         "filename": "poring1-Sheet.png",
         "sprite_width": 64,
         "sprite_height": 64,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3}
+          {
+            "row": 0,
+            "col": 0
+          },
+          {
+            "row": 0,
+            "col": 1
+          },
+          {
+            "row": 0,
+            "col": 2
+          },
+          {
+            "row": 0,
+            "col": 3
+          }
         ],
         "frame_duration": 0.05,
         "loop": false
@@ -101,19 +227,49 @@
     {
       "name": "death",
       "state_id": 15,
+      "collision_bounds": {
+        "offset_x": 16,
+        "offset_y": 30,
+        "width": 32,
+        "height": 30
+      },
       "sprite_config": {
         "filename": "poring1_dead-Sheet.png",
         "sprite_width": 64,
         "sprite_height": 64,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3},
-          {"row": 0, "col": 4},
-          {"row": 0, "col": 5},
-          {"row": 0, "col": 6},
-          {"row": 0, "col": 7}
+          {
+            "row": 0,
+            "col": 0
+          },
+          {
+            "row": 0,
+            "col": 1
+          },
+          {
+            "row": 0,
+            "col": 2
+          },
+          {
+            "row": 0,
+            "col": 3
+          },
+          {
+            "row": 0,
+            "col": 4
+          },
+          {
+            "row": 0,
+            "col": 5
+          },
+          {
+            "row": 0,
+            "col": 6
+          },
+          {
+            "row": 0,
+            "col": 7
+          }
         ],
         "frame_duration": 0.15,
         "loop": false

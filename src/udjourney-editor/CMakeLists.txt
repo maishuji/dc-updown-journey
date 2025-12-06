@@ -49,6 +49,7 @@ add_library(udjourney_editor_lib
   src/Editor.cpp
   src/EditorScene.cpp
   src/EditorPanel.cpp
+  src/AnimationPresetPanel.cpp
   src/MonsterPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp

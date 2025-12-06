@@ -9,6 +9,19 @@ namespace udjourney {
 namespace animation {
 
 /**
+ * Collision bounds relative to sprite position
+ */
+struct CollisionBounds {
+    float offset_x = 0.0f;  // X offset from sprite position
+    float offset_y = 0.0f;  // Y offset from sprite position
+    float width = 0.0f;     // Width of collision box
+    float height = 0.0f;    // Height of collision box
+
+    // Check if bounds are defined (width and height > 0)
+    bool is_valid() const { return width > 0.0f && height > 0.0f; }
+};
+
+/**
  * Single frame specification within a sprite sheet
  */
 struct FrameSpec {
@@ -36,6 +49,8 @@ struct AnimationStateConfig {
     std::string name;  // Name of the animation state (e.g., "idle", "running")
     int state_id =
         0;  // Numeric ID for the state (maps to PlayerState enum value)
+    CollisionBounds
+        collision_bounds;  // Optional collision bounds for this animation
     SpriteSheetConfig sprite_config;
 };
 

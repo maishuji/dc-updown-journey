@@ -64,6 +64,27 @@ animation::AnimationPresetConfig AnimationConfigLoader::load_preset(
             state_config.state_id = anim_json["state_id"].get<int>();
         }
 
+        // Load collision bounds (optional)
+        if (anim_json.contains("collision_bounds")) {
+            const auto& bounds_json = anim_json["collision_bounds"];
+            if (bounds_json.contains("offset_x")) {
+                state_config.collision_bounds.offset_x =
+                    bounds_json["offset_x"].get<float>();
+            }
+            if (bounds_json.contains("offset_y")) {
+                state_config.collision_bounds.offset_y =
+                    bounds_json["offset_y"].get<float>();
+            }
+            if (bounds_json.contains("width")) {
+                state_config.collision_bounds.width =
+                    bounds_json["width"].get<float>();
+            }
+            if (bounds_json.contains("height")) {
+                state_config.collision_bounds.height =
+                    bounds_json["height"].get<float>();
+            }
+        }
+
         // Load sprite sheet configuration
         if (anim_json.contains("sprite_config")) {
             const auto& sprite_json = anim_json["sprite_config"];
@@ -167,8 +188,10 @@ AnimSpriteController AnimationConfigLoader::create_controller(
                 start_col);
         } else {
             // Monster or other entity states
-            controller.add_animation(
-                anim_config.state_id, anim_config.name, sprite_anim);
+            controller.add_animation(anim_config.state_id,
+                                     anim_config.name,
+                                     sprite_anim,
+                                     anim_config.collision_bounds);
             udjourney::Logger::info(
                 "Added animation '%' (state %) with % frames from row %, col %",
                 anim_config.name,
