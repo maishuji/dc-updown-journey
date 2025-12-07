@@ -211,7 +211,7 @@ add_executable(editorpanel_tests
 )
 target_include_directories(editorpanel_tests PRIVATE include src ${imgui_SOURCE_DIR})
 target_include_directories(editorpanel_tests PRIVATE ../udjourney/include)
-target_link_libraries(editorpanel_tests PRIVATE udj-core gtest gtest_main nlohmann_json::nlohmann_json)
+target_link_libraries(editorpanel_tests PRIVATE udj-core gtest gtest_main nlohmann_json::nlohmann_json raylib)
 
 add_test(NAME EditorPanelTests COMMAND editorpanel_tests)
 
