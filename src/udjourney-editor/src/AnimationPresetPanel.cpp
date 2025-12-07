@@ -6,6 +6,7 @@
 #include <iostream>
 #include <algorithm>
 #include <filesystem>
+#include <string>
 
 #include <nlohmann/json.hpp>
 #include "ImGuiFileDialog.h"
