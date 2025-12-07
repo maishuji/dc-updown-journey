@@ -141,7 +141,8 @@ void AnimationPresetPanel::draw_toolbar() {
         ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f), "*");
     }
 
-    ImGui::SameLine(ImGui::GetWindowWidth() - 400);
+    ImGui::Spacing();
+    ImGui::Separator();
 
     // File operations
     if (ImGui::Button("New")) {
@@ -151,6 +152,7 @@ void AnimationPresetPanel::draw_toolbar() {
     ImGui::SameLine();
     if (ImGui::Button("Load")) {
         auto config = IGFD::FileDialogConfig();
+        config.path = udj::core::filesystem::get_assets_path("animations");
         ImGuiFileDialog::Instance()->OpenDialog(
             "LoadAnimPresetDlg", "Load Animation Preset", ".json", config);
     }
@@ -169,6 +171,7 @@ void AnimationPresetPanel::draw_toolbar() {
     ImGui::SameLine();
     if (ImGui::Button("Save As...")) {
         auto config = IGFD::FileDialogConfig();
+        config.path = udj::core::filesystem::get_assets_path("animations");
         ImGuiFileDialog::Instance()->OpenDialog(
             "SaveAnimPresetDlg", "Save Animation Preset", ".json", config);
     }
@@ -500,7 +503,7 @@ void AnimationPresetPanel::draw_sprite_config_editor() {
     ImGui::Text("Sprite Preview");
 
     // Try to load and display the sprite sheet
-    if (!sprite_cfg.filename.empty()) {
+    if (!sprite_cfg.filename.empty() && sprite_cfg.filename != "sprite.png") {
         Texture2D texture = load_texture_cached(sprite_cfg.filename);
 
         if (texture.id > 0) {
@@ -1056,6 +1059,11 @@ bool AnimationPresetPanel::save_preset(const std::string& filepath) {
 
 Texture2D AnimationPresetPanel::load_texture_cached(
     const std::string& filepath) {
+    // Return empty texture for default placeholder
+    if (filepath.empty() || filepath == "sprite.png") {
+        return Texture2D{0};
+    }
+
     // Check if already in cache
     auto it = texture_cache_.find(filepath);
     if (it != texture_cache_.end() && it->second.id > 0) {
@@ -1084,12 +1092,7 @@ Texture2D AnimationPresetPanel::load_texture_cached(
         }
     }
 
-    // Fallback: try to load anyway
-    texture = LoadTexture(filepath.c_str());
-    if (texture.id > 0) {
-        texture_cache_[filepath] = texture;
-    }
-
+    // Return empty texture if file doesn't exist (don't try to load)
     return texture;
 }
 
