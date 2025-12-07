@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include "udjourney/SpriteAnim.hpp"
+#include "udjourney/AnimationConfig.hpp"
 
 enum class PlayerState { IDLE, RUNNING, JUMPING, DASHING, FALLING };
 
@@ -16,6 +17,8 @@ class AnimSpriteController {
                        SpriteAnim animation);
     void add_animation(int state, const std::string& name,
                        SpriteAnim animation);
+    void add_animation(int state, const std::string& name, SpriteAnim animation,
+                       const udjourney::animation::CollisionBounds& bounds);
     void set_current_state(PlayerState state);
     void set_current_state(int state);
     void update(float delta_time);
@@ -25,6 +28,10 @@ class AnimSpriteController {
     PlayerState get_current_state() const { return current_state_; }
     int get_current_state_int() const { return current_state_int_; }
     bool is_animation_finished() const;
+
+    // Collision bounds
+    bool has_collision_bounds() const;
+    udjourney::animation::CollisionBounds get_collision_bounds() const;
 
     // Configuration
     void set_facing_right(bool facing_right) { facing_right_ = facing_right; }
@@ -38,6 +45,8 @@ class AnimSpriteController {
     std::unordered_map<PlayerState, SpriteAnim> animations_;
     std::unordered_map<int, SpriteAnim>
         animations_int_;  // For generic state support
+    std::unordered_map<int, udjourney::animation::CollisionBounds>
+        collision_bounds_;  // Collision bounds per state
     bool facing_right_ = true;
     bool using_player_state_ = true;  // Track which state system we're using
 

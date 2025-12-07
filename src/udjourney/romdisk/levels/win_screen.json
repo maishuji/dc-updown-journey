@@ -1,144 +1,237 @@
 {
-  "name": "Win Screen",
-  "scene_type": "ui_screen",
-  "tile_cols": 20,
-  "tile_rows": 15,
-  "player_spawn": {
-    "tile_x": 0,
-    "tile_y": 0
-  },
-  "platforms": [],
-  "monsters": [],
   "backgrounds": {
     "layers": [
       {
-        "name": "Celebration Stars",
-        "texture_file": "backgrounds/stars.png",
-        "depth": 0,
-        "parallax_factor": 1.0,
         "auto_scroll_enabled": true,
-        "scroll_velocity": {
-          "x": 10,
-          "y": -20
-        },
-        "wrap_x": true,
-        "wrap_y": true,
-        "objects": []
+        "depth": 0,
+        "name": "Celebration Stars",
+        "objects": [],
+        "parallax_factor": 1.0,
+        "repeat": false,
+        "scroll_speed_x": 0.0,
+        "scroll_speed_y": 0.0,
+        "texture_file": "backgrounds/stars.png"
       },
       {
-        "name": "Victory Clouds",
-        "texture_file": "backgrounds/clouds.png",
-        "depth": 1,
-        "parallax_factor": 0.9,
         "auto_scroll_enabled": true,
-        "scroll_velocity": {
-          "x": -5,
-          "y": -15
-        },
-        "wrap_x": true,
-        "wrap_y": true,
-        "objects": []
+        "depth": 1,
+        "name": "Victory Clouds",
+        "objects": [],
+        "parallax_factor": 0.8999999761581421,
+        "repeat": false,
+        "scroll_speed_x": 0.0,
+        "scroll_speed_y": 0.0,
+        "texture_file": "backgrounds/clouds.png"
       }
     ]
   },
   "fuds": [
     {
+      "anchor": "TopCenter",
       "name": "Victory Title",
-      "type_id": "custom",
-      "anchor": "TopCenter",
       "offset": {
-        "x": 0,
-        "y": 60
+        "x": -248.0,
+        "y": 61.0
       },
-      "size": {
-        "x": 500,
-        "y": 80
-      },
-      "visible": true,
       "properties": {
-        "text": "CONGRATULATIONS!",
+        "color": "GOLD",
         "font_size": "40",
-        "color": "GOLD"
-      }
-    },
-    {
-      "name": "Victory Message",
+        "text": "CONGRATULATIONS!"
+      },
+      "size": {
+        "x": 500.0,
+        "y": 80.0
+      },
       "type_id": "custom",
+      "visible": true
+    },
+    {
       "anchor": "TopCenter",
+      "name": "Victory Message",
       "offset": {
-        "x": 0,
-        "y": 150
+        "x": -225.0,
+        "y": 159.0
       },
-      "size": {
-        "x": 400,
-        "y": 50
-      },
-      "visible": true,
       "properties": {
-        "text": "YOU COMPLETED THE LEVEL!",
+        "color": "GREEN",
         "font_size": "25",
-        "color": "GREEN"
-      }
+        "text": "YOU COMPLETED THE LEVEL!"
+      },
+      "size": {
+        "x": 400.0,
+        "y": 50.0
+      },
+      "type_id": "custom",
+      "visible": true
     },
     {
+      "anchor": "MiddleCenter",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_buttons_atlas.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 0,
+      "background_tile_size": 64,
+      "background_tile_width": 2,
       "name": "Play Again Button",
-      "type_id": "menu_button",
-      "anchor": "MiddleCenter",
       "offset": {
-        "x": 0,
-        "y": 50
+        "x": -154.0,
+        "y": 16.0
       },
-      "size": {
-        "x": 250,
-        "y": 50
-      },
-      "visible": true,
       "properties": {
-        "text": "PLAY AGAIN",
+        "border_thickness": "2",
         "button_action": "start_game",
+        "click_color": [
+          110,
+          5,
+          172
+        ],
         "font_size": "24",
-        "border_thickness": "2"
-      }
+        "hover_color": [
+          18,
+          38,
+          221
+        ],
+        "normal_color": [
+          15,
+          0,
+          0
+        ],
+        "selectable": true,
+        "text": "PLAY AGAIN"
+      },
+      "size": {
+        "x": 251.0,
+        "y": 64.0
+      },
+      "type_id": "menu_button",
+      "visible": true
     },
     {
+      "anchor": "MiddleCenter",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_buttons_atlas.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 0,
+      "background_tile_size": 64,
+      "background_tile_width": 2,
       "name": "Return to Title Button",
-      "type_id": "menu_button",
-      "anchor": "MiddleCenter",
       "offset": {
-        "x": 0,
-        "y": 120
+        "x": -120.0,
+        "y": 82.0
+      },
+      "properties": {
+        "border_thickness": "2",
+        "button_action": "return_to_title",
+        "click_color": [
+          130,
+          3,
+          178
+        ],
+        "font_size": "20",
+        "hover_color": [
+          0,
+          0,
+          80
+        ],
+        "normal_color": [
+          0,
+          0,
+          0
+        ],
+        "selectable": true,
+        "text": "RETURN TO TITLE"
       },
       "size": {
-        "x": 250,
-        "y": 50
+        "x": 258.0,
+        "y": 64.0
       },
-      "visible": true,
-      "properties": {
-        "text": "RETURN TO TITLE",
-        "button_action": "return_to_title",
-        "font_size": "20",
-        "border_thickness": "2"
-      }
+      "type_id": "menu_button",
+      "visible": true
     },
     {
-      "name": "Quit Button",
-      "type_id": "menu_button",
       "anchor": "MiddleCenter",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_buttons_atlas.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 0,
+      "background_tile_size": 64,
+      "background_tile_width": 2,
+      "name": "Quit Button",
       "offset": {
-        "x": 0,
-        "y": 190
+        "x": -93.0,
+        "y": 146.0
+      },
+      "properties": {
+        "border_thickness": "2",
+        "button_action": "quit_game",
+        "click_color": [
+          118,
+          0,
+          141
+        ],
+        "font_size": "20",
+        "hover_color": [
+          9,
+          14,
+          222
+        ],
+        "normal_color": [
+          0,
+          0,
+          0
+        ],
+        "selectable": true,
+        "text": "QUIT"
       },
       "size": {
-        "x": 250,
-        "y": 50
+        "x": 271.0,
+        "y": 64.0
       },
-      "visible": true,
+      "type_id": "menu_button",
+      "visible": true
+    },
+    {
+      "anchor": "TopRight",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 1,
+      "background_tile_size": 64,
+      "background_tile_width": 1,
+      "name": "Icon Button",
+      "offset": {
+        "x": -131.0,
+        "y": 241.0
+      },
       "properties": {
-        "text": "QUIT",
-        "button_action": "quit_game",
-        "font_size": "20",
-        "border_thickness": "2"
-      }
+        "border_thickness": 2,
+        "button_action": "none",
+        "font_size": 24,
+        "hover_color": [
+          255,
+          0,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "selectable": false,
+        "text": ""
+      },
+      "size": {
+        "x": 64.0,
+        "y": 64.0
+      },
+      "type_id": "icon_button",
+      "visible": true
     }
-  ]
+  ],
+  "name": "Untitled Level",
+  "scene_type": "ui_screen"
 }

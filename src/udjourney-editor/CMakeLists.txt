@@ -49,6 +49,7 @@ add_library(udjourney_editor_lib
   src/Editor.cpp
   src/EditorScene.cpp
   src/EditorPanel.cpp
+  src/AnimationPresetPanel.cpp
   src/MonsterPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
@@ -101,10 +102,11 @@ target_include_directories(udjourney_editor_lib PUBLIC include)
 target_link_libraries(udjourney_editor_lib PUBLIC udj-core raylib nlohmann_json::nlohmann_json)
 
 # Create test-enabled version of the library
-add_library(udjourney_editor_lib_test STATIC
+add_library(udjourney_editor_lib_test
   src/Editor.cpp
   src/EditorScene.cpp
   src/EditorPanel.cpp
+  src/AnimationPresetPanel.cpp
   src/MonsterPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
@@ -180,6 +182,7 @@ enable_testing()
 add_executable(editorpanel_tests
   tests/test_editorpanel.cpp
   src/EditorPanel.cpp
+  src/EditorScene.cpp
   src/MonsterPresetManager.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/strategies/level/ImportFromFileStrategy.cpp
@@ -210,7 +213,7 @@ add_executable(editorpanel_tests
 )
 target_include_directories(editorpanel_tests PRIVATE include src ${imgui_SOURCE_DIR})
 target_include_directories(editorpanel_tests PRIVATE ../udjourney/include)
-target_link_libraries(editorpanel_tests PRIVATE udj-core gtest gtest_main nlohmann_json::nlohmann_json)
+target_link_libraries(editorpanel_tests PRIVATE udj-core gtest gtest_main nlohmann_json::nlohmann_json raylib)
 
 add_test(NAME EditorPanelTests COMMAND editorpanel_tests)
 

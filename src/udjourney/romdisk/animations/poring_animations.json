@@ -1,123 +1,279 @@
 {
-  "preset_name": "monster_poring",
   "animations": [
     {
+      "collision_bounds": {
+        "height": 40.0,
+        "offset_x": 16.0,
+        "offset_y": 23.5,
+        "width": 32.0
+      },
       "name": "idle",
-      "state_id": 10,
       "sprite_config": {
         "filename": "poring1-Sheet.png",
-        "sprite_width": 64,
-        "sprite_height": 64,
+        "frame_duration": 0.15000000596046448,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3},
-          {"row": 0, "col": 4},
-          {"row": 0, "col": 5},
-          {"row": 0, "col": 6}
+          {
+            "col": 0,
+            "row": 0
+          },
+          {
+            "col": 1,
+            "row": 0
+          },
+          {
+            "col": 2,
+            "row": 0
+          },
+          {
+            "col": 3,
+            "row": 0
+          },
+          {
+            "col": 4,
+            "row": 0
+          },
+          {
+            "col": 5,
+            "row": 0
+          },
+          {
+            "col": 6,
+            "row": 0
+          }
         ],
-        "frame_duration": 0.15,
-        "loop": true
-      }
+        "loop": true,
+        "sprite_height": 64,
+        "sprite_width": 64
+      },
+      "state_id": 10
     },
     {
+      "collision_bounds": {
+        "height": 40.0,
+        "offset_x": 16.0,
+        "offset_y": 24.0,
+        "width": 32.0
+      },
       "name": "patrol",
-      "state_id": 11,
       "sprite_config": {
         "filename": "poring1-Sheet.png",
-        "sprite_width": 64,
-        "sprite_height": 64,
+        "frame_duration": 0.07500000298023224,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3},
-          {"row": 0, "col": 4},
-          {"row": 0, "col": 5},
-          {"row": 0, "col": 6}
+          {
+            "col": 0,
+            "row": 0
+          },
+          {
+            "col": 1,
+            "row": 0
+          },
+          {
+            "col": 2,
+            "row": 0
+          },
+          {
+            "col": 3,
+            "row": 0
+          },
+          {
+            "col": 4,
+            "row": 0
+          },
+          {
+            "col": 5,
+            "row": 0
+          },
+          {
+            "col": 6,
+            "row": 0
+          }
         ],
-        "frame_duration": 0.075,
-        "loop": true
-      }
+        "loop": true,
+        "sprite_height": 64,
+        "sprite_width": 64
+      },
+      "state_id": 11
     },
     {
+      "collision_bounds": {
+        "height": 40.0,
+        "offset_x": 16.0,
+        "offset_y": 23.5,
+        "width": 32.0
+      },
       "name": "chase",
-      "state_id": 12,
       "sprite_config": {
         "filename": "poring1-Sheet.png",
-        "sprite_width": 64,
-        "sprite_height": 64,
+        "frame_duration": 0.03750000149011612,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3},
-          {"row": 0, "col": 4},
-          {"row": 0, "col": 5},
-          {"row": 0, "col": 6}
+          {
+            "col": 0,
+            "row": 0
+          },
+          {
+            "col": 1,
+            "row": 0
+          },
+          {
+            "col": 2,
+            "row": 0
+          },
+          {
+            "col": 3,
+            "row": 0
+          },
+          {
+            "col": 4,
+            "row": 0
+          },
+          {
+            "col": 5,
+            "row": 0
+          },
+          {
+            "col": 6,
+            "row": 0
+          }
         ],
-        "frame_duration": 0.0375,
-        "loop": true
-      }
+        "loop": true,
+        "sprite_height": 64,
+        "sprite_width": 64
+      },
+      "state_id": 12
     },
     {
+      "collision_bounds": {
+        "height": 44.0,
+        "offset_x": 8.0,
+        "offset_y": 19.5,
+        "width": 48.0
+      },
       "name": "attack",
-      "state_id": 13,
       "sprite_config": {
         "filename": "poring1-Sheet.png",
-        "sprite_width": 64,
-        "sprite_height": 64,
+        "frame_duration": 0.07500000298023224,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3},
-          {"row": 0, "col": 4},
-          {"row": 0, "col": 5},
-          {"row": 0, "col": 6}
+          {
+            "col": 0,
+            "row": 0
+          },
+          {
+            "col": 1,
+            "row": 0
+          },
+          {
+            "col": 2,
+            "row": 0
+          },
+          {
+            "col": 3,
+            "row": 0
+          },
+          {
+            "col": 4,
+            "row": 0
+          },
+          {
+            "col": 5,
+            "row": 0
+          },
+          {
+            "col": 6,
+            "row": 0
+          }
         ],
-        "frame_duration": 0.075,
-        "loop": false
-      }
+        "loop": false,
+        "sprite_height": 64,
+        "sprite_width": 64
+      },
+      "state_id": 13
     },
     {
+      "collision_bounds": {
+        "height": 36.0,
+        "offset_x": 18.0,
+        "offset_y": 28.0,
+        "width": 28.0
+      },
       "name": "hurt",
-      "state_id": 14,
       "sprite_config": {
         "filename": "poring1-Sheet.png",
-        "sprite_width": 64,
-        "sprite_height": 64,
+        "frame_duration": 0.05000000074505806,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3}
+          {
+            "col": 0,
+            "row": 0
+          },
+          {
+            "col": 1,
+            "row": 0
+          },
+          {
+            "col": 2,
+            "row": 0
+          },
+          {
+            "col": 3,
+            "row": 0
+          }
         ],
-        "frame_duration": 0.05,
-        "loop": false
-      }
+        "loop": false,
+        "sprite_height": 64,
+        "sprite_width": 64
+      },
+      "state_id": 14
     },
     {
+      "collision_bounds": {
+        "height": 30.0,
+        "offset_x": 16.0,
+        "offset_y": 33.5,
+        "width": 32.0
+      },
       "name": "death",
-      "state_id": 15,
       "sprite_config": {
         "filename": "poring1_dead-Sheet.png",
-        "sprite_width": 64,
-        "sprite_height": 64,
+        "frame_duration": 0.15000000596046448,
         "frames": [
-          {"row": 0, "col": 0},
-          {"row": 0, "col": 1},
-          {"row": 0, "col": 2},
-          {"row": 0, "col": 3},
-          {"row": 0, "col": 4},
-          {"row": 0, "col": 5},
-          {"row": 0, "col": 6},
-          {"row": 0, "col": 7}
+          {
+            "col": 0,
+            "row": 0
+          },
+          {
+            "col": 1,
+            "row": 0
+          },
+          {
+            "col": 2,
+            "row": 0
+          },
+          {
+            "col": 3,
+            "row": 0
+          },
+          {
+            "col": 4,
+            "row": 0
+          },
+          {
+            "col": 5,
+            "row": 0
+          },
+          {
+            "col": 6,
+            "row": 0
+          },
+          {
+            "col": 7,
+            "row": 0
+          }
         ],
-        "frame_duration": 0.15,
-        "loop": false
-      }
+        "loop": false,
+        "sprite_height": 64,
+        "sprite_width": 64
+      },
+      "state_id": 15
     }
-  ]
+  ],
+  "preset_name": "monster_poring"
 }

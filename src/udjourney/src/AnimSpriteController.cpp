@@ -19,6 +19,14 @@ void AnimSpriteController::add_animation(int state, const std::string& name,
     using_player_state_ = false;
 }
 
+void AnimSpriteController::add_animation(
+    int state, const std::string& name, SpriteAnim animation,
+    const udjourney::animation::CollisionBounds& bounds) {
+    animations_int_[state] = std::move(animation);
+    collision_bounds_[state] = bounds;
+    using_player_state_ = false;
+}
+
 void AnimSpriteController::set_current_state(PlayerState state) {
     if (current_state_ != state) {
         PlayerState old_state = current_state_;
@@ -98,4 +106,24 @@ bool AnimSpriteController::is_animation_finished() const {
         }
     }
     return false;
+}
+
+bool AnimSpriteController::has_collision_bounds() const {
+    if (using_player_state_) {
+        return false;  // Player states don't use this system yet
+    }
+    auto it = collision_bounds_.find(current_state_int_);
+    return it != collision_bounds_.end() && it->second.is_valid();
+}
+
+udjourney::animation::CollisionBounds
+AnimSpriteController::get_collision_bounds() const {
+    if (using_player_state_) {
+        return udjourney::animation::CollisionBounds{};
+    }
+    auto it = collision_bounds_.find(current_state_int_);
+    if (it != collision_bounds_.end()) {
+        return it->second;
+    }
+    return udjourney::animation::CollisionBounds{};
 }

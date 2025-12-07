@@ -30,6 +30,7 @@
 #include "udjourney-editor/strategies/level/LevelCreationStrategy.hpp"
 #include "udjourney-editor/strategies/level/ImportFromFileStrategy.hpp"
 #include "udjourney-editor/ui/NewLevelPopup.hpp"
+#include "udjourney-editor/AnimationPresetPanel.hpp"
 #include "udj-core/CoreUtils.hpp"
 
 struct Editor::PImpl {
@@ -44,6 +45,7 @@ struct Editor::PImpl {
     ImGuiStyle original_style;
     std::unique_ptr<LevelCreationStrategy> level_creation_strategy = nullptr;
     NewLevelPopup newLevelPopup;
+    udjourney::editor::AnimationPresetPanel animation_preset_panel;
 };
 
 Editor::Editor() : pimpl(std::make_unique<PImpl>()) { pimpl->running = true; }
@@ -419,6 +421,10 @@ void Editor::run() {
             }
 
             if (ImGui::BeginMenu("Settings")) {
+                if (ImGui::MenuItem("Animation Preset Editor")) {
+                    pimpl->animation_preset_panel.set_open(true);
+                }
+                ImGui::Separator();
                 // Scene Type toggle
                 if (ImGui::BeginMenu("Scene Type")) {
                     if (ImGui::MenuItem(
@@ -527,6 +533,9 @@ void Editor::run() {
 
         // Render UI popups after scene
         pimpl->newLevelPopup.render();
+
+        // Draw animation preset panel
+        pimpl->animation_preset_panel.draw();
 
         ImGui::Render();
 

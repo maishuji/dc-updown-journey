@@ -12,6 +12,18 @@ namespace udj::core {
 namespace filesystem {
 
 /**
+ * @brief Get the base path for assets
+ *
+ * Returns the platform-dependent base asset directory path.
+ * This is either "assets/" for Linux or "/rd/" for Dreamcast.
+ *
+ * @return A std::string containing the base asset path with trailing slash
+ */
+inline std::string get_assets_base_path() {
+    return std::string(ASSETS_BASE_PATH);
+}
+
+/**
  * @brief Constructs the full path for an asset file based on the platform's
  * base asset directory.
  *
@@ -24,7 +36,7 @@ namespace filesystem {
  * @return A `std::string` containing the full path to the asset.
  */
 inline std::string get_assets_path(const std::string& filename) {
-    return std::string(ASSETS_BASE_PATH) + filename;
+    return get_assets_base_path() + filename;
 }
 
 /**
@@ -75,8 +87,9 @@ inline constexpr bool is_same_sign(float valueA, float valueB) {
 // Backward compatibility aliases for existing code
 namespace udjourney::coreutils {
 // Filesystem functions
-using udj::core::filesystem::get_assets_path;
 using udj::core::filesystem::file_exists;
+using udj::core::filesystem::get_assets_base_path;
+using udj::core::filesystem::get_assets_path;
 
 // Math utilities
 namespace math = udj::core::math;

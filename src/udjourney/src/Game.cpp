@@ -25,6 +25,7 @@
 #include <udj-core/CoreUtils.hpp>
 #include "udjourney/Monster.hpp"
 #include "udjourney/Player.hpp"
+#include "udjourney/Projectile.hpp"
 #include "udjourney/AnimSpriteController.hpp"
 #include "udjourney/SpriteAnim.hpp"
 #include "udjourney/ScoreHistory.hpp"
@@ -50,6 +51,9 @@
 #include "udjourney/platform/reuse_strategies/NoReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
+
+using udj::core::filesystem::file_exists;
+using udj::core::filesystem::get_assets_path;
 
 struct Resolution {
     int width;
@@ -357,41 +361,48 @@ void Game::process_input() {
             actor->process_input();
         }
         m_player->process_input();
-    }
-}
 
-void draw_title_() {
-    DrawText(" -- UP-DOWN JOURNEY -- \n", 10, 10, 20, RED);
-    DrawText("Press START to start the game\n", 300, 40, 20, RED);
-    DrawText("Press B button to quit\n", 300, 70, 20, RED);
-}
+        // Handle shooting input (X button / E key)
+        bool shoot_pressed = false;
+#ifdef PLATFORM_DREAMCAST
+        shoot_pressed =
+            IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+#else
+        shoot_pressed =
+            IsKeyPressed(KEY_E) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+#endif
+        if (shoot_pressed) {
+            udj::core::Logger::debug(
+                "E key pressed! Player: % Can shoot: %",
+                (m_player ? "yes" : "no"),
+                (m_player && m_player->can_shoot() ? "yes" : "no"));
+        }
+        if (shoot_pressed && m_player && m_player->can_shoot()) {
+            const udjourney::ProjectilePreset *preset =
+                m_player->get_current_projectile_preset();
+            if (preset) {
+                auto projectile = std::make_unique<udjourney::Projectile>(
+                    *this,
+                    *preset,
+                    m_player->get_shoot_position(),
+                    m_player->get_shoot_direction());
+                add_actor(std::move(projectile));
+                m_player->reset_shoot_cooldown();
+                udj::core::Logger::info("Projectile spawned!");
+            } else {
+                udj::core::Logger::warning("No projectile preset found!");
+            }
+        }
 
-void draw_game_over_(auto score_history) {
-    DrawText("GAME OVER - Press START to start over.\n", 10, 10, 20, RED);
-    DrawText("Press B button to quit\n", 300, 40, 20, RED);
-
-    const int kScoreX = 300;
-    const int kScoreOffsetX =
-        50;  // Offset for the score conpared to the header
-    const int kScoreStartY = 70;
-    const int kScoreSize = 20;
-    const int kScoreYStep = kScoreSize + 2;
-    const int kScoreMaxLines = 10;
-
-    std::stringstream str_stream;
-    DrawText("Scores: ", kScoreX, kScoreStartY, kScoreSize, YELLOW);
-    int idx = 1;
-    auto scores = score_history.get_scores();
-    for (auto iter = scores.rbegin(); iter != scores.rend(); ++iter) {
-        auto str_token = std::to_string(*iter);
-        DrawText(str_token.c_str(),
-                 kScoreX + kScoreOffsetX,
-                 kScoreStartY + idx * kScoreYStep,
-                 kScoreSize,
-                 WHITE);
-        ++idx;
-        if (idx > kScoreMaxLines) {
-            break;  // Limit to 10 scores
+        // Handle projectile type cycling (C key / Y button)
+        bool cycle_pressed = false;
+#ifdef PLATFORM_DREAMCAST
+        cycle_pressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_UP);
+#else
+        cycle_pressed = IsKeyPressed(KEY_C);
+#endif
+        if (cycle_pressed && m_player) {
+            m_player->cycle_projectile_type();
         }
     }
 }
@@ -401,33 +412,6 @@ void draw_pause_() {
     DrawText("Press START to resume\n", 300, 40, 20, WHITE);
     DrawText("Press L to load level\n", 300, 70, 20, WHITE);
     DrawText("Press B button to quit\n", 300, 100, 20, RED);
-}
-
-void draw_win_screen_() {
-    // Draw celebratory win screen
-    DrawText("CONGRATULATIONS!", 130, 100, 40, GOLD);
-    DrawText("YOU COMPLETED LEVEL 1!", 180, 150, 25, GREEN);
-    DrawText(
-        "You successfully journeyed from top to bottom!", 120, 200, 20, WHITE);
-
-    DrawText("Press START to play again", 220, 280, 20, YELLOW);
-    DrawText("Press B to quit", 280, 320, 20, RED);
-
-    // Draw some celebratory effects
-    static float celebration_timer = 0.0f;
-    celebration_timer += GetFrameTime();
-
-    // Pulsating stars effect
-    for (int i = 0; i < 20; i++) {
-        float x = 50 + (i * 30) % 600;
-        float y = 50 + ((i * 17) % 300) + sin(celebration_timer * 3 + i) * 10;
-        Color star_color = {
-            255,
-            255,
-            0,
-            (unsigned char)(128 + 127 * sin(celebration_timer * 2 + i))};
-        DrawText("*", static_cast<int>(x), static_cast<int>(y), 20, star_color);
-    }
 }
 
 void Game::draw_finish_line_() const {
@@ -1539,6 +1523,83 @@ void Game::update() {
                 m_player->update(delta);
                 last_update_time = cur_update_time;
 
+                // Check projectile-monster collisions
+                for (auto &proj_actor : m_actors) {
+                    // Not a projectile
+                    if (!proj_actor || proj_actor->get_group_id() != 5)
+                        continue;
+
+                    auto *projectile =
+                        dynamic_cast<udjourney::Projectile *>(proj_actor.get());
+                    if (!projectile || !projectile->is_alive()) continue;
+
+                    Rectangle proj_rect = projectile->get_rectangle();
+
+                    for (auto &monster_actor : m_actors) {
+                        // Not a monster
+                        if (!monster_actor ||
+                            monster_actor->get_group_id() != 3)
+                            continue;
+
+                        auto *monster =
+                            dynamic_cast<Monster *>(monster_actor.get());
+                        if (!monster || !monster->is_alive()) continue;
+
+                        // Skip if monster is already dying/dead
+                        if (monster->get_state() == ActorState::CONSUMED) {
+                            continue;
+                        }
+
+                        Rectangle monster_rect = monster->get_rectangle();
+
+                        if (CheckCollisionRecs(proj_rect, monster_rect)) {
+                            // Hit! Monster takes damage from projectile
+                            std::cout << "Projectile hit monster! Damage: "
+                                      << projectile->get_damage()
+                                      << " Monster ptr: " << monster
+                                      << std::endl;
+
+                            if (monster) {
+                                std::cout << "Calling monster->take_damage..."
+                                          << std::endl;
+                                monster->take_damage(static_cast<float>(
+                                    projectile->get_damage()));
+                                std::cout << "take_damage returned"
+                                          << std::endl;
+                            } else {
+                                std::cout << "ERROR: Monster pointer is null!"
+                                          << std::endl;
+                            }
+
+                            projectile->destroy();
+                            std::cout << "Projectile destroyed after hit"
+                                      << std::endl;
+                            break;
+                        }
+                    }
+                }
+
+                // Remove dead projectiles and consumed monsters
+                m_actors.erase(
+                    std::remove_if(
+                        m_actors.begin(),
+                        m_actors.end(),
+                        [](const std::unique_ptr<IActor> &actor) {
+                            if (actor->get_group_id() == 5) {  // Projectile
+                                auto *proj =
+                                    dynamic_cast<udjourney::Projectile *>(
+                                        actor.get());
+                                return proj && !proj->is_alive();
+                            }
+                            if (actor->get_group_id() == 3) {  // Monster
+                                // Only remove after death animation completes
+                                return actor->get_state() ==
+                                       ActorState::CONSUMED;
+                            }
+                            return false;
+                        }),
+                    m_actors.end());
+
                 // Check win condition: player reached bottom of level
                 if (m_current_scene && m_player) {
                     Rectangle player_rect = m_player->get_rectangle();
@@ -2385,6 +2446,10 @@ void Game::initialize_gameplay() {
         m_event_dispatcher,
         create_player_animation_controller());
     m_player->add_observer(static_cast<IObserver *>(this));
+
+    // Load projectile presets
+    m_player->load_projectile_presets("projectiles.json");
+    m_player->set_current_projectile("bullet");
 
     // Add bonus item
     m_actors.emplace_back(

@@ -185,6 +185,14 @@ void MonsterAttackState::update(IActor& actor, float delta) {
     // Monster stays stationary during attack
     monster.set_velocity_x(0.0f);
 
+    // Check if attack animation is finished
+    if (monster.is_animation_finished()) {
+        std::cout << "Attack animation finished, returning to chase\n";
+        // Return to chase state after attack completes
+        monster.change_state("chase");
+        return;
+    }
+
     // Check data-driven transitions
     check_transitions(actor, delta);
 }
@@ -208,6 +216,14 @@ void MonsterHurtState::update(IActor& actor, float delta) {
 
     // Monster stays stationary during hurt animation
     monster.set_velocity_x(0.0f);
+
+    // Check if hurt animation is finished
+    if (monster.is_animation_finished()) {
+        std::cout << "Hurt animation finished, returning to patrol\n";
+        // Return to patrol state after hurt animation completes
+        monster.change_state("patrol");
+        return;
+    }
 
     // Check data-driven transitions
     check_transitions(actor, delta);
