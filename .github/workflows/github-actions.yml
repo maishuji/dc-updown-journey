@@ -2,19 +2,25 @@ name: GitHub Action
 run-name: ${{ github.actor }} is building the repository 🚀
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
+  Build-Linux:
     runs-on: ubuntu-latest
-    container: 
-      # image: maishuji/dc-kos-image:14.2.1-dev-01mar25-kp01mar25-gl01mar25
-      image: maishuji/dc-kos-image:14.3.0-28sep25-kp29sep25
-      options: --user root
     steps:
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - run: echo "🔎 Building Linux version on branch ${{ github.ref }}"
       
       - name: Check out repository code
         uses: actions/checkout@v4
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            libraylib-dev \
+            python3 \
+            python3-pip \
+            python3-venv
+
       - name: Create virtual environment and install cpplint
         run: |
           python3 -m venv ${{ github.workspace }}/venv
@@ -29,13 +35,34 @@ jobs:
             --exclude=src/udjourney/include/udjourney/dreamcast_json_compat.h \
             --recursive src/
 
-      - name: Build the repository
+      - name: Build Linux version
+        run: |
+          echo "🔨 Building Linux version..."
+          mkdir build
+          cd build
+          cmake ..
+          make -j$(nproc)
+          echo "✅ Linux build completed"
+
+  Build-Dreamcast:
+    runs-on: ubuntu-latest
+    container: 
+      image: maishuji/dc-kos-image:14.3.0-28sep25-kp29sep25
+      options: --user root
+    steps:
+      - run: echo "🔎 Building Dreamcast version on branch ${{ github.ref }}"
+      
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+
+      - name: Build Dreamcast version
         run:  |
-          echo " 🫣 Building..."
+          echo "🔨 Building Dreamcast version..."
           source /opt/toolchains/dc/kos/environ.sh
           mkdir build
           cd build
           cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/dreamcast.cmake
           make
-          echo " 👏 Build completed"
+          echo "✅ Dreamcast build completed"
         shell: bash
