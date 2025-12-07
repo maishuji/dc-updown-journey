@@ -41,6 +41,11 @@ jobs:
           make -j$(nproc)
           sudo make install
           sudo ldconfig
+          # Create raylib subdirectory for includes
+          sudo mkdir -p /usr/local/include/raylib
+          sudo cp /usr/local/include/raylib.h /usr/local/include/raylib/
+          sudo cp /usr/local/include/raymath.h /usr/local/include/raylib/
+          sudo cp /usr/local/include/rlgl.h /usr/local/include/raylib/
 
       - name: Create virtual environment and install cpplint
         run: |
