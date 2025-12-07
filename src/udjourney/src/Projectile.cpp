@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <string>
 
 #include <udj-core/CoreUtils.hpp>
 
