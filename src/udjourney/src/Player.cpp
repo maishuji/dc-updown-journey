@@ -461,8 +461,9 @@ void Player::reset_shoot_cooldown() {
 }
 
 Vector2 Player::get_shoot_position() const {
-    // Shoot from center-right or center-left of player
-    float offset_x = m_facing_right ? r.width : 0;
+    // Shoot from outside the player bounds to avoid any collision
+    // Use a larger offset to ensure clear separation
+    float offset_x = m_facing_right ? r.width + 5.0f : -5.0f;
     return Vector2{r.x + offset_x, r.y + r.height / 2.0f};
 }
 
