@@ -282,6 +282,7 @@ void Monster::handle_collision(
     }
 
     const uint8_t PLATFORM_TYPE_ID = 1;
+    const uint8_t MONSTER_TYPE_ID = 3;
 
     grounded_ = false;
 
@@ -332,6 +333,30 @@ void Monster::handle_collision(
                     } else {
                         rect_.y += intersect.height;  // Move monster down
                         velocity_y_ = 0.0f;
+                    }
+                }
+            } else if (actor->get_group_id() == MONSTER_TYPE_ID) {
+                // Enemy-enemy collision: prevent overlapping
+                Rectangle other_rect = actor->get_rectangle();
+                Rectangle intersect = GetCollisionRec(rect_, other_rect);
+
+                // Only resolve horizontally to avoid interfering with gravity
+                if (intersect.width > 0 && intersect.height > 0) {
+                    // Push monsters apart horizontally
+                    if (rect_.x < other_rect.x) {
+                        // This monster is on the left, push it left
+                        rect_.x -= intersect.width / 2.0f;
+                    } else {
+                        // This monster is on the right, push it right
+                        rect_.x += intersect.width / 2.0f;
+                    }
+
+                    // Optionally reverse direction when colliding with another
+                    // enemy (prevents them from constantly pushing into each
+                    // other)
+                    if (anim_controller_.get_current_state_int() ==
+                        1) {  // PATROL
+                        patrol_direction_right_ = !patrol_direction_right_;
                     }
                 }
             }
