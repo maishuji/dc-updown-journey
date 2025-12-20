@@ -2,6 +2,7 @@
   "backgrounds": {
     "layers": [
       {
+        "auto_scroll_enabled": true,
         "depth": 0,
         "name": "New Layer",
         "objects": [
@@ -271,9 +272,13 @@
           }
         ],
         "parallax_factor": 0.5,
+        "repeat": false,
+        "scroll_speed_x": 0.0,
+        "scroll_speed_y": 0.0,
         "texture_file": ""
       },
       {
+        "auto_scroll_enabled": true,
         "depth": 0,
         "name": "back",
         "objects": [
@@ -367,6 +372,9 @@
           }
         ],
         "parallax_factor": 0.8140000104904175,
+        "repeat": false,
+        "scroll_speed_x": 0.0,
+        "scroll_speed_y": 0.0,
         "texture_file": ""
       }
     ]
@@ -571,12 +579,7 @@
       "y": 3
     }
   ],
-  "name": "Winter Forest",
-  "metadata": {
-    "display_name": "Winter Forest",
-    "difficulty": 2,
-    "thumbnail": ""
-  },
+  "name": "Untitled Level",
   "platforms": [
     {
       "behavior": "horizontal",
@@ -807,5 +810,6 @@
     "x": 2,
     "y": 8
   },
-  "scene_type": "level"
+  "scene_type": "level",
+  "scroll_speed": 0.5
 }

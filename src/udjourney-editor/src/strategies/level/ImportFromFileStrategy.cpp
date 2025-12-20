@@ -46,6 +46,15 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
             level.scene_type = SceneType::LEVEL;
         }
 
+        // Load scroll speed (defaults to 1.0)
+        if (jlevel.contains("scroll_speed")) {
+            level.scroll_speed = jlevel["scroll_speed"].get<float>();
+            std::cout << "Loaded scroll speed: " << level.scroll_speed
+                      << std::endl;
+        } else {
+            level.scroll_speed = 1.0f;  // Default
+        }
+
         // Get level dimensions from JSON if available, otherwise use provided
         int level_rows = tiles_y;
         int level_cols = tiles_x;

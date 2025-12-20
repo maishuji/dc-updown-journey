@@ -63,6 +63,7 @@ struct Level {
     int player_spawn_x = 2;
     int player_spawn_y = 8;
     SceneType scene_type = SceneType::LEVEL;  // Default to level
+    float scroll_speed = 1.0f;  // Camera scroll speed (pixels per frame)
 
     void clear() {
         tiles.clear();

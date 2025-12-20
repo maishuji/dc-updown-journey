@@ -53,6 +53,7 @@ bool Scene::load_from_file(const std::string& filename) {
 
         // Load scene metadata
         m_name = scene_data.value("name", "Unnamed Level");
+        m_scroll_speed = scene_data.value("scroll_speed", 1.0f);
 
         // Load scene type (defaults to LEVEL for backward compatibility)
         if (scene_data.contains("scene_type")) {
@@ -335,6 +336,7 @@ bool Scene::save_to_file(const std::string& filename) const {
         json scene_data;
 
         scene_data["name"] = m_name;
+        scene_data["scroll_speed"] = m_scroll_speed;
 
         // Save scene type
         scene_data["scene_type"] =

@@ -159,10 +159,12 @@ class Scene {
     const std::vector<FUDData>& get_fuds() const { return m_fuds; }
     const std::string& get_name() const { return m_name; }
     SceneType get_type() const { return m_scene_type; }
+    float get_scroll_speed() const { return m_scroll_speed; }
 
     // Setters
     void set_name(const std::string& name) { m_name = name; }
     void set_type(SceneType type) { m_scene_type = type; }
+    void set_scroll_speed(float speed) { m_scroll_speed = speed; }
     void add_platform(const PlatformData& platform) {
         m_platforms.push_back(platform);
     }
@@ -190,6 +192,8 @@ class Scene {
     std::string m_name = "Unnamed Level";
     SceneType m_scene_type =
         SceneType::LEVEL;  // Default to level for backward compatibility
+    float m_scroll_speed =
+        1.0f;  // Default camera scroll speed (pixels per frame)
 };
 
 }  // namespace scene

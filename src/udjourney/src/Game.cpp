@@ -1515,7 +1515,12 @@ void Game::update() {
             if (cur_update_time - last_update_time > kUpdateInterval) {
                 // Only scroll if finish line hasn't reached middle of screen
                 if (should_continue_scrolling_()) {
-                    m_rect.y += 1;
+                    // Use scroll speed from current scene, default to 1.0 if no
+                    // scene
+                    float scroll_speed =
+                        m_current_scene ? m_current_scene->get_scroll_speed()
+                                        : 1.0f;
+                    m_rect.y += scroll_speed;
                 }
                 for (auto &actor : m_actors) {
                     actor->update(delta);

@@ -132,6 +132,7 @@ void Editor::export_platform_level_json(const std::string &export_path) {
 
     // Level metadata
     jlevel["name"] = "Untitled Level";
+    jlevel["scroll_speed"] = pimpl->level.scroll_speed;
 
     // Scene type
     jlevel["scene_type"] = (pimpl->level.scene_type == SceneType::UI_SCREEN)
@@ -442,6 +443,25 @@ void Editor::run() {
                     ImGui::EndMenu();
                 }
                 ImGui::Separator();
+                // Scroll Speed (for gameplay levels only)
+                if (pimpl->level.scene_type == SceneType::LEVEL) {
+                    ImGui::Text("Scroll Speed (Gameplay)");
+                    if (ImGui::SliderFloat("##ScrollSpeed",
+                                           &pimpl->level.scroll_speed,
+                                           0.1f,
+                                           5.0f,
+                                           "%.1f px/frame")) {
+                        // Value updated by ImGui
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip(
+                            "Camera vertical scrolling speed during gameplay\n"
+                            "Default: 1.0 px/frame\n"
+                            "Lower = slower scrolling, Higher = faster "
+                            "scrolling");
+                    }
+                    ImGui::Separator();
+                }
                 // ...inside ImGui::BeginMenu("File")...
                 if (ImGui::BeginMenu("UI Scale")) {
                     float scales[] = {1.0f, 1.5f, 2.0f, 2.5f, 3.0f};
