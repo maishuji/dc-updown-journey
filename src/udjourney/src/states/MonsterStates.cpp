@@ -113,9 +113,6 @@ void MonsterPatrolState::update(IActor& actor, float delta) {
     auto& monster = to_monster(actor);
     state_timer_ += delta;
 
-    std::cout << "Monster patrolling at velocity X: "
-              << monster.get_patrol_speed() << "\n";
-
     // Check patrol boundaries
     auto rect = monster.get_rectangle();
     if (monster.is_facing_right() &&

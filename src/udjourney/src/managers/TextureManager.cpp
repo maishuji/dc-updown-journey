@@ -18,6 +18,10 @@ Texture2D TextureManager::get_texture(const std::string& path) {
 
     Texture2D tex =
         LoadTexture(udjourney::coreutils::get_assets_path(path).c_str());
+
+    // Set texture filter to POINT for pixel-perfect rendering (no blur)
+    SetTextureFilter(tex, TEXTURE_FILTER_POINT);
+
     textures[path] = tex;
     return tex;
 }

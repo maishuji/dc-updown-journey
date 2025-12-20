@@ -146,16 +146,11 @@ void Player::update(float iDelta) {
     update_animation_state();
     anim_controller_.update(iDelta);
 
-    // Apply gravity (only when not grounded)
-    if (!m_pimpl->grounded) {
-        m_pimpl->velocity_y += kGravityAcceleration;
-        // Clamp to terminal velocity
-        if (m_pimpl->velocity_y > kMaxFallSpeed) {
-            m_pimpl->velocity_y = kMaxFallSpeed;
-        }
-    } else {
-        // Reset vertical velocity when grounded
-        m_pimpl->velocity_y = 0.0F;
+    // Apply gravity
+    m_pimpl->velocity_y += kGravityAcceleration;
+    // Clamp to terminal velocity
+    if (m_pimpl->velocity_y > kMaxFallSpeed) {
+        m_pimpl->velocity_y = kMaxFallSpeed;
     }
 
     // Apply vertical velocity to position
@@ -336,14 +331,34 @@ void Player::handle_collision(
                 // Skip further processing of this monster
                 continue;
             } else if (platform->get_group_id() == PLATFORM_TYPE_ID) {
-                // Check grounded
-                if (r.y < platform->get_rectangle().y) {
-                    tmp_grounded_src = static_cast<Platform *>(platform.get());
-                    tmp_grounded = true;
+                Rectangle platformRect = platform->get_rectangle();
+
+                // Use raylib's collision detection
+                if (CheckCollisionRecs(r, platformRect)) {
+                    Rectangle intersect = GetCollisionRec(r, platformRect);
+
+                    // Determine collision type
+                    bool is_vertical = intersect.width > intersect.height;
+                    bool from_above = r.y + r.height - intersect.height <
+                                      platformRect.y + 1.0f;
+
+                    if (is_vertical && from_above && m_pimpl->velocity_y >= 0) {
+                        // Landing on top of platform - snap and ground
+                        r.y = platformRect.y - r.height;
+                        m_pimpl->velocity_y = 0.0f;
+                        tmp_grounded_src =
+                            static_cast<Platform *>(platform.get());
+                        tmp_grounded = true;
+                    } else {
+                        // Side or bottom collision - use standard resolution
+                        resolve_collision(*platform);
+                    }
+                    tmp_colliding = true;
                 }
+            } else {
+                resolve_collision(*platform);
+                tmp_colliding = true;
             }
-            resolve_collision(*platform);
-            tmp_colliding = true;
         }
 
         Platform *plat = dynamic_cast<Platform *>(platform.get());
@@ -388,6 +403,9 @@ void Player::update_animation_state() {
     // Check if player is currently moving
     bool is_moving =
         input_mapping.left_pressed() || input_mapping.right_pressed();
+
+    // Get current state before changing
+    static PlayerState prev_state = PlayerState::IDLE;
 
     // Determine player state for animation controller
     PlayerState new_player_state;
