@@ -34,6 +34,9 @@ const float kMoveSpeedYDefault = 5.0F;
 const float kMoveSpeedXDefault = 3.0F;
 const float kDashSpeed = 15.0F;
 const float kJumpExhaustion = 0.1F;
+const float kGravityAcceleration = 0.5F;  // Gravity acceleration per frame
+const float kMaxFallSpeed = 10.0F;        // Terminal velocity
+const float kJumpStrength = -8.0F;  // Initial jump velocity (negative = up)
 
 struct InputMapping {
     std::function<bool()> left_pressed;
@@ -85,7 +88,7 @@ struct Player::PImpl {
     bool jumping = false;
     bool dashing = false;
     bool dashable = true;
-    float vy = 0.0F;
+    float velocity_y = 0.0F;  // Vertical velocity
     float dash_timer = 0.0F;
     float dash_cooldown = 0.0F;
     Platform *grounded_src = nullptr;
@@ -143,20 +146,24 @@ void Player::update(float iDelta) {
     update_animation_state();
     anim_controller_.update(iDelta);
 
-    // Gravity
-    r.y += 1;
+    // Apply gravity (only when not grounded)
+    if (!m_pimpl->grounded) {
+        m_pimpl->velocity_y += kGravityAcceleration;
+        // Clamp to terminal velocity
+        if (m_pimpl->velocity_y > kMaxFallSpeed) {
+            m_pimpl->velocity_y = kMaxFallSpeed;
+        }
+    } else {
+        // Reset vertical velocity when grounded
+        m_pimpl->velocity_y = 0.0F;
+    }
+
+    // Apply vertical velocity to position
+    r.y += m_pimpl->velocity_y;
+
+    // Follow platform movement when grounded
     if (m_pimpl->grounded && m_pimpl->grounded_src != nullptr) {
         r.x += m_pimpl->grounded_src->get_dx();
-    }
-    if (m_pimpl->jumping) {
-        using udjourney::coreutils::math::is_near_zero;
-        using udjourney::coreutils::math::is_same_sign;
-        r.y += m_pimpl->vy;
-        float old_vy = m_pimpl->vy;
-        m_pimpl->vy += kJumpExhaustion;  // exhaustion
-        if (!is_same_sign(old_vy, m_pimpl->vy) || is_near_zero(m_pimpl->vy)) {
-            _reset_jump();
-        }
     }
 
     // Dash timers
@@ -209,8 +216,8 @@ void Player::process_input() {
     if (input_mapping.jump_pressed()) {
         if (!m_pimpl->jumping && m_pimpl->grounded) {
             m_pimpl->jumping = true;
-            r.y -= kMoveSpeedYDefault;
-            m_pimpl->vy = -kMoveSpeedYDefault;
+            m_pimpl->velocity_y = kJumpStrength;  // Apply initial jump velocity
+            m_pimpl->grounded = false;            // Player is now airborne
         }
     } else {
         m_pimpl->jumping = false;
@@ -374,7 +381,7 @@ void Player::notify(const std::string &event) {
 
 void Player::_reset_jump() noexcept {
     m_pimpl->jumping = false;
-    m_pimpl->vy = 0.0F;
+    // Velocity is now managed by gravity system, no manual reset needed
 }
 
 void Player::update_animation_state() {
