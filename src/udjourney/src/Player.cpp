@@ -299,6 +299,7 @@ void Player::handle_collision(
                 platform->set_state(ActorState::CONSUMED);
             } else if (platform->get_group_id() == MONSTER_TYPE_ID) {
                 // Monster collision - damage player (monster attacks)
+                using udjourney::Monster;
                 Monster *monster = dynamic_cast<Monster *>(platform.get());
                 if (monster && !is_invincible()) {
                     // Monster should be in attack state

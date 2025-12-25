@@ -4,8 +4,11 @@
 #include <cmath>
 #include <iostream>
 
+#include "udj-core/Logger.hpp"
 #include "udjourney/Monster.hpp"
 #include "udjourney/Player.hpp"
+
+namespace udjourney {
 
 // Helper function to cast IActor to Monster
 static Monster& to_monster(IActor& actor) {
@@ -25,7 +28,7 @@ void MonsterStateBase::check_transitions(IActor& actor, float delta) {
 
     // Check all possible transitions from current state
     for (const auto& transition : preset->state_config.transitions) {
-        if (transition.from_state != get_name()) {
+        if (transition.from_state != this->name_) {
             continue;  // Not applicable to current state
         }
 
@@ -78,7 +81,7 @@ void MonsterIdleState::enter(IActor& actor) {
     auto& monster = to_monster(actor);
     monster.set_velocity_x(0.0f);
     state_timer_ = 0.0f;
-    std::cout << "Monster entered IDLE state\n";
+    udj::core::Logger::info("Monster entered IDLE state");
 }
 
 void MonsterIdleState::handleInput(IActor& actor) {
@@ -102,7 +105,7 @@ void MonsterPatrolState::enter(IActor& actor) {
                                ? monster.get_patrol_speed()
                                : -monster.get_patrol_speed());
     state_timer_ = 0.0f;
-    std::cout << "Monster entered PATROL state\n";
+    udj::core::Logger::info("Monster entered PATROL state");
 }
 
 void MonsterPatrolState::handleInput(IActor& actor) {
@@ -132,7 +135,7 @@ void MonsterPatrolState::update(IActor& actor, float delta) {
 void MonsterChaseState::enter(IActor& actor) {
     auto& monster = to_monster(actor);
     state_timer_ = 0.0f;
-    std::cout << "Monster entered CHASE state\n";
+    udj::core::Logger::info("Monster entered CHASE state");
 }
 
 void MonsterChaseState::handleInput(IActor& actor) {
@@ -168,7 +171,7 @@ void MonsterAttackState::enter(IActor& actor) {
     auto& monster = to_monster(actor);
     monster.set_velocity_x(0.0f);
     state_timer_ = 0.0f;
-    std::cout << "Monster entered ATTACK state\n";
+    udj::core::Logger::info("Monster entered ATTACK state");
 }
 
 void MonsterAttackState::handleInput(IActor& actor) {
@@ -184,7 +187,8 @@ void MonsterAttackState::update(IActor& actor, float delta) {
 
     // Check if attack animation is finished
     if (monster.is_animation_finished()) {
-        std::cout << "Attack animation finished, returning to chase\n";
+        udj::core::Logger::info(
+            "Attack animation finished, returning to chase");
         // Return to chase state after attack completes
         monster.change_state("chase");
         return;
@@ -200,7 +204,7 @@ void MonsterHurtState::enter(IActor& actor) {
     auto& monster = to_monster(actor);
     monster.set_velocity_x(0.0f);
     state_timer_ = 0.0f;
-    std::cout << "Monster entered HURT state\n";
+    udj::core::Logger::info("Monster entered HURT state");
 }
 
 void MonsterHurtState::handleInput(IActor& actor) {
@@ -216,7 +220,7 @@ void MonsterHurtState::update(IActor& actor, float delta) {
 
     // Check if hurt animation is finished
     if (monster.is_animation_finished()) {
-        std::cout << "Hurt animation finished, returning to patrol\n";
+        udj::core::Logger::info("Hurt animation finished, returning to patrol");
         // Return to patrol state after hurt animation completes
         monster.change_state("patrol");
         return;
@@ -232,7 +236,7 @@ void MonsterDeathState::enter(IActor& actor) {
     auto& monster = to_monster(actor);
     monster.set_velocity_x(0.0f);
     state_timer_ = 0.0f;
-    std::cout << "Monster entered DEATH state\n";
+    udj::core::Logger::info("Monster entered DEATH state");
 }
 
 void MonsterDeathState::handleInput(IActor& actor) {
@@ -248,7 +252,8 @@ void MonsterDeathState::update(IActor& actor, float delta) {
 
     // Check if death animation is finished
     if (monster.is_animation_finished()) {
-        std::cout << "Death animation finished, marking monster as CONSUMED\n";
+        udj::core::Logger::info(
+            "Death animation finished, marking monster as CONSUMED");
 
         // Award points for killing the monster
         monster.award_kill_points();
@@ -260,3 +265,4 @@ void MonsterDeathState::update(IActor& actor, float delta) {
     // Check data-driven transitions (though death is usually final)
     check_transitions(actor, delta);
 }
+}  // namespace udjourney

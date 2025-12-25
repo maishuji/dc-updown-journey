@@ -17,6 +17,8 @@
 #include "udjourney/states/MonsterStates.hpp"
 #include "udjourney/WorldBounds.hpp"
 
+namespace udjourney {
+
 Monster::Monster(const IGame& game, Rectangle rect,
                  AnimSpriteController anim_controller,
                  udjourney::core::events::EventDispatcher& dispatcher) :
@@ -457,3 +459,5 @@ void Monster::notify(const std::string& event) {
         observer->on_notify(event);
     }
 }
+
+}  // namespace udjourney

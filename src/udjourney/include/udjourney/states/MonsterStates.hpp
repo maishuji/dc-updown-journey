@@ -6,7 +6,7 @@
 
 #include "udjourney/interfaces/IActorState.hpp"
 #include "udjourney/MonsterPreset.hpp"
-
+namespace udjourney {
 class Monster;
 
 // Base class for all monster states with a name
@@ -95,3 +95,4 @@ class MonsterDeathState : public MonsterStateBase {
     void handleInput(IActor& actor) override;
     void update(IActor& actor, float delta) override;
 };
+}  // namespace udjourney

@@ -54,6 +54,7 @@
 
 using udj::core::filesystem::file_exists;
 using udj::core::filesystem::get_assets_path;
+using udjourney::Monster;
 
 struct Resolution {
     int width;

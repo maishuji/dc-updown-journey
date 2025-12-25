@@ -21,6 +21,7 @@ namespace udjourney::core::events {
 class EventDispatcher;
 }
 
+namespace udjourney {
 class Monster : public IActor, public IObservable {
  public:
     Monster(const IGame &game, Rectangle rect,
@@ -158,3 +159,4 @@ class Monster : public IActor, public IObservable {
     // Observer pattern
     std::vector<IObserver *> observers;
 };
+}  // namespace udjourney

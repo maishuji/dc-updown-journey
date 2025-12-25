@@ -15,6 +15,8 @@
 #include <udj-core/CoreUtils.hpp>
 #include "udjourney/core/events/EventDispatcher.hpp"
 
+namespace udjourney {
+
 MonsterFactory::MonsterFactory(
     const IGame &game, Rectangle rect,
     udjourney::core::events::EventDispatcher &event_dispatcher) :
@@ -58,3 +60,4 @@ std::unique_ptr<IActor> PlayerFactory::create_actor() {
 
     return player;
 }
+}  // namespace udjourney

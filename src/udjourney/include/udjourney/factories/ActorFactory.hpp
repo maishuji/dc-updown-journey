@@ -16,6 +16,7 @@ class EventDispatcher;
 }  // namespace core
 }  // namespace udjourney
 
+namespace udjourney {
 class ActorFactory {
  public:
     ActorFactory() = default;
@@ -47,3 +48,4 @@ class PlayerFactory : public ActorFactory {
     Rectangle m_rect;
     udjourney::core::events::EventDispatcher &m_event_dispatcher;
 };
+}  // namespace udjourney
