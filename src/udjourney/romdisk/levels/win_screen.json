@@ -118,8 +118,8 @@
       "background_tile_width": 2,
       "name": "Return to Title Button",
       "offset": {
-        "x": -120.0,
-        "y": 82.0
+        "x": -125.0,
+        "y": 87.0
       },
       "properties": {
         "border_thickness": "2",
@@ -161,8 +161,8 @@
       "background_tile_width": 2,
       "name": "Quit Button",
       "offset": {
-        "x": -93.0,
-        "y": 146.0
+        "x": -91.0,
+        "y": 155.0
       },
       "properties": {
         "border_thickness": "2",
@@ -230,8 +230,47 @@
       },
       "type_id": "icon_button",
       "visible": true
+    },
+    {
+      "anchor": "TopRight",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 2,
+      "background_tile_size": 64,
+      "background_tile_width": 1,
+      "name": "Icon Button",
+      "offset": {
+        "x": -201.0,
+        "y": 242.0
+      },
+      "properties": {
+        "border_thickness": 2,
+        "button_action": "none",
+        "font_size": 24,
+        "hover_color": [
+          255,
+          0,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "selectable": false,
+        "text": ""
+      },
+      "size": {
+        "x": 64.0,
+        "y": 64.0
+      },
+      "type_id": "icon_button",
+      "visible": true
     }
   ],
   "name": "Untitled Level",
-  "scene_type": "ui_screen"
+  "scene_type": "ui_screen",
+  "scroll_speed": 1.0
 }
