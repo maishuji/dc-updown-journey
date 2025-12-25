@@ -255,8 +255,7 @@ void ButtonWidget::load_button_textures(const udjourney::scene::FUDData& fud) {
     // Properties: idle_tile_col, idle_tile_row, hover_tile_col, hover_tile_row,
     // etc.
 
-    bool has_texture_config =
-        !fud.background_sheet.empty() || !fud.background_image.empty();
+    bool has_texture_config = !fud.background_sheet.empty();
 
     if (!has_texture_config) {
         use_textures_ = false;
@@ -334,20 +333,6 @@ void ButtonWidget::load_button_textures(const udjourney::scene::FUDData& fud) {
 
             std::cout << "[DEBUG] Button '" << text_
                       << "' loaded texture from sheet: " << fud.background_sheet
-                      << std::endl;
-        }
-    } else if (!fud.background_image.empty()) {
-        // Load individual images (legacy support)
-        idle_texture_ = texture_manager.get_texture(fud.background_image);
-
-        if (idle_texture_.id != 0) {
-            use_textures_ = true;
-            hover_texture_ = idle_texture_;
-            focused_texture_ = idle_texture_;
-            pressed_texture_ = idle_texture_;
-
-            std::cout << "[DEBUG] Button '" << text_
-                      << "' loaded texture: " << fud.background_image
                       << std::endl;
         }
     }

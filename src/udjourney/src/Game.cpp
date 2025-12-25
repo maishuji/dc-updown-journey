@@ -727,32 +727,6 @@ void Game::draw_fuds_() const {
                 Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
                 DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
             }
-        } else if (!fud.background_image.empty()) {
-            // Legacy: single image file
-            if (m_fud_textures.find(fud.background_image) ==
-                m_fud_textures.end()) {
-                std::string texture_path =
-                    std::string(ASSETS_BASE_PATH) + fud.background_image;
-                Texture2D tex = LoadTexture(texture_path.c_str());
-                if (tex.id > 0) {
-                    m_fud_textures[fud.background_image] = tex;
-                    udj::core::Logger::info("Loaded FUD texture: %",
-                                            texture_path);
-                } else {
-                    udj::core::Logger::error("Failed to load FUD texture: %",
-                                             texture_path);
-                }
-            }
-
-            if (m_fud_textures[fud.background_image].id > 0) {
-                const auto &tex = m_fud_textures[fud.background_image];
-                Rectangle source = {0,
-                                    0,
-                                    static_cast<float>(tex.width),
-                                    static_cast<float>(tex.height)};
-                Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
-                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
-            }
         }
 
         // Draw FUD based on type
@@ -1065,32 +1039,6 @@ void Game::draw_fuds_() const {
                     static_cast<float>(fud.foreground_tile_height *
                                        fud.foreground_tile_size)};
 
-                Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
-                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
-            }
-        } else if (!fud.foreground_image.empty()) {
-            // Legacy: single image file
-            if (m_fud_textures.find(fud.foreground_image) ==
-                m_fud_textures.end()) {
-                std::string texture_path =
-                    std::string(ASSETS_BASE_PATH) + fud.foreground_image;
-                Texture2D tex = LoadTexture(texture_path.c_str());
-                if (tex.id > 0) {
-                    m_fud_textures[fud.foreground_image] = tex;
-                    udj::core::Logger::info("Loaded FUD texture: %",
-                                            texture_path);
-                } else {
-                    udj::core::Logger::error("Failed to load FUD texture: %",
-                                             texture_path);
-                }
-            }
-
-            if (m_fud_textures[fud.foreground_image].id > 0) {
-                const auto &tex = m_fud_textures[fud.foreground_image];
-                Rectangle source = {0,
-                                    0,
-                                    static_cast<float>(tex.width),
-                                    static_cast<float>(tex.height)};
                 Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
                 DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
             }
