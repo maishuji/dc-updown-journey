@@ -35,7 +35,6 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/TextureManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/HUDManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/BonusManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/ScoreHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/WeaponHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/DialogBoxHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/LevelSelectHUD.cpp

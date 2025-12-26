@@ -30,13 +30,13 @@
 #include "udjourney/SpriteAnim.hpp"
 #include "udjourney/ScoreHistory.hpp"
 #include <udj-core/Logger.hpp>
+#include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/hud/DialogBoxHUD.hpp"
 #include "udjourney/hud/HUDComponent.hpp"
 #include "udjourney/ActionDispatcher.hpp"
 #include "udjourney/widgets/IWidget.hpp"
 #include "udjourney/widgets/WidgetFactory.hpp"
 #include "udjourney/hud/LevelSelectHUD.hpp"
-#include "udjourney/hud/ScoreHUD.hpp"
 #include "udjourney/hud/WeaponHUD.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/managers/TextureManager.hpp"
@@ -214,6 +214,15 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     m_world_bounds.set_bounds(
         0.0f, static_cast<float>(iWidth), 0.0f, static_cast<float>(iHeight));
 
+    // Register ScoreEvent handler to update score
+    m_event_dispatcher.register_handler(
+        udjourney::core::events::ScoreEvent::TYPE,
+        [this](const udjourney::core::events::IEvent& evt) {
+            const auto& score_ev =
+                static_cast<const udjourney::core::events::ScoreEvent&>(evt);
+            m_score += score_ev.value;
+        });
+
     // Register menu action callbacks
     register_menu_actions();
 
@@ -260,12 +269,9 @@ void Game::run() {
 
         m_bonus_manager.add_observer(static_cast<IObserver *>(this));
 
-        auto score_hud =
-            std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
-        m_hud_manager.add_background_hud(std::move(score_hud));
-
         auto weapon_hud =
             std::make_unique<WeaponHUD>(Vector2{10, 80}, m_event_dispatcher);
+        weapon_hud->load_projectile_presets("projectiles.json");
         m_hud_manager.add_background_hud(std::move(weapon_hud));
     } else {
         // Load widgets from title screen scene
@@ -1707,12 +1713,9 @@ void Game::on_notify(const std::string &iEvent) {
                 return;
             }
             m_state = GameState::GAMEOVER;
-            auto *comp = m_hud_manager.get_component_by_type("ScoreHUD");
-            if (comp != nullptr) {
-                auto *score_hud = static_cast<ScoreHUD *>(comp);
-                m_score_history.add_score(score_hud->get_score());
-                score_hud->set_score(0);  // Reset HUD
-            }
+            // Save current score to history
+            m_score_history.add_score(m_score);
+            m_score = 0;  // Reset score
 
             // Load game over screen with widgets
             std::string gameover_path = udjourney::coreutils::get_assets_path(
@@ -2420,13 +2423,10 @@ void Game::initialize_gameplay() {
     m_rect.y = 0;
     m_last_checkpoint = Vector2{320, 240};
 
-    // Add score HUD
-    auto score_hud =
-        std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
-    m_hud_manager.add_background_hud(std::move(score_hud));
-
+    // Add weapon HUD
     auto weapon_hud =
         std::make_unique<WeaponHUD>(Vector2{10, 80}, m_event_dispatcher);
+    weapon_hud->load_projectile_presets("projectiles.json");
     m_hud_manager.add_background_hud(std::move(weapon_hud));
 }
 }  // namespace udjourney
