@@ -38,6 +38,8 @@
 #include "udjourney/widgets/WidgetFactory.hpp"
 #include "udjourney/hud/LevelSelectHUD.hpp"
 #include "udjourney/hud/WeaponHUD.hpp"
+#include "udjourney/hud/scene/ScoreDisplayHUD.hpp"
+#include "udjourney/hud/scene/HeartHealthHUD.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/loaders/AnimationConfigLoader.hpp"
@@ -217,9 +219,9 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     // Register ScoreEvent handler to update score
     m_event_dispatcher.register_handler(
         udjourney::core::events::ScoreEvent::TYPE,
-        [this](const udjourney::core::events::IEvent& evt) {
-            const auto& score_ev =
-                static_cast<const udjourney::core::events::ScoreEvent&>(evt);
+        [this](const udjourney::core::events::IEvent &evt) {
+            const auto &score_ev =
+                static_cast<const udjourney::core::events::ScoreEvent &>(evt);
             m_score += score_ev.value;
         });
 
@@ -639,422 +641,10 @@ void Game::draw_backgrounds() const {
 }
 
 void Game::draw_huds_() const {
-    if (!m_current_scene) {
-        return;
-    }
-
-    const auto &huds = m_current_scene->get_huds();
-    if (huds.empty()) {
-        return;
-    }
-
-    // FUDs are drawn in screen space (not affected by camera/scrolling)
-    for (const auto &hud : huds) {
-        if (!hud.visible) {
-            continue;
-        }
-
-        // Calculate anchor position based on screen size
-        float anchor_x = 0.0f;
-        float anchor_y = 0.0f;
-
-        float screen_width = static_cast<float>(kBaseWidth);
-        float screen_height = static_cast<float>(kBaseHeight);
-
-        switch (hud.anchor) {
-            case udjourney::scene::HUDAnchor::TopLeft:
-                anchor_x = 0;
-                anchor_y = 0;
-                break;
-            case udjourney::scene::HUDAnchor::TopCenter:
-                anchor_x = screen_width / 2;
-                anchor_y = 0;
-                break;
-            case udjourney::scene::HUDAnchor::TopRight:
-                anchor_x = screen_width;
-                anchor_y = 0;
-                break;
-            case udjourney::scene::HUDAnchor::MiddleLeft:
-                anchor_x = 0;
-                anchor_y = screen_height / 2;
-                break;
-            case udjourney::scene::HUDAnchor::MiddleCenter:
-                anchor_x = screen_width / 2;
-                anchor_y = screen_height / 2;
-                break;
-            case udjourney::scene::HUDAnchor::MiddleRight:
-                anchor_x = screen_width;
-                anchor_y = screen_height / 2;
-                break;
-            case udjourney::scene::HUDAnchor::BottomLeft:
-                anchor_x = 0;
-                anchor_y = screen_height;
-                break;
-            case udjourney::scene::HUDAnchor::BottomCenter:
-                anchor_x = screen_width / 2;
-                anchor_y = screen_height;
-                break;
-            case udjourney::scene::HUDAnchor::BottomRight:
-                anchor_x = screen_width;
-                anchor_y = screen_height;
-                break;
-        }
-
-        // Calculate final HUD position
-        float fud_x = anchor_x + hud.offset_x;
-        float fud_y = anchor_y + hud.offset_y;
-
-        // Draw background image/sprite if specified
-        if (!hud.background_sheet.empty()) {
-            // Load sprite sheet if not cached
-            if (m_hud_textures.find(hud.background_sheet) ==
-                m_hud_textures.end()) {
-                std::string texture_path =
-                    std::string(ASSETS_BASE_PATH) + hud.background_sheet;
-                Texture2D tex = LoadTexture(texture_path.c_str());
-                if (tex.id > 0) {
-                    m_hud_textures[hud.background_sheet] = tex;
-                    udj::core::Logger::info("Loaded HUD sprite sheet: %",
-                                            texture_path);
-                } else {
-                    udj::core::Logger::error(
-                        "Failed to load HUD sprite sheet: %", texture_path);
-                }
-            }
-
-            // Draw sprite from sheet
-            if (m_hud_textures[hud.background_sheet].id > 0) {
-                const auto &tex = m_hud_textures[hud.background_sheet];
-
-                // Calculate source rectangle in sprite sheet
-                Rectangle source = {
-                    static_cast<float>(hud.background_tile_col *
-                                       hud.background_tile_size),
-                    static_cast<float>(hud.background_tile_row *
-                                       hud.background_tile_size),
-                    static_cast<float>(hud.background_tile_width *
-                                       hud.background_tile_size),
-                    static_cast<float>(hud.background_tile_height *
-                                       hud.background_tile_size)};
-
-                Rectangle dest = {fud_x, fud_y, hud.size_x, hud.size_y};
-                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
-            }
-        }
-
-        // Draw HUD based on type
-        if (hud.type_id == "heart_health") {
-            // Draw health as hearts (Zelda-style)
-            // Parse properties
-            int max_hearts = 3;
-            int heart_spacing = 32;
-            bool show_empty = true;
-            int current_half_hearts = 6;  // Track half-hearts
-
-            // Get current health from player's HealthComponent
-            if (m_player) {
-                if (auto *health = m_player->get_component<HealthComponent>()) {
-                    // Health is stored as half-hearts (2 per full heart)
-                    current_half_hearts = health->get_health();
-                    max_hearts = (health->get_max_health() + 1) / 2;
-
-                    // Debug output
-                    static int last_health = -1;
-                    if (current_half_hearts != last_health) {
-                        std::cout
-                            << "HUD Drawing - Health: " << current_half_hearts
-                            << "/" << health->get_max_health() << std::endl;
-                        last_health = current_half_hearts;
-                    }
-                } else {
-                    std::cout << "WARNING: Player has no HealthComponent!"
-                              << std::endl;
-                }
-            } else {
-                std::cout << "WARNING: No player found for HUD health display!"
-                          << std::endl;
-            }
-
-            // Heart sprite configuration
-            std::string heart_sheet = "ui/ui_elements.png";
-            int heart_tile_size = 32;
-            int full_col = 0, full_row = 3;
-            int half_col = 3, half_row = 3;
-            int empty_col = 4, empty_row = 3;
-
-            try {
-                if (hud.properties.count("max_hearts")) {
-                    max_hearts = std::stoi(hud.properties.at("max_hearts"));
-                }
-                // NOTE: current_hearts is NOT loaded from JSON - it's read from
-                // Player's HealthComponent Removed the property parsing that
-                // was overwriting the player's health value
-                if (hud.properties.count("heart_spacing")) {
-                    heart_spacing =
-                        std::stoi(hud.properties.at("heart_spacing"));
-                }
-                if (hud.properties.count("show_empty_hearts")) {
-                    show_empty =
-                        (hud.properties.at("show_empty_hearts") == "true");
-                }
-
-                // Parse heart sprite configurations from JSON
-                if (hud.properties.count("heart_full_sprite")) {
-                    try {
-                        auto sprite_json = nlohmann::json::parse(
-                            hud.properties.at("heart_full_sprite"));
-                        heart_sheet = sprite_json.value("sheet", heart_sheet);
-                        heart_tile_size =
-                            sprite_json.value("tile_size", heart_tile_size);
-                        full_col = sprite_json.value("tile_col", full_col);
-                        full_row = sprite_json.value("tile_row", full_row);
-                    } catch (...) {
-                    }
-                }
-                if (hud.properties.count("heart_empty_sprite")) {
-                    try {
-                        auto sprite_json = nlohmann::json::parse(
-                            hud.properties.at("heart_empty_sprite"));
-                        empty_col = sprite_json.value("tile_col", empty_col);
-                        empty_row = sprite_json.value("tile_row", empty_row);
-                    } catch (...) {
-                    }
-                }
-            } catch (...) {
-                // Use defaults if parsing fails
-            }
-
-            // Load heart sprite sheet
-            if (m_hud_textures.find(heart_sheet) == m_hud_textures.end()) {
-                std::string texture_path =
-                    std::string(ASSETS_BASE_PATH) + heart_sheet;
-                Texture2D tex = LoadTexture(texture_path.c_str());
-                if (tex.id > 0) {
-                    m_hud_textures[heart_sheet] = tex;
-                    udj::core::Logger::info("Loaded heart sprite sheet: %",
-                                            texture_path);
-                } else {
-                    udj::core::Logger::error(
-                        "Failed to load heart sprite sheet: %", texture_path);
-                }
-            }
-
-            // Draw hearts horizontally
-            if (m_hud_textures[heart_sheet].id > 0) {
-                const auto &tex = m_hud_textures[heart_sheet];
-
-                for (int i = 0; i < max_hearts; ++i) {
-                    float heart_x = fud_x + (i * heart_spacing);
-                    float heart_y = fud_y;
-
-                    // Determine which heart sprite to draw based on half-hearts
-                    int half_hearts_for_this_position =
-                        current_half_hearts - (i * 2);
-                    int sprite_col, sprite_row;
-
-                    if (half_hearts_for_this_position >= 2) {
-                        // Full heart
-                        sprite_col = full_col;
-                        sprite_row = full_row;
-                    } else if (half_hearts_for_this_position == 1) {
-                        // Half heart
-                        sprite_col = half_col;
-                        sprite_row = half_row;
-                    } else {
-                        // Empty heart
-                        sprite_col = empty_col;
-                        sprite_row = empty_row;
-                    }
-
-                    if (!show_empty && half_hearts_for_this_position <= 0) {
-                        continue;  // Skip empty hearts if not showing them
-                    }
-
-                    // Calculate source rectangle in sprite sheet
-                    Rectangle source = {
-                        static_cast<float>(sprite_col * heart_tile_size),
-                        static_cast<float>(sprite_row * heart_tile_size),
-                        static_cast<float>(heart_tile_size),
-                        static_cast<float>(heart_tile_size)};
-
-                    Rectangle dest = {heart_x,
-                                      heart_y,
-                                      static_cast<float>(heart_spacing),
-                                      static_cast<float>(heart_spacing)};
-
-                    DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
-                }
-            } else {
-                // Fallback: draw circles if texture not available
-                for (int i = 0; i < max_hearts; ++i) {
-                    float heart_x = fud_x + (i * heart_spacing);
-                    float heart_y = fud_y;
-
-                    int half_hearts_for_this_position =
-                        current_half_hearts - (i * 2);
-                    bool is_full = (half_hearts_for_this_position >= 2);
-                    bool is_half = (half_hearts_for_this_position == 1);
-
-                    if (is_full) {
-                        DrawCircle(static_cast<int>(heart_x + 16),
-                                   static_cast<int>(heart_y + 16),
-                                   12,
-                                   RED);
-                    } else if (is_half) {
-                        DrawCircleSector(Vector2{heart_x + 16, heart_y + 16},
-                                         12,
-                                         90,
-                                         270,
-                                         16,
-                                         RED);
-                        DrawCircleSectorLines(
-                            Vector2{heart_x + 16, heart_y + 16},
-                            12,
-                            90,
-                            270,
-                            16,
-                            RED);
-                    } else if (show_empty) {
-                        DrawCircle(static_cast<int>(heart_x + 16),
-                                   static_cast<int>(heart_y + 16),
-                                   12,
-                                   ColorAlpha(RED, 0.3f));
-                        DrawCircleLines(static_cast<int>(heart_x + 16),
-                                        static_cast<int>(heart_y + 16),
-                                        12,
-                                        RED);
-                    }
-                }
-            }
-        } else if (hud.type_id == "healthbar" || hud.type_id == "mana_bar") {
-            // Draw a simple health/mana bar
-            Color bar_color = hud.type_id == "healthbar" ? RED : BLUE;
-            Color bg_color = DARKGRAY;
-
-            // Background
-            DrawRectangle(static_cast<int>(fud_x),
-                          static_cast<int>(fud_y),
-                          static_cast<int>(hud.size_x),
-                          static_cast<int>(hud.size_y),
-                          bg_color);
-
-            // Get fill percentage from player health for healthbar
-            float fill_percent = 0.8f;  // Default for mana_bar or if no health
-            if (hud.type_id == "healthbar" && m_player) {
-                if (auto *health = m_player->get_component<HealthComponent>()) {
-                    fill_percent = health->get_health_percentage();
-                }
-            }
-
-            // Bar
-            DrawRectangle(static_cast<int>(fud_x + 2),
-                          static_cast<int>(fud_y + 2),
-                          static_cast<int>((hud.size_x - 4) * fill_percent),
-                          static_cast<int>(hud.size_y - 4),
-                          bar_color);
-
-            // Border
-            DrawRectangleLines(static_cast<int>(fud_x),
-                               static_cast<int>(fud_y),
-                               static_cast<int>(hud.size_x),
-                               static_cast<int>(hud.size_y),
-                               WHITE);
-
-            // Text
-            DrawText(hud.name.c_str(),
-                     static_cast<int>(fud_x + 5),
-                     static_cast<int>(fud_y + 5),
-                     12,
-                     WHITE);
-        } else if (hud.type_id == "score_display") {
-            // Draw score display
-            DrawRectangle(static_cast<int>(fud_x),
-                          static_cast<int>(fud_y),
-                          static_cast<int>(hud.size_x),
-                          static_cast<int>(hud.size_y),
-                          ColorAlpha(BLACK, 0.5f));
-
-            char score_text[64];
-            snprintf(score_text, sizeof(score_text), "Score: %d", m_score);
-            DrawText(score_text,
-                     static_cast<int>(fud_x + 10),
-                     static_cast<int>(fud_y + 10),
-                     20,
-                     WHITE);
-        } else if (hud.type_id == "timer") {
-            // Draw timer
-            DrawRectangle(static_cast<int>(fud_x),
-                          static_cast<int>(fud_y),
-                          static_cast<int>(hud.size_x),
-                          static_cast<int>(hud.size_y),
-                          ColorAlpha(BLACK, 0.5f));
-
-            // Simple countdown timer (demo - would need actual timer logic)
-            int minutes = 3;
-            int seconds = 0;
-            char timer_text[32];
-            snprintf(
-                timer_text, sizeof(timer_text), "%02d:%02d", minutes, seconds);
-            DrawText(timer_text,
-                     static_cast<int>(fud_x + 10),
-                     static_cast<int>(fud_y + 5),
-                     24,
-                     YELLOW);
-        } else {
-            // Generic HUD - just draw a labeled box
-            DrawRectangle(static_cast<int>(fud_x),
-                          static_cast<int>(fud_y),
-                          static_cast<int>(hud.size_x),
-                          static_cast<int>(hud.size_y),
-                          ColorAlpha(YELLOW, 0.3f));
-            DrawRectangleLines(static_cast<int>(fud_x),
-                               static_cast<int>(fud_y),
-                               static_cast<int>(hud.size_x),
-                               static_cast<int>(hud.size_y),
-                               YELLOW);
-            DrawText(hud.name.c_str(),
-                     static_cast<int>(fud_x + 5),
-                     static_cast<int>(fud_y + 5),
-                     12,
-                     WHITE);
-        }
-
-        // Draw foreground image/sprite if specified (overlays on top)
-        if (!hud.foreground_sheet.empty()) {
-            // Load sprite sheet if not cached
-            if (m_hud_textures.find(hud.foreground_sheet) ==
-                m_hud_textures.end()) {
-                std::string texture_path =
-                    std::string(ASSETS_BASE_PATH) + hud.foreground_sheet;
-                Texture2D tex = LoadTexture(texture_path.c_str());
-                if (tex.id > 0) {
-                    m_hud_textures[hud.foreground_sheet] = tex;
-                    udj::core::Logger::info("Loaded HUD sprite sheet: %",
-                                            texture_path);
-                } else {
-                    udj::core::Logger::error(
-                        "Failed to load HUD sprite sheet: %", texture_path);
-                }
-            }
-
-            // Draw sprite from sheet
-            if (m_hud_textures[hud.foreground_sheet].id > 0) {
-                const auto &tex = m_hud_textures[hud.foreground_sheet];
-
-                // Calculate source rectangle in sprite sheet
-                Rectangle source = {
-                    static_cast<float>(hud.foreground_tile_col *
-                                       hud.foreground_tile_size),
-                    static_cast<float>(hud.foreground_tile_row *
-                                       hud.foreground_tile_size),
-                    static_cast<float>(hud.foreground_tile_width *
-                                       hud.foreground_tile_size),
-                    static_cast<float>(hud.foreground_tile_height *
-                                       hud.foreground_tile_size)};
-
-                Rectangle dest = {fud_x, fud_y, hud.size_x, hud.size_y};
-                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
-            }
+    // Draw all scene-based HUDs using the new object system
+    for (const auto &hud : m_scene_huds) {
+        if (hud) {
+            hud->draw();
         }
     }
 }
@@ -1813,7 +1403,37 @@ bool Game::load_scene(const std::string &filename) {
     // Update world bounds with calculated max values
     m_world_bounds.set_bounds(0.0f, max_x, 0.0f, max_y);
 
+    // Create HUD objects from scene
+    create_huds_from_scene();
+
     return true;
+}
+
+void Game::create_huds_from_scene() {
+    m_scene_huds.clear();
+
+    if (!m_current_scene) {
+        return;
+    }
+
+    const auto &hud_list = m_current_scene->get_huds();
+
+    for (const auto &hud_data : hud_list) {
+        std::unique_ptr<udjourney::hud::scene::IHUD> hud = nullptr;
+
+        if (hud_data.type_id == "score_display") {
+            hud = std::make_unique<udjourney::hud::scene::ScoreDisplayHUD>(
+                hud_data, this);
+        } else if (hud_data.type_id == "heart_health") {
+            hud = std::make_unique<udjourney::hud::scene::HeartHealthHUD>(
+                hud_data, m_player.get());
+        }
+        // Add more HUD types here as needed
+
+        if (hud) {
+            m_scene_huds.push_back(std::move(hud));
+        }
+    }
 }
 
 void Game::create_platforms_from_scene() {

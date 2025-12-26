@@ -21,6 +21,7 @@
 #include "udjourney/scene/Scene.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/WorldBounds.hpp"
+#include "udjourney/hud/scene/IHUD.hpp"
 
 namespace udjourney {
 
@@ -43,6 +44,9 @@ class Game : public IGame, public IObserver {
         return m_world_bounds;
     }
 
+    // Score access for HUDs
+    [[nodiscard]] int get_score() const { return m_score; }
+
     // Scene management
     bool load_scene(const std::string &filename);
     void create_platforms_from_scene();
@@ -62,6 +66,9 @@ class Game : public IGame, public IObserver {
     void draw_huds_() const;
     bool should_continue_scrolling_() const noexcept;
     void attack_nearby_monsters();
+
+    // Scene-based HUD system
+    void create_huds_from_scene();
 
     // Widget and scene management
     void load_widgets_from_scene();
@@ -95,5 +102,7 @@ class Game : public IGame, public IObserver {
         0.0f;  // Scroll offset for UI screen backgrounds
     int m_frames_since_scene_load =
         0;  // Prevent immediate input after scene transition
+    std::vector<std::unique_ptr<udjourney::hud::scene::IHUD>>
+        m_scene_huds;  // Scene-based HUD elements
 };
 }  // namespace udjourney
