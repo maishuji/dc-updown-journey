@@ -1,6 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/SpriteAnim.hpp"
 
+namespace udjourney {
+
 SpriteAnim::SpriteAnim(Texture2D texture, int frame_width, int frame_height,
                        float frame_time, int frames_per_row, bool loop) :
     texture_(texture),
@@ -92,3 +94,5 @@ void SpriteAnim::reset() {
     elapsed_time_ = 0.0f;
     finished_ = false;
 }
+
+}  // namespace udjourney

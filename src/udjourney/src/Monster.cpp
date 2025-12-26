@@ -9,6 +9,7 @@
 #include <vector>
 #include <memory>
 
+#include "udj-core/Logger.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/core/events/EventDispatcher.hpp"
@@ -17,8 +18,9 @@
 #include "udjourney/states/MonsterStates.hpp"
 #include "udjourney/WorldBounds.hpp"
 
-namespace udjourney {
+using udj::core::Logger;
 
+namespace udjourney {
 Monster::Monster(const IGame& game, Rectangle rect,
                  AnimSpriteController anim_controller,
                  udjourney::core::events::EventDispatcher& dispatcher) :
@@ -55,15 +57,15 @@ Monster::Monster(const IGame& game, Rectangle rect,
     if (states_.find(initial_state) != states_.end()) {
         current_state_ = states_[initial_state].get();
         current_state_->enter(*this);
-        std::cout << "Monster initialized with default state: " << initial_state
-                  << std::endl;
+        Logger::info("Monster initialized with default state: " +
+                     initial_state);
     } else {
-        std::cerr << "CRITICAL ERROR: Default 'idle' state not found! "
-                     "Available states: ";
+        Logger::error(
+            "CRITICAL ERROR: Default 'idle' state not found! "
+            "Available states: ");
         for (const auto& state_pair : states_) {
-            std::cerr << state_pair.first << " ";
+            Logger::error(state_pair.first);
         }
-        std::cerr << std::endl;
         throw std::runtime_error(
             "Monster initialization failed: No valid default state found");
     }
@@ -146,9 +148,8 @@ void Monster::change_state(const std::string& new_state) {
         }
 
         std::string monster_name = preset_ ? preset_->name : "default_monster";
-        std::cout << "Monster '" << monster_name
-                  << "' changing state: " << old_state_name << " -> "
-                  << new_state << std::endl;
+        Logger::info("Monster '" + monster_name + "' changing state: " +
+                     old_state_name + " -> " + new_state);
 
         current_state_ = it->second.get();
         current_state_->enter(*this);
@@ -169,13 +170,12 @@ void Monster::change_state(const std::string& new_state) {
         }
     } else if (it == states_.end()) {
         std::string monster_name = preset_ ? preset_->name : "default_monster";
-        std::cerr << "ERROR: Attempted to change to invalid state '"
-                  << new_state << "' for monster '" << monster_name
-                  << "'. Available states: ";
+        Logger::error("ERROR: Attempted to change to invalid state '" +
+                      new_state + "' for monster '" + monster_name +
+                      "'. Available states: ");
         for (const auto& state_pair : states_) {
-            std::cerr << state_pair.first << " ";
+            Logger::error(state_pair.first + " ");
         }
-        std::cerr << std::endl;
     }
 }
 
@@ -342,7 +342,8 @@ void Monster::handle_collision(
                 Rectangle other_rect = actor->get_rectangle();
                 Rectangle intersect = GetCollisionRec(rect_, other_rect);
 
-                // Only resolve horizontally to avoid interfering with gravity
+                // Only resolve horizontally to avoid interfering with
+                // gravity
                 if (intersect.width > 0 && intersect.height > 0) {
                     // Push monsters apart horizontally
                     if (rect_.x < other_rect.x) {
@@ -353,9 +354,9 @@ void Monster::handle_collision(
                         rect_.x += intersect.width / 2.0f;
                     }
 
-                    // Optionally reverse direction when colliding with another
-                    // enemy (prevents them from constantly pushing into each
-                    // other)
+                    // Optionally reverse direction when colliding with
+                    // another enemy (prevents them from constantly pushing
+                    // into each other)
                     if (anim_controller_.get_current_state_int() ==
                         1) {  // PATROL
                         patrol_direction_right_ = !patrol_direction_right_;
@@ -384,7 +385,7 @@ bool Monster::is_animation_finished() const {
 
 void Monster::load_preset(const std::string& preset_name) {
     try {
-        std::cout << "Loading monster preset: " << preset_name << std::endl;
+        Logger::info("Loading monster preset: " + preset_name);
 
         // Load preset from JSON file (MonsterPresetLoader handles the path
         // construction)
@@ -392,8 +393,7 @@ void Monster::load_preset(const std::string& preset_name) {
         preset_ = udjourney::MonsterPresetLoader::load_preset(preset_filename);
         preset_name_ = preset_name;
 
-        std::cout << "Monster preset loaded successfully: " << preset_name
-                  << std::endl;
+        Logger::info("Monster preset loaded successfully: " + preset_name);
 
         // Apply preset stats
         max_health_ = preset_->stats.max_health;
@@ -411,14 +411,13 @@ void Monster::load_preset(const std::string& preset_name) {
             change_state(target_state);
         }
 
-        std::cout << "Monster configured with preset '" << preset_->name
-                  << "' (HP: " << max_health_ << ", Speed: " << speed_
-                  << ", State: " << target_state << ")" << std::endl;
+        Logger::info("Monster configured with preset '" + preset_->name +
+                     "' (HP: " + std::to_string(max_health_) + ", Speed: " +
+                     std::to_string(speed_) + ", State: " + target_state + ")");
     } catch (const std::exception& e) {
-        std::cerr << "ERROR: Failed to load monster preset '" << preset_name
-                  << "': " << e.what() << std::endl;
-        std::cerr << "Monster will continue with default settings."
-                  << std::endl;
+        Logger::error("Failed to load monster preset '" + preset_name +
+                      "': " + e.what());
+        Logger::error("Monster will continue with default settings.");
     }
 }
 

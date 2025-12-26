@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "udjourney/interfaces/IGame.hpp"
-
+namespace udjourney {
 Platform::Platform(const IGame &iGame, Rectangle iRect, Color iColor,
                    bool iIsRepeatedY,
                    std::unique_ptr<PlatformReuseStrategy> reuseStrategy) :
@@ -77,3 +77,4 @@ void Platform::add_feature(std::unique_ptr<PlatformFeatureBase> feature) {
         m_features.push_back(std::move(feature));
     }
 }
+}  // namespace udjourney

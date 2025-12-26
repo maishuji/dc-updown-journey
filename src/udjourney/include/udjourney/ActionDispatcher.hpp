@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <vector>
 
+namespace udjourney {
+
 class IGame;
 
 /**
@@ -27,7 +29,7 @@ class IGame;
 class ActionDispatcher {
  public:
     using ActionCallback =
-        std::function<void(IGame*, const std::vector<std::string>&)>;
+        std::function<void(udjourney::IGame*, const std::vector<std::string>&)>;
 
     /**
      * @brief Register an action handler
@@ -42,7 +44,8 @@ class ActionDispatcher {
      * @param action_string Full action string (e.g., "load_level:level2")
      * @param game Pointer to game instance
      */
-    static void execute(const std::string& action_string, IGame* game);
+    static void execute(const std::string& action_string,
+                        udjourney::IGame* game);
 
     /**
      * @brief Clear all registered actions
@@ -60,3 +63,4 @@ class ActionDispatcher {
     static std::vector<std::string> split_action(
         const std::string& action_string);
 };
+}  // namespace udjourney

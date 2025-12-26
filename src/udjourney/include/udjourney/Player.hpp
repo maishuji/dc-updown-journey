@@ -17,7 +17,6 @@
 namespace udjourney {
 class ProjectilePresetLoader;
 struct ProjectilePreset;
-}  // namespace udjourney
 
 class Player : public IActor, public IObservable {
  public:
@@ -102,3 +101,4 @@ class Player : public IActor, public IObservable {
     // Animation helper methods
     void update_animation_state();
 };
+}  // namespace udjourney

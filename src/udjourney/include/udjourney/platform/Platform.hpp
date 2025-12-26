@@ -16,6 +16,7 @@
 #include "udjourney/platform/behavior_strategies/PlatformBehaviorStrategy.hpp"
 #include "udjourney/platform/features/PlatformFeatureBase.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
+namespace udjourney {
 
 class Platform : public IActor {
  public:
@@ -99,3 +100,4 @@ class Platform : public IActor {
     std::unique_ptr<PlatformBehaviorStrategy> m_behavior;
     std::vector<std::unique_ptr<PlatformFeatureBase>> m_features;
 };
+}  // namespace udjourney

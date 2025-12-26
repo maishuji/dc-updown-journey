@@ -3,7 +3,7 @@
 #include <raylib/raylib.h>
 #include <string>
 #include "udjourney/interfaces/IActor.hpp"
-
+namespace udjourney {
 class IGame;
 
 /**
@@ -88,3 +88,4 @@ class IWidget : public IActor {
     bool is_focused_ = false;
     bool is_selectable_ = true;  // By default, widgets are selectable
 };
+}  // namespace udjourney

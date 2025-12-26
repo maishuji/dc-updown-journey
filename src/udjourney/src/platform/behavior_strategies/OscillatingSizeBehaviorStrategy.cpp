@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "udjourney/platform/Platform.hpp"
-
+namespace udjourney {
 namespace {
 const float kDefaultSpeed = 7.0F;
 const float kDefaultOffset = 10.0F;
@@ -85,3 +85,4 @@ void OscillatingSizeBehaviorStrategy::update(Platform &ioPlatform,
         ioPlatform.set_state(ActorState::CONSUMED);
     }
 }
+}  // namespace udjourney

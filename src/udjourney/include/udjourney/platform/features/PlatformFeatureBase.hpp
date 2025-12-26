@@ -2,7 +2,7 @@
 #pragma once
 
 #include <cstdint>
-
+namespace udjourney {
 // Forward declarations
 class Platform;
 class IActor;
@@ -13,3 +13,4 @@ struct PlatformFeatureBase {
     virtual void draw(const Platform&) const {}
     virtual void handle_collision(Platform&, class IActor&) {}
 };
+}  // namespace udjourney

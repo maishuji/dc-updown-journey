@@ -3,7 +3,7 @@
 #include <memory>
 #include "udjourney/widgets/IWidget.hpp"
 #include "udjourney/scene/Scene.hpp"
-
+namespace udjourney {
 class IGame;
 
 /**
@@ -24,3 +24,4 @@ class WidgetFactory {
     static std::unique_ptr<IWidget> create_from_fud(
         const udjourney::scene::FUDData& fud, const IGame& game);
 };
+}  // namespace udjourney

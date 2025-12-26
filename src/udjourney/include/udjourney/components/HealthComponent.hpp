@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "udjourney/interfaces/IComponent.hpp"
 #include "udjourney/interfaces/IActor.hpp"
+namespace udjourney {
 
 /**
  * @brief Component that manages actor health, damage, and healing
@@ -88,3 +89,4 @@ class HealthComponent : public IComponent {
     int max_health_;
     int current_health_;
 };
+}  // namespace udjourney

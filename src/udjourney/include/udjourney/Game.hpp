@@ -22,6 +22,8 @@
 #include "udjourney/Player.hpp"
 #include "udjourney/WorldBounds.hpp"
 
+namespace udjourney {
+
 enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER, WIN };
 
 class Game : public IGame, public IObserver {
@@ -94,3 +96,4 @@ class Game : public IGame, public IObserver {
     int m_frames_since_scene_load =
         0;  // Prevent immediate input after scene transition
 };
+}  // namespace udjourney

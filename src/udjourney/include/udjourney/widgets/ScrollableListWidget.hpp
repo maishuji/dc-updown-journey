@@ -11,6 +11,7 @@
 
 #include "udjourney/scene/Scene.hpp"
 #include "udjourney/widgets/IWidget.hpp"
+namespace udjourney {
 
 /**
  * @brief Generic scrollable list widget that can display any type of items
@@ -115,3 +116,4 @@ class ScrollableListWidget : public IWidget {
     float scroll_animation_target_;
     float scroll_animation_speed_;
 };
+}  // namespace udjourney

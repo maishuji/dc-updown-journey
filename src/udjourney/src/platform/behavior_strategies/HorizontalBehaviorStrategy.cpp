@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "udjourney/platform/Platform.hpp"
+namespace udjourney {
 
 struct HorizontalBehaviorStrategy::PImpl {
     float pivot_x = std::nanf("");  // Will be updated
@@ -58,3 +59,4 @@ void HorizontalBehaviorStrategy::update(Platform &platform, float delta) {
         platform.set_state(ActorState::CONSUMED);
     }
 }
+}  // namespace udjourney

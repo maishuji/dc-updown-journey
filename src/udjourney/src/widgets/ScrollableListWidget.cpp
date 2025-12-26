@@ -9,7 +9,7 @@
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/LevelMetadata.hpp"
 #include <udj-core/Logger.hpp>
-
+namespace udjourney {
 ScrollableListWidget::ScrollableListWidget(
     const IGame& game, const udjourney::scene::FUDData& fud) :
     IWidget(game),
@@ -544,3 +544,4 @@ const ScrollableListWidget::ListItem* ScrollableListWidget::get_selected_item()
     }
     return nullptr;
 }
+}  // namespace udjourney

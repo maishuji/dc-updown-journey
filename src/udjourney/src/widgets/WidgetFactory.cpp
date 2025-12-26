@@ -6,7 +6,7 @@
 #include "udjourney/widgets/ButtonWidget.hpp"
 #include "udjourney/widgets/ScrollableListWidget.hpp"
 #include <udj-core/Logger.hpp>
-
+namespace udjourney {
 std::unique_ptr<IWidget> WidgetFactory::create_from_fud(
     const udjourney::scene::FUDData& fud, const IGame& game) {
     // All button types use ButtonWidget
@@ -35,3 +35,4 @@ std::unique_ptr<IWidget> WidgetFactory::create_from_fud(
     udjourney::Logger::warning("Unknown widget type: %", fud.type_id);
     return nullptr;
 }
+}  // namespace udjourney

@@ -54,7 +54,8 @@
 
 using udj::core::filesystem::file_exists;
 using udj::core::filesystem::get_assets_path;
-using udjourney::Monster;
+
+namespace udjourney {
 
 struct Resolution {
     int width;
@@ -2419,3 +2420,4 @@ void Game::initialize_gameplay() {
         std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
     m_hud_manager.add_background_hud(std::move(score_hud));
 }
+}  // namespace udjourney

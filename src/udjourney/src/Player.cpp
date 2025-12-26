@@ -23,7 +23,7 @@
 #include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/platform/Platform.hpp"
-
+namespace udjourney {
 Player::~Player() = default;
 
 namespace {
@@ -496,3 +496,5 @@ Vector2 Player::get_shoot_position() const {
 Vector2 Player::get_shoot_direction() const {
     return Vector2{m_facing_right ? 1.0f : -1.0f, 0.0f};
 }
+
+}  // namespace udjourney

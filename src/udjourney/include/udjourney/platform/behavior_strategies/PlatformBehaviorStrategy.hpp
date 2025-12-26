@@ -1,8 +1,8 @@
 // Copyright 2025 Quentin Cartier
-#ifndef PLATFORMBEHAVIORSTRATEGY_HPP_
-#define PLATFORMBEHAVIORSTRATEGY_HPP_
+#pragma once
 
 #include <memory>
+namespace udjourney {
 
 class Platform;
 class PlatformBehaviorStrategy {
@@ -17,4 +17,4 @@ class StaticBehaviorStrategy : public PlatformBehaviorStrategy {
     void update(Platform& platform, float delta) override;
 };
 
-#endif  //  PLATFORMBEHAVIORSTRATEGY_HPP_
+}  // namespace udjourney

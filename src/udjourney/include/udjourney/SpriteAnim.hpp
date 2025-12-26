@@ -4,6 +4,8 @@
 
 #include <vector>
 
+namespace udjourney {
+
 enum class AnimationState { IDLE_WALK = 0, JUMP = 1, DASH = 2 };
 
 class SpriteAnim {
@@ -46,3 +48,5 @@ class SpriteAnim {
     int start_row_ = 0;  // Starting row index in spritesheet
     int start_col_ = 0;  // Starting column index in spritesheet
 };
+
+}  // namespace udjourney

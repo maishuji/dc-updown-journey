@@ -1,7 +1,5 @@
 // Copyright 2025 Quentin Cartier
-
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IACTOR_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IACTOR_HPP_
+#pragma once
 
 #include <concepts>
 #include <memory>
@@ -9,7 +7,7 @@
 #include <vector>
 
 #include "udjourney/interfaces/IComponent.hpp"
-
+namespace udjourney {
 // Forward declarations
 class IGame;
 
@@ -88,4 +86,4 @@ class IActor {
     std::vector<std::unique_ptr<IComponent>> m_components;
 };
 
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IACTOR_HPP_
+}  // namespace udjourney

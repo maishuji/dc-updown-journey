@@ -5,7 +5,7 @@
 #include <map>
 #include "udjourney/widgets/IWidget.hpp"
 #include "udjourney/scene/Scene.hpp"
-
+namespace udjourney {
 /**
  * @brief Button widget for menus and UI
  *
@@ -79,3 +79,4 @@ class ButtonWidget : public IWidget {
     Texture2D get_current_texture() const;
     Rectangle get_current_source_rect() const;
 };
+}  // namespace udjourney

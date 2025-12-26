@@ -8,6 +8,7 @@
 #include "udjourney/ActionDispatcher.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/managers/TextureManager.hpp"
+namespace udjourney {
 
 // Helper function to parse color from JSON array string
 static Color parse_color_from_property(const std::string& color_str) {
@@ -362,3 +363,4 @@ Rectangle ButtonWidget::get_current_source_rect() const {
     }
     return idle_source_rect_;
 }
+}  // namespace udjourney

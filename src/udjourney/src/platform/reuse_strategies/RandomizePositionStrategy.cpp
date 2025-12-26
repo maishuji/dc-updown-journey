@@ -6,6 +6,7 @@
 
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/platform/Platform.hpp"
+namespace udjourney {
 
 void RandomizePositionStrategy::reuse(Platform& platform) {
     // Randomize the X position of the platform
@@ -41,3 +42,4 @@ void RandomizePositionStrategy::reuse(Platform& platform) {
     }
     platform.set_state(ActorState::ONGOING);
 }
+}  // namespace udjourney
