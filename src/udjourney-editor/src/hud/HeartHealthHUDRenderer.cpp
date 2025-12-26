@@ -1,5 +1,5 @@
 // Copyright 2025 Quentin Cartier
-#include "udjourney-editor/fud/HeartHealthFUDRenderer.hpp"
+#include "udjourney-editor/hud/HeartHealthHUDRenderer.hpp"
 
 #include <string>
 
@@ -10,7 +10,7 @@
 // External function from EditorScene
 extern Texture2D load_texture_cached(const std::string& filename);
 
-void HeartHealthFUDRenderer::render(const FUDElement& fud,
+void HeartHealthHUDRenderer::render(const HUDElement& hud,
                                     ImDrawList* draw_list,
                                     const ImVec2& fud_pos,
                                     const ImVec2& fud_end, bool is_selected) {
@@ -22,16 +22,16 @@ void HeartHealthFUDRenderer::render(const FUDElement& fud,
     int full_col = 0, full_row = 3;
 
     try {
-        if (fud.properties.count("max_hearts")) {
-            auto& prop = fud.properties.at("max_hearts");
+        if (hud.properties.count("max_hearts")) {
+            auto& prop = hud.properties.at("max_hearts");
             if (prop.is_number_integer()) {
                 max_hearts = prop.get<int>();
             } else if (prop.is_string()) {
                 max_hearts = std::stoi(prop.get<std::string>());
             }
         }
-        if (fud.properties.count("heart_spacing")) {
-            auto& prop = fud.properties.at("heart_spacing");
+        if (hud.properties.count("heart_spacing")) {
+            auto& prop = hud.properties.at("heart_spacing");
             if (prop.is_number_integer()) {
                 heart_spacing = prop.get<int>();
             } else if (prop.is_string()) {
@@ -40,9 +40,9 @@ void HeartHealthFUDRenderer::render(const FUDElement& fud,
         }
 
         // Try to parse heart sprite config
-        if (fud.properties.count("heart_full_sprite")) {
+        if (hud.properties.count("heart_full_sprite")) {
             try {
-                auto sprite_obj = fud.properties.at("heart_full_sprite");
+                auto sprite_obj = hud.properties.at("heart_full_sprite");
                 if (sprite_obj.is_object()) {
                     heart_sheet = sprite_obj.value("sheet", heart_sheet);
                     heart_tile_size =
@@ -59,7 +59,7 @@ void HeartHealthFUDRenderer::render(const FUDElement& fud,
     // Try to render with actual sprites
     Texture2D heart_tex = load_texture_cached(heart_sheet);
     if (heart_tex.id > 0) {
-        render_hearts_with_sprites(fud,
+        render_hearts_with_sprites(hud,
                                    draw_list,
                                    fud_pos,
                                    heart_tex,
@@ -73,8 +73,8 @@ void HeartHealthFUDRenderer::render(const FUDElement& fud,
     }
 }
 
-void HeartHealthFUDRenderer::render_hearts_with_sprites(
-    const FUDElement& fud, ImDrawList* draw_list, const ImVec2& fud_pos,
+void HeartHealthHUDRenderer::render_hearts_with_sprites(
+    const HUDElement& hud, ImDrawList* draw_list, const ImVec2& fud_pos,
     Texture2D heart_tex, int max_hearts, int heart_spacing, int heart_tile_size,
     int full_col, int full_row) {
     for (int h = 0; h < max_hearts; ++h) {
@@ -99,7 +99,7 @@ void HeartHealthFUDRenderer::render_hearts_with_sprites(
     }
 }
 
-void HeartHealthFUDRenderer::render_hearts_fallback(ImDrawList* draw_list,
+void HeartHealthHUDRenderer::render_hearts_fallback(ImDrawList* draw_list,
                                                     const ImVec2& fud_pos,
                                                     int max_hearts,
                                                     int heart_spacing) {

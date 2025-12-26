@@ -17,14 +17,14 @@
 #include <nlohmann/json.hpp>
 #include "udj-core/CoreUtils.hpp"
 
-// FUD Renderer includes
-#include "udjourney-editor/fud/IFUDRenderer.hpp"
-#include "udjourney-editor/fud/ButtonFUDRenderer.hpp"
-#include "udjourney-editor/fud/HealthBarFUDRenderer.hpp"
-#include "udjourney-editor/fud/HeartHealthFUDRenderer.hpp"
-#include "udjourney-editor/fud/ScoreDisplayFUDRenderer.hpp"
-#include "udjourney-editor/fud/ScrollableListFUDRenderer.hpp"
-#include "udjourney-editor/fud/TimerFUDRenderer.hpp"
+// HUD Renderer includes
+#include "udjourney-editor/hud/IHUDRenderer.hpp"
+#include "udjourney-editor/hud/ButtonHUDRenderer.hpp"
+#include "udjourney-editor/hud/HealthBarHUDRenderer.hpp"
+#include "udjourney-editor/hud/HeartHealthHUDRenderer.hpp"
+#include "udjourney-editor/hud/ScoreDisplayHUDRenderer.hpp"
+#include "udjourney-editor/hud/ScrollableListHUDRenderer.hpp"
+#include "udjourney-editor/hud/TimerHUDRenderer.hpp"
 
 // Simple texture cache for editor
 static std::unordered_map<std::string, Texture2D> texture_cache;
@@ -90,39 +90,39 @@ struct EditorScene::PImpl {
     // Implementation details can be added here in the future
 };
 
-// Initialize FUD renderers on first use
+// Initialize HUD renderers on first use
 static void initialize_fud_renderers() {
     static bool initialized = false;
     if (initialized) return;
 
-    auto& factory = FUDRendererFactory::instance();
+    auto& factory = HUDRendererFactory::instance();
 
     // Register button renderers
     factory.register_renderer("menu_button",
-                              std::make_unique<ButtonFUDRenderer>());
+                              std::make_unique<ButtonHUDRenderer>());
     factory.register_renderer("small_button",
-                              std::make_unique<ButtonFUDRenderer>());
+                              std::make_unique<ButtonHUDRenderer>());
     factory.register_renderer("large_button",
-                              std::make_unique<ButtonFUDRenderer>());
+                              std::make_unique<ButtonHUDRenderer>());
     factory.register_renderer("icon_button",
-                              std::make_unique<ButtonFUDRenderer>());
+                              std::make_unique<ButtonHUDRenderer>());
     factory.register_renderer("textured_button",
-                              std::make_unique<ButtonFUDRenderer>());
+                              std::make_unique<ButtonHUDRenderer>());
 
     // Register health/display renderers
     factory.register_renderer("heart_health",
-                              std::make_unique<HeartHealthFUDRenderer>());
+                              std::make_unique<HeartHealthHUDRenderer>());
     factory.register_renderer("healthbar",
-                              std::make_unique<HealthBarFUDRenderer>());
+                              std::make_unique<HealthBarHUDRenderer>());
     factory.register_renderer("mana_bar",
-                              std::make_unique<HealthBarFUDRenderer>());
+                              std::make_unique<HealthBarHUDRenderer>());
     factory.register_renderer("score_display",
-                              std::make_unique<ScoreDisplayFUDRenderer>());
-    factory.register_renderer("timer", std::make_unique<TimerFUDRenderer>());
+                              std::make_unique<ScoreDisplayHUDRenderer>());
+    factory.register_renderer("timer", std::make_unique<TimerHUDRenderer>());
 
     // Register list renderer
     factory.register_renderer("scrollable_list",
-                              std::make_unique<ScrollableListFUDRenderer>());
+                              std::make_unique<ScrollableListHUDRenderer>());
 
     initialized = true;
 }
@@ -200,11 +200,11 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
     // Render player spawn position
     render_player_spawn(level, draw_list, origin);
 
-    // Render FUD elements
+    // Render HUD elements
     ImVec2 viewport_size = ImGui::GetContentRegionAvail();
 
-    // Draw screen boundaries when in FUD mode (Dreamcast resolution: 640x480)
-    if (editor_panel.get_edit_mode() == EditMode::FUD) {
+    // Draw screen boundaries when in HUD mode (Dreamcast resolution: 640x480)
+    if (editor_panel.get_edit_mode() == EditMode::HUD) {
         const float screen_width = 640.0f;
         const float screen_height = 480.0f;
 
@@ -769,10 +769,10 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
     bool left_clicked = ImGui::IsMouseClicked(0);
     bool right_clicked = ImGui::IsMouseClicked(1);
 
-    // FUD mode needs to handle dragging even when not clicking, but only when
+    // HUD mode needs to handle dragging even when not clicking, but only when
     // hovered
     EditMode mode = editor_panel.get_edit_mode();
-    if (mode == EditMode::FUD && hovered) {
+    if (mode == EditMode::HUD && hovered) {
         handle_fud_mode_input(level,
                               editor_panel,
                               mouse_pos,
@@ -1609,37 +1609,37 @@ void EditorScene::render_background_placement_preview(
     }
 }
 
-// Helper to calculate FUD anchor position based on viewport
+// Helper to calculate HUD anchor position based on viewport
 ImVec2 EditorScene::calculate_fud_anchor_position(
-    FUDAnchor anchor, const ImVec2& viewport_size) const {
+    HUDAnchor anchor, const ImVec2& viewport_size) const {
     ImVec2 pos(0, 0);
 
     switch (anchor) {
-        case FUDAnchor::TopLeft:
+        case HUDAnchor::TopLeft:
             pos = ImVec2(0, 0);
             break;
-        case FUDAnchor::TopCenter:
+        case HUDAnchor::TopCenter:
             pos = ImVec2(viewport_size.x / 2, 0);
             break;
-        case FUDAnchor::TopRight:
+        case HUDAnchor::TopRight:
             pos = ImVec2(viewport_size.x, 0);
             break;
-        case FUDAnchor::MiddleLeft:
+        case HUDAnchor::MiddleLeft:
             pos = ImVec2(0, viewport_size.y / 2);
             break;
-        case FUDAnchor::MiddleCenter:
+        case HUDAnchor::MiddleCenter:
             pos = ImVec2(viewport_size.x / 2, viewport_size.y / 2);
             break;
-        case FUDAnchor::MiddleRight:
+        case HUDAnchor::MiddleRight:
             pos = ImVec2(viewport_size.x, viewport_size.y / 2);
             break;
-        case FUDAnchor::BottomLeft:
+        case HUDAnchor::BottomLeft:
             pos = ImVec2(0, viewport_size.y);
             break;
-        case FUDAnchor::BottomCenter:
+        case HUDAnchor::BottomCenter:
             pos = ImVec2(viewport_size.x / 2, viewport_size.y);
             break;
-        case FUDAnchor::BottomRight:
+        case HUDAnchor::BottomRight:
             pos = ImVec2(viewport_size.x, viewport_size.y);
             break;
     }
@@ -1650,11 +1650,11 @@ ImVec2 EditorScene::calculate_fud_anchor_position(
 void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
                               ImDrawList* draw_list, const ImVec2& origin,
                               const ImVec2& viewport_size) {
-    if (level.fuds.empty()) {
+    if (level.huds.empty()) {
         return;
     }
 
-    // Use Dreamcast screen dimensions for FUD positioning
+    // Use Dreamcast screen dimensions for HUD positioning
     const float screen_width = 640.0f;
     const float screen_height = 480.0f;
     ImVec2 screen_size(screen_width, screen_height);
@@ -1662,36 +1662,36 @@ void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
     // Screen origin is at world origin (same as the scene grid)
     ImVec2 screen_origin = origin;
 
-    for (size_t i = 0; i < level.fuds.size(); ++i) {
-        const auto& fud = level.fuds[i];
+    for (size_t i = 0; i < level.huds.size(); ++i) {
+        const auto& hud = level.huds[i];
 
-        if (!fud.visible) {
+        if (!hud.visible) {
             continue;
         }
 
         // Calculate anchor position relative to screen dimensions
         ImVec2 anchor_pos =
-            calculate_fud_anchor_position(fud.anchor, screen_size);
+            calculate_fud_anchor_position(hud.anchor, screen_size);
 
         // Add screen origin and offset
-        ImVec2 fud_pos = ImVec2(screen_origin.x + anchor_pos.x + fud.offset.x,
-                                screen_origin.y + anchor_pos.y + fud.offset.y);
+        ImVec2 fud_pos = ImVec2(screen_origin.x + anchor_pos.x + hud.offset.x,
+                                screen_origin.y + anchor_pos.y + hud.offset.y);
 
-        ImVec2 fud_end = ImVec2(fud_pos.x + fud.size.x, fud_pos.y + fud.size.y);
+        ImVec2 fud_end = ImVec2(fud_pos.x + hud.size.x, fud_pos.y + hud.size.y);
 
-        // Determine if this FUD is selected
-        FUDElement* selected = editor_panel.get_selected_fud();
-        bool is_selected = (selected == &level.fuds[i]);
+        // Determine if this HUD is selected
+        HUDElement* selected = editor_panel.get_selected_fud();
+        bool is_selected = (selected == &level.huds[i]);
 
-        // Use strategy pattern to render FUD content
+        // Use strategy pattern to render HUD content
         // Renderers handle background, content, and foreground sprites
-        auto& factory = FUDRendererFactory::instance();
-        IFUDRenderer* renderer = factory.get_renderer(fud.type_id);
+        auto& factory = HUDRendererFactory::instance();
+        IHUDRenderer* renderer = factory.get_renderer(hud.type_id);
         if (renderer) {
-            renderer->render(fud, draw_list, fud_pos, fud_end, is_selected);
+            renderer->render(hud, draw_list, fud_pos, fud_end, is_selected);
         }
 
-        // Draw FUD border
+        // Draw HUD border
         ImU32 border_color =
             is_selected ? IM_COL32(0, 255, 0, 255)     // Green for selected
                         : IM_COL32(255, 255, 0, 200);  // Yellow for normal
@@ -1704,23 +1704,23 @@ void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
         draw_list->AddCircleFilled(
             anchor_screen_pos, 4.0f, IM_COL32(255, 0, 0, 200));
 
-        // Show FUD info as tooltip on hover
+        // Show HUD info as tooltip on hover
         ImVec2 mouse_pos = ImGui::GetMousePos();
         if (mouse_pos.x >= fud_pos.x && mouse_pos.x <= fud_end.x &&
             mouse_pos.y >= fud_pos.y && mouse_pos.y <= fud_end.y) {
             ImGui::BeginTooltip();
-            ImGui::Text("Name: %s", fud.name.c_str());
-            ImGui::Text("Type: %s", fud.type_id.c_str());
-            ImGui::Text("Size: %.0fx%.0f", fud.size.x, fud.size.y);
+            ImGui::Text("Name: %s", hud.name.c_str());
+            ImGui::Text("Type: %s", hud.type_id.c_str());
+            ImGui::Text("Size: %.0fx%.0f", hud.size.x, hud.size.y);
             ImGui::Text("Anchor: %s",
-                        fud.anchor == FUDAnchor::TopLeft        ? "TopLeft"
-                        : fud.anchor == FUDAnchor::TopCenter    ? "TopCenter"
-                        : fud.anchor == FUDAnchor::TopRight     ? "TopRight"
-                        : fud.anchor == FUDAnchor::MiddleLeft   ? "MiddleLeft"
-                        : fud.anchor == FUDAnchor::MiddleCenter ? "MiddleCenter"
-                        : fud.anchor == FUDAnchor::MiddleRight  ? "MiddleRight"
-                        : fud.anchor == FUDAnchor::BottomLeft   ? "BottomLeft"
-                        : fud.anchor == FUDAnchor::BottomCenter
+                        hud.anchor == HUDAnchor::TopLeft        ? "TopLeft"
+                        : hud.anchor == HUDAnchor::TopCenter    ? "TopCenter"
+                        : hud.anchor == HUDAnchor::TopRight     ? "TopRight"
+                        : hud.anchor == HUDAnchor::MiddleLeft   ? "MiddleLeft"
+                        : hud.anchor == HUDAnchor::MiddleCenter ? "MiddleCenter"
+                        : hud.anchor == HUDAnchor::MiddleRight  ? "MiddleRight"
+                        : hud.anchor == HUDAnchor::BottomLeft   ? "BottomLeft"
+                        : hud.anchor == HUDAnchor::BottomCenter
                             ? "BottomCenter"
                             : "BottomRight");
             ImGui::EndTooltip();
@@ -1734,25 +1734,25 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
                                         bool right_clicked) {
     // Handle "Add FUD" button click from panel
     if (editor_panel.should_add_fud()) {
-        FUDElement new_fud = editor_panel.create_fud_from_preset();
+        HUDElement new_fud = editor_panel.create_fud_from_preset();
         level.add_fud(new_fud);
         editor_panel.clear_fud_add_flag();
 
         // Select the newly added FUD
-        if (!level.fuds.empty()) {
-            editor_panel.set_selected_fud(&level.fuds.back());
+        if (!level.huds.empty()) {
+            editor_panel.set_selected_fud(&level.huds.back());
         }
         return;
     }
 
-    // Handle FUD deletion
+    // Handle HUD deletion
     if (editor_panel.should_delete_selected_fud()) {
-        FUDElement* selected = editor_panel.get_selected_fud();
+        HUDElement* selected = editor_panel.get_selected_fud();
 
         if (selected) {
             // Find and remove the selected FUD
-            for (size_t i = 0; i < level.fuds.size(); ++i) {
-                if (&level.fuds[i] == selected) {
+            for (size_t i = 0; i < level.huds.size(); ++i) {
+                if (&level.huds[i] == selected) {
                     level.remove_fud(i);
                     break;
                 }
@@ -1769,7 +1769,7 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
     ImVec2 screen_size(screen_width, screen_height);
     ImVec2 screen_origin = origin;
 
-    FUDElement* selected = editor_panel.get_selected_fud();
+    HUDElement* selected = editor_panel.get_selected_fud();
 
     // Handle mouse release - stop dragging
     if (!ImGui::IsMouseDown(0)) {
@@ -1795,36 +1795,36 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
     // Handle click to select or prepare to drag
     if (left_clicked) {
         // Check if mouse clicked on any FUD
-        for (size_t i = 0; i < level.fuds.size(); ++i) {
-            auto& fud = level.fuds[i];
+        for (size_t i = 0; i < level.huds.size(); ++i) {
+            auto& hud = level.huds[i];
 
-            if (!fud.visible) {
+            if (!hud.visible) {
                 continue;
             }
 
-            // Calculate FUD position relative to screen dimensions
+            // Calculate HUD position relative to screen dimensions
             ImVec2 anchor_pos =
-                calculate_fud_anchor_position(fud.anchor, screen_size);
+                calculate_fud_anchor_position(hud.anchor, screen_size);
             ImVec2 fud_pos =
-                ImVec2(screen_origin.x + anchor_pos.x + fud.offset.x,
-                       screen_origin.y + anchor_pos.y + fud.offset.y);
+                ImVec2(screen_origin.x + anchor_pos.x + hud.offset.x,
+                       screen_origin.y + anchor_pos.y + hud.offset.y);
             ImVec2 fud_end =
-                ImVec2(fud_pos.x + fud.size.x, fud_pos.y + fud.size.y);
+                ImVec2(fud_pos.x + hud.size.x, fud_pos.y + hud.size.y);
 
-            // Check if mouse is inside FUD bounds
+            // Check if mouse is inside HUD bounds
             if (mouse_pos.x >= fud_pos.x && mouse_pos.x <= fud_end.x &&
                 mouse_pos.y >= fud_pos.y && mouse_pos.y <= fud_end.y) {
-                editor_panel.set_selected_fud(&fud);
+                editor_panel.set_selected_fud(&hud);
 
                 // Always prepare for potential drag when clicking on a FUD
                 fud_drag_start_mouse_ = mouse_pos;
-                fud_drag_start_offset_ = fud.offset;
+                fud_drag_start_offset_ = hud.offset;
                 dragging_fud_ = false;  // Reset drag state
-                printf("Clicked FUD at (%.1f, %.1f), offset=(%.1f, %.1f)\n",
+                printf("Clicked HUD at (%.1f, %.1f), offset=(%.1f, %.1f)\n",
                        mouse_pos.x,
                        mouse_pos.y,
-                       fud.offset.x,
-                       fud.offset.y);
+                       hud.offset.x,
+                       hud.offset.y);
                 return;
             }
         }

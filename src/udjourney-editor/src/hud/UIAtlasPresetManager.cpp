@@ -1,5 +1,5 @@
 // Copyright 2025 Quentin Cartier
-#include "udjourney-editor/fud/UIAtlasPresetManager.hpp"
+#include "udjourney-editor/hud/UIAtlasPresetManager.hpp"
 
 #include <filesystem>
 #include <fstream>

@@ -65,17 +65,17 @@ add_library(udjourney_editor_lib
   src/mode_handlers/SpawnModeHandler.cpp
   src/mode_handlers/BackgroundModeHandler.cpp
   src/mode_handlers/MonsterModeHandler.cpp
-  src/mode_handlers/FUDModeHandler.cpp
-  src/fud/FUDElement.cpp
-  src/fud/FUDPresetManager.cpp
-  src/fud/UIAtlasPresetManager.cpp
-  src/fud/IFUDRenderer.cpp
-  src/fud/ButtonFUDRenderer.cpp
-  src/fud/HealthBarFUDRenderer.cpp
-  src/fud/HeartHealthFUDRenderer.cpp
-  src/fud/ScoreDisplayFUDRenderer.cpp
-  src/fud/ScrollableListFUDRenderer.cpp
-  src/fud/TimerFUDRenderer.cpp
+  src/mode_handlers/HUDModeHandler.cpp
+  src/hud/HUDElement.cpp
+  src/hud/HUDPresetManager.cpp
+  src/hud/UIAtlasPresetManager.cpp
+  src/hud/IHUDRenderer.cpp
+  src/hud/ButtonHUDRenderer.cpp
+  src/hud/HealthBarHUDRenderer.cpp
+  src/hud/HeartHealthHUDRenderer.cpp
+  src/hud/ScoreDisplayHUDRenderer.cpp
+  src/hud/ScrollableListHUDRenderer.cpp
+  src/hud/TimerHUDRenderer.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -122,17 +122,17 @@ add_library(udjourney_editor_lib_test
   src/mode_handlers/SpawnModeHandler.cpp
   src/mode_handlers/BackgroundModeHandler.cpp
   src/mode_handlers/MonsterModeHandler.cpp
-  src/mode_handlers/FUDModeHandler.cpp
-  src/fud/FUDElement.cpp
-  src/fud/FUDPresetManager.cpp
-  src/fud/UIAtlasPresetManager.cpp
-  src/fud/IFUDRenderer.cpp
-  src/fud/ButtonFUDRenderer.cpp
-  src/fud/HealthBarFUDRenderer.cpp
-  src/fud/HeartHealthFUDRenderer.cpp
-  src/fud/ScoreDisplayFUDRenderer.cpp
-  src/fud/ScrollableListFUDRenderer.cpp
-  src/fud/TimerFUDRenderer.cpp
+  src/mode_handlers/HUDModeHandler.cpp
+  src/hud/HUDElement.cpp
+  src/hud/HUDPresetManager.cpp
+  src/hud/UIAtlasPresetManager.cpp
+  src/hud/IHUDRenderer.cpp
+  src/hud/ButtonHUDRenderer.cpp
+  src/hud/HealthBarHUDRenderer.cpp
+  src/hud/HeartHealthHUDRenderer.cpp
+  src/hud/ScoreDisplayHUDRenderer.cpp
+  src/hud/ScrollableListHUDRenderer.cpp
+  src/hud/TimerHUDRenderer.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -195,17 +195,17 @@ add_executable(editorpanel_tests
   src/mode_handlers/SpawnModeHandler.cpp
   src/mode_handlers/BackgroundModeHandler.cpp
   src/mode_handlers/MonsterModeHandler.cpp
-  src/mode_handlers/FUDModeHandler.cpp
-  src/fud/FUDElement.cpp
-  src/fud/FUDPresetManager.cpp
-  src/fud/UIAtlasPresetManager.cpp
-  src/fud/IFUDRenderer.cpp
-  src/fud/ButtonFUDRenderer.cpp
-  src/fud/HealthBarFUDRenderer.cpp
-  src/fud/HeartHealthFUDRenderer.cpp
-  src/fud/ScoreDisplayFUDRenderer.cpp
-  src/fud/ScrollableListFUDRenderer.cpp
-  src/fud/TimerFUDRenderer.cpp
+  src/mode_handlers/HUDModeHandler.cpp
+  src/hud/HUDElement.cpp
+  src/hud/HUDPresetManager.cpp
+  src/hud/UIAtlasPresetManager.cpp
+  src/hud/IHUDRenderer.cpp
+  src/hud/ButtonHUDRenderer.cpp
+  src/hud/HealthBarHUDRenderer.cpp
+  src/hud/HeartHealthHUDRenderer.cpp
+  src/hud/ScoreDisplayHUDRenderer.cpp
+  src/hud/ScrollableListHUDRenderer.cpp
+  src/hud/TimerHUDRenderer.cpp
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
   ${imgui_SOURCE_DIR}/imgui_tables.cpp

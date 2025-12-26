@@ -6,15 +6,15 @@
 
 #include "udjourney-editor/mode_handlers/IModeHandler.hpp"
 #include "udjourney-editor/Level.hpp"
-#include "udjourney-editor/fud/FUDPresetManager.hpp"
-#include "udjourney-editor/fud/UIAtlasPresetManager.hpp"
+#include "udjourney-editor/hud/HUDPresetManager.hpp"
+#include "udjourney-editor/hud/UIAtlasPresetManager.hpp"
 
 /**
- * @brief Handler for FUD (Fixed UI Display) edit mode
+ * @brief Handler for HUD (Fixed UI Display) edit mode
  */
-class FUDModeHandler : public IModeHandler {
+class HUDModeHandler : public IModeHandler {
  public:
-    FUDModeHandler();
+    HUDModeHandler();
 
     void render() override;
     void set_scale(float scale) override { scale_ = scale; }
@@ -24,9 +24,9 @@ class FUDModeHandler : public IModeHandler {
         return selected_fud_preset_;
     }
 
-    FUDElement* get_selected_fud() const { return selected_fud_; }
+    HUDElement* get_selected_fud() const { return selected_fud_; }
 
-    void set_selected_fud(FUDElement* fud) { selected_fud_ = fud; }
+    void set_selected_fud(HUDElement* hud) { selected_fud_ = hud; }
 
     bool should_delete_selected_fud() const { return delete_selected_fud_; }
 
@@ -38,23 +38,23 @@ class FUDModeHandler : public IModeHandler {
     bool should_add_fud() const { return add_fud_requested_; }
     void clear_add_flag() { add_fud_requested_ = false; }
 
-    // Create a new FUD element from the selected preset
-    FUDElement create_fud_from_preset() const;
+    // Create a new HUD element from the selected preset
+    HUDElement create_fud_from_preset() const;
 
     void initialize_presets();
 
-    const FUDPresetManager& get_fud_preset_manager() const {
+    const HUDPresetManager& get_fud_preset_manager() const {
         return fud_preset_manager_;
     }
 
  private:
     float scale_ = 1.0f;
     std::string selected_fud_preset_;
-    FUDElement* selected_fud_ = nullptr;
+    HUDElement* selected_fud_ = nullptr;
     bool delete_selected_fud_ = false;
     bool add_fud_requested_ = false;
 
-    FUDPresetManager fud_preset_manager_;
+    HUDPresetManager fud_preset_manager_;
     UIAtlasPresetManager ui_atlas_manager_;
 
     int selected_background_sprite_ = -1;

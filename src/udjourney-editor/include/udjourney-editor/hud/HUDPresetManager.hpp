@@ -4,13 +4,13 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
-#include "udjourney-editor/fud/FUDElement.hpp"
+#include "udjourney-editor/hud/HUDElement.hpp"
 
-class FUDPresetManager {
+class HUDPresetManager {
  public:
-    FUDPresetManager();
+    HUDPresetManager();
 
-    // Load all FUD presets from assets/fuds/ directory
+    // Load all HUD presets from assets/huds/ directory
     void load_available_presets();
 
     // Get all loaded presets

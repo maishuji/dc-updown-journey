@@ -203,12 +203,12 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
         }
 
         // Import FUDs
-        if (jlevel.contains("fuds") && jlevel["fuds"].is_array()) {
-            for (const auto& jfud : jlevel["fuds"]) {
+        if (jlevel.contains("huds") && jlevel["huds"].is_array()) {
+            for (const auto& jfud : jlevel["huds"]) {
                 try {
-                    FUDElement fud;
-                    from_json(jfud, fud);  // Explicit call to from_json
-                    level.fuds.push_back(fud);
+                    HUDElement hud;
+                    from_json(jfud, hud);  // Explicit call to from_json
+                    level.huds.push_back(hud);
                 } catch (const std::exception& e) {
                     std::cerr << "Warning: Failed to load FUD: " << e.what()
                               << std::endl;

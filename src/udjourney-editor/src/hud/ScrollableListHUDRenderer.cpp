@@ -1,5 +1,5 @@
 // Copyright 2025 Quentin Cartier
-#include "udjourney-editor/fud/ScrollableListFUDRenderer.hpp"
+#include "udjourney-editor/hud/ScrollableListHUDRenderer.hpp"
 
 #include <algorithm>
 #include <string>
@@ -8,7 +8,7 @@
 
 #include <nlohmann/json.hpp>
 
-void ScrollableListFUDRenderer::render(const FUDElement& fud,
+void ScrollableListHUDRenderer::render(const HUDElement& hud,
                                        ImDrawList* draw_list,
                                        const ImVec2& fud_pos,
                                        const ImVec2& fud_end,
@@ -23,10 +23,10 @@ void ScrollableListFUDRenderer::render(const FUDElement& fud,
     draw_list->AddRect(fud_pos, fud_end, border_color, 0.0f, 0, 2.0f);
 
     // Get properties
-    std::string data_source = get_data_source(fud);
-    int item_height = get_item_height(fud);
-    int font_size = get_font_size(fud);
-    int visible_items = get_visible_items(fud);
+    std::string data_source = get_data_source(hud);
+    int item_height = get_item_height(hud);
+    int font_size = get_font_size(hud);
+    int visible_items = get_visible_items(hud);
 
     // Calculate how many items to show
     if (visible_items == 0) {
@@ -99,11 +99,11 @@ void ScrollableListFUDRenderer::render(const FUDElement& fud,
     draw_list->AddText(label_pos, IM_COL32(200, 200, 200, 255), label.c_str());
 }
 
-std::string ScrollableListFUDRenderer::get_data_source(
-    const FUDElement& fud) const {
+std::string ScrollableListHUDRenderer::get_data_source(
+    const HUDElement& hud) const {
     try {
-        if (fud.properties.count("data_source")) {
-            auto& prop = fud.properties.at("data_source");
+        if (hud.properties.count("data_source")) {
+            auto& prop = hud.properties.at("data_source");
             if (prop.is_string()) {
                 return prop.get<std::string>();
             }
@@ -113,10 +113,10 @@ std::string ScrollableListFUDRenderer::get_data_source(
     return "levels";
 }
 
-int ScrollableListFUDRenderer::get_item_height(const FUDElement& fud) const {
+int ScrollableListHUDRenderer::get_item_height(const HUDElement& hud) const {
     try {
-        if (fud.properties.count("item_height")) {
-            auto& prop = fud.properties.at("item_height");
+        if (hud.properties.count("item_height")) {
+            auto& prop = hud.properties.at("item_height");
             if (prop.is_number_integer()) {
                 return prop.get<int>();
             } else if (prop.is_string()) {
@@ -128,10 +128,10 @@ int ScrollableListFUDRenderer::get_item_height(const FUDElement& fud) const {
     return 80;
 }
 
-int ScrollableListFUDRenderer::get_font_size(const FUDElement& fud) const {
+int ScrollableListHUDRenderer::get_font_size(const HUDElement& hud) const {
     try {
-        if (fud.properties.count("font_size")) {
-            auto& prop = fud.properties.at("font_size");
+        if (hud.properties.count("font_size")) {
+            auto& prop = hud.properties.at("font_size");
             if (prop.is_number_integer()) {
                 return prop.get<int>();
             } else if (prop.is_string()) {
@@ -143,10 +143,10 @@ int ScrollableListFUDRenderer::get_font_size(const FUDElement& fud) const {
     return 24;
 }
 
-int ScrollableListFUDRenderer::get_visible_items(const FUDElement& fud) const {
+int ScrollableListHUDRenderer::get_visible_items(const HUDElement& hud) const {
     try {
-        if (fud.properties.count("visible_items")) {
-            auto& prop = fud.properties.at("visible_items");
+        if (hud.properties.count("visible_items")) {
+            auto& prop = hud.properties.at("visible_items");
             if (prop.is_number_integer()) {
                 return prop.get<int>();
             } else if (prop.is_string()) {

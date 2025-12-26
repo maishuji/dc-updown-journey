@@ -1,5 +1,5 @@
 // Copyright 2025 Quentin Cartier
-#include "udjourney-editor/fud/IFUDRenderer.hpp"
+#include "udjourney-editor/hud/IHUDRenderer.hpp"
 
 #include <raylib/raylib.h>
 
@@ -10,17 +10,17 @@
 
 #include "udjourney-editor/Level.hpp"
 
-FUDRendererFactory& FUDRendererFactory::instance() {
-    static FUDRendererFactory factory;
+HUDRendererFactory& HUDRendererFactory::instance() {
+    static HUDRendererFactory factory;
     return factory;
 }
 
-void FUDRendererFactory::register_renderer(
-    const std::string& type_id, std::unique_ptr<IFUDRenderer> renderer) {
+void HUDRendererFactory::register_renderer(
+    const std::string& type_id, std::unique_ptr<IHUDRenderer> renderer) {
     renderers_[type_id] = std::move(renderer);
 }
 
-IFUDRenderer* FUDRendererFactory::get_renderer(const std::string& type_id) {
+IHUDRenderer* HUDRendererFactory::get_renderer(const std::string& type_id) {
     auto it = renderers_.find(type_id);
     if (it != renderers_.end()) {
         return it->second.get();
@@ -28,48 +28,48 @@ IFUDRenderer* FUDRendererFactory::get_renderer(const std::string& type_id) {
     return nullptr;
 }
 
-void IFUDRenderer::render_background_sprite(const FUDElement& fud,
+void IHUDRenderer::render_background_sprite(const HUDElement& hud,
                                             ImDrawList* draw_list,
                                             const ImVec2& fud_pos,
                                             const ImVec2& fud_end) {
-    if (fud.background_sheet.empty()) return;
+    if (hud.background_sheet.empty()) return;
 
-    render_sprite_with_mode(fud,
+    render_sprite_with_mode(hud,
                             draw_list,
                             fud_pos,
                             fud_end,
-                            fud.background_sheet,
-                            fud.background_tile_size,
-                            fud.background_tile_col,
-                            fud.background_tile_row,
-                            fud.background_tile_width,
-                            fud.background_tile_height,
-                            static_cast<int>(fud.background_render_mode),
+                            hud.background_sheet,
+                            hud.background_tile_size,
+                            hud.background_tile_col,
+                            hud.background_tile_row,
+                            hud.background_tile_width,
+                            hud.background_tile_height,
+                            static_cast<int>(hud.background_render_mode),
                             180);
 }
 
-void IFUDRenderer::render_foreground_sprite(const FUDElement& fud,
+void IHUDRenderer::render_foreground_sprite(const HUDElement& hud,
                                             ImDrawList* draw_list,
                                             const ImVec2& fud_pos,
                                             const ImVec2& fud_end) {
-    if (fud.foreground_sheet.empty()) return;
+    if (hud.foreground_sheet.empty()) return;
 
-    render_sprite_with_mode(fud,
+    render_sprite_with_mode(hud,
                             draw_list,
                             fud_pos,
                             fud_end,
-                            fud.foreground_sheet,
-                            fud.foreground_tile_size,
-                            fud.foreground_tile_col,
-                            fud.foreground_tile_row,
-                            fud.foreground_tile_width,
-                            fud.foreground_tile_height,
-                            static_cast<int>(fud.foreground_render_mode),
+                            hud.foreground_sheet,
+                            hud.foreground_tile_size,
+                            hud.foreground_tile_col,
+                            hud.foreground_tile_row,
+                            hud.foreground_tile_width,
+                            hud.foreground_tile_height,
+                            static_cast<int>(hud.foreground_render_mode),
                             200);
 }
 
-void IFUDRenderer::render_sprite_with_mode(
-    const FUDElement& fud, ImDrawList* draw_list, const ImVec2& fud_pos,
+void IHUDRenderer::render_sprite_with_mode(
+    const HUDElement& hud, ImDrawList* draw_list, const ImVec2& fud_pos,
     const ImVec2& fud_end, const std::string& sheet, int tile_size,
     int tile_col, int tile_row, int tile_width, int tile_height,
     int render_mode, unsigned char alpha) {
@@ -87,10 +87,10 @@ void IFUDRenderer::render_sprite_with_mode(
     float sprite_w = tile_width * tile_w;
     float sprite_h = tile_height * tile_h;
 
-    // FUDImageRenderMode: Stretch=0, Tile=1, Center=2
+    // HUDImageRenderMode: Stretch=0, Tile=1, Center=2
     if (render_mode == 1) {  // Tile
-        float fud_w = fud.size.x;
-        float fud_h = fud.size.y;
+        float fud_w = hud.size.x;
+        float fud_h = hud.size.y;
 
         for (float y = 0; y < fud_h; y += sprite_h) {
             for (float x = 0; x < fud_w; x += sprite_w) {
@@ -114,8 +114,8 @@ void IFUDRenderer::render_sprite_with_mode(
             }
         }
     } else if (render_mode == 2) {  // Center
-        float center_x = fud_pos.x + (fud.size.x - sprite_w) * 0.5f;
-        float center_y = fud_pos.y + (fud.size.y - sprite_h) * 0.5f;
+        float center_x = fud_pos.x + (hud.size.x - sprite_w) * 0.5f;
+        float center_y = fud_pos.y + (hud.size.y - sprite_h) * 0.5f;
 
         draw_list->AddImage(
             static_cast<ImTextureID>(static_cast<intptr_t>(texture.id)),

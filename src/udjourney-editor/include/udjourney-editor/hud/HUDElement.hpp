@@ -5,8 +5,8 @@
 #include <string>
 #include <nlohmann/json.hpp>
 
-// FUD anchor position on screen
-enum class FUDAnchor {
+// HUD anchor position on screen
+enum class HUDAnchor {
     TopLeft,
     TopCenter,
     TopRight,
@@ -18,11 +18,11 @@ enum class FUDAnchor {
     BottomRight
 };
 
-// Convert FUDAnchor to/from string for JSON serialization
-std::string fud_anchor_to_string(FUDAnchor anchor);
-FUDAnchor fud_anchor_from_string(const std::string& str);
+// Convert HUDAnchor to/from string for JSON serialization
+std::string fud_anchor_to_string(HUDAnchor anchor);
+HUDAnchor fud_anchor_from_string(const std::string& str);
 
-// FUD category for editor organization
+// HUD category for editor organization
 enum class FUDCategory {
     StatusDisplay,  // Health, mana, stamina
     ScoreCounter,   // Score, coins, items
@@ -36,32 +36,32 @@ std::string fud_category_to_string(FUDCategory category);
 FUDCategory fud_category_from_string(const std::string& str);
 
 // Image render mode for background/foreground
-enum class FUDImageRenderMode {
-    Stretch,  // Scale to fit FUD size
+enum class HUDImageRenderMode {
+    Stretch,  // Scale to fit HUD size
     Tile,     // Repeat/tile the image
     Center    // Center without scaling
 };
 
-std::string fud_image_render_mode_to_string(FUDImageRenderMode mode);
-FUDImageRenderMode fud_image_render_mode_from_string(const std::string& str);
+std::string fud_image_render_mode_to_string(HUDImageRenderMode mode);
+HUDImageRenderMode fud_image_render_mode_from_string(const std::string& str);
 
-// FUD preset loaded from JSON
+// HUD preset loaded from JSON
 struct FUDPreset {
     std::string type_id;       // e.g., "healthbar", "score_display"
     std::string display_name;  // Human-readable name
     FUDCategory category;
     ImVec2 default_size;               // Default size in pixels
-    FUDAnchor default_anchor;          // Default anchor position
+    HUDAnchor default_anchor;          // Default anchor position
     nlohmann::json properties_schema;  // Property definitions
     std::string preview_image;         // Path to preview image
     std::string description;           // Optional description
 };
 
-// FUD element placed in a level
-struct FUDElement {
+// HUD element placed in a level
+struct HUDElement {
     std::string name;     // Instance name (e.g., "Player Health")
     std::string type_id;  // Reference to preset type
-    FUDAnchor anchor;
+    HUDAnchor anchor;
     ImVec2 offset;  // Offset from anchor in pixels
     ImVec2 size;    // Size in pixels
     bool visible;
@@ -74,7 +74,7 @@ struct FUDElement {
     int background_tile_col = 0;
     int background_tile_width = 1;
     int background_tile_height = 1;
-    FUDImageRenderMode background_render_mode = FUDImageRenderMode::Stretch;
+    HUDImageRenderMode background_render_mode = HUDImageRenderMode::Stretch;
 
     // Foreground sprite configuration
     std::string foreground_sheet;
@@ -83,18 +83,18 @@ struct FUDElement {
     int foreground_tile_col = 0;
     int foreground_tile_width = 1;
     int foreground_tile_height = 1;
-    FUDImageRenderMode foreground_render_mode = FUDImageRenderMode::Stretch;
+    HUDImageRenderMode foreground_render_mode = HUDImageRenderMode::Stretch;
 
     float image_scale = 1.0f;
 
-    FUDElement() :
-        anchor(FUDAnchor::TopLeft),
+    HUDElement() :
+        anchor(HUDAnchor::TopLeft),
         offset(0, 0),
         size(100, 30),
         visible(true) {}
 
-    FUDElement(const std::string& name, const std::string& type_id,
-               FUDAnchor anchor, ImVec2 offset, ImVec2 size) :
+    HUDElement(const std::string& name, const std::string& type_id,
+               HUDAnchor anchor, ImVec2 offset, ImVec2 size) :
         name(name),
         type_id(type_id),
         anchor(anchor),
@@ -104,5 +104,5 @@ struct FUDElement {
 };
 
 // JSON serialization
-void to_json(nlohmann::json& j, const FUDElement& fud);
-void from_json(const nlohmann::json& j, FUDElement& fud);
+void to_json(nlohmann::json& j, const HUDElement& hud);
+void from_json(const nlohmann::json& j, HUDElement& hud);

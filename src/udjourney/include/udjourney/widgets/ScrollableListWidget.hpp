@@ -16,7 +16,7 @@ namespace udjourney {
 /**
  * @brief Generic scrollable list widget that can display any type of items
  *
- * Configuration through FUD properties:
+ * Configuration through HUD properties:
  * - "data_source": Type of data to display (e.g., "levels", "settings",
  * "scores")
  * - "item_action": Action template with placeholders (e.g.,
@@ -48,7 +48,7 @@ class ScrollableListWidget : public IWidget {
     using ItemSelectedCallback = std::function<void(const ListItem&, IGame*)>;
 
     ScrollableListWidget(const IGame& game,
-                         const udjourney::scene::FUDData& fud);
+                         const udjourney::scene::HUDData& hud);
 
     // IActor interface
     void set_rectangle(Rectangle rect) override { rect_ = rect; }

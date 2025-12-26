@@ -3,17 +3,17 @@
 
 #include <raylib/raylib.h>
 
-#include "udjourney-editor/fud/IFUDRenderer.hpp"
+#include "udjourney-editor/hud/IHUDRenderer.hpp"
 
 /**
- * @brief Renderer for heart-based health display FUD elements
+ * @brief Renderer for heart-based health display HUD elements
  *
  * Renders multiple heart sprites based on max_hearts property.
  * Falls back to circle rendering if sprites are not available.
  */
-class HeartHealthFUDRenderer : public IFUDRenderer {
+class HeartHealthHUDRenderer : public IHUDRenderer {
  public:
-    void render(const FUDElement& fud, ImDrawList* draw_list,
+    void render(const HUDElement& hud, ImDrawList* draw_list,
                 const ImVec2& fud_pos, const ImVec2& fud_end,
                 bool is_selected) override;
 
@@ -21,7 +21,7 @@ class HeartHealthFUDRenderer : public IFUDRenderer {
     /**
      * @brief Render hearts using sprite textures
      */
-    void render_hearts_with_sprites(const FUDElement& fud,
+    void render_hearts_with_sprites(const HUDElement& hud,
                                     ImDrawList* draw_list,
                                     const ImVec2& fud_pos, Texture2D heart_tex,
                                     int max_hearts, int heart_spacing,

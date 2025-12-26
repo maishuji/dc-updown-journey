@@ -1,5 +1,5 @@
 // Copyright 2025 Quentin Cartier
-#include "udjourney-editor/fud/FUDPresetManager.hpp"
+#include "udjourney-editor/hud/HUDPresetManager.hpp"
 
 #include <filesystem>
 #include <fstream>
@@ -9,30 +9,30 @@
 
 namespace fs = std::filesystem;
 
-FUDPresetManager::FUDPresetManager() { load_available_presets(); }
+HUDPresetManager::HUDPresetManager() { load_available_presets(); }
 
-void FUDPresetManager::load_available_presets() {
+void HUDPresetManager::load_available_presets() {
     presets_.clear();
 
     std::vector<std::string> preset_paths = {
-        "assets/fuds",
-        "src/udjourney-editor/assets/fuds",
-        "../assets/fuds",
-        "../src/udjourney-editor/assets/fuds"};
+        "assets/huds",
+        "src/udjourney-editor/assets/huds",
+        "../assets/huds",
+        "../src/udjourney-editor/assets/huds"};
 
     for (const auto& base_path : preset_paths) {
         if (!fs::exists(base_path) || !fs::is_directory(base_path)) {
             continue;
         }
 
-        std::cout << "[FUDPresetManager] Loading FUD presets from: "
+        std::cout << "[HUDPresetManager] Loading HUD presets from: "
                   << base_path << std::endl;
 
         for (const auto& entry : fs::directory_iterator(base_path)) {
             if (entry.is_regular_file() &&
                 entry.path().extension() == ".json") {
                 if (load_preset_from_file(entry.path().string())) {
-                    std::cout << "[FUDPresetManager] Loaded preset: "
+                    std::cout << "[HUDPresetManager] Loaded preset: "
                               << entry.path().filename().string() << std::endl;
                 }
             }
@@ -44,19 +44,19 @@ void FUDPresetManager::load_available_presets() {
     }
 
     if (presets_.empty()) {
-        std::cout << "[FUDPresetManager] Warning: No FUD presets loaded"
+        std::cout << "[HUDPresetManager] Warning: No HUD presets loaded"
                   << std::endl;
     } else {
-        std::cout << "[FUDPresetManager] Total presets loaded: "
+        std::cout << "[HUDPresetManager] Total presets loaded: "
                   << presets_.size() << std::endl;
     }
 }
 
-bool FUDPresetManager::load_preset_from_file(const std::string& filepath) {
+bool HUDPresetManager::load_preset_from_file(const std::string& filepath) {
     try {
         std::ifstream file(filepath);
         if (!file.is_open()) {
-            std::cerr << "[FUDPresetManager] Failed to open: " << filepath
+            std::cerr << "[HUDPresetManager] Failed to open: " << filepath
                       << std::endl;
             return false;
         }
@@ -86,13 +86,13 @@ bool FUDPresetManager::load_preset_from_file(const std::string& filepath) {
         presets_.push_back(preset);
         return true;
     } catch (const std::exception& e) {
-        std::cerr << "[FUDPresetManager] Error loading " << filepath << ": "
+        std::cerr << "[HUDPresetManager] Error loading " << filepath << ": "
                   << e.what() << std::endl;
         return false;
     }
 }
 
-const FUDPreset* FUDPresetManager::get_preset(
+const FUDPreset* HUDPresetManager::get_preset(
     const std::string& type_id) const {
     for (const auto& preset : presets_) {
         if (preset.type_id == type_id) {
@@ -102,7 +102,7 @@ const FUDPreset* FUDPresetManager::get_preset(
     return nullptr;
 }
 
-std::vector<std::string> FUDPresetManager::get_preset_type_ids() const {
+std::vector<std::string> HUDPresetManager::get_preset_type_ids() const {
     std::vector<std::string> type_ids;
     type_ids.reserve(presets_.size());
     for (const auto& preset : presets_) {
@@ -111,7 +111,7 @@ std::vector<std::string> FUDPresetManager::get_preset_type_ids() const {
     return type_ids;
 }
 
-std::vector<FUDPreset> FUDPresetManager::get_presets_by_category(
+std::vector<FUDPreset> HUDPresetManager::get_presets_by_category(
     FUDCategory category) const {
     std::vector<FUDPreset> filtered;
     for (const auto& preset : presets_) {

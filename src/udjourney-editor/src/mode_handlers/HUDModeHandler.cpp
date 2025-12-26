@@ -1,5 +1,5 @@
 // Copyright 2025 Quentin Cartier
-#include "udjourney-editor/mode_handlers/FUDModeHandler.hpp"
+#include "udjourney-editor/mode_handlers/HUDModeHandler.hpp"
 
 #include <imgui.h>
 #include <raylib/raylib.h>
@@ -25,13 +25,13 @@ static Texture2D load_sprite_preview(const std::string& sprite_sheet) {
     return texture;
 }
 
-FUDModeHandler::FUDModeHandler() {
+HUDModeHandler::HUDModeHandler() {
     // Load presets on construction
     fud_preset_manager_.load_available_presets();
     ui_atlas_manager_.load_presets();
 }
 
-void FUDModeHandler::initialize_presets() {
+void HUDModeHandler::initialize_presets() {
     if (fud_preset_manager_.has_presets() && selected_fud_preset_.empty()) {
         // Select first preset by default
         const auto& presets = fud_preset_manager_.get_presets();
@@ -41,11 +41,11 @@ void FUDModeHandler::initialize_presets() {
     }
 }
 
-void FUDModeHandler::render() {
-    // Ensure we have valid FUD presets loaded and selected
+void HUDModeHandler::render() {
+    // Ensure we have valid HUD presets loaded and selected
     initialize_presets();
 
-    ImGui::Text("FUD Elements");
+    ImGui::Text("HUD Elements");
     ImGui::Separator();
 
     render_fud_preset_selector();
@@ -56,25 +56,25 @@ void FUDModeHandler::render() {
         render_fud_properties();
     } else {
         ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
-                           "Click on a FUD element to edit");
+                           "Click on a HUD element to edit");
         ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
                            "or use 'Add FUD' button");
     }
 }
 
-void FUDModeHandler::render_fud_preset_selector() {
+void HUDModeHandler::render_fud_preset_selector() {
     const auto& presets = fud_preset_manager_.get_presets();
 
     if (presets.empty()) {
         ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f),
-                           "No FUD presets found!");
-        ImGui::TextWrapped("Create FUD preset files in assets/fuds/");
+                           "No HUD presets found!");
+        ImGui::TextWrapped("Create HUD preset files in assets/huds/");
         return;
     }
 
-    ImGui::Text("FUD Type:");
+    ImGui::Text("HUD Type:");
 
-    // Dropdown for FUD preset selection
+    // Dropdown for HUD preset selection
     if (ImGui::BeginCombo("##FUDPreset", selected_fud_preset_.c_str())) {
         for (const auto& preset : presets) {
             bool is_selected = (selected_fud_preset_ == preset.type_id);
@@ -113,17 +113,17 @@ void FUDModeHandler::render_fud_preset_selector() {
 
     ImGui::Spacing();
 
-    // Add FUD button
+    // Add HUD button
     if (ImGui::Button("Add FUD", ImVec2(150, 0))) {
         add_fud_requested_ = true;
     }
 
     if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Add a new FUD element to the level");
+        ImGui::SetTooltip("Add a new HUD element to the level");
     }
 }
 
-void FUDModeHandler::render_fud_properties() {
+void HUDModeHandler::render_fud_properties() {
     if (!selected_fud_) {
         return;
     }
@@ -159,7 +159,7 @@ void FUDModeHandler::render_fud_properties() {
     int current_anchor = static_cast<int>(selected_fud_->anchor);
 
     if (ImGui::Combo("##Anchor", &current_anchor, anchor_names, 9)) {
-        selected_fud_->anchor = static_cast<FUDAnchor>(current_anchor);
+        selected_fud_->anchor = static_cast<HUDAnchor>(current_anchor);
     }
 
     // Offset
@@ -194,7 +194,7 @@ void FUDModeHandler::render_fud_properties() {
                 static_cast<int>(selected_fud_->background_render_mode);
             if (ImGui::Combo("##BgRenderMode", &current_mode, modes, 3)) {
                 selected_fud_->background_render_mode =
-                    static_cast<FUDImageRenderMode>(current_mode);
+                    static_cast<HUDImageRenderMode>(current_mode);
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::SetTooltip(
@@ -215,7 +215,7 @@ void FUDModeHandler::render_fud_properties() {
                 static_cast<int>(selected_fud_->foreground_render_mode);
             if (ImGui::Combo("##FgRenderMode", &current_mode, modes, 3)) {
                 selected_fud_->foreground_render_mode =
-                    static_cast<FUDImageRenderMode>(current_mode);
+                    static_cast<HUDImageRenderMode>(current_mode);
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::SetTooltip(
@@ -233,46 +233,46 @@ void FUDModeHandler::render_fud_properties() {
     }
 
     if (ImGui::IsItemHovered()) {
-        ImGui::SetTooltip("Remove this FUD element from the level");
+        ImGui::SetTooltip("Remove this HUD element from the level");
     }
 }
 
-FUDElement FUDModeHandler::create_fud_from_preset() const {
+HUDElement HUDModeHandler::create_fud_from_preset() const {
     const FUDPreset* preset =
         fud_preset_manager_.get_preset(selected_fud_preset_);
 
     if (!preset) {
-        // Return default FUD if preset not found
-        return FUDElement("New FUD",
+        // Return default HUD if preset not found
+        return HUDElement("New FUD",
                           "unknown",
-                          FUDAnchor::TopLeft,
+                          HUDAnchor::TopLeft,
                           ImVec2(10, 10),
                           ImVec2(100, 30));
     }
 
-    // Create FUD with preset defaults
-    FUDElement fud;
-    fud.name = preset->display_name;
-    fud.type_id = preset->type_id;
-    fud.anchor = preset->default_anchor;
-    fud.offset = ImVec2(10, 10);  // Small offset from anchor
-    fud.size = preset->default_size;
-    fud.visible = true;
+    // Create HUD with preset defaults
+    HUDElement hud;
+    hud.name = preset->display_name;
+    hud.type_id = preset->type_id;
+    hud.anchor = preset->default_anchor;
+    hud.offset = ImVec2(10, 10);  // Small offset from anchor
+    hud.size = preset->default_size;
+    hud.visible = true;
 
     // Initialize properties from schema defaults
-    fud.properties = nlohmann::json::object();
+    hud.properties = nlohmann::json::object();
     if (preset->properties_schema.is_object()) {
         for (auto& [key, value] : preset->properties_schema.items()) {
             if (value.is_object() && value.contains("default")) {
-                fud.properties[key] = value["default"];
+                hud.properties[key] = value["default"];
             }
         }
     }
 
-    return fud;
+    return hud;
 }
 
-void FUDModeHandler::render_sprite_selector(const char* label,
+void HUDModeHandler::render_sprite_selector(const char* label,
                                             bool is_background) {
     if (!selected_fud_ || !ui_atlas_manager_.has_presets()) {
         ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
@@ -380,7 +380,7 @@ void FUDModeHandler::render_sprite_selector(const char* label,
                     current_height = preset.tile_height;
                     selected_idx = static_cast<int>(i);
 
-                    // Auto-adjust FUD size to match sprite dimensions
+                    // Auto-adjust HUD size to match sprite dimensions
                     float sprite_width = preset.tile_width * preset.tile_size;
                     float sprite_height = preset.tile_height * preset.tile_size;
                     selected_fud_->size = ImVec2(sprite_width, sprite_height);
@@ -437,7 +437,7 @@ void FUDModeHandler::render_sprite_selector(const char* label,
     }
 }
 
-void FUDModeHandler::render_property_editor() {
+void HUDModeHandler::render_property_editor() {
     if (!selected_fud_) {
         return;
     }
@@ -447,7 +447,7 @@ void FUDModeHandler::render_property_editor() {
         fud_preset_manager_.get_preset(selected_fud_->type_id);
     if (!preset || preset->properties_schema.empty()) {
         ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
-                           "No properties defined for this FUD type");
+                           "No properties defined for this HUD type");
         return;
     }
 

@@ -21,11 +21,11 @@ namespace udjourney {
 class ButtonWidget : public IWidget {
  public:
     /**
-     * @brief Construct button from FUD data
+     * @brief Construct button from HUD data
      * @param game Reference to game
-     * @param fud FUD element containing button properties
+     * @param hud HUD element containing button properties
      */
-    ButtonWidget(const IGame& game, const udjourney::scene::FUDData& fud);
+    ButtonWidget(const IGame& game, const udjourney::scene::HUDData& hud);
 
     // IActor interface
     void draw() const override;
@@ -75,7 +75,7 @@ class ButtonWidget : public IWidget {
     bool is_pressed_ = false;
 
     // Helper methods
-    void load_button_textures(const udjourney::scene::FUDData& fud);
+    void load_button_textures(const udjourney::scene::HUDData& hud);
     Texture2D get_current_texture() const;
     Rectangle get_current_source_rect() const;
 };

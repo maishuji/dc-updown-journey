@@ -9,59 +9,59 @@
 #include <unordered_map>
 
 // Forward declaration
-struct FUDElement;
+struct HUDElement;
 
 // Forward declaration for texture loading
 Texture2D load_texture_cached(const std::string& filename);
 
 /**
- * @brief Interface for FUD element renderers in the editor
+ * @brief Interface for HUD element renderers in the editor
  *
- * This strategy pattern allows each FUD type to have its own custom
+ * This strategy pattern allows each HUD type to have its own custom
  * rendering logic, making the codebase more maintainable and extensible.
  */
-class IFUDRenderer {
+class IHUDRenderer {
  public:
-    virtual ~IFUDRenderer() = default;
+    virtual ~IHUDRenderer() = default;
 
     /**
-     * @brief Render the FUD element content in the editor
-     * @param fud The FUD element to render
+     * @brief Render the HUD element content in the editor
+     * @param hud The HUD element to render
      * @param draw_list ImGui draw list for rendering
-     * @param fud_pos Top-left position of FUD on screen
-     * @param fud_end Bottom-right position of FUD on screen
-     * @param is_selected Whether this FUD is currently selected
+     * @param fud_pos Top-left position of HUD on screen
+     * @param fud_end Bottom-right position of HUD on screen
+     * @param is_selected Whether this HUD is currently selected
      */
-    virtual void render(const FUDElement& fud, ImDrawList* draw_list,
+    virtual void render(const HUDElement& hud, ImDrawList* draw_list,
                         const ImVec2& fud_pos, const ImVec2& fud_end,
                         bool is_selected) = 0;
 
  protected:
     /**
-     * @brief Helper to render background sprite for FUD element
-     * @param fud The FUD element
+     * @brief Helper to render background sprite for HUD element
+     * @param hud The HUD element
      * @param draw_list ImGui draw list
      * @param fud_pos Top-left position
      * @param fud_end Bottom-right position
      */
-    void render_background_sprite(const FUDElement& fud, ImDrawList* draw_list,
+    void render_background_sprite(const HUDElement& hud, ImDrawList* draw_list,
                                   const ImVec2& fud_pos, const ImVec2& fud_end);
 
     /**
-     * @brief Helper to render foreground sprite for FUD element
-     * @param fud The FUD element
+     * @brief Helper to render foreground sprite for HUD element
+     * @param hud The HUD element
      * @param draw_list ImGui draw list
      * @param fud_pos Top-left position
      * @param fud_end Bottom-right position
      */
-    void render_foreground_sprite(const FUDElement& fud, ImDrawList* draw_list,
+    void render_foreground_sprite(const HUDElement& hud, ImDrawList* draw_list,
                                   const ImVec2& fud_pos, const ImVec2& fud_end);
 
  private:
     /**
      * @brief Helper to render a sprite with tile/center/stretch modes
      */
-    void render_sprite_with_mode(const FUDElement& fud, ImDrawList* draw_list,
+    void render_sprite_with_mode(const HUDElement& hud, ImDrawList* draw_list,
                                  const ImVec2& fud_pos, const ImVec2& fud_end,
                                  const std::string& sheet, int tile_size,
                                  int tile_col, int tile_row, int tile_width,
@@ -70,31 +70,31 @@ class IFUDRenderer {
 };
 
 /**
- * @brief Factory to manage and retrieve FUD renderers
+ * @brief Factory to manage and retrieve HUD renderers
  *
  * Singleton pattern provides centralized registration and access
- * to all FUD renderer implementations.
+ * to all HUD renderer implementations.
  */
-class FUDRendererFactory {
+class HUDRendererFactory {
  public:
-    static FUDRendererFactory& instance();
+    static HUDRendererFactory& instance();
 
     /**
-     * @brief Register a renderer for a specific FUD type
-     * @param type_id The FUD type identifier
+     * @brief Register a renderer for a specific HUD type
+     * @param type_id The HUD type identifier
      * @param renderer Unique pointer to the renderer implementation
      */
     void register_renderer(const std::string& type_id,
-                           std::unique_ptr<IFUDRenderer> renderer);
+                           std::unique_ptr<IHUDRenderer> renderer);
 
     /**
-     * @brief Get the renderer for a specific FUD type
-     * @param type_id The FUD type identifier
+     * @brief Get the renderer for a specific HUD type
+     * @param type_id The HUD type identifier
      * @return Pointer to renderer, or nullptr if not registered
      */
-    IFUDRenderer* get_renderer(const std::string& type_id);
+    IHUDRenderer* get_renderer(const std::string& type_id);
 
  private:
-    FUDRendererFactory() = default;
-    std::unordered_map<std::string, std::unique_ptr<IFUDRenderer>> renderers_;
+    HUDRendererFactory() = default;
+    std::unordered_map<std::string, std::unique_ptr<IHUDRenderer>> renderers_;
 };

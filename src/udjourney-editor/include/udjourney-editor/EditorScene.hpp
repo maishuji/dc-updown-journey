@@ -52,11 +52,11 @@ class EditorScene {
     // Monster context menu selection
     EditorMonster* selected_monster_for_context_ = nullptr;
 
-    // FUD element selection
-    FUDElement* selected_fud_ = nullptr;
+    // HUD element selection
+    HUDElement* selected_fud_ = nullptr;
     int selected_fud_idx_ = -1;
 
-    // FUD dragging state
+    // HUD dragging state
     bool dragging_fud_ = false;
     ImVec2 fud_drag_start_mouse_;
     ImVec2 fud_drag_start_offset_;
@@ -112,7 +112,7 @@ class EditorScene {
                               const ImVec2& origin) const;
     ImU32 get_platform_color(PlatformBehaviorType behavior,
                              PlatformFeatureType feature) const;
-    ImVec2 calculate_fud_anchor_position(FUDAnchor anchor,
+    ImVec2 calculate_fud_anchor_position(HUDAnchor anchor,
                                          const ImVec2& viewport_size) const;
 
     struct PImpl;

@@ -379,7 +379,7 @@
       }
     ]
   },
-  "fuds": [
+  "huds": [
     {
       "anchor": "TopLeft",
       "background_render_mode": "Tile",

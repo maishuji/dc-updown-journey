@@ -11,7 +11,7 @@ class IGame;
  *
  * Widgets are special actors that handle user input and can trigger
  * actions through the ActionDispatcher. They can be placed in scenes
- * like any other actor and loaded from JSON/FUD data.
+ * like any other actor and loaded from JSON/HUD data.
  */
 class IWidget : public IActor {
  public:

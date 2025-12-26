@@ -1,5 +1,5 @@
 // Copyright 2025 Quentin Cartier
-#include "udjourney-editor/fud/ButtonFUDRenderer.hpp"
+#include "udjourney-editor/hud/ButtonHUDRenderer.hpp"
 
 #include <string>
 
@@ -7,16 +7,16 @@
 
 #include <nlohmann/json.hpp>
 
-void ButtonFUDRenderer::render(const FUDElement& fud, ImDrawList* draw_list,
+void ButtonHUDRenderer::render(const HUDElement& hud, ImDrawList* draw_list,
                                const ImVec2& fud_pos, const ImVec2& fud_end,
                                bool is_selected) {
     // Render background sprite first
-    render_background_sprite(fud, draw_list, fud_pos, fud_end);
+    render_background_sprite(hud, draw_list, fud_pos, fud_end);
 
     // Draw button text
-    std::string text = get_button_text(fud);
-    ImU32 text_color = get_text_color(fud);
-    int font_size = get_font_size(fud);
+    std::string text = get_button_text(hud);
+    ImU32 text_color = get_text_color(hud);
+    int font_size = get_font_size(hud);
 
     // Raylib's default font is slightly larger than ImGui's at the same nominal
     // size Apply a scaling factor to approximate Raylib's text rendering Raylib
@@ -26,7 +26,7 @@ void ButtonFUDRenderer::render(const FUDElement& fud, ImDrawList* draw_list,
     float scaled_font_size =
         static_cast<float>(font_size) * raylib_scale_factor;
 
-    if (fud.background_sheet.empty()) {
+    if (hud.background_sheet.empty()) {
         const ImGuiStyle& style = ImGui::GetStyle();
         ImGuiCol color_id =
             is_selected ? ImGuiCol_ButtonActive : ImGuiCol_Button;
@@ -38,8 +38,8 @@ void ButtonFUDRenderer::render(const FUDElement& fud, ImDrawList* draw_list,
     ImFont* font = ImGui::GetFont();
     ImVec2 text_size =
         font->CalcTextSizeA(scaled_font_size, FLT_MAX, 0.0f, text.c_str());
-    float text_x = fud_pos.x + (fud.size.x - text_size.x) * 0.5f;
-    float text_y = fud_pos.y + (fud.size.y - text_size.y) * 0.5f;
+    float text_x = fud_pos.x + (hud.size.x - text_size.x) * 0.5f;
+    float text_y = fud_pos.y + (hud.size.y - text_size.y) * 0.5f;
 
     // Draw button boundary
     ImU32 border_color =
@@ -54,13 +54,13 @@ void ButtonFUDRenderer::render(const FUDElement& fud, ImDrawList* draw_list,
                        text.c_str());
 
     // Render foreground sprite on top
-    render_foreground_sprite(fud, draw_list, fud_pos, fud_end);
+    render_foreground_sprite(hud, draw_list, fud_pos, fud_end);
 }
 
-std::string ButtonFUDRenderer::get_button_text(const FUDElement& fud) const {
+std::string ButtonHUDRenderer::get_button_text(const HUDElement& hud) const {
     try {
-        if (fud.properties.count("text")) {
-            auto& text_prop = fud.properties.at("text");
+        if (hud.properties.count("text")) {
+            auto& text_prop = hud.properties.at("text");
             if (text_prop.is_string()) {
                 return text_prop.get<std::string>();
             }
@@ -70,10 +70,10 @@ std::string ButtonFUDRenderer::get_button_text(const FUDElement& fud) const {
     return "Button";
 }
 
-int ButtonFUDRenderer::get_font_size(const FUDElement& fud) const {
+int ButtonHUDRenderer::get_font_size(const HUDElement& hud) const {
     try {
-        if (fud.properties.count("font_size")) {
-            auto& size_prop = fud.properties.at("font_size");
+        if (hud.properties.count("font_size")) {
+            auto& size_prop = hud.properties.at("font_size");
             if (size_prop.is_number_integer()) {
                 return size_prop.get<int>();
             } else if (size_prop.is_string()) {
@@ -85,10 +85,10 @@ int ButtonFUDRenderer::get_font_size(const FUDElement& fud) const {
     return 24;  // Default font size
 }
 
-ImU32 ButtonFUDRenderer::get_text_color(const FUDElement& fud) const {
+ImU32 ButtonHUDRenderer::get_text_color(const HUDElement& hud) const {
     try {
-        if (fud.properties.count("normal_color")) {
-            auto& color_prop = fud.properties.at("normal_color");
+        if (hud.properties.count("normal_color")) {
+            auto& color_prop = hud.properties.at("normal_color");
             if (color_prop.is_array() && color_prop.size() >= 3) {
                 int r = color_prop[0].get<int>();
                 int g = color_prop[1].get<int>();

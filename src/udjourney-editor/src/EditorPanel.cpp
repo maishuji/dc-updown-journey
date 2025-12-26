@@ -15,7 +15,7 @@
 #include "udjourney-editor/mode_handlers/SpawnModeHandler.hpp"
 #include "udjourney-editor/mode_handlers/MonsterModeHandler.hpp"
 #include "udjourney-editor/mode_handlers/BackgroundModeHandler.hpp"
-#include "udjourney-editor/mode_handlers/FUDModeHandler.hpp"
+#include "udjourney-editor/mode_handlers/HUDModeHandler.hpp"
 
 namespace color {
 const ImU32 kColorRed = IM_COL32(255, 0, 0, 255);
@@ -32,7 +32,7 @@ EditorPanel::EditorPanel() {
     platform_handler_ = std::make_unique<PlatformModeHandler>();
     spawn_handler_ = std::make_unique<SpawnModeHandler>();
     monster_handler_ = std::make_unique<MonsterModeHandler>();
-    fud_handler_ = std::make_unique<FUDModeHandler>();
+    fud_handler_ = std::make_unique<HUDModeHandler>();
     // Background handler will be created when managers are set
 }
 
@@ -224,8 +224,8 @@ void EditorPanel::draw() {
     }
 
     ImGui::SameLine();
-    if (ImGui::RadioButton("FUD", edit_mode == EditMode::FUD)) {
-        edit_mode = EditMode::FUD;
+    if (ImGui::RadioButton("HUD", edit_mode == EditMode::HUD)) {
+        edit_mode = EditMode::HUD;
     }
 
     ImGui::Separator();
@@ -276,7 +276,7 @@ void EditorPanel::draw() {
                 new_bg_object_scale_ = background_handler_->get_object_scale();
             }
             break;
-        case EditMode::FUD:
+        case EditMode::HUD:
             if (fud_handler_) {
                 fud_handler_->render();
             }
@@ -882,14 +882,14 @@ void EditorPanel::draw_background_mode() {
     }
 }
 
-// FUD editing methods
-void EditorPanel::set_selected_fud(FUDElement* fud) {
+// HUD editing methods
+void EditorPanel::set_selected_fud(HUDElement* hud) {
     if (fud_handler_) {
-        fud_handler_->set_selected_fud(fud);
+        fud_handler_->set_selected_fud(hud);
     }
 }
 
-FUDElement* EditorPanel::get_selected_fud() const {
+HUDElement* EditorPanel::get_selected_fud() const {
     if (fud_handler_) {
         return fud_handler_->get_selected_fud();
     }
@@ -930,14 +930,14 @@ void EditorPanel::clear_fud_add_flag() {
     }
 }
 
-FUDElement EditorPanel::create_fud_from_preset() const {
+HUDElement EditorPanel::create_fud_from_preset() const {
     if (fud_handler_) {
         return fud_handler_->create_fud_from_preset();
     }
-    // Return default FUD if handler not available
-    return FUDElement("New FUD",
+    // Return default HUD if handler not available
+    return HUDElement("New FUD",
                       "unknown",
-                      FUDAnchor::TopLeft,
+                      HUDAnchor::TopLeft,
                       ImVec2(10, 10),
                       ImVec2(100, 30));
 }

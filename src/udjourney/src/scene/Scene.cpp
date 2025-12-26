@@ -171,81 +171,81 @@ void load_background_(
     }
 }
 
-void load_fuds_(const json& scene_data, std::vector<scene::FUDData>& fuds) {
-    if (scene_data.contains("fuds")) {
-        Logger::info("Loading FUD elements...");
-        for (const auto& fud_json : scene_data["fuds"]) {
-            FUDData fud;
-            fud.name = fud_json.value("name", "FUD");
-            fud.type_id = fud_json.value("type_id", "unknown");
+void load_fuds_(const json& scene_data, std::vector<scene::HUDData>& huds) {
+    if (scene_data.contains("huds")) {
+        Logger::info("Loading HUD elements...");
+        for (const auto& fud_json : scene_data["huds"]) {
+            HUDData hud;
+            hud.name = fud_json.value("name", "HUD");
+            hud.type_id = fud_json.value("type_id", "unknown");
 
             // Parse anchor
             std::string anchor_str = fud_json.value("anchor", "TopLeft");
             if (anchor_str == "TopCenter")
-                fud.anchor = FUDAnchor::TopCenter;
+                hud.anchor = HUDAnchor::TopCenter;
             else if (anchor_str == "TopRight")
-                fud.anchor = FUDAnchor::TopRight;
+                hud.anchor = HUDAnchor::TopRight;
             else if (anchor_str == "MiddleLeft")
-                fud.anchor = FUDAnchor::MiddleLeft;
+                hud.anchor = HUDAnchor::MiddleLeft;
             else if (anchor_str == "MiddleCenter")
-                fud.anchor = FUDAnchor::MiddleCenter;
+                hud.anchor = HUDAnchor::MiddleCenter;
             else if (anchor_str == "MiddleRight")
-                fud.anchor = FUDAnchor::MiddleRight;
+                hud.anchor = HUDAnchor::MiddleRight;
             else if (anchor_str == "BottomLeft")
-                fud.anchor = FUDAnchor::BottomLeft;
+                hud.anchor = HUDAnchor::BottomLeft;
             else if (anchor_str == "BottomCenter")
-                fud.anchor = FUDAnchor::BottomCenter;
+                hud.anchor = HUDAnchor::BottomCenter;
             else if (anchor_str == "BottomRight")
-                fud.anchor = FUDAnchor::BottomRight;
+                hud.anchor = HUDAnchor::BottomRight;
             else
-                fud.anchor = FUDAnchor::TopLeft;
+                hud.anchor = HUDAnchor::TopLeft;
 
             // Load offset and size
             if (fud_json.contains("offset")) {
-                fud.offset_x = fud_json["offset"].value("x", 0.0f);
-                fud.offset_y = fud_json["offset"].value("y", 0.0f);
+                hud.offset_x = fud_json["offset"].value("x", 0.0f);
+                hud.offset_y = fud_json["offset"].value("y", 0.0f);
             }
             if (fud_json.contains("size")) {
-                fud.size_x = fud_json["size"].value("x", 100.0f);
-                fud.size_y = fud_json["size"].value("y", 30.0f);
+                hud.size_x = fud_json["size"].value("x", 100.0f);
+                hud.size_y = fud_json["size"].value("y", 30.0f);
             }
 
-            fud.visible = fud_json.value("visible", true);
+            hud.visible = fud_json.value("visible", true);
 
             // Load background image/sprite sheet configuration
             if (fud_json.contains("background_sheet")) {
-                fud.background_sheet =
+                hud.background_sheet =
                     fud_json["background_sheet"].get<std::string>();
-                fud.background_tile_size =
+                hud.background_tile_size =
                     fud_json.value("background_tile_size", 32);
-                fud.background_tile_row =
+                hud.background_tile_row =
                     fud_json.value("background_tile_row", 0);
-                fud.background_tile_col =
+                hud.background_tile_col =
                     fud_json.value("background_tile_col", 0);
-                fud.background_tile_width =
+                hud.background_tile_width =
                     fud_json.value("background_tile_width", 1);
-                fud.background_tile_height =
+                hud.background_tile_height =
                     fud_json.value("background_tile_height", 1);
             }
 
             // Load foreground image/sprite sheet configuration
             if (fud_json.contains("foreground_sheet")) {
-                fud.foreground_sheet =
+                hud.foreground_sheet =
                     fud_json["foreground_sheet"].get<std::string>();
-                fud.foreground_tile_size =
+                hud.foreground_tile_size =
                     fud_json.value("foreground_tile_size", 32);
-                fud.foreground_tile_row =
+                hud.foreground_tile_row =
                     fud_json.value("foreground_tile_row", 0);
-                fud.foreground_tile_col =
+                hud.foreground_tile_col =
                     fud_json.value("foreground_tile_col", 0);
-                fud.foreground_tile_width =
+                hud.foreground_tile_width =
                     fud_json.value("foreground_tile_width", 1);
-                fud.foreground_tile_height =
+                hud.foreground_tile_height =
                     fud_json.value("foreground_tile_height", 1);
             }
 
             if (fud_json.contains("image_scale")) {
-                fud.image_scale = fud_json["image_scale"].get<float>();
+                hud.image_scale = fud_json["image_scale"].get<float>();
             }
 
             // Load properties as strings (simplified for game runtime)
@@ -254,15 +254,15 @@ void load_fuds_(const json& scene_data, std::vector<scene::FUDData>& fuds) {
                      fud_json["properties"].items()) {
                     // Store as plain string, not JSON-encoded
                     if (value.is_string()) {
-                        fud.properties[key] = value.get<std::string>();
+                        hud.properties[key] = value.get<std::string>();
                     } else {
-                        fud.properties[key] = value.dump();
+                        hud.properties[key] = value.dump();
                     }
                 }
             }
 
-            fuds.push_back(fud);
-            Logger::info("Loaded FUD: % (type: %)", fud.name, fud.type_id);
+            huds.push_back(hud);
+            Logger::info("Loaded FUD: % (type: %)", hud.name, hud.type_id);
         }
     }
 }
@@ -334,8 +334,8 @@ bool Scene::load_from_file(const std::string& filename) {
         load_background_(scene_data, m_background_layers);
 
         // Load FUDs
-        m_fuds.clear();
-        load_fuds_(scene_data, m_fuds);
+        m_huds.clear();
+        load_fuds_(scene_data, m_huds);
 
         Logger::info("Successfully loaded scene: %", filename);
         return true;

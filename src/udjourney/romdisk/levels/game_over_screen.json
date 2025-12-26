@@ -41,7 +41,7 @@
       }
     ]
   },
-  "fuds": [
+  "huds": [
     {
       "name": "Game Over Title",
       "type_id": "custom",

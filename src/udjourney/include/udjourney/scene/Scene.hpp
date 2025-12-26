@@ -91,7 +91,7 @@ struct BackgroundLayerData {
     std::vector<BackgroundObjectData> objects;
 };
 
-enum class FUDAnchor {
+enum class HUDAnchor {
     TopLeft,
     TopCenter,
     TopRight,
@@ -103,10 +103,10 @@ enum class FUDAnchor {
     BottomRight
 };
 
-struct FUDData {
+struct HUDData {
     std::string name;
     std::string type_id;
-    FUDAnchor anchor = FUDAnchor::TopLeft;
+    HUDAnchor anchor = HUDAnchor::TopLeft;
     float offset_x = 0.0f;
     float offset_y = 0.0f;
     float size_x = 100.0f;
@@ -154,7 +154,7 @@ class Scene {
     const std::vector<BackgroundLayerData>& get_background_layers() const {
         return m_background_layers;
     }
-    const std::vector<FUDData>& get_fuds() const { return m_fuds; }
+    const std::vector<HUDData>& get_huds() const { return m_huds; }
     const std::string& get_name() const { return m_name; }
     SceneType get_type() const { return m_scene_type; }
     float get_scroll_speed() const { return m_scroll_speed; }
@@ -186,7 +186,7 @@ class Scene {
     PlayerSpawnData m_player_spawn{0, 0};
     std::vector<MonsterSpawnData> m_monster_spawns;
     std::vector<BackgroundLayerData> m_background_layers;
-    std::vector<FUDData> m_fuds;
+    std::vector<HUDData> m_huds;
     std::string m_name = "Unnamed Level";
     SceneType m_scene_type =
         SceneType::LEVEL;  // Default to level for backward compatibility

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "udjourney-editor/fud/FUDElement.hpp"
+#include "udjourney-editor/hud/HUDElement.hpp"
 
 // Forward declarations for udjourney types
 enum class PlatformBehaviorType {
@@ -57,7 +57,7 @@ struct Level {
     std::vector<Cell> tiles;
     std::vector<EditorPlatform> platforms;
     std::vector<EditorMonster> monsters;
-    std::vector<FUDElement> fuds;
+    std::vector<HUDElement> huds;
     size_t row_cnt = 0;
     size_t col_cnt = 0;
     int player_spawn_x = 2;
@@ -69,7 +69,7 @@ struct Level {
         tiles.clear();
         platforms.clear();
         monsters.clear();
-        fuds.clear();
+        huds.clear();
         row_cnt = 0;
         col_cnt = 0;
     }
@@ -126,11 +126,11 @@ struct Level {
         return nullptr;
     }
 
-    void add_fud(const FUDElement& fud) { fuds.push_back(fud); }
+    void add_fud(const HUDElement& hud) { huds.push_back(hud); }
 
     void remove_fud(size_t index) {
-        if (index < fuds.size()) {
-            fuds.erase(fuds.begin() + index);
+        if (index < huds.size()) {
+            huds.erase(huds.begin() + index);
         }
     }
 
