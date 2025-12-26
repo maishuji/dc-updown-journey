@@ -28,6 +28,15 @@ enum class TrajectoryType {
 struct ProjectilePreset {
     std::string name;
     std::string texture_file;
+    // Atlas/tile rendering (optional)
+    bool use_atlas = false;
+    int tile_width = 0;
+    int tile_height = 0;
+    int x_index = 0;
+    int y_index = 0;
+    int x_span = 1;
+    int y_span = 1;
+    Rectangle source_rect{0, 0, 0, 0};
     TrajectoryType trajectory = TrajectoryType::LINEAR;
     float speed = 200.0f;    // Pixels per second
     float gravity = 0.0f;    // For ARC trajectory

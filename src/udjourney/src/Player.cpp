@@ -23,6 +23,8 @@
 #include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/platform/Platform.hpp"
+
+#include "udjourney/core/events/WeaponSelectedEvent.hpp"
 namespace udjourney {
 Player::~Player() = default;
 
@@ -447,7 +449,15 @@ void Player::load_projectile_presets(const std::string &config_file) {
 
 void Player::set_current_projectile(const std::string &preset_name) {
     if (projectile_loader_ && projectile_loader_->has_preset(preset_name)) {
+        if (current_projectile_preset_ == preset_name) {
+            return;
+        }
+
         current_projectile_preset_ = preset_name;
+
+        udjourney::core::events::WeaponSelectedEvent weapon_event{
+            current_projectile_preset_};
+        m_dispatcher.dispatch(weapon_event);
     }
 }
 
@@ -474,6 +484,10 @@ void Player::cycle_projectile_type() {
     current_projectile_preset_ = *it;
     std::cout << "Switched to projectile: " << current_projectile_preset_
               << std::endl;
+
+    udjourney::core::events::WeaponSelectedEvent weapon_event{
+        current_projectile_preset_};
+    m_dispatcher.dispatch(weapon_event);
 }
 
 const udjourney::ProjectilePreset *Player::get_current_projectile_preset()

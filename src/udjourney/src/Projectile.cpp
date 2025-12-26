@@ -104,10 +104,15 @@ void Projectile::draw() const {
     screen_pos.y -= game.get_rectangle().y;
 
     if (texture_loaded_) {
-        DrawTexture(texture_,
-                    static_cast<int>(screen_pos.x),
-                    static_cast<int>(screen_pos.y),
-                    WHITE);
+        if (preset_.use_atlas && preset_.source_rect.width > 0.0f &&
+            preset_.source_rect.height > 0.0f) {
+            DrawTextureRec(texture_, preset_.source_rect, screen_pos, WHITE);
+        } else {
+            DrawTexture(texture_,
+                        static_cast<int>(screen_pos.x),
+                        static_cast<int>(screen_pos.y),
+                        WHITE);
+        }
     } else {
         // Draw a red circle if no texture
         DrawCircle(static_cast<int>(screen_pos.x),

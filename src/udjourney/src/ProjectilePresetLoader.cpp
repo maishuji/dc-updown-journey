@@ -36,6 +36,23 @@ bool ProjectilePresetLoader::load_from_file(const std::string& filepath) {
 
             preset.name = proj_json.value("name", "unnamed");
             preset.texture_file = proj_json.value("texture_file", "");
+
+            // Optional atlas/tile config
+            preset.tile_width = proj_json.value("tile_width", 0);
+            preset.tile_height = proj_json.value("tile_height", 0);
+            preset.x_index = proj_json.value("x_index", 0);
+            preset.y_index = proj_json.value("y_index", 0);
+            preset.x_span = proj_json.value("x_span", 1);
+            preset.y_span = proj_json.value("y_span", 1);
+
+            preset.use_atlas = preset.tile_width > 0 && preset.tile_height > 0;
+            if (preset.use_atlas) {
+                preset.source_rect = Rectangle{
+                    static_cast<float>(preset.x_index * preset.tile_width),
+                    static_cast<float>(preset.y_index * preset.tile_height),
+                    static_cast<float>(preset.x_span * preset.tile_width),
+                    static_cast<float>(preset.y_span * preset.tile_height)};
+            }
             preset.speed = proj_json.value("speed", 200.0f);
             preset.lifetime = proj_json.value("lifetime", 5.0f);
             preset.damage = proj_json.value("damage", 1);

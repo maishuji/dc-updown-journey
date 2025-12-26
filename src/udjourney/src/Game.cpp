@@ -37,6 +37,7 @@
 #include "udjourney/widgets/WidgetFactory.hpp"
 #include "udjourney/hud/LevelSelectHUD.hpp"
 #include "udjourney/hud/ScoreHUD.hpp"
+#include "udjourney/hud/WeaponHUD.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/loaders/AnimationConfigLoader.hpp"
@@ -262,6 +263,10 @@ void Game::run() {
         auto score_hud =
             std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
         m_hud_manager.add_background_hud(std::move(score_hud));
+
+        auto weapon_hud =
+            std::make_unique<WeaponHUD>(Vector2{10, 80}, m_event_dispatcher);
+        m_hud_manager.add_background_hud(std::move(weapon_hud));
     } else {
         // Load widgets from title screen scene
         load_widgets_from_scene();
@@ -2419,5 +2424,9 @@ void Game::initialize_gameplay() {
     auto score_hud =
         std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
     m_hud_manager.add_background_hud(std::move(score_hud));
+
+    auto weapon_hud =
+        std::make_unique<WeaponHUD>(Vector2{10, 80}, m_event_dispatcher);
+    m_hud_manager.add_background_hud(std::move(weapon_hud));
 }
 }  // namespace udjourney
