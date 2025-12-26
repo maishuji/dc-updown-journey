@@ -1,0 +1,28 @@
+{
+  "type_id": "weapon_display",
+  "display_name": "Weapon Display",
+  "category": "display",
+  "default_size": {
+    "x": 250,
+    "y": 40
+  },
+  "default_anchor": "TopLeft",
+  "description": "Displays current weapon with icon preview",
+  "properties_schema": {
+    "font_size": {
+      "type": "integer",
+      "default": 20,
+      "description": "Font size for weapon name"
+    },
+    "show_icon": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show weapon icon preview"
+    },
+    "icon_size": {
+      "type": "integer",
+      "default": 32,
+      "description": "Size of weapon icon in pixels"
+    }
+  }
+}

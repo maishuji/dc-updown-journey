@@ -37,9 +37,9 @@
 #include "udjourney/widgets/IWidget.hpp"
 #include "udjourney/widgets/WidgetFactory.hpp"
 #include "udjourney/hud/LevelSelectHUD.hpp"
-#include "udjourney/hud/WeaponHUD.hpp"
 #include "udjourney/hud/scene/ScoreDisplayHUD.hpp"
 #include "udjourney/hud/scene/HeartHealthHUD.hpp"
+#include "udjourney/hud/scene/WeaponHUD.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/loaders/AnimationConfigLoader.hpp"
@@ -245,12 +245,6 @@ void Game::run() {
 
     // Only initialize gameplay if not in TITLE state
     if (m_state != GameState::TITLE) {
-        // Create platforms from scene or fallback to random generation
-        create_platforms_from_scene();
-
-        // Spawn monsters from scene
-        create_monsters_from_scene();
-
         // Spawn player at scene-defined location or default position
         Vector2 player_spawn_pos{320, 240};  // Default position
         if (m_current_scene) {
@@ -266,15 +260,13 @@ void Game::run() {
             create_player_animation_controller());
         m_player->add_observer(static_cast<IObserver *>(this));
 
+        create_platforms_from_scene();
+        create_monsters_from_scene();
+
         m_actors.emplace_back(
             std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
 
         m_bonus_manager.add_observer(static_cast<IObserver *>(this));
-
-        auto weapon_hud =
-            std::make_unique<WeaponHUD>(Vector2{10, 80}, m_event_dispatcher);
-        weapon_hud->load_projectile_presets("projectiles.json");
-        m_hud_manager.add_background_hud(std::move(weapon_hud));
     } else {
         // Load widgets from title screen scene
         load_widgets_from_scene();
@@ -641,7 +633,6 @@ void Game::draw_backgrounds() const {
 }
 
 void Game::draw_huds_() const {
-    // Draw all scene-based HUDs using the new object system
     for (const auto &hud : m_scene_huds) {
         if (hud) {
             hud->draw();
@@ -1402,10 +1393,6 @@ bool Game::load_scene(const std::string &filename) {
 
     // Update world bounds with calculated max values
     m_world_bounds.set_bounds(0.0f, max_x, 0.0f, max_y);
-
-    // Create HUD objects from scene
-    create_huds_from_scene();
-
     return true;
 }
 
@@ -1427,6 +1414,12 @@ void Game::create_huds_from_scene() {
         } else if (hud_data.type_id == "heart_health") {
             hud = std::make_unique<udjourney::hud::scene::HeartHealthHUD>(
                 hud_data, m_player.get());
+        } else if (hud_data.type_id == "weapon_display") {
+            auto weapon_hud =
+                std::make_unique<udjourney::hud::scene::WeaponHUD>(
+                    hud_data, m_event_dispatcher);
+            weapon_hud->load_projectile_presets("projectiles.json");
+            hud = std::move(weapon_hud);
         }
         // Add more HUD types here as needed
 
@@ -1709,6 +1702,8 @@ void Game::restart_level() {
 
     // Respawn monsters from scene
     create_monsters_from_scene();
+    // Create HUD objects from scene
+    create_huds_from_scene();
 
     // Reset player position
 
@@ -2030,6 +2025,9 @@ void Game::initialize_gameplay() {
         create_player_animation_controller());
     m_player->add_observer(static_cast<IObserver *>(this));
 
+    // Create HUD objects from scene
+    create_huds_from_scene();
+
     // Load projectile presets
     m_player->load_projectile_presets("projectiles.json");
     m_player->set_current_projectile("bullet");
@@ -2042,11 +2040,5 @@ void Game::initialize_gameplay() {
     m_score = 0;
     m_rect.y = 0;
     m_last_checkpoint = Vector2{320, 240};
-
-    // Add weapon HUD
-    auto weapon_hud =
-        std::make_unique<WeaponHUD>(Vector2{10, 80}, m_event_dispatcher);
-    weapon_hud->load_projectile_presets("projectiles.json");
-    m_hud_manager.add_background_hud(std::move(weapon_hud));
 }
 }  // namespace udjourney

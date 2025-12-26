@@ -76,6 +76,7 @@ add_library(udjourney_editor_lib
   src/hud/ScoreDisplayHUDRenderer.cpp
   src/hud/ScrollableListHUDRenderer.cpp
   src/hud/TimerHUDRenderer.cpp
+  src/hud/WeaponHUDRenderer.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -133,6 +134,7 @@ add_library(udjourney_editor_lib_test
   src/hud/ScoreDisplayHUDRenderer.cpp
   src/hud/ScrollableListHUDRenderer.cpp
   src/hud/TimerHUDRenderer.cpp
+  src/hud/WeaponHUDRenderer.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -205,6 +207,7 @@ add_executable(editorpanel_tests
   src/hud/HeartHealthHUDRenderer.cpp
   src/hud/ScoreDisplayHUDRenderer.cpp
   src/hud/ScrollableListHUDRenderer.cpp
+  src/hud/WeaponHUDRenderer.cpp
   src/hud/TimerHUDRenderer.cpp
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp

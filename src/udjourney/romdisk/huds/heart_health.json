@@ -33,8 +33,8 @@
       "type": "object",
       "default": {
         "sheet": "ui/ui_elements.png",
-        "tile_size": 32,
-        "tile_row": 3,
+        "tile_size": 64,
+        "tile_row": 1,
         "tile_col": 0
       },
       "description": "Sprite for full heart"
@@ -43,8 +43,8 @@
       "type": "object",
       "default": {
         "sheet": "ui/ui_elements.png",
-        "tile_size": 32,
-        "tile_row": 3,
+        "tile_size": 64,
+        "tile_row": 1,
         "tile_col": 2
       },
       "description": "Sprite for half heart"
@@ -53,8 +53,8 @@
       "type": "object",
       "default": {
         "sheet": "ui/ui_elements.png",
-        "tile_size": 32,
-        "tile_row": 3,
+        "tile_size": 64,
+        "tile_row": 1,
         "tile_col": 1
       },
       "description": "Sprite for empty heart"

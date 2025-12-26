@@ -1,0 +1,23 @@
+{
+  "type_id": "healthbar",
+  "display_name": "Health Bar",
+  "category": "display",
+  "default_size": {
+    "x": 200,
+    "y": 30
+  },
+  "default_anchor": "TopLeft",
+  "description": "Traditional health bar display",
+  "properties_schema": {
+    "bar_color": {
+      "type": "string",
+      "default": "RED",
+      "description": "Color of the health bar"
+    },
+    "background_color": {
+      "type": "string",
+      "default": "DARKGRAY",
+      "description": "Background color"
+    }
+  }
+}

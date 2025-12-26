@@ -1,0 +1,56 @@
+{
+  "type_id": "timer",
+  "display_name": "Timer",
+  "category": "Timer",
+  "default_size": {
+    "x": 120,
+    "y": 35
+  },
+  "default_anchor": "TopCenter",
+  "description": "Displays a countdown or elapsed time timer",
+  "properties_schema": {
+    "format": {
+      "type": "string",
+      "default": "MM:SS",
+      "description": "Time format (MM:SS, SS, or HH:MM:SS)"
+    },
+    "count_up": {
+      "type": "bool",
+      "default": false,
+      "description": "Count up instead of countdown"
+    },
+    "initial_seconds": {
+      "type": "int",
+      "default": 180,
+      "description": "Starting time in seconds (for countdown)"
+    },
+    "font_size": {
+      "type": "int",
+      "default": 28,
+      "description": "Font size in pixels"
+    },
+    "text_color": {
+      "type": "color",
+      "default": [
+        255,
+        255,
+        0
+      ],
+      "description": "RGB color of timer text"
+    },
+    "warning_color": {
+      "type": "color",
+      "default": [
+        255,
+        0,
+        0
+      ],
+      "description": "RGB color when time is low"
+    },
+    "warning_threshold": {
+      "type": "int",
+      "default": 30,
+      "description": "Seconds remaining to trigger warning color"
+    }
+  }
+}

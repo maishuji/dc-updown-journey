@@ -4,12 +4,185 @@
 #include "udj-core/CoreUtils.hpp"
 #include "udjourney/components/HealthComponent.hpp"
 #include <nlohmann/json.hpp>
+#include <fstream>
+#include <optional>
+#include <cctype>
 
 namespace udjourney {
 namespace hud {
 namespace scene {
 
 std::unordered_map<std::string, Texture2D> HeartHealthHUD::s_texture_cache;
+
+namespace {
+
+struct HeartSpriteConfig {
+    std::string sheet = "ui/ui_elements.png";
+    int tile_size = 32;
+    int spacing = 32;
+    bool show_empty = true;
+
+    int full_col = 0;
+    int full_row = 3;
+    int half_col = 2;
+    int half_row = 3;
+    int empty_col = 1;
+    int empty_row = 3;
+};
+
+std::optional<int> parse_int(const std::string& s) {
+    try {
+        size_t idx = 0;
+        int v = std::stoi(s, &idx);
+        if (idx == 0) return std::nullopt;
+        return v;
+    } catch (...) {
+        return std::nullopt;
+    }
+}
+
+std::optional<bool> parse_bool(std::string s) {
+    for (auto& ch : s) {
+        ch = static_cast<char>(std::tolower(static_cast<unsigned char>(ch)));
+    }
+    if (s == "true" || s == "1" || s == "yes" || s == "on") return true;
+    if (s == "false" || s == "0" || s == "no" || s == "off") return false;
+    return std::nullopt;
+}
+
+void apply_sprite_override_from_properties(
+    const udjourney::scene::HUDData& hud_data, const char* key,
+    HeartSpriteConfig& cfg, int& out_col, int& out_row) {
+    auto it = hud_data.properties.find(key);
+    if (it == hud_data.properties.end()) return;
+
+    try {
+        const auto sprite_json = nlohmann::json::parse(it->second);
+        if (!sprite_json.is_object()) return;
+        cfg.sheet = sprite_json.value("sheet", cfg.sheet);
+        cfg.tile_size = sprite_json.value("tile_size", cfg.tile_size);
+        out_col = sprite_json.value("tile_col", out_col);
+        out_row = sprite_json.value("tile_row", out_row);
+    } catch (...) {
+        // Ignore bad overrides
+    }
+}
+
+HeartSpriteConfig apply_level_overrides(
+    const udjourney::scene::HUDData& hud_data, HeartSpriteConfig cfg) {
+    // Simple scalar overrides
+    if (auto it = hud_data.properties.find("heart_spacing");
+        it != hud_data.properties.end()) {
+        if (auto v = parse_int(it->second)) cfg.spacing = *v;
+    }
+    if (auto it = hud_data.properties.find("show_empty_hearts");
+        it != hud_data.properties.end()) {
+        if (auto v = parse_bool(it->second)) cfg.show_empty = *v;
+    }
+
+    // Sprite overrides (JSON string objects)
+    apply_sprite_override_from_properties(
+        hud_data, "heart_full_sprite", cfg, cfg.full_col, cfg.full_row);
+    apply_sprite_override_from_properties(
+        hud_data, "heart_half_sprite", cfg, cfg.half_col, cfg.half_row);
+    apply_sprite_override_from_properties(
+        hud_data, "heart_empty_sprite", cfg, cfg.empty_col, cfg.empty_row);
+
+    return cfg;
+}
+
+std::optional<HeartSpriteConfig> load_heart_health_defaults_from_assets() {
+    const std::string full_path =
+        udj::core::filesystem::get_assets_path("huds/heart_health.json");
+
+    std::ifstream in(full_path);
+    if (!in.is_open()) {
+        udj::core::Logger::info(
+            "HeartHealthHUD: could not open defaults at %; using code defaults",
+            full_path);
+        return std::nullopt;
+    }
+
+    try {
+        nlohmann::json root;
+        in >> root;
+
+        HeartSpriteConfig defaults;
+
+        const auto props_it = root.find("properties_schema");
+        if (props_it == root.end() || !props_it->is_object()) {
+            return defaults;
+        }
+        const auto& props = *props_it;
+
+        auto read_int_default = [&](const char* key, int& out_value) {
+            const auto it = props.find(key);
+            if (it == props.end() || !it->is_object()) return;
+            const auto def_it = it->find("default");
+            if (def_it != it->end() && def_it->is_number_integer()) {
+                out_value = def_it->get<int>();
+            }
+        };
+
+        auto read_bool_default = [&](const char* key, bool& out_value) {
+            const auto it = props.find(key);
+            if (it == props.end() || !it->is_object()) return;
+            const auto def_it = it->find("default");
+            if (def_it != it->end() && def_it->is_boolean()) {
+                out_value = def_it->get<bool>();
+            }
+        };
+
+        auto read_sprite_default = [&](const char* key,
+                                       HeartSpriteConfig& cfg,
+                                       int& out_col,
+                                       int& out_row) {
+            const auto it = props.find(key);
+            if (it == props.end() || !it->is_object()) return;
+            const auto def_it = it->find("default");
+            if (def_it == it->end() || !def_it->is_object()) return;
+
+            const auto& def = *def_it;
+            cfg.sheet = def.value("sheet", cfg.sheet);
+            cfg.tile_size = def.value("tile_size", cfg.tile_size);
+            out_col = def.value("tile_col", out_col);
+            out_row = def.value("tile_row", out_row);
+        };
+
+        read_int_default("heart_spacing", defaults.spacing);
+        read_bool_default("show_empty_hearts", defaults.show_empty);
+
+        read_sprite_default("heart_full_sprite",
+                            defaults,
+                            defaults.full_col,
+                            defaults.full_row);
+        read_sprite_default("heart_half_sprite",
+                            defaults,
+                            defaults.half_col,
+                            defaults.half_row);
+        read_sprite_default("heart_empty_sprite",
+                            defaults,
+                            defaults.empty_col,
+                            defaults.empty_row);
+
+        return defaults;
+    } catch (const std::exception& e) {
+        udj::core::Logger::info(
+            "HeartHealthHUD: failed to parse % (%); using code defaults",
+            full_path,
+            e.what());
+        return std::nullopt;
+    }
+}
+
+const HeartSpriteConfig& heart_health_defaults() {
+    static const HeartSpriteConfig kFallback;
+    static std::optional<HeartSpriteConfig> cached =
+        load_heart_health_defaults_from_assets();
+    return cached ? *cached : kFallback;
+}
+
+}  // namespace
 
 HeartHealthHUD::HeartHealthHUD(const udjourney::scene::HUDData& hud_data,
                                Player* player) :
@@ -82,95 +255,45 @@ Texture2D HeartHealthHUD::get_texture(const std::string& path) const {
 
 void HeartHealthHUD::draw_heart(Vector2 pos, int heart_index,
                                 int current_half_hearts) const {
-    // Parse heart sprite configuration from properties
-    std::string heart_sheet = "ui/ui_elements.png";
-    int heart_tile_size = 32;
-    int heart_spacing = 32;
-    int full_col = 0, full_row = 3;
-    int half_col = 3, half_row = 3;
-    int empty_col = 4, empty_row = 3;
-    bool show_empty = true;
-
-    try {
-        if (m_hud_data.properties.count("heart_spacing")) {
-            heart_spacing =
-                std::stoi(m_hud_data.properties.at("heart_spacing"));
-        }
-        if (m_hud_data.properties.count("show_empty_hearts")) {
-            show_empty =
-                (m_hud_data.properties.at("show_empty_hearts") == "true");
-        }
-
-        if (m_hud_data.properties.count("heart_full_sprite")) {
-            try {
-                auto sprite_json = nlohmann::json::parse(
-                    m_hud_data.properties.at("heart_full_sprite"));
-                heart_sheet = sprite_json.value("sheet", heart_sheet);
-                heart_tile_size =
-                    sprite_json.value("tile_size", heart_tile_size);
-                full_col = sprite_json.value("tile_col", full_col);
-                full_row = sprite_json.value("tile_row", full_row);
-            } catch (...) {
-            }
-        }
-
-        if (m_hud_data.properties.count("heart_half_sprite")) {
-            try {
-                auto sprite_json = nlohmann::json::parse(
-                    m_hud_data.properties.at("heart_half_sprite"));
-                half_col = sprite_json.value("tile_col", half_col);
-                half_row = sprite_json.value("tile_row", half_row);
-            } catch (...) {
-            }
-        }
-
-        if (m_hud_data.properties.count("heart_empty_sprite")) {
-            try {
-                auto sprite_json = nlohmann::json::parse(
-                    m_hud_data.properties.at("heart_empty_sprite"));
-                empty_col = sprite_json.value("tile_col", empty_col);
-                empty_row = sprite_json.value("tile_row", empty_row);
-            } catch (...) {
-            }
-        }
-    } catch (...) {
-        // Use defaults if parsing fails
-    }
+    // Config comes from the HUD preset defaults, overridden by the level's HUD
+    // properties (if provided).
+    const HeartSpriteConfig cfg =
+        apply_level_overrides(m_hud_data, heart_health_defaults());
 
     // Determine which sprite to draw
     int half_hearts_for_this_position = current_half_hearts - (heart_index * 2);
     int sprite_col, sprite_row;
 
     if (half_hearts_for_this_position >= 2) {
-        sprite_col = full_col;
-        sprite_row = full_row;
+        sprite_col = cfg.full_col;
+        sprite_row = cfg.full_row;
     } else if (half_hearts_for_this_position == 1) {
-        sprite_col = half_col;
-        sprite_row = half_row;
+        sprite_col = cfg.half_col;
+        sprite_row = cfg.half_row;
     } else {
-        if (!show_empty) return;
-        sprite_col = empty_col;
-        sprite_row = empty_row;
+        if (!cfg.show_empty) return;
+        sprite_col = cfg.empty_col;
+        sprite_row = cfg.empty_row;
     }
 
     // Load and draw heart sprite
-    Texture2D tex = get_texture(heart_sheet);
+    Texture2D tex = get_texture(cfg.sheet);
     if (tex.id > 0) {
-        Rectangle source = {static_cast<float>(sprite_col * heart_tile_size),
-                            static_cast<float>(sprite_row * heart_tile_size),
-                            static_cast<float>(heart_tile_size),
-                            static_cast<float>(heart_tile_size)};
+        Rectangle source = {static_cast<float>(sprite_col * cfg.tile_size),
+                            static_cast<float>(sprite_row * cfg.tile_size),
+                            static_cast<float>(cfg.tile_size),
+                            static_cast<float>(cfg.tile_size)};
 
-        float heart_x = pos.x + (heart_index * heart_spacing);
+        float heart_x = pos.x + (heart_index * cfg.spacing);
         Rectangle dest = {heart_x,
                           pos.y,
-                          static_cast<float>(heart_spacing),
-                          static_cast<float>(heart_spacing)};
+                          static_cast<float>(cfg.spacing),
+                          static_cast<float>(cfg.spacing)};
 
         DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
     } else {
         // Fallback: draw circle
-        float heart_x = pos.x + (heart_index * heart_spacing);
+        float heart_x = pos.x + (heart_index * cfg.spacing);
         bool is_full = (half_hearts_for_this_position >= 2);
         bool is_half = (half_hearts_for_this_position == 1);
 
@@ -182,7 +305,7 @@ void HeartHealthHUD::draw_heart(Vector2 pos, int heart_index,
         } else if (is_half) {
             DrawCircleSector(
                 Vector2{heart_x + 16, pos.y + 16}, 12, 90, 270, 16, RED);
-        } else if (show_empty) {
+        } else if (cfg.show_empty) {
             DrawCircle(static_cast<int>(heart_x + 16),
                        static_cast<int>(pos.y + 16),
                        12,
@@ -210,11 +333,9 @@ void HeartHealthHUD::draw() const {
     int max_hearts = (health->get_max_health() + 1) / 2;
 
     // Override max_hearts from properties if specified
-    try {
-        if (m_hud_data.properties.count("max_hearts")) {
-            max_hearts = std::stoi(m_hud_data.properties.at("max_hearts"));
-        }
-    } catch (...) {
+    if (auto it = m_hud_data.properties.find("max_hearts");
+        it != m_hud_data.properties.end()) {
+        if (auto v = parse_int(it->second)) max_hearts = *v;
     }
 
     Vector2 pos = calculate_position();

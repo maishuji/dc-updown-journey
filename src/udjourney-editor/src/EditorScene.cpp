@@ -25,6 +25,7 @@
 #include "udjourney-editor/hud/ScoreDisplayHUDRenderer.hpp"
 #include "udjourney-editor/hud/ScrollableListHUDRenderer.hpp"
 #include "udjourney-editor/hud/TimerHUDRenderer.hpp"
+#include "udjourney-editor/hud/WeaponHUDRenderer.hpp"
 
 // Simple texture cache for editor
 static std::unordered_map<std::string, Texture2D> texture_cache;
@@ -118,6 +119,8 @@ static void initialize_fud_renderers() {
                               std::make_unique<HealthBarHUDRenderer>());
     factory.register_renderer("score_display",
                               std::make_unique<ScoreDisplayHUDRenderer>());
+    factory.register_renderer("weapon_display",
+                              std::make_unique<WeaponHUDRenderer>());
     factory.register_renderer("timer", std::make_unique<TimerHUDRenderer>());
 
     // Register list renderer

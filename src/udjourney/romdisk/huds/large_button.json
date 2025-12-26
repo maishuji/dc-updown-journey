@@ -1,0 +1,65 @@
+{
+  "type_id": "large_button",
+  "display_name": "Large Button",
+  "category": "UI",
+  "default_size": {
+    "x": 300,
+    "y": 70
+  },
+  "default_anchor": "MiddleCenter",
+  "description": "Large prominent button for main menu actions",
+  "properties_schema": {
+    "text": {
+      "type": "string",
+      "default": "START",
+      "description": "Button text label"
+    },
+    "button_action": {
+      "type": "string",
+      "default": "start_game",
+      "description": "Action to execute"
+    },
+    "font_size": {
+      "type": "int",
+      "default": 32,
+      "description": "Font size for button text"
+    },
+    "normal_color": {
+      "type": "color",
+      "default": [
+        255,
+        255,
+        255
+      ],
+      "description": "Text color in normal state"
+    },
+    "hover_color": {
+      "type": "color",
+      "default": [
+        255,
+        255,
+        0
+      ],
+      "description": "Text color when hovered"
+    },
+    "click_color": {
+      "type": "color",
+      "default": [
+        0,
+        255,
+        0
+      ],
+      "description": "Text color when clicked"
+    },
+    "border_thickness": {
+      "type": "int",
+      "default": 3,
+      "description": "Border width in pixels"
+    },
+    "selectable": {
+      "type": "bool",
+      "default": true,
+      "description": "Whether button can be selected with keyboard navigation"
+    }
+  }
+}
