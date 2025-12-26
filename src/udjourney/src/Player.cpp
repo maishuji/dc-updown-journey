@@ -110,7 +110,7 @@ Player::Player(const IGame &iGame, Rectangle iRect,
     }
 
     // Add health component - 3 hearts = 6 half-hearts
-    add_component(std::make_unique<HealthComponent>(6, 6));
+    add_component(std::make_unique<HealthComponent>(6, 6, &m_dispatcher));
 }
 
 void Player::draw() const {

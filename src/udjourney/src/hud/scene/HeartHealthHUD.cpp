@@ -2,7 +2,7 @@
 #include "udjourney/hud/scene/HeartHealthHUD.hpp"
 #include "udj-core/Logger.hpp"
 #include "udj-core/CoreUtils.hpp"
-#include "udjourney/components/HealthComponent.hpp"
+#include "udjourney/core/events/HealthChangedEvent.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <optional>
@@ -184,9 +184,40 @@ const HeartSpriteConfig& heart_health_defaults() {
 
 }  // namespace
 
-HeartHealthHUD::HeartHealthHUD(const udjourney::scene::HUDData& hud_data,
-                               Player* player) :
-    m_hud_data(hud_data), m_player(player), m_visible(hud_data.visible) {}
+HeartHealthHUD::HeartHealthHUD(
+    const udjourney::scene::HUDData& hud_data,
+    udjourney::core::events::EventDispatcher& event_dispatcher) :
+    m_hud_data(hud_data), m_visible(hud_data.visible) {
+    // Seed with level-defined values (useful for editor previews and as a
+    // fallback before the first runtime health event arrives).
+    int max_hearts = 3;
+    int current_hearts = 3;
+
+    if (auto it = m_hud_data.properties.find("max_hearts");
+        it != m_hud_data.properties.end()) {
+        if (auto v = parse_int(it->second)) max_hearts = *v;
+    }
+    if (auto it = m_hud_data.properties.find("current_hearts");
+        it != m_hud_data.properties.end()) {
+        if (auto v = parse_int(it->second)) current_hearts = *v;
+    }
+
+    m_max_half_hearts = std::max(0, max_hearts * 2);
+    m_current_half_hearts =
+        std::clamp(current_hearts * 2, 0, m_max_half_hearts);
+
+    // Subscribe to runtime health changes.
+    event_dispatcher.register_handler(
+        udjourney::core::events::HealthChangedEvent::TYPE,
+        [this](const udjourney::core::events::IEvent& evt) {
+            const auto& health_ev =
+                static_cast<const udjourney::core::events::HealthChangedEvent&>(
+                    evt);
+            m_max_half_hearts = std::max(0, health_ev.max_health);
+            m_current_half_hearts =
+                std::clamp(health_ev.current_health, 0, m_max_half_hearts);
+        });
+}
 
 Vector2 HeartHealthHUD::calculate_position() const {
     float anchor_x = 0.0f;
@@ -319,20 +350,19 @@ void HeartHealthHUD::draw_heart(Vector2 pos, int heart_index,
 }
 
 void HeartHealthHUD::draw() const {
-    if (!m_visible || !m_player) {
+    if (!m_visible) {
         return;
     }
 
-    // Get player health
-    auto* health = m_player->get_component<HealthComponent>();
-    if (!health) {
+    if (m_max_half_hearts < 0 || m_current_half_hearts < 0) {
         return;
     }
 
-    int current_half_hearts = health->get_health();
-    int max_hearts = (health->get_max_health() + 1) / 2;
+    // Base runtime values come from events (HealthComponent units).
+    int current_half_hearts = m_current_half_hearts;
+    int max_hearts = (m_max_half_hearts + 1) / 2;
 
-    // Override max_hearts from properties if specified
+    // Level can still override number of heart slots shown.
     if (auto it = m_hud_data.properties.find("max_hearts");
         it != m_hud_data.properties.end()) {
         if (auto v = parse_int(it->second)) max_hearts = *v;

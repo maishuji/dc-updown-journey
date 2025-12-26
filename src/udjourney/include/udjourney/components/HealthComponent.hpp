@@ -2,6 +2,9 @@
 #pragma once
 
 #include <algorithm>
+
+#include "udjourney/core/events/EventDispatcher.hpp"
+#include "udjourney/core/events/HealthChangedEvent.hpp"
 #include "udjourney/interfaces/IComponent.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 namespace udjourney {
@@ -19,10 +22,14 @@ class HealthComponent : public IComponent {
      * @param max_health Maximum health capacity
      * @param initial_health Starting health (defaults to max if not specified)
      */
-    explicit HealthComponent(int max_health, int initial_health = -1) :
+    explicit HealthComponent(
+        int max_health, int initial_health = -1,
+        udjourney::core::events::EventDispatcher* dispatcher = nullptr) :
         max_health_(max_health),
-        current_health_(initial_health < 0 ? max_health : initial_health) {
+        current_health_(initial_health < 0 ? max_health : initial_health),
+        dispatcher_(dispatcher) {
         current_health_ = std::clamp(current_health_, 0, max_health_);
+        dispatch_health_changed_();
     }
 
     ~HealthComponent() override = default;
@@ -47,7 +54,11 @@ class HealthComponent : public IComponent {
      */
     void take_damage(int amount) {
         if (amount < 0) return;
+        const int old = current_health_;
         current_health_ = std::max(0, current_health_ - amount);
+        if (current_health_ != old) {
+            dispatch_health_changed_();
+        }
     }
 
     /**
@@ -56,22 +67,35 @@ class HealthComponent : public IComponent {
      */
     void heal(int amount) {
         if (amount < 0) return;
+        const int old = current_health_;
         current_health_ = std::min(max_health_, current_health_ + amount);
+        if (current_health_ != old) {
+            dispatch_health_changed_();
+        }
     }
 
     /**
      * @brief Set health directly (clamped to valid range)
      */
     void set_health(int health) {
+        const int old = current_health_;
         current_health_ = std::clamp(health, 0, max_health_);
+        if (current_health_ != old) {
+            dispatch_health_changed_();
+        }
     }
 
     /**
      * @brief Set maximum health capacity
      */
     void set_max_health(int max_health) {
+        const int old_max = max_health_;
+        const int old_cur = current_health_;
         max_health_ = std::max(1, max_health);
         current_health_ = std::min(current_health_, max_health_);
+        if (max_health_ != old_max || current_health_ != old_cur) {
+            dispatch_health_changed_();
+        }
     }
 
     // ============= Accessors =============
@@ -85,8 +109,16 @@ class HealthComponent : public IComponent {
     }
 
  private:
+    void dispatch_health_changed_() {
+        if (!dispatcher_) return;
+        udjourney::core::events::HealthChangedEvent ev(current_health_,
+                                                       max_health_);
+        dispatcher_->dispatch(ev);
+    }
+
     IActor* owner_ = nullptr;
     int max_health_;
     int current_health_;
+    udjourney::core::events::EventDispatcher* dispatcher_ = nullptr;
 };
 }  // namespace udjourney

@@ -6,8 +6,11 @@
 #include <string>
 #include <unordered_map>
 #include "udjourney/scene/Scene.hpp"
-#include "udjourney/Player.hpp"
 #include "udjourney/hud/scene/IHUD.hpp"
+
+namespace udjourney::core::events {
+class EventDispatcher;
+}
 
 namespace udjourney {
 namespace hud {
@@ -15,7 +18,8 @@ namespace scene {
 
 class HeartHealthHUD : public IHUD {
  public:
-    HeartHealthHUD(const udjourney::scene::HUDData& hud_data, Player* player);
+    HeartHealthHUD(const udjourney::scene::HUDData& hud_data,
+                   udjourney::core::events::EventDispatcher& event_dispatcher);
     ~HeartHealthHUD() override = default;
 
     void draw() const override;
@@ -29,8 +33,10 @@ class HeartHealthHUD : public IHUD {
                     int current_half_hearts) const;
 
     const udjourney::scene::HUDData& m_hud_data;
-    Player* m_player;
     bool m_visible;
+
+    int m_current_half_hearts = -1;
+    int m_max_half_hearts = -1;
 
     // Shared texture cache
     static std::unordered_map<std::string, Texture2D> s_texture_cache;

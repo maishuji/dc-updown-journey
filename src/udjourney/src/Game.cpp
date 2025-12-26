@@ -1413,7 +1413,7 @@ void Game::create_huds_from_scene() {
                 hud_data, this);
         } else if (hud_data.type_id == "heart_health") {
             hud = std::make_unique<udjourney::hud::scene::HeartHealthHUD>(
-                hud_data, m_player.get());
+                hud_data, m_event_dispatcher);
         } else if (hud_data.type_id == "weapon_display") {
             auto weapon_hud =
                 std::make_unique<udjourney::hud::scene::WeaponHUD>(
