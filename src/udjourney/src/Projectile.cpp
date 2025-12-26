@@ -103,6 +103,12 @@ void Projectile::draw() const {
     screen_pos.x -= game.get_rectangle().x;
     screen_pos.y -= game.get_rectangle().y;
 
+    // texture height adjustment for centering
+    screen_pos.y -=
+        texture_loaded_ ? (preset_.tile_height * preset_.y_span / 2.0f) : 0.0f;
+    screen_pos.x -=
+        texture_loaded_ ? (preset_.tile_width * preset_.x_span / 2.0f) : 0.0f;
+
     if (texture_loaded_) {
         if (preset_.use_atlas && preset_.source_rect.width > 0.0f &&
             preset_.source_rect.height > 0.0f) {
