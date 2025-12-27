@@ -1943,54 +1943,48 @@ void Game::register_menu_actions() {
     ActionDispatcher::register_action(
         "show_level_select",
         [](IGame *game, const std::vector<std::string> &params) {
-            std::cout << "[ACTION] ===== Show Level Select triggered ====="
-                      << std::endl;
-            auto *captured_game = static_cast<Game *>(game);
-            if (captured_game) {
-                std::string level_select_path =
-                    udjourney::coreutils::get_assets_path(
-                        "levels/level_select_screen.json");
+            Logger::info("[ACTION] ===== Show Level Select triggered =====");
+            auto &captured_game = static_cast<Game &>(*game);
+            std::string level_select_path =
+                udjourney::coreutils::get_assets_path(
+                    "levels/level_select_screen.json");
+            // Now load the new scene
+            if (captured_game.load_scene(level_select_path)) {
+                captured_game.m_state = GameState::TITLE;
 
-                // Now load the new scene
-                if (captured_game->load_scene(level_select_path)) {
-                    captured_game->m_state = GameState::TITLE;
+                // Load level select screen widgets
+                // captured_game->load_widgets_from_scene();
 
-                    // Load level select screen widgets
-                    // captured_game->load_widgets_from_scene();
-
-                    // Set focus to the ScrollableListWidget (should be the
-                    // first selectable widget) Find the index of the
-                    // ScrollableListWidget in the selectable widgets
-                    std::vector<IWidget *> selectable_widgets;
-                    int list_index = -1;
-                    for (const auto &actor : captured_game->m_actors) {
-                        if (actor && actor->get_group_id() == 4) {
-                            IWidget *widget =
-                                static_cast<IWidget *>(actor.get());
-                            if (widget && widget->is_selectable()) {
-                                if (dynamic_cast<ScrollableListWidget *>(
-                                        widget)) {
-                                    list_index = static_cast<int>(
-                                        selectable_widgets.size());
-                                }
-                                selectable_widgets.push_back(widget);
+                // Set focus to the ScrollableListWidget (should be the
+                // first selectable widget) Find the index of the
+                // ScrollableListWidget in the selectable widgets
+                std::vector<IWidget *> selectable_widgets;
+                int list_index = -1;
+                for (const auto &actor : captured_game.m_actors) {
+                    if (actor && actor->get_group_id() == 4) {
+                        IWidget *widget = static_cast<IWidget *>(actor.get());
+                        if (widget && widget->is_selectable()) {
+                            if (dynamic_cast<ScrollableListWidget *>(widget)) {
+                                list_index =
+                                    static_cast<int>(selectable_widgets.size());
                             }
+                            selectable_widgets.push_back(widget);
                         }
                     }
-
-                    // Focus the list widget (or default to 0 if not found)
-                    captured_game->m_selected_widget_index =
-                        (list_index >= 0) ? list_index : 0;
-
-                    // Reset frame counter to prevent immediate input
-                    captured_game->m_frames_since_scene_load = 0;
-
-                    Logger::info(
-                        "[ACTION] Level select screen loaded with " +
-                        std::to_string(captured_game->m_actors.size()) +
-                        " actors, focus on widget " +
-                        std::to_string(captured_game->m_selected_widget_index));
                 }
+
+                // Focus the list widget (or default to 0 if not found)
+                captured_game.m_selected_widget_index =
+                    (list_index >= 0) ? list_index : 0;
+
+                // Reset frame counter to prevent immediate input
+                captured_game.m_frames_since_scene_load = 0;
+                captured_game.apply_current_scene();
+                Logger::info(
+                    "[ACTION] Level select screen loaded with " +
+                    std::to_string(captured_game.m_actors.size()) +
+                    " actors, focus on widget " +
+                    std::to_string(captured_game.m_selected_widget_index));
             }
         });
 
