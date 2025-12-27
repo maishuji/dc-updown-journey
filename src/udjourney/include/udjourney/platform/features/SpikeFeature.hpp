@@ -5,6 +5,7 @@
 
 #include <udj-core/Logger.hpp>
 #include "udjourney/interfaces/IActor.hpp"
+#include "udjourney/Player.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/platform/features/PlatformFeatureBase.hpp"
