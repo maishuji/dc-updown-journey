@@ -24,12 +24,12 @@ SceneType get_scene_type_(json& scene_data) {
     if (scene_data.contains("scene_type")) {
         std::string type_str = scene_data["scene_type"].get<std::string>();
         if (type_str == "ui_screen") {
-            return SceneType::UI_SCREEN;
+            return SceneType::UiScreen;
         } else {
-            return SceneType::LEVEL;
+            return SceneType::Level;
         }
     } else {
-        return SceneType::LEVEL;
+        return SceneType::Level;
     }
 }
 
@@ -310,10 +310,10 @@ bool Scene::load_from_file(const std::string& filename) {
         m_scene_type = get_scene_type_(scene_data);
 
         Logger::info("Scene type: %",
-                     m_scene_type == SceneType::LEVEL ? "LEVEL" : "UI_SCREEN");
+                     m_scene_type == SceneType::Level ? "LEVEL" : "UI_SCREEN");
 
         // Load player spawn (only for levels)
-        if (m_scene_type == SceneType::LEVEL &&
+        if (m_scene_type == SceneType::Level &&
             scene_data.contains("player_spawn")) {
             const auto& spawn = scene_data["player_spawn"];
             m_player_spawn.tile_x = spawn.value("x", 0);
@@ -324,7 +324,7 @@ bool Scene::load_from_file(const std::string& filename) {
         m_platforms.clear();
         m_monster_spawns.clear();
 
-        if (m_scene_type == SceneType::LEVEL) {
+        if (m_scene_type == SceneType::Level) {
             load_level_platforms_(scene_data, m_platforms);
             load_level_monsters_(scene_data, m_monster_spawns);
         }
@@ -354,16 +354,16 @@ bool Scene::save_to_file(const std::string& filename) const {
 
         // Save scene type
         scene_data["scene_type"] =
-            (m_scene_type == SceneType::UI_SCREEN) ? "ui_screen" : "level";
+            (m_scene_type == SceneType::UiScreen) ? "ui_screen" : "level";
 
         // Save player spawn (only for levels)
-        if (m_scene_type == SceneType::LEVEL) {
+        if (m_scene_type == SceneType::Level) {
             scene_data["player_spawn"]["x"] = m_player_spawn.tile_x;
             scene_data["player_spawn"]["y"] = m_player_spawn.tile_y;
         }
 
         // Save platforms (only for levels)
-        if (m_scene_type == SceneType::LEVEL) {
+        if (m_scene_type == SceneType::Level) {
             json platforms_json = json::array();
             for (const auto& platform : m_platforms) {
                 json platform_json;
@@ -417,7 +417,7 @@ bool Scene::save_to_file(const std::string& filename) const {
         }  // end LEVEL-only platforms
 
         // Save monster spawns (only for levels)
-        if (m_scene_type == SceneType::LEVEL) {
+        if (m_scene_type == SceneType::Level) {
             json monsters_json = json::array();
             for (const auto& monster : m_monster_spawns) {
                 json monster_json;

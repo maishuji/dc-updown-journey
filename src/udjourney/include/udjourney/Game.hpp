@@ -49,8 +49,12 @@ class Game : public IGame, public IObserver {
 
     // Scene management
     bool load_scene(const std::string &filename);
-    void create_platforms_from_scene();
-    void create_monsters_from_scene();
+
+    enum class SceneApplyMode : uint8_t { Auto, Gameplay, UiScreen };
+
+    void apply_current_scene(SceneApplyMode mode = SceneApplyMode::Auto);
+    bool load_and_apply_scene(const std::string &filename);
+
     void restart_level();
 
     // Level selection
@@ -61,17 +65,16 @@ class Game : public IGame, public IObserver {
 
  private:
     void draw() const;
-    void draw_backgrounds() const;
+    void draw_backgrounds_() const;
     void draw_finish_line_() const;
     void draw_huds_() const;
     bool should_continue_scrolling_() const noexcept;
     void attack_nearby_monsters();
 
-    // Scene-based HUD system
-    void create_huds_from_scene();
-
     // Widget and scene management
-    void load_widgets_from_scene();
+    void create_platforms_from_scene();
+    void create_monsters_from_scene();
+    void create_huds_from_scene();
     void register_menu_actions();
     void initialize_gameplay();
 

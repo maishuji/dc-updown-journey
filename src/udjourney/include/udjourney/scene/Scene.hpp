@@ -12,8 +12,8 @@ namespace udjourney {
 namespace scene {
 
 enum class SceneType {
-    LEVEL,     // Regular gameplay level with platforms/monsters
-    UI_SCREEN  // UI screen for menus (title/win/gameover)
+    Level,    // Regular gameplay level with platforms/monsters
+    UiScreen  // UI screen for menus (title/win/gameover)
 };
 
 enum class PlatformBehaviorType {
@@ -189,7 +189,7 @@ class Scene {
     std::vector<HUDData> m_huds;
     std::string m_name = "Unnamed Level";
     SceneType m_scene_type =
-        SceneType::LEVEL;  // Default to level for backward compatibility
+        SceneType::Level;  // Default to level for backward compatibility
     float m_scroll_speed =
         1.0f;  // Default camera scroll speed (pixels per frame)
 };

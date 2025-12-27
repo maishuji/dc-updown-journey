@@ -269,7 +269,7 @@ void Game::run() {
         m_bonus_manager.add_observer(static_cast<IObserver *>(this));
     } else {
         // Load widgets from title screen scene
-        load_widgets_from_scene();
+        create_huds_from_scene();
     }
 
     SetTargetFPS(60);
@@ -414,6 +414,59 @@ void Game::process_input() {
     }
 }
 
+/**
+ * Applies the currently loaded scene by creating platforms, monsters,
+ * and HUDs defined in the scene.
+ * If no scene is loaded, logs an error message.
+ */
+void Game::apply_current_scene(SceneApplyMode mode) {
+    if (!m_current_scene) {
+        udj::core::Logger::error("No current scene to apply!");
+        return;
+    }
+
+    SceneApplyMode resolved = mode;
+    if (resolved == SceneApplyMode::Auto) {
+        resolved = (m_current_scene->get_type() ==
+                    udjourney::scene::SceneType::UiScreen)
+                       ? SceneApplyMode::UiScreen
+                       : SceneApplyMode::Gameplay;
+    }
+
+    // Gameplay scenes: world + UI
+    if (resolved == SceneApplyMode::Gameplay) {
+        initialize_gameplay();
+        return;
+    }
+
+    m_rect.y = 0;                 // Reset camera
+    m_selected_widget_index = 0;  // Reset widget selection
+    m_frames_since_scene_load = 0;
+    m_scene_huds.clear();
+    m_actors.clear();
+    m_pending_actors.clear();
+    m_updating_actors = false;
+    m_selected_widget_index = 0;
+
+    create_huds_from_scene();
+}
+
+/**
+ * Loads a scene from the specified filename and applies it immediately.
+ * Returns true if the scene was loaded and applied successfully, false
+ * otherwise.
+ * @param filename The path to the scene file to load.
+ * @return True if the scene was loaded and applied successfully, false
+ * otherwise.
+ */
+bool Game::load_and_apply_scene(const std::string &filename) {
+    if (!load_scene(filename)) {
+        return false;
+    }
+    apply_current_scene(SceneApplyMode::Auto);
+    return true;
+}
+
 void draw_pause_() {
     DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
     DrawText("Press START to resume\n", 300, 40, 20, WHITE);
@@ -486,7 +539,7 @@ bool Game::should_continue_scrolling_() const noexcept {
 
 // Scene system implementations
 
-void Game::draw_backgrounds() const {
+void Game::draw_backgrounds_() const {
     if (!m_current_scene) {
         return;
     }
@@ -572,7 +625,7 @@ void Game::draw_backgrounds() const {
                     // For UI screens with auto-scroll enabled, apply scroll to
                     // objects
                     if (m_current_scene->get_type() ==
-                            udjourney::scene::SceneType::UI_SCREEN &&
+                            udjourney::scene::SceneType::UiScreen &&
                         layer->auto_scroll_enabled) {
                         // Apply scroll offset to objects for auto-scrolling
                         // layers
@@ -609,7 +662,7 @@ void Game::draw_backgrounds() const {
                             screen_y = base_y;
                         }
                     } else if (m_current_scene->get_type() ==
-                               udjourney::scene::SceneType::UI_SCREEN) {
+                               udjourney::scene::SceneType::UiScreen) {
                         // Static UI screen objects (no auto-scroll)
                         screen_y = obj.y;
                     } else {
@@ -663,7 +716,7 @@ void Game::draw() const {
     switch (m_state) {
         case GameState::TITLE:
             // Draw scrolling backgrounds
-            draw_backgrounds();
+            draw_backgrounds_();
 
             // Draw widgets (menu buttons)
             for (const auto &actor : m_actors) {
@@ -674,7 +727,7 @@ void Game::draw() const {
             break;
         case GameState::PLAY: {
             // Draw backgrounds first (behind everything)
-            draw_backgrounds();
+            draw_backgrounds_();
 
             for (const auto &actor : m_actors) {
                 actor->draw();
@@ -696,7 +749,7 @@ void Game::draw() const {
             break;
         case GameState::PAUSE:
             // Draw the game world in background
-            draw_backgrounds();
+            draw_backgrounds_();
 
             for (const auto &actor : m_actors) {
                 actor->draw();
@@ -715,7 +768,7 @@ void Game::draw() const {
             break;
         case GameState::GAMEOVER:
             // Draw scrolling backgrounds
-            draw_backgrounds();
+            draw_backgrounds_();
 
             // Draw FUDs (game over message and score)
             if (m_current_scene) {
@@ -731,7 +784,7 @@ void Game::draw() const {
             break;
         case GameState::WIN:
             // Draw scrolling backgrounds
-            draw_backgrounds();
+            draw_backgrounds_();
 
             // Draw FUDs (victory messages)
             if (m_current_scene) {
@@ -782,7 +835,7 @@ void Game::update() {
 
     // Update background scroll for UI screens
     if (m_current_scene &&
-        m_current_scene->get_type() == udjourney::scene::SceneType::UI_SCREEN) {
+        m_current_scene->get_type() == udjourney::scene::SceneType::UiScreen) {
         // Use per-layer auto-scroll settings from scene data
         const auto &layers = m_current_scene->get_background_layers();
         // Check all layers with auto-scroll enabled
@@ -1179,7 +1232,7 @@ void Game::update() {
                                 m_actors.end());
 
                             // Load win screen widgets
-                            load_widgets_from_scene();
+                            create_huds_from_scene();
                             m_rect.y = 0;  // Reset camera
                         }
                     }
@@ -1317,7 +1370,7 @@ void Game::on_notify(const std::string &iEvent) {
                     m_actors.end());
 
                 // Load game over screen widgets
-                load_widgets_from_scene();
+                create_huds_from_scene();
                 m_rect.y = 0;  // Reset camera
             }
         } break;
@@ -1403,30 +1456,55 @@ void Game::create_huds_from_scene() {
         return;
     }
 
-    const auto &hud_list = m_current_scene->get_huds();
+    // Remove previously-created scene widgets to avoid duplicates when
+    // reloading UI scenes
+    m_actors.erase(std::remove_if(m_actors.begin(),
+                                  m_actors.end(),
+                                  [](const std::unique_ptr<IActor> &actor) {
+                                      return actor && actor->get_group_id() ==
+                                                          4;  // Widget group
+                                  }),
+                   m_actors.end());
 
-    for (const auto &hud_data : hud_list) {
+    const auto &ui_list =
+        m_current_scene
+            ->get_huds();  // "UI elements" list (currently named huds)
+
+    for (const auto &ui : ui_list) {
+        // 1) First, try to create a scene HUD overlay (non-actor).
         std::unique_ptr<udjourney::hud::scene::IHUD> hud = nullptr;
 
-        if (hud_data.type_id == "score_display") {
+        if (ui.type_id == "score_display") {
             hud = std::make_unique<udjourney::hud::scene::ScoreDisplayHUD>(
-                hud_data, this);
-        } else if (hud_data.type_id == "heart_health") {
+                ui, this);
+        } else if (ui.type_id == "heart_health") {
             hud = std::make_unique<udjourney::hud::scene::HeartHealthHUD>(
-                hud_data, m_event_dispatcher);
-        } else if (hud_data.type_id == "weapon_display") {
+                ui, m_event_dispatcher);
+        } else if (ui.type_id == "weapon_display") {
             auto weapon_hud =
                 std::make_unique<udjourney::hud::scene::WeaponHUD>(
-                    hud_data, m_event_dispatcher);
+                    ui, m_event_dispatcher);
             weapon_hud->load_projectile_presets("projectiles.json");
             hud = std::move(weapon_hud);
         }
-        // Add more HUD types here as needed
 
         if (hud) {
             m_scene_huds.push_back(std::move(hud));
+            continue;
         }
+
+        // 2) Otherwise, try to create a widget actor (interactive UI).
+        if (auto widget = WidgetFactory::create_from_fud(ui, *this)) {
+            m_actors.push_back(std::move(widget));
+            continue;
+        }
+
+        // 3) Unknown UI element type.
+        udjourney::Logger::warning(
+            "Unknown UI element type_id: % (name: %)", ui.type_id, ui.name);
     }
+
+    m_selected_widget_index = 0;
 }
 
 void Game::create_platforms_from_scene() {
@@ -1703,7 +1781,6 @@ void Game::restart_level() {
     // Respawn monsters from scene
     create_monsters_from_scene();
     // Create HUD objects from scene
-    create_huds_from_scene();
 
     // Reset player position
 
@@ -1724,6 +1801,7 @@ void Game::restart_level() {
         if (auto *health = m_player->get_component<HealthComponent>()) {
             health->heal(health->get_max_health());  // Restore to max health
         }
+        create_huds_from_scene();
     }
 
     // Reset game rect position
@@ -1831,39 +1909,17 @@ void Game::attack_nearby_monsters() {
     }
 }
 
-void Game::load_widgets_from_scene() {
-    if (!m_current_scene) {
-        return;
-    }
-
-    // Extract ALL widget HUD elements
-    const auto &huds = m_current_scene->get_huds();
-    for (const auto &hud : huds) {
-        // Try to create widget using factory (supports all widget types)
-        auto widget = WidgetFactory::create_from_fud(hud, *this);
-        if (widget) {
-            m_actors.push_back(std::move(widget));
-        }
-    }
-
-    m_selected_widget_index = 0;
-}
-
 void Game::register_menu_actions() {
     // Start Game action
     ActionDispatcher::register_action(
         "start_game", [](IGame *game, const std::vector<std::string> &params) {
             std::cout << "[ACTION] Start Game triggered" << std::endl;
-            auto *g = dynamic_cast<Game *>(game);
-            if (g) {
-                // Load level1 scene first
-                std::string level_path =
-                    udjourney::coreutils::get_assets_path("levels/level1.json");
-                if (g->load_scene(level_path)) {
-                    g->m_state = GameState::PLAY;
-                    g->initialize_gameplay();
-                }
-            }
+            auto &g = static_cast<Game &>(*game);
+            // Load level1 scene first
+            std::string level_path =
+                udjourney::coreutils::get_assets_path("levels/level1.json");
+            g.m_state = GameState::PLAY;
+            g.load_and_apply_scene(level_path);
         });
 
     // Load Level action (format: "load_level:level_name")
@@ -1873,17 +1929,14 @@ void Game::register_menu_actions() {
 
             // params[0] is the filename (e.g., "level1.json")
             std::string filename = params[0];
-            std::cout << "[ACTION] Load Level: " << filename << std::endl;
+            Logger::info("[ACTION] Load Level: " + filename);
 
-            auto *g = dynamic_cast<Game *>(game);
-            if (g) {
-                std::string level_path =
-                    udjourney::coreutils::get_assets_path("levels/" + filename);
-                if (g->load_scene(level_path)) {
-                    g->m_state = GameState::PLAY;
-                    g->initialize_gameplay();
-                }
-            }
+            auto &g = static_cast<Game &>(*game);
+
+            std::string level_path =
+                udjourney::coreutils::get_assets_path("levels/" + filename);
+            g.m_state = GameState::PLAY;
+            g.load_and_apply_scene(level_path);
         });
 
     // Show Level Select action
@@ -1892,30 +1945,25 @@ void Game::register_menu_actions() {
         [](IGame *game, const std::vector<std::string> &params) {
             std::cout << "[ACTION] ===== Show Level Select triggered ====="
                       << std::endl;
-            auto *g = dynamic_cast<Game *>(game);
-            if (g) {
+            auto *captured_game = static_cast<Game *>(game);
+            if (captured_game) {
                 std::string level_select_path =
                     udjourney::coreutils::get_assets_path(
                         "levels/level_select_screen.json");
 
-                // Clean up ALL actors first (including old widgets)
-                g->m_player.reset();
-                g->m_hud_manager.clear_background_huds();
-                g->m_actors.clear();
-
                 // Now load the new scene
-                if (g->load_scene(level_select_path)) {
-                    g->m_state = GameState::TITLE;
+                if (captured_game->load_scene(level_select_path)) {
+                    captured_game->m_state = GameState::TITLE;
 
                     // Load level select screen widgets
-                    g->load_widgets_from_scene();
+                    // captured_game->load_widgets_from_scene();
 
                     // Set focus to the ScrollableListWidget (should be the
                     // first selectable widget) Find the index of the
                     // ScrollableListWidget in the selectable widgets
                     std::vector<IWidget *> selectable_widgets;
                     int list_index = -1;
-                    for (const auto &actor : g->m_actors) {
+                    for (const auto &actor : captured_game->m_actors) {
                         if (actor && actor->get_group_id() == 4) {
                             IWidget *widget =
                                 static_cast<IWidget *>(actor.get());
@@ -1931,16 +1979,17 @@ void Game::register_menu_actions() {
                     }
 
                     // Focus the list widget (or default to 0 if not found)
-                    g->m_selected_widget_index =
+                    captured_game->m_selected_widget_index =
                         (list_index >= 0) ? list_index : 0;
 
                     // Reset frame counter to prevent immediate input
-                    g->m_frames_since_scene_load = 0;
+                    captured_game->m_frames_since_scene_load = 0;
 
-                    std::cout << "[ACTION] Level select screen loaded with "
-                              << g->m_actors.size()
-                              << " actors, focus on widget "
-                              << g->m_selected_widget_index << std::endl;
+                    Logger::info(
+                        "[ACTION] Level select screen loaded with " +
+                        std::to_string(captured_game->m_actors.size()) +
+                        " actors, focus on widget " +
+                        std::to_string(captured_game->m_selected_widget_index));
                 }
             }
         });
@@ -1948,7 +1997,7 @@ void Game::register_menu_actions() {
     // Quit Game action
     ActionDispatcher::register_action(
         "quit_game", [](IGame *game, const std::vector<std::string> &params) {
-            std::cout << "[ACTION] Quit Game triggered" << std::endl;
+            Logger::info("[ACTION] Quit Game triggered");
 #ifndef PLATFORM_DREAMCAST
             CloseWindow();
 #endif
@@ -1958,36 +2007,19 @@ void Game::register_menu_actions() {
     ActionDispatcher::register_action(
         "show_options",
         [](IGame *game, const std::vector<std::string> &params) {
-            std::cout << "[ACTION] Show Options triggered (not implemented)"
-                      << std::endl;
+            Logger::info("[ACTION] Show Options triggered (not implemented)");
         });
 
     // Return to Title action
     ActionDispatcher::register_action(
         "return_to_title",
         [](IGame *game, const std::vector<std::string> &params) {
-            std::cout << "[ACTION] Return to Title triggered" << std::endl;
-            auto *g = dynamic_cast<Game *>(game);
-            if (g) {
-                std::string title_path = udjourney::coreutils::get_assets_path(
-                    "levels/title_screen.json");
-                if (g->load_scene(title_path)) {
-                    g->m_state = GameState::TITLE;
-
-                    // Clean up gameplay objects
-                    g->m_player.reset();
-                    g->m_hud_manager.clear_background_huds();
-
-                    // Remove ALL actors (including old widgets)
-                    g->m_actors.clear();
-
-                    // Load title screen widgets
-                    g->load_widgets_from_scene();
-                    g->m_rect.y = 0;                   // Reset camera
-                    g->m_selected_widget_index = 0;    // Reset widget selection
-                    g->m_frames_since_scene_load = 0;  // Reset frame counter
-                }
-            }
+            Logger::info("[ACTION] Return to Title triggered");
+            auto &g = static_cast<Game &>(*game);
+            std::string title_path = udjourney::coreutils::get_assets_path(
+                "levels/title_screen.json");
+            g.m_state = GameState::TITLE;
+            g.load_and_apply_scene(title_path);
         });
 }
 
