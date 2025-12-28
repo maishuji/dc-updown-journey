@@ -53,6 +53,18 @@ class EventDispatcher {
         }
     }
 
+    /**
+     * @brief Clears all handlers for a specific event type.
+     */
+    void clear_handlers(const std::string& event_type) {
+        handlers.erase(event_type);
+    }
+
+    /**
+     * @brief Clears all registered handlers for all event types.
+     */
+    void clear_all_handlers() { handlers.clear(); }
+
  private:
     std::unordered_map<std::string, std::vector<EventHandler>> handlers;
 };

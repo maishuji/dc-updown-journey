@@ -31,6 +31,8 @@
 #include "udjourney/ScoreHistory.hpp"
 #include <udj-core/Logger.hpp>
 #include "udjourney/core/events/ScoreEvent.hpp"
+#include "udjourney/core/events/WeaponSelectedEvent.hpp"
+#include "udjourney/core/events/HealthChangedEvent.hpp"
 #include "udjourney/hud/DialogBoxHUD.hpp"
 #include "udjourney/hud/HUDComponent.hpp"
 #include "udjourney/ActionDispatcher.hpp"
@@ -425,6 +427,7 @@ void Game::process_input() {
  * If no scene is loaded, logs an error message.
  */
 void Game::apply_current_scene(SceneApplyMode mode) {
+    m_event_dispatcher.clear_all_handlers();
     if (!m_current_scene) {
         udj::core::Logger::error("No current scene to apply!");
         return;
@@ -1202,7 +1205,15 @@ bool Game::load_scene(const std::string &filename) {
 }
 
 void Game::create_huds_from_scene() {
+    // Important: Clear scene HUDs FIRST to destroy objects while scene is still
+    // valid
     m_scene_huds.clear();
+
+    // Then clear event handlers to prevent dangling callbacks
+    m_event_dispatcher.clear_handlers(
+        udjourney::core::events::WeaponSelectedEvent::TYPE);
+    m_event_dispatcher.clear_handlers(
+        udjourney::core::events::HealthChangedEvent::TYPE);
 
     if (!m_current_scene) {
         return;
