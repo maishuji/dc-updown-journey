@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "udjourney/ScoreHistory.hpp"
@@ -19,6 +20,7 @@
 #include "udjourney/managers/BonusManager.hpp"
 #include "udjourney/managers/BackgroundManager.hpp"
 #include "udjourney/managers/HUDManager.hpp"
+#include "udjourney/render/IStateRenderer.hpp"
 #include "udjourney/scene/Scene.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/WorldBounds.hpp"
@@ -27,6 +29,10 @@
 namespace udjourney {
 
 enum class GameState : uint8_t { TITLE, PLAY, PAUSE, GAMEOVER, WIN };
+
+struct DashHud {
+    int16_t dashable = 1;
+};
 
 class Game : public IGame, public IObserver {
  public:
@@ -47,6 +53,20 @@ class Game : public IGame, public IObserver {
 
     // Score access for HUDs
     [[nodiscard]] int get_score() const { return m_score; }
+
+    // Public accessors for state renderers
+    const std::vector<std::unique_ptr<IActor>> &get_actors() const {
+        return m_actors;
+    }
+    const udjourney::scene::Scene *get_current_scene() const {
+        return m_current_scene.get();
+    }
+    float get_level_height() const { return m_level_height; }
+    const struct DashHud &get_dash_hud() const;
+
+    // Public draw helpers for renderers
+    void draw_backgrounds() const { draw_backgrounds_(); }
+    void draw_huds() const { draw_huds_(); }
 
     // Scene management
     bool load_scene(const std::string &filename);
@@ -78,6 +98,7 @@ class Game : public IGame, public IObserver {
     void create_huds_from_scene();
     void register_menu_actions();
     void initialize_gameplay();
+    void init_state_renderers_();
 
     std::unique_ptr<Player> m_player;  // Player is now a member
     std::vector<std::unique_ptr<IActor>> m_pending_actors;
@@ -105,5 +126,9 @@ class Game : public IGame, public IObserver {
         0;  // Prevent immediate input after scene transition
     std::vector<std::unique_ptr<udjourney::hud::scene::IHUD>>
         m_scene_huds;  // Scene-based HUD elements
+
+    // State-specific renderers
+    std::unordered_map<GameState, std::unique_ptr<IStateRenderer>>
+        m_state_renderers;
 };
 }  // namespace udjourney

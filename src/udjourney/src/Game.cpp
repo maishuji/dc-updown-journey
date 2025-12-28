@@ -39,6 +39,7 @@
 #include "udjourney/factories/PlatformFactory.hpp"
 #include "udjourney/factories/UiFactory.hpp"
 #include "udjourney/hud/LevelSelectHUD.hpp"
+#include "udjourney/render/StateRenderers.hpp"
 #include "udjourney/hud/scene/ScoreDisplayHUD.hpp"
 #include "udjourney/hud/scene/HeartHealthHUD.hpp"
 #include "udjourney/hud/scene/WeaponHUD.hpp"
@@ -120,9 +121,8 @@ const double kUpdateInterval = 0.0001;
 bool is_running = true;
 // player is now a member of Game class, not a global
 
-struct DashHud {
-    int16_t dashable = 1;
-} dash_hud;
+// Local helper functions at file scope (no namespace)
+DashHud dash_hud;
 
 std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
     std::vector<std::unique_ptr<IActor>> res;
@@ -229,6 +229,9 @@ Game::Game(int iWidth, int iHeight) : IGame() {
 
     // Register menu action callbacks
     register_menu_actions();
+
+    // Initialize state renderers
+    init_state_renderers_();
 
     // Load title screen scene
     if (!load_scene(udjourney::coreutils::get_assets_path(
@@ -470,12 +473,7 @@ bool Game::load_and_apply_scene(const std::string &filename) {
     return true;
 }
 
-void draw_pause_() {
-    DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
-    DrawText("Press START to resume\n", 300, 40, 20, WHITE);
-    DrawText("Press L to load level\n", 300, 70, 20, WHITE);
-    DrawText("Press B button to quit\n", 300, 100, 20, RED);
-}
+// Removed: draw_pause_() moved to PauseStateRenderer
 
 void Game::draw_finish_line_() const {
     if (!m_current_scene || m_level_height <= 0) {
@@ -569,12 +567,11 @@ void Game::draw() const {
     BeginDrawing();
     ClearBackground(SKYBLUE);  // Clear the background with a blue sky color
 
-    // Calculate scale factor
+    // Calculate viewport transform
     float scale_x = GetScreenWidth() / static_cast<float>(kBaseWidth);
     float scale_y = GetScreenHeight() / static_cast<float>(kBaseHeight);
     float scale = std::min(scale_x, scale_y);  // Uniform scaling
 
-    // Center the scene if window is not proportional
     float offset_x = (GetScreenWidth() - kBaseWidth * scale) * 0.5F;
     float offset_y = (GetScreenHeight() - kBaseHeight * scale) * 0.5F;
 
@@ -582,95 +579,13 @@ void Game::draw() const {
     rlTranslatef(offset_x, offset_y, 0);
     rlScalef(scale, scale, 1.0F);
 
-    // Draw the rectangle
-    std::stringstream str_stream;
-
-    switch (m_state) {
-        case GameState::TITLE:
-            // Draw scrolling backgrounds
-            draw_backgrounds_();
-
-            // Draw widgets (menu buttons)
-            for (const auto &actor : m_actors) {
-                if (actor->get_group_id() == 4) {  // Widget group ID
-                    actor->draw();
-                }
-            }
-            break;
-        case GameState::PLAY: {
-            // Draw backgrounds first (behind everything)
-            draw_backgrounds_();
-
-            for (const auto &actor : m_actors) {
-                actor->draw();
-            }
-            m_player->draw();
-
-            // Draw finish line for level-based gameplay
-            if (m_current_scene && m_level_height > 0) {
-                draw_finish_line_();
-            }
-        }
-
-            // Draw dash status
-            DrawCircle(static_cast<int>(get_rectangle().width) - 50,
-                       45,
-                       17,
-                       dash_hud.dashable == 1 ? GREEN : RED);
-
-            break;
-        case GameState::PAUSE:
-            // Draw the game world in background
-            draw_backgrounds_();
-
-            for (const auto &actor : m_actors) {
-                actor->draw();
-            }
-            if (m_player) {
-                m_player->draw();
-            }
-
-            // Draw finish line for level-based gameplay
-            if (m_current_scene && m_level_height > 0) {
-                draw_finish_line_();
-            }
-
-            // Draw pause overlay on top
-            draw_pause_();
-            break;
-        case GameState::GAMEOVER:
-            // Draw scrolling backgrounds
-            draw_backgrounds_();
-
-            // Draw FUDs (game over message and score)
-            if (m_current_scene) {
-                draw_huds_();
-            }
-
-            // Draw widgets (menu buttons)
-            for (const auto &actor : m_actors) {
-                if (actor->get_group_id() == 4) {  // Widget group ID
-                    actor->draw();
-                }
-            }
-            break;
-        case GameState::WIN:
-            // Draw scrolling backgrounds
-            draw_backgrounds_();
-
-            // Draw FUDs (victory messages)
-            if (m_current_scene) {
-                draw_huds_();
-            }
-
-            // Draw widgets (menu buttons)
-            for (const auto &actor : m_actors) {
-                if (actor->get_group_id() == 4) {  // Widget group ID
-                    actor->draw();
-                }
-            }
-            break;
+    // Delegate rendering to current state renderer
+    auto it = m_state_renderers.find(m_state);
+    if (it != m_state_renderers.end()) {
+        it->second->render(*this);
     }
+
+    // Always draw HUD manager on top
     m_hud_manager.draw();
 
     // Draw FUDs (Fixed UI Displays) from current scene
@@ -1236,8 +1151,24 @@ void Game::on_checkpoint_reached(float x, float y) const {
 
 Player *Game::get_player() const { return m_player.get(); }
 
+const DashHud &Game::get_dash_hud() const { return dash_hud; }
+
+void Game::init_state_renderers_() {
+    m_state_renderers[GameState::TITLE] = std::make_unique<UiScreenRenderer>();
+    m_state_renderers[GameState::PLAY] = std::make_unique<PlayStateRenderer>();
+    m_state_renderers[GameState::PAUSE] =
+        std::make_unique<PauseStateRenderer>();
+    m_state_renderers[GameState::GAMEOVER] =
+        std::make_unique<UiScreenRenderer>();
+    m_state_renderers[GameState::WIN] = std::make_unique<UiScreenRenderer>();
+}
+
 // Scene system implementations
 bool Game::load_scene(const std::string &filename) {
+    // Clear background manager before destroying old scene to avoid dangling
+    // pointers
+    m_background_manager.clear();
+
     m_current_scene = std::make_unique<udjourney::scene::Scene>();
     if (!m_current_scene->load_from_file(filename)) {
         m_current_scene.reset();
