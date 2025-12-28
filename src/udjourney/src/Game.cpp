@@ -443,6 +443,7 @@ void Game::apply_current_scene(SceneApplyMode mode) {
     m_rect.y = 0;                 // Reset camera
     m_selected_widget_index = 0;  // Reset widget selection
     m_frames_since_scene_load = 0;
+    m_background_manager.reset_ui_scroll();
     m_scene_huds.clear();
     m_actors.clear();
     m_pending_actors.clear();
@@ -545,145 +546,14 @@ void Game::draw_backgrounds_() const {
         return;
     }
 
-    const auto &layers = m_current_scene->get_background_layers();
-    if (layers.empty()) {
-        return;
-    }
-
-    // Get camera position for parallax effect
-    // Only vertical scrolling in this game - horizontal camera is fixed at 0
-    // For UI screens (TITLE, GAMEOVER, WIN), use scrolling background offset
-    // For gameplay, use m_rect.y for vertical scroll offset
-    float scroll_y =
+    const bool use_ui_scroll =
         (m_state == GameState::TITLE || m_state == GameState::GAMEOVER ||
-         m_state == GameState::WIN)
-            ? m_ui_background_scroll_y
-            : m_rect.y;
-    Vector2 camera_pos = {0, scroll_y};
+         m_state == GameState::WIN);
 
-    // Sort layers by depth (lower depth = further back)
-    std::vector<const udjourney::scene::BackgroundLayerData *> sorted_layers;
-    for (const auto &layer : layers) {
-        sorted_layers.push_back(&layer);
-    }
-    std::sort(sorted_layers.begin(),
-              sorted_layers.end(),
-              [](const auto *a, const auto *b) { return a->depth < b->depth; });
-
-    // Draw each layer
-    for (const auto *layer : sorted_layers) {
-        // Calculate parallax offset
-        // parallax_factor 0.0 = follows camera fully (moves with scene)
-        // parallax_factor 1.0 = static (doesn't move, stays fixed on screen)
-        float parallax_offset_x =
-            camera_pos.x * (1.0f - layer->parallax_factor);
-        float parallax_offset_y =
-            camera_pos.y * (1.0f - layer->parallax_factor);
-
-        // Note: texture_file at layer level is not used for rendering
-        // Background rendering is done through objects in the layer
-
-        // Draw background objects in this layer
-        for (const auto &obj : layer->objects) {
-            // Load sprite sheet texture if not cached
-            if (!obj.sprite_sheet.empty()) {
-                if (m_background_textures.find(obj.sprite_sheet) ==
-                    m_background_textures.end()) {
-                    std::string texture_path =
-                        std::string(ASSETS_BASE_PATH) + obj.sprite_sheet;
-                    Texture2D tex = LoadTexture(texture_path.c_str());
-                    if (tex.id > 0) {
-                        m_background_textures[obj.sprite_sheet] = tex;
-                        udj::core::Logger::info(
-                            "Loaded background sprite sheet: %", texture_path);
-                    } else {
-                        udj::core::Logger::error(
-                            "Failed to load background sprite sheet: %",
-                            texture_path);
-                    }
-                }
-
-                if (m_background_textures[obj.sprite_sheet].id > 0) {
-                    const auto &tex = m_background_textures[obj.sprite_sheet];
-
-                    // Calculate tile source rectangle (UV coordinates)
-                    Rectangle source = {
-                        static_cast<float>(obj.tile_col * obj.tile_size),
-                        static_cast<float>(obj.tile_row * obj.tile_size),
-                        static_cast<float>(obj.tile_size),
-                        static_cast<float>(obj.tile_size)};
-
-                    // Convert world coordinates to screen coordinates with
-                    // parallax Object positions are in world coordinates,
-                    // subtract game scroll with parallax factor
-                    // Background is centered: x=320 in background = screen
-                    // center
-                    constexpr float BG_CENTER_OFFSET = 320.0f;
-                    float screen_x =
-                        obj.x - parallax_offset_x - BG_CENTER_OFFSET;
-
-                    float screen_y;
-                    // For UI screens with auto-scroll enabled, apply scroll to
-                    // objects
-                    if (m_current_scene->get_type() ==
-                            udjourney::scene::SceneType::UiScreen &&
-                        layer->auto_scroll_enabled) {
-                        // Apply scroll offset to objects for auto-scrolling
-                        // layers
-                        float base_y = obj.y - m_ui_background_scroll_y;
-
-                        // If repeat is enabled, wrap the objects vertically
-                        if (layer->repeat) {
-                            // Calculate wrap height based on object positions
-                            // in the layer Use 1280.0f as the wrap boundary
-                            // (screen height * 2)
-                            float wrap_height = 1280.0f;
-
-                            // Wrap: when object goes off bottom (base_y >
-                            // screen_height), bring it back to top (base_y -
-                            // wrap_height)
-                            screen_y = fmod(base_y, wrap_height);
-                            if (screen_y < -128.0f) {
-                                screen_y += wrap_height;
-                            }
-
-                            // Draw a second copy for seamless wrapping
-                            Rectangle dest_wrap = {
-                                screen_x,
-                                screen_y - wrap_height,
-                                static_cast<float>(obj.tile_size * obj.scale),
-                                static_cast<float>(obj.tile_size * obj.scale)};
-                            DrawTexturePro(tex,
-                                           source,
-                                           dest_wrap,
-                                           {0, 0},
-                                           obj.rotation,
-                                           WHITE);
-                        } else {
-                            screen_y = base_y;
-                        }
-                    } else if (m_current_scene->get_type() ==
-                               udjourney::scene::SceneType::UiScreen) {
-                        // Static UI screen objects (no auto-scroll)
-                        screen_y = obj.y;
-                    } else {
-                        // Gameplay levels: apply parallax for scrolling
-                        screen_y = obj.y - parallax_offset_y;
-                    }
-
-                    // Calculate destination rectangle with scale
-                    float scaled_size = obj.tile_size * obj.scale;
-                    Rectangle dest = {
-                        screen_x, screen_y, scaled_size, scaled_size};
-
-                    // Draw the sprite tile
-                    Vector2 origin = {0, 0};
-                    DrawTexturePro(
-                        tex, source, dest, origin, obj.rotation, WHITE);
-                }
-            }
-        }
-    }
+    m_background_manager.draw(m_rect.y,
+                              use_ui_scroll,
+                              static_cast<float>(kBaseWidth),
+                              static_cast<float>(kBaseHeight));
 }
 
 void Game::draw_huds_() const {
@@ -837,63 +707,8 @@ void Game::update() {
     // Update background scroll for UI screens
     if (m_current_scene &&
         m_current_scene->get_type() == udjourney::scene::SceneType::UiScreen) {
-        // Use per-layer auto-scroll settings from scene data
-        const auto &layers = m_current_scene->get_background_layers();
-        // Check all layers with auto-scroll enabled
-        float default_scroll_speed = 0.0f;
-        float max_scroll_limit = 0.0f;
-        bool should_clamp = false;
-
-        for (const auto &layer : layers) {
-            if (layer.auto_scroll_enabled) {
-                // Use first non-zero scroll speed found
-                if (default_scroll_speed == 0.0f &&
-                    layer.scroll_speed_y != 0.0f) {
-                    default_scroll_speed = layer.scroll_speed_y;
-                }
-
-                // Check if we should clamp scrolling for layers without repeat
-                if (!layer.repeat && !layer.objects.empty()) {
-                    should_clamp = true;
-                    // Calculate max Y position from objects in this layer
-                    // The layer stops when bottom of layer reaches bottom of
-                    // screen
-                    float max_y = 0.0f;
-                    for (const auto &obj : layer.objects) {
-                        float obj_bottom = obj.y + (obj.tile_size * obj.scale);
-                        max_y = std::max(max_y, obj_bottom);
-                    }
-                    // Scroll stops when bottom of content reaches bottom of
-                    // screen (kBaseHeight)
-                    if (max_y > static_cast<float>(kBaseHeight)) {
-                        float scroll_limit =
-                            max_y - static_cast<float>(kBaseHeight);
-                        max_scroll_limit =
-                            std::max(max_scroll_limit, scroll_limit);
-                    }
-                }
-            }
-        }
-
-        // If no explicit scroll speed, use default for backward compatibility
-        if (default_scroll_speed == 0.0f) {
-            // Check if any layer has auto-scroll enabled (legacy mode)
-            for (const auto &layer : layers) {
-                if (layer.auto_scroll_enabled) {
-                    default_scroll_speed = 30.0f;
-                    break;
-                }
-            }
-        }
-
-        // Update scroll position
-        m_ui_background_scroll_y += default_scroll_speed * GetFrameTime();
-
-        // Clamp to calculated scroll limit
-        if (should_clamp && max_scroll_limit > 0.0f) {
-            m_ui_background_scroll_y =
-                std::min(m_ui_background_scroll_y, max_scroll_limit);
-        }
+        m_background_manager.update_ui_scroll(GetFrameTime(),
+                                              static_cast<float>(kBaseHeight));
     }
 
     // Widget input handling for TITLE, WIN, and GAMEOVER states
@@ -1425,8 +1240,12 @@ bool Game::load_scene(const std::string &filename) {
     m_current_scene = std::make_unique<udjourney::scene::Scene>();
     if (!m_current_scene->load_from_file(filename)) {
         m_current_scene.reset();
+        m_background_manager.clear();
         return false;
     }
+
+    // Bind background system to the new scene (sort layers + preload textures)
+    m_background_manager.set_scene(*m_current_scene);
 
     // Update world bounds based on scene content
     // Calculate scene bounds by finding the rightmost and bottommost platforms

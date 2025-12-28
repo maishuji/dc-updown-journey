@@ -33,6 +33,7 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/features/CheckpointFeature.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scene/Scene.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/TextureManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/BackgroundManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/HUDManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/BonusManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/DialogBoxHUD.cpp

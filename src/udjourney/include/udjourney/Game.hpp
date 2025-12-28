@@ -17,6 +17,7 @@
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/interfaces/IObserver.hpp"
 #include "udjourney/managers/BonusManager.hpp"
+#include "udjourney/managers/BackgroundManager.hpp"
 #include "udjourney/managers/HUDManager.hpp"
 #include "udjourney/scene/Scene.hpp"
 #include "udjourney/Player.hpp"
@@ -90,6 +91,7 @@ class Game : public IGame, public IObserver {
     ScoreHistory<int64_t> m_score_history;
     int m_score = 0;
     HUDManager m_hud_manager;
+    BackgroundManager m_background_manager;
     udjourney::core::events::EventDispatcher m_event_dispatcher;
     std::unique_ptr<udjourney::scene::Scene> m_current_scene;
     float m_level_height = 0.0f;  // Track level height for win condition
@@ -97,12 +99,8 @@ class Game : public IGame, public IObserver {
     bool m_showing_level_select = false;  // Track if level select menu is shown
     udjourney::WorldBounds m_world_bounds;  // World boundary management
     mutable std::map<std::string, Texture2D>
-        m_background_textures;  // Cache for background textures
-    mutable std::map<std::string, Texture2D>
         m_hud_textures;               // Cache for HUD textures
     int m_selected_widget_index = 0;  // Currently focused widget
-    float m_ui_background_scroll_y =
-        0.0f;  // Scroll offset for UI screen backgrounds
     int m_frames_since_scene_load =
         0;  // Prevent immediate input after scene transition
     std::vector<std::unique_ptr<udjourney::hud::scene::IHUD>>
