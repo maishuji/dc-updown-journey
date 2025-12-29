@@ -1,0 +1,40 @@
+{
+  "menus": {
+    "game_menu": {
+      "title": "GAME MENU",
+      "rect": {
+        "x": 130,
+        "y": 100,
+        "width": 380,
+        "height": 350
+      },
+      "items": [
+        {
+          "label": "Resume",
+          "command": "resume_game",
+          "params": []
+        },
+        {
+          "label": "Restart Level",
+          "command": "restart_level",
+          "params": []
+        },
+        {
+          "label": "Level Select",
+          "command": "show_level_select2",
+          "params": []
+        },
+        {
+          "label": "Return to Title",
+          "command": "return_to_title",
+          "params": []
+        },
+        {
+          "label": "Quit",
+          "command": "quit_game",
+          "params": []
+        }
+      ]
+    }
+  }
+}

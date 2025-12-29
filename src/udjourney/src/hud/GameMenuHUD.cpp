@@ -124,9 +124,11 @@ void GameMenuHUD::execute_action(const MenuItem& item) {
 
     ActionDispatcher::execute(action_string, &m_game);
 
-    // Close menu after action execution (unless it's resume which will close
-    // anyway)
-    if (m_on_menu_closed && item.action != "resume_game") {
+    // Close menu after action execution
+    // Don't close for actions that show another menu on top (level select)
+    // or handle closing themselves (resume)
+    if (m_on_menu_closed && item.action != "resume_game" &&
+        item.action != "show_level_select2") {
         m_on_menu_closed();
     }
 }

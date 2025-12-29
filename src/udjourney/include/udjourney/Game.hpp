@@ -21,6 +21,7 @@
 #include "udjourney/managers/BackgroundManager.hpp"
 #include "udjourney/managers/HUDManager.hpp"
 #include "udjourney/managers/LevelSelectManager.hpp"
+#include "udjourney/managers/MenuManager.hpp"
 #include "udjourney/render/IStateRenderer.hpp"
 #include "udjourney/scene/Scene.hpp"
 #include "udjourney/Player.hpp"
@@ -128,8 +129,9 @@ class Game : public IGame, public IObserver {
     float m_level_height = 0.0f;  // Track level height for win condition
     mutable Vector2 m_last_checkpoint{320, 240};  // Last checkpoint position
     udjourney::managers::LevelSelectManager m_level_select_manager{
-        *this};                             // Level selection manager
-    bool m_showing_game_menu = false;       // Track if game menu is shown
+        *this};  // Level selection manager
+    udjourney::managers::MenuManager m_menu_manager{
+        *this};                             // Game menu manager
     udjourney::WorldBounds m_world_bounds;  // World boundary management
     mutable std::map<std::string, Texture2D>
         m_hud_textures;               // Cache for HUD textures

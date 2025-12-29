@@ -253,6 +253,9 @@ void Game::run() {
                static_cast<int>(m_rect.height),
                "Up-Down Journey");
 
+    // Load menu configuration
+    m_menu_manager.load_config("menu_config.json");
+
     // Only initialize gameplay if not in TITLE state
     if (m_state != GameState::TITLE) {
         // Spawn player at scene-defined location or default position
@@ -355,7 +358,7 @@ void Game::process_input() {
             show_game_menu();  // Show menu instead of just pausing
         } else if (m_state == GameState::PAUSE &&
                    !m_level_select_manager.is_showing() &&
-                   !m_showing_game_menu) {
+                   !m_menu_manager.is_showing()) {
             m_state = GameState::PLAY;
         }
     }
@@ -1372,6 +1375,7 @@ void Game::on_level_selected(const std::string &level_path) {
     // Load the selected level
     if (load_scene(level_path)) {
         // Successfully loaded new level - restart with new level
+        hide_game_menu();
         restart_level();
         std::cout << "Loaded level: " << level_path << std::endl;
     } else {
@@ -1387,51 +1391,19 @@ void Game::on_level_select_cancelled() {
 }
 
 void Game::show_game_menu() {
-    if (m_showing_game_menu) return;
+    if (m_menu_manager.is_showing()) return;
 
-    m_showing_game_menu = true;
     m_state = GameState::PAUSE;
 
-    // Get menu data from current scene, or use defaults
-    Rectangle menu_rect = {160, 100, 320, 280};  // Default centered rect
-    std::vector<MenuItem> items;
-    std::string title = "GAME MENU";
-
-    if (m_current_scene && m_current_scene->has_game_menu()) {
-        const auto &menu_data = m_current_scene->get_game_menu();
-        menu_rect = menu_data.rect;
-        title = menu_data.title;
-
-        // Convert scene menu items to MenuItem format
-        for (const auto &item_data : menu_data.items) {
-            items.push_back(
-                {item_data.label, item_data.action, item_data.params});
-        }
-
-        Logger::info("Loaded game menu from scene with % items", items.size());
-    } else {
-        // Fallback to default menu items if no menu defined in scene
-        items = {{"Resume", "resume_game", {}},
-                 {"Restart Level", "restart_level", {}},
-                 {"Level Select", "show_level_select", {}},
-                 {"Return to Title", "return_to_title", {}},
-                 {"Quit", "quit_game", {}}};
-        Logger::info("Using default game menu");
-    }
-
-    auto game_menu = std::make_unique<GameMenuHUD>(*this, menu_rect, title);
-    game_menu->load_menu_items(items);
-    game_menu->set_on_menu_closed([this]() { hide_game_menu(); });
-
-    m_hud_manager.push_foreground_hud(std::unique_ptr<HUDComponent>(
-        static_cast<HUDComponent *>(game_menu.release())));
+    m_menu_manager.show_game_menu(m_current_scene.get(),
+                                  [this]() { hide_game_menu(); });
 }
 
 void Game::hide_game_menu() {
-    if (!m_showing_game_menu) return;
+    if (!m_menu_manager.is_showing()) return;
 
-    m_showing_game_menu = false;
-    m_hud_manager.pop_foreground_hud();
+    m_menu_manager.hide_game_menu();
+
     // Only resume gameplay if we're still paused.
     // Menu actions may have transitioned the game to a different UI state
     // (e.g., TITLE/LEVEL_SELECT), and we must not overwrite that here.
@@ -1566,6 +1538,15 @@ void Game::register_menu_actions() {
             }
         });
 
+    // Show Level Select action
+    ActionDispatcher::register_action(
+        "show_level_select2",
+        [](IGame *game, const std::vector<std::string> &params) {
+            auto &captured_game = static_cast<Game &>(*game);
+            // Don't hide the game menu, just show level select on top
+            captured_game.show_level_select_menu();
+        });
+
     // Quit Game action
     ActionDispatcher::register_action(
         "quit_game", [](IGame *game, const std::vector<std::string> &params) {
@@ -1614,6 +1595,7 @@ void Game::register_menu_actions() {
 }
 
 void Game::initialize_gameplay() {
+    hide_game_menu();
     // Remove all widgets from m_actors
     m_actors.erase(std::remove_if(m_actors.begin(),
                                   m_actors.end(),
