@@ -21,15 +21,16 @@
 
 #include "udjourney/widgets/ScrollableListWidget.hpp"
 
-#include "udjourney/Bonus.hpp"
 #include <udj-core/CoreUtils.hpp>
+#include <udj-core/Logger.hpp>
+
+#include "udjourney/Bonus.hpp"
 #include "udjourney/Monster.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/Projectile.hpp"
 #include "udjourney/AnimSpriteController.hpp"
 #include "udjourney/SpriteAnim.hpp"
 #include "udjourney/ScoreHistory.hpp"
-#include <udj-core/Logger.hpp>
 #include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/core/events/WeaponSelectedEvent.hpp"
 #include "udjourney/core/events/HealthChangedEvent.hpp"
@@ -38,6 +39,7 @@
 #include "udjourney/ActionDispatcher.hpp"
 #include "udjourney/widgets/IWidget.hpp"
 #include "udjourney/widgets/WidgetFactory.hpp"
+#include "udjourney/factories/ActorFactory.hpp"
 #include "udjourney/factories/PlatformFactory.hpp"
 #include "udjourney/factories/UiFactory.hpp"
 #include "udjourney/hud/LevelSelectHUD.hpp"
@@ -1278,99 +1280,31 @@ void Game::create_monsters_from_scene() {
         return;  // No scene loaded, no monsters to spawn
     }
 
-    const auto &monster_spawns = m_current_scene->get_monster_spawns();
+    const auto &monster_spawn_data = m_current_scene->get_monster_spawns();
+    MonsterFactory factory(*this, m_event_dispatcher);
 
-    for (const auto &monster_data : monster_spawns) {
+    for (const auto &monster_data : monster_spawn_data) {
         try {
-            std::cout << "DEBUG: Creating monster with preset: "
-                      << monster_data.preset_name << std::endl;
+            // Use MonsterFactory to create the monster
+            auto monster = factory.create_actor_from_monster_data(monster_data);
 
-            // Convert tile coordinates to world coordinates
-            Vector2 world_pos = udjourney::scene::Scene::tile_to_world_pos(
-                monster_data.tile_x, monster_data.tile_y);
-
-            Rectangle monster_rect = {
-                world_pos.x,
-                world_pos.y,
-                64.0f,  // Monster width
-                64.0f   // Monster height
-            };
-
-            // First load the monster preset to get animation configuration
-            std::unique_ptr<udjourney::MonsterPreset> preset;
-            if (!monster_data.preset_name.empty()) {
-                preset = udjourney::MonsterPresetLoader::load_preset(
-                    monster_data.preset_name + ".json");
+            // Register the monster as an observable with the game
+            if (auto *monster_ptr = dynamic_cast<Monster *>(monster.get())) {
+                monster_ptr->add_observer(static_cast<IObserver *>(this));
             }
-
-            // Get animation preset file from the monster preset
-            std::string animation_file =
-                "monster_animations.json";  // Default fallback
-            if (preset && !preset->animation_preset_file.empty()) {
-                animation_file = preset->animation_preset_file;
-            }
-
-            // Load monster animation configuration from the preset
-            std::string anim_preset_path =
-                std::string(ASSETS_BASE_PATH) + "animations/" + animation_file;
-            if (!udjourney::coreutils::file_exists(anim_preset_path)) {
-                throw std::runtime_error(
-                    "Monster animation config file not found: " +
-                    anim_preset_path);
-            }
-
-            AnimSpriteController monster_anim_controller =
-                udjourney::loaders::AnimationConfigLoader::load_and_create(
-                    anim_preset_path);
-
-            std::cout << "DEBUG: Creating monster..." << std::endl;
-
-            // Create monster with EventDispatcher
-            auto monster =
-                std::make_unique<Monster>(*this,
-                                          monster_rect,
-                                          std::move(monster_anim_controller),
-                                          m_event_dispatcher);
-
-            std::cout << "DEBUG: Monster created successfully!" << std::endl;
-
-            // Load preset if specified (this will apply all preset data)
-            if (!monster_data.preset_name.empty()) {
-                monster->load_preset(monster_data.preset_name);
-            }
-
-            // Configure monster behavior ranges
-            float patrol_min = world_pos.x - (monster_data.patrol_range / 2.0f);
-            float patrol_max = world_pos.x + (monster_data.patrol_range / 2.0f);
-            monster->set_patrol_range(patrol_min, patrol_max);
-            monster->set_chase_range(monster_data.chase_range);
-            monster->set_attack_range(monster_data.attack_range);
-
-            udjourney::Logger::info(
-                "Spawned monster at tile (%, %), world pos (%, %)",
-                monster_data.tile_x,
-                monster_data.tile_y,
-                world_pos.x,
-                world_pos.y);
-
-            // Register the monster as an observable with the game (like Player
-            // and BonusManager)
-            monster->add_observer(static_cast<IObserver *>(this));
 
             m_actors.emplace_back(std::move(monster));
         } catch (const std::exception &e) {
-            std::cerr << "ERROR: Failed to create monster: " << e.what()
-                      << std::endl;
+            Logger::error("Failed to create monster: " + std::string(e.what()));
             continue;
         } catch (...) {
-            std::cerr << "ERROR: Unknown exception while creating monster"
-                      << std::endl;
+            Logger::error("Unknown exception while creating monster");
             continue;
         }
     }
 
     udjourney::Logger::info("Spawned % monsters from scene",
-                            monster_spawns.size());
+                            monster_spawn_data.size());
 }
 
 void Game::restart_level() {

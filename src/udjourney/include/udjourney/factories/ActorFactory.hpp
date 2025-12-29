@@ -14,6 +14,11 @@ namespace events {
 class EventDispatcher;
 }
 }  // namespace core
+
+namespace scene {
+struct MonsterSpawnData;
+}  // namespace scene
+
 }  // namespace udjourney
 
 namespace udjourney {
@@ -27,25 +32,27 @@ class ActorFactory {
 
 class MonsterFactory : public ActorFactory {
  public:
-    MonsterFactory(const IGame &game, Rectangle rect,
+    MonsterFactory(const IGame &game,
                    udjourney::core::events::EventDispatcher &event_dispatcher);
     std::unique_ptr<IActor> create_actor() override;
+    std::unique_ptr<IActor> create_actor(Rectangle rect);
+    std::unique_ptr<IActor> create_actor_from_monster_data(
+        const scene::MonsterSpawnData &monster_data);
 
  private:
     const IGame &m_game;
-    Rectangle m_rect;
     udjourney::core::events::EventDispatcher &m_event_dispatcher;
 };
 
 class PlayerFactory : public ActorFactory {
  public:
-    PlayerFactory(const IGame &game, Rectangle rect,
+    PlayerFactory(const IGame &game,
                   udjourney::core::events::EventDispatcher &event_dispatcher);
     std::unique_ptr<IActor> create_actor() override;
+    std::unique_ptr<IActor> create_actor(Rectangle rect);
 
  private:
     const IGame &m_game;
-    Rectangle m_rect;
     udjourney::core::events::EventDispatcher &m_event_dispatcher;
 };
 }  // namespace udjourney
