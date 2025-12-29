@@ -20,6 +20,7 @@
 #include "udjourney/managers/BonusManager.hpp"
 #include "udjourney/managers/BackgroundManager.hpp"
 #include "udjourney/managers/HUDManager.hpp"
+#include "udjourney/managers/LevelSelectManager.hpp"
 #include "udjourney/render/IStateRenderer.hpp"
 #include "udjourney/scene/Scene.hpp"
 #include "udjourney/Player.hpp"
@@ -78,13 +79,16 @@ class Game : public IGame, public IObserver {
 
     void restart_level();
 
-    // Level selection
+    // HUD manager access for LevelSelectManager
+    HUDManager &get_hud_manager() { return m_hud_manager; }
+
+ private:
+    // Level selection helper methods
     void show_level_select_menu();
     void hide_level_select_menu();
     void on_level_selected(const std::string &level_path);
     void on_level_select_cancelled();
 
- private:
     void draw() const;
     void draw_backgrounds_() const;
     void draw_finish_line_() const;
@@ -117,7 +121,8 @@ class Game : public IGame, public IObserver {
     std::unique_ptr<udjourney::scene::Scene> m_current_scene;
     float m_level_height = 0.0f;  // Track level height for win condition
     mutable Vector2 m_last_checkpoint{320, 240};  // Last checkpoint position
-    bool m_showing_level_select = false;  // Track if level select menu is shown
+    udjourney::managers::LevelSelectManager m_level_select_manager{
+        *this};                             // Level selection manager
     udjourney::WorldBounds m_world_bounds;  // World boundary management
     mutable std::map<std::string, Texture2D>
         m_hud_textures;               // Cache for HUD textures

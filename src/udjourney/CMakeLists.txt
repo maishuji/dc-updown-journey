@@ -36,6 +36,7 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/BackgroundManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/HUDManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/BonusManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/LevelSelectManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/render/StateRenderers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/DialogBoxHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/LevelSelectHUD.cpp

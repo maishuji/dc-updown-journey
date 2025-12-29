@@ -352,14 +352,15 @@ void Game::process_input() {
     if (start_pressed) {
         if (m_state == GameState::PLAY) {
             m_state = GameState::PAUSE;
-        } else if (m_state == GameState::PAUSE && !m_showing_level_select) {
+        } else if (m_state == GameState::PAUSE &&
+                   !m_level_select_manager.is_showing()) {
             m_state = GameState::PLAY;
         }
     }
 
     // Handle level selection input when paused (but only if level select menu
     // is not shown)
-    if (m_state == GameState::PAUSE && !m_showing_level_select) {
+    if (m_state == GameState::PAUSE && !m_level_select_manager.is_showing()) {
         bool level_select_pressed = false;
 #ifdef PLATFORM_DREAMCAST
         level_select_pressed =
@@ -1345,41 +1346,16 @@ void Game::restart_level() {
 }
 
 void Game::show_level_select_menu() {
-    m_showing_level_select = true;
-
-    // Create level select HUD
-    Rectangle menu_rect = {
-        m_rect.width * 0.2f,    // 20% from left
-        m_rect.height * 0.15f,  // 15% from top
-        m_rect.width * 0.6f,    // 60% width
-        m_rect.height * 0.7f    // 70% height
-    };
-
-    std::string levels_dir = udjourney::coreutils::get_assets_path("levels");
-    auto level_select_hud =
-        std::make_unique<LevelSelectHUD>(menu_rect, levels_dir);
-
-    // Set callbacks
-    level_select_hud->set_on_level_selected_callback(
+    m_level_select_manager.show(
         [this](const std::string &level_path) {
             on_level_selected(level_path);
-        });
-
-    level_select_hud->set_on_cancelled_callback(
+        },
         [this]() { on_level_select_cancelled(); });
-
-    // Add to HUD manager
-    m_hud_manager.push_foreground_hud(std::move(level_select_hud));
-}
-
-void Game::hide_level_select_menu() {
-    m_showing_level_select = false;
-    m_hud_manager.pop_foreground_hud();
 }
 
 void Game::on_level_selected(const std::string &level_path) {
-    // Hide the level select menu
-    hide_level_select_menu();
+    // Hide the level select menu first
+    m_level_select_manager.hide();
 
     // Load the selected level
     if (load_scene(level_path)) {
@@ -1395,7 +1371,7 @@ void Game::on_level_selected(const std::string &level_path) {
 
 void Game::on_level_select_cancelled() {
     // Hide the level select menu and return to pause menu
-    hide_level_select_menu();
+    m_level_select_manager.hide();
 }
 
 void Game::attack_nearby_monsters() {
