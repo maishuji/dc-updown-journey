@@ -42,6 +42,7 @@
 #include "udjourney/factories/ActorFactory.hpp"
 #include "udjourney/factories/PlatformFactory.hpp"
 #include "udjourney/factories/UiFactory.hpp"
+#include "udjourney/hud/GameMenuHUD.hpp"
 #include "udjourney/hud/LevelSelectHUD.hpp"
 #include "udjourney/render/StateRenderers.hpp"
 #include "udjourney/hud/scene/ScoreDisplayHUD.hpp"
@@ -347,29 +348,15 @@ void Game::process_input() {
         return;  // Skip further input processing
     }
 
-    // Pause / Unpause the game
+    // Pause / Unpause the game - show game menu on pause
     auto start_pressed = input_mapping.pressed_start();
     if (start_pressed) {
         if (m_state == GameState::PLAY) {
-            m_state = GameState::PAUSE;
+            show_game_menu();  // Show menu instead of just pausing
         } else if (m_state == GameState::PAUSE &&
-                   !m_level_select_manager.is_showing()) {
+                   !m_level_select_manager.is_showing() &&
+                   !m_showing_game_menu) {
             m_state = GameState::PLAY;
-        }
-    }
-
-    // Handle level selection input when paused (but only if level select menu
-    // is not shown)
-    if (m_state == GameState::PAUSE && !m_level_select_manager.is_showing()) {
-        bool level_select_pressed = false;
-#ifdef PLATFORM_DREAMCAST
-        level_select_pressed =
-            IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
-#else
-        level_select_pressed = IsKeyPressed(KEY_L);
-#endif
-        if (level_select_pressed) {
-            show_level_select_menu();
         }
     }
 
@@ -423,6 +410,29 @@ void Game::process_input() {
         }
     }
 }
+void Game::clear_scene() {
+    // Remove all widgets from m_actors
+    m_actors.erase(std::remove_if(m_actors.begin(),
+                                  m_actors.end(),
+                                  [](const std::unique_ptr<IActor> &actor) {
+                                      return actor->get_group_id() ==
+                                             4;  // Remove widgets
+                                  }),
+                   m_actors.end());
+
+    m_event_dispatcher.clear_all_handlers();
+    // Clear background HUDs
+    m_hud_manager.clear_background_huds();
+
+    m_actors.clear();
+    m_pending_actors.clear();
+    m_updating_actors = false;
+    m_selected_widget_index = 0;
+    m_frames_since_scene_load = 0;
+    m_background_manager.reset_ui_scroll();
+    m_scene_huds.clear();
+    m_player.reset();
+}
 
 /**
  * Applies the currently loaded scene by creating platforms, monsters,
@@ -443,6 +453,8 @@ void Game::apply_current_scene(SceneApplyMode mode) {
                        ? SceneApplyMode::UiScreen
                        : SceneApplyMode::Gameplay;
     }
+
+    clear_scene();
 
     // Gameplay scenes: world + UI
     if (resolved == SceneApplyMode::Gameplay) {
@@ -858,7 +870,7 @@ void Game::update() {
                 for (auto &actor : m_actors) {
                     actor->update(delta);
                 }
-                m_player->update(delta);
+                if (m_player) m_player->update(delta);
                 last_update_time = cur_update_time;
 
                 // Check projectile-monster collisions
@@ -1374,6 +1386,60 @@ void Game::on_level_select_cancelled() {
     m_level_select_manager.hide();
 }
 
+void Game::show_game_menu() {
+    if (m_showing_game_menu) return;
+
+    m_showing_game_menu = true;
+    m_state = GameState::PAUSE;
+
+    // Get menu data from current scene, or use defaults
+    Rectangle menu_rect = {160, 100, 320, 280};  // Default centered rect
+    std::vector<MenuItem> items;
+    std::string title = "GAME MENU";
+
+    if (m_current_scene && m_current_scene->has_game_menu()) {
+        const auto &menu_data = m_current_scene->get_game_menu();
+        menu_rect = menu_data.rect;
+        title = menu_data.title;
+
+        // Convert scene menu items to MenuItem format
+        for (const auto &item_data : menu_data.items) {
+            items.push_back(
+                {item_data.label, item_data.action, item_data.params});
+        }
+
+        Logger::info("Loaded game menu from scene with % items", items.size());
+    } else {
+        // Fallback to default menu items if no menu defined in scene
+        items = {{"Resume", "resume_game", {}},
+                 {"Restart Level", "restart_level", {}},
+                 {"Level Select", "show_level_select", {}},
+                 {"Return to Title", "return_to_title", {}},
+                 {"Quit", "quit_game", {}}};
+        Logger::info("Using default game menu");
+    }
+
+    auto game_menu = std::make_unique<GameMenuHUD>(*this, menu_rect, title);
+    game_menu->load_menu_items(items);
+    game_menu->set_on_menu_closed([this]() { hide_game_menu(); });
+
+    m_hud_manager.push_foreground_hud(std::unique_ptr<HUDComponent>(
+        static_cast<HUDComponent *>(game_menu.release())));
+}
+
+void Game::hide_game_menu() {
+    if (!m_showing_game_menu) return;
+
+    m_showing_game_menu = false;
+    m_hud_manager.pop_foreground_hud();
+    // Only resume gameplay if we're still paused.
+    // Menu actions may have transitioned the game to a different UI state
+    // (e.g., TITLE/LEVEL_SELECT), and we must not overwrite that here.
+    if (m_state == GameState::PAUSE) {
+        m_state = GameState::PLAY;
+    }
+}
+
 void Game::attack_nearby_monsters() {
     if (!m_player) return;
 
@@ -1526,6 +1592,24 @@ void Game::register_menu_actions() {
                 "levels/title_screen.json");
             g.m_state = GameState::TITLE;
             g.load_and_apply_scene(title_path);
+        });
+
+    // Resume Game action
+    ActionDispatcher::register_action(
+        "resume_game", [](IGame *game, const std::vector<std::string> &params) {
+            Logger::info("[ACTION] Resume Game");
+            auto &g = static_cast<Game &>(*game);
+            g.hide_game_menu();
+        });
+
+    // Restart Level action
+    ActionDispatcher::register_action(
+        "restart_level",
+        [](IGame *game, const std::vector<std::string> &params) {
+            Logger::info("[ACTION] Restart Level");
+            auto &g = static_cast<Game &>(*game);
+            g.hide_game_menu();
+            g.restart_level();
         });
 }
 

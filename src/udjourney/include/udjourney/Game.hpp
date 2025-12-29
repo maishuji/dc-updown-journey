@@ -89,6 +89,12 @@ class Game : public IGame, public IObserver {
     void on_level_selected(const std::string &level_path);
     void on_level_select_cancelled();
 
+    void clear_scene();
+
+    // Game menu helper methods
+    void show_game_menu();
+    void hide_game_menu();
+
     void draw() const;
     void draw_backgrounds_() const;
     void draw_finish_line_() const;
@@ -123,6 +129,7 @@ class Game : public IGame, public IObserver {
     mutable Vector2 m_last_checkpoint{320, 240};  // Last checkpoint position
     udjourney::managers::LevelSelectManager m_level_select_manager{
         *this};                             // Level selection manager
+    bool m_showing_game_menu = false;       // Track if game menu is shown
     udjourney::WorldBounds m_world_bounds;  // World boundary management
     mutable std::map<std::string, Texture2D>
         m_hud_textures;               // Cache for HUD textures

@@ -39,6 +39,7 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/LevelSelectManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/render/StateRenderers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/DialogBoxHUD.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/GameMenuHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/LevelSelectHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/scene/ScoreDisplayHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/scene/HeartHealthHUD.cpp

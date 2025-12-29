@@ -337,6 +337,42 @@ bool Scene::load_from_file(const std::string& filename) {
         m_huds.clear();
         load_fuds_(scene_data, m_huds);
 
+        // Load game menu (only for levels)
+        m_game_menu = GameMenuData{};  // Reset
+        if (m_scene_type == SceneType::Level &&
+            scene_data.contains("game_menu")) {
+            const auto& menu_json = scene_data["game_menu"];
+
+            m_game_menu.title = menu_json.value("title", "GAME MENU");
+
+            if (menu_json.contains("rect")) {
+                const auto& rect = menu_json["rect"];
+                m_game_menu.rect = {rect.value("x", 0.0f),
+                                    rect.value("y", 0.0f),
+                                    rect.value("width", 640.0f),
+                                    rect.value("height", 480.0f)};
+            }
+
+            if (menu_json.contains("items")) {
+                for (const auto& item_json : menu_json["items"]) {
+                    MenuItemData item;
+                    item.label = item_json.value("label", "");
+                    item.action = item_json.value("action", "");
+
+                    if (item_json.contains("params")) {
+                        for (const auto& param : item_json["params"]) {
+                            item.params.push_back(param.get<std::string>());
+                        }
+                    }
+
+                    m_game_menu.items.push_back(item);
+                }
+            }
+
+            Logger::info("Loaded game menu with % items",
+                         m_game_menu.items.size());
+        }
+
         Logger::info("Successfully loaded scene: %", filename);
         return true;
     } catch (const std::exception& e) {

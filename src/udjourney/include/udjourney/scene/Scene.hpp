@@ -103,6 +103,18 @@ enum class HUDAnchor {
     BottomRight
 };
 
+struct MenuItemData {
+    std::string label;
+    std::string action;
+    std::vector<std::string> params;
+};
+
+struct GameMenuData {
+    std::string title;
+    std::vector<MenuItemData> items;
+    Rectangle rect{0, 0, 640, 480};  // Default full screen
+};
+
 struct HUDData {
     std::string name;
     std::string type_id;
@@ -158,6 +170,8 @@ class Scene {
     const std::string& get_name() const { return m_name; }
     SceneType get_type() const { return m_scene_type; }
     float get_scroll_speed() const { return m_scroll_speed; }
+    const GameMenuData& get_game_menu() const { return m_game_menu; }
+    bool has_game_menu() const { return !m_game_menu.items.empty(); }
 
     // Setters
     void set_name(const std::string& name) { m_name = name; }
@@ -187,6 +201,7 @@ class Scene {
     std::vector<MonsterSpawnData> m_monster_spawns;
     std::vector<BackgroundLayerData> m_background_layers;
     std::vector<HUDData> m_huds;
+    GameMenuData m_game_menu;
     std::string m_name = "Unnamed Level";
     SceneType m_scene_type =
         SceneType::Level;  // Default to level for backward compatibility
