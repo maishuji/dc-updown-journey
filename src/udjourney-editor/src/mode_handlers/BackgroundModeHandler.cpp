@@ -63,7 +63,7 @@ void BackgroundModeHandler::render_layer_list() {
         ImGui::SliderFloat("Parallax", &new_layer_parallax_, 0.0f, 1.0f);
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
                            "(0.0 = static, 1.0 = moves with camera)");
-        ImGui::InputInt("Depth", &new_layer_depth_);
+        ImGui::InputInt("Depth##new_layer", &new_layer_depth_);
         if (ImGui::IsItemHovered()) {
             ImGui::BeginTooltip();
             ImGui::Text("Background Layer Rendering Order");
@@ -201,7 +201,7 @@ void BackgroundModeHandler::render_layer_list() {
             }
 
             int depth = layer->get_depth();
-            if (ImGui::InputInt("Depth", &depth)) {
+            if (ImGui::InputInt("Depth##selected_layer", &depth)) {
                 layer->set_depth(depth);
             }
 

@@ -44,7 +44,7 @@ void BackgroundPanel::render_add_layer_controls() {
     ImGui::SliderFloat("Parallax Factor", &new_parallax_factor_, 0.0f, 1.0f);
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
                        "(0.0 = static, 1.0 = moves with camera)");
-    ImGui::InputInt("Depth", &new_depth_);
+    ImGui::InputInt("Depth##add_layer", &new_depth_);
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
                        "(Lower depth = rendered first)");
 
@@ -136,7 +136,7 @@ void BackgroundPanel::render_layer_properties() {
     }
 
     int depth = layer->get_depth();
-    if (ImGui::InputInt("Depth", &depth)) {
+    if (ImGui::InputInt("Depth##layer_properties", &depth)) {
         layer->set_depth(depth);
     }
 
