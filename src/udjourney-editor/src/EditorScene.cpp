@@ -180,11 +180,12 @@ void render_cursor_(Level& level, EditorPanel& editor_panel,
             break;
         }
         case EditMode::Platforms: {
-            // Show platform preview
+            // Show platform preview (centered on tile, matching game behavior)
+            float width = editor_panel.get_platform_size().x * 32.0f;
+            float height = editor_panel.get_platform_size().y * 32.0f;
             draw_list->AddRectFilled(
-                ImVec2(pos.x, pos.y),
-                ImVec2(pos.x + editor_panel.get_platform_size().x * 50,
-                       pos.y + editor_panel.get_platform_size().y * 50),
+                ImVec2(pos.x - width / 2, pos.y - height / 2),
+                ImVec2(pos.x + width / 2, pos.y + height / 2),
                 IM_COL32(255, 255, 0, 128));  // Semi-transparent yellow
             break;
         }
@@ -1106,25 +1107,26 @@ void EditorScene::render_platforms(Level& level, EditorPanel& editor_panel,
                                    ImDrawList* draw_list,
                                    const ImVec2& origin) {
     for (const auto& platform : level.platforms) {
-        // Calculate platform position (top-left corner at tile position,
-        // matching game behavior)
-        ImVec2 top_left = ImVec2(origin.x + platform.tile_x * tile_size_,
-                                 origin.y + platform.tile_y * tile_size_);
-        ImVec2 bottom_right =
-            ImVec2(top_left.x + platform.width_tiles * tile_size_,
-                   top_left.y + platform.height_tiles * tile_size_);
+        // Calculate platform center (matching game behavior)
+        // tile_x, tile_y represent the CENTER of the platform
+        float center_x = platform.tile_x * tile_size_ + tile_size_ / 2;
+        float center_y = platform.tile_y * tile_size_ + tile_size_ / 2;
+        float width = platform.width_tiles * tile_size_;
+        float height = platform.height_tiles * tile_size_;
+
+        // Calculate top-left from center
+        ImVec2 top_left = ImVec2(origin.x + center_x - width / 2,
+                                 origin.y + center_y - height / 2);
+        ImVec2 bottom_right = ImVec2(top_left.x + width, top_left.y + height);
 
         // Calculate center for reference tile marker
-        ImVec2 center =
-            ImVec2(origin.x + platform.tile_x * tile_size_ + tile_size_ / 2,
-                   origin.y + platform.tile_y * tile_size_ + tile_size_ / 2);
+        ImVec2 center = ImVec2(origin.x + center_x, origin.y + center_y);
 
         // used to draw the center tile (for reference)
         ImVec2 unit_top_left =
             ImVec2(center.x - tile_size_ / 2, center.y - tile_size_ / 2);
         ImVec2 unit_bottom_right =
-            ImVec2(origin.x + (platform.tile_x + 1) * tile_size_,
-                   origin.y + (platform.tile_y + 1) * tile_size_);
+            ImVec2(center.x + tile_size_ / 2, center.y + tile_size_ / 2);
 
         // Draw platform with its color
         auto preview_color = platform.color;
