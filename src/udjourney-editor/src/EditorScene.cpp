@@ -164,7 +164,8 @@ EditorScene::EditorScene() : pimpl_(std::make_unique<PImpl>()) {
 EditorScene::~EditorScene() = default;
 
 void render_cursor_(Level& level, EditorPanel& editor_panel,
-                    ImDrawList* draw_list, const ImVec2& origin) {
+                    ImDrawList* draw_list, const ImVec2& origin,
+                    bool dragging_platform) {
     auto pos = ImGui::GetMousePos();
     ImVec2 cursor_pos = origin;
 
@@ -206,10 +207,17 @@ void render_cursor_(Level& level, EditorPanel& editor_panel,
 
             float width = editor_panel.get_platform_size().x * 32.0f;
             float height = editor_panel.get_platform_size().y * 32.0f;
+
+            // Use different color when dragging vs placing new platform
+            ImU32 preview_color =
+                dragging_platform
+                    ? IM_COL32(0, 255, 0, 128)    // Green when dragging
+                    : IM_COL32(255, 45, 0, 128);  // Yellow when placing
+
             draw_list->AddRectFilled(
                 ImVec2(center_x - width / 2, center_y - height / 2),
                 ImVec2(center_x + width / 2, center_y + height / 2),
-                IM_COL32(255, 0, 0, 128));  // Semi-transparent red
+                preview_color);
             break;
         }
         default:
@@ -383,7 +391,7 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
         }
     }
 
-    render_cursor_(level, editor_panel, draw_list, origin);
+    render_cursor_(level, editor_panel, draw_list, origin, dragging_platform_);
 
     // Reserve space for ImGui layout
     ImGui::Dummy(
@@ -952,6 +960,41 @@ void EditorScene::handle_platform_mode_input(Level& level,
                                              EditorPanel& editor_panel,
                                              const ImVec2& mouse_pos,
                                              const ImVec2& origin) {
+    EditorPlatform* selected = editor_panel.get_selected_platform();
+
+    // Handle mouse release - stop dragging
+    if (!ImGui::IsMouseDown(0)) {
+        dragging_platform_ = false;
+    }
+
+    // Handle ongoing drag
+    if (dragging_platform_ && selected && ImGui::IsMouseDown(0)) {
+        // Calculate mouse movement in tile space
+        ImVec2 mouse_delta = ImVec2(mouse_pos.x - platform_drag_start_mouse_.x,
+                                    mouse_pos.y - platform_drag_start_mouse_.y);
+        float delta_tiles_x = mouse_delta.x / tile_size_;
+        float delta_tiles_y = mouse_delta.y / tile_size_;
+
+        float new_tile_x = platform_drag_start_tile_x_ + delta_tiles_x;
+        float new_tile_y = platform_drag_start_tile_y_ + delta_tiles_y;
+
+        // Apply snapping based on the current platform snap setting (in pixels)
+        int snap_pixels = EditorSettings::instance().platform_snap;
+        if (snap_pixels > 1) {
+            // Convert to world pixels, snap, then back to tiles
+            float world_x = new_tile_x * tile_size_;
+            float world_y = new_tile_y * tile_size_;
+            world_x = std::round(world_x / snap_pixels) * snap_pixels;
+            world_y = std::round(world_y / snap_pixels) * snap_pixels;
+            new_tile_x = world_x / tile_size_;
+            new_tile_y = world_y / tile_size_;
+        }
+
+        selected->tile_x = new_tile_x;
+        selected->tile_y = new_tile_y;
+        return;
+    }
+
     ImVec2 tile_pos = screen_to_tile_pos(mouse_pos, origin);
     float tile_x = tile_pos.x;
     float tile_y = tile_pos.y;
@@ -977,12 +1020,29 @@ void EditorScene::handle_platform_mode_input(Level& level,
         return;
     }
 
-    // Find existing platform at this position
-    // If any do not allow left click to add/replace
+    // Find existing platform at mouse position (check if mouse is within
+    // platform bounds)
     EditorPlatform* existing_platform = nullptr;
     for (auto& platform : level.platforms) {
-        if (static_cast<int>(platform.tile_x) == tile_x_int &&
-            static_cast<int>(platform.tile_y) == tile_y_int) {
+        // Calculate platform bounds (centered on tile_x, tile_y)
+        float center_x = platform.tile_x * tile_size_;
+        float center_y = platform.tile_y * tile_size_;
+        float width = platform.width_tiles * tile_size_;
+        float height = platform.height_tiles * tile_size_;
+
+        float left = center_x - width / 2;
+        float right = center_x + width / 2;
+        float top = center_y - height / 2;
+        float bottom = center_y + height / 2;
+
+        // Check if mouse is within platform bounds
+        float mouse_tile_x = (mouse_pos.x - origin.x) / tile_size_;
+        float mouse_tile_y = (mouse_pos.y - origin.y) / tile_size_;
+        float mouse_world_x = mouse_tile_x * tile_size_;
+        float mouse_world_y = mouse_tile_y * tile_size_;
+
+        if (mouse_world_x >= left && mouse_world_x <= right &&
+            mouse_world_y >= top && mouse_world_y <= bottom) {
             existing_platform = &platform;
             break;
         }
@@ -996,9 +1056,14 @@ void EditorScene::handle_platform_mode_input(Level& level,
         return;
     }
 
-    // Left click edits existing platform
+    // Left click on existing platform - select and start drag immediately
     if (ImGui::IsMouseClicked(0) && existing_platform) {
         editor_panel.set_selected_platform(existing_platform);
+        // Start drag immediately
+        dragging_platform_ = true;
+        platform_drag_start_mouse_ = mouse_pos;
+        platform_drag_start_tile_x_ = existing_platform->tile_x;
+        platform_drag_start_tile_y_ = existing_platform->tile_y;
         return;
     }
 
