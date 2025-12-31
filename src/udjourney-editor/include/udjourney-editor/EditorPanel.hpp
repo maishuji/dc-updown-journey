@@ -113,6 +113,14 @@ class EditorPanel {
     HUDElement create_fud_from_preset() const;
 
  private:
+    void draw_tile_mode();
+    void draw_platform_mode();
+    void draw_spawn_mode();
+    void draw_platform_editor();
+    void draw_monsters_mode();
+    void draw_monster_editor();
+    void draw_fud_mode();
+
     float scale = 1.0f;  // Default scale
     EditMode edit_mode = EditMode::Tiles;
     Level* current_level_ = nullptr;  // For scene type awareness
@@ -156,13 +164,4 @@ class EditorPanel {
 
     // Focus management
     bool should_focus_ = false;
-
-    void draw_tile_mode();
-    void draw_platform_mode();
-    void draw_spawn_mode();
-    void draw_platform_editor();
-    void draw_monsters_mode();
-    void draw_monster_editor();
-    void draw_background_mode();
-    void draw_fud_mode();
 };

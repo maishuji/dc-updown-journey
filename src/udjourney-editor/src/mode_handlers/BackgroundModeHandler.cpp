@@ -36,6 +36,16 @@ BackgroundModeHandler::BackgroundModeHandler(
     std::strncpy(new_layer_name_, "New Layer", sizeof(new_layer_name_) - 1);
 }
 
+void _render_group_borders() {
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    dl->AddRect(ImGui::GetItemRectMin(),
+                ImGui::GetItemRectMax(),
+                IM_COL32(255, 230, 120, 255),
+                3.0f,
+                0,
+                2.0f);
+}
+
 void BackgroundModeHandler::render() {
     if (!background_manager_ || !background_preset_manager_) {
         ImGui::TextColored(ImVec4(1, 0, 0, 1),
@@ -45,7 +55,18 @@ void BackgroundModeHandler::render() {
 
     render_layer_list();
     ImGui::Separator();
-    render_object_controls();
+
+    // Render control panel if a layer is selected
+    if (has_selected_layer()) {
+        ImGui::BeginGroup();
+        render_layer_properties();
+        render_object_controls();
+        ImGui::EndGroup();
+        _render_group_borders();
+    } else {
+        background_placing_mode_ = false;
+    }
+
     render_delete_confirmation();
 }
 
@@ -58,38 +79,51 @@ void BackgroundModeHandler::render_layer_list() {
 
     // Add layer controls
     if (background_manager_->can_add_layer()) {
-        ImGui::Text("Add New Layer:");
-        ImGui::InputText("Name", new_layer_name_, sizeof(new_layer_name_));
-        ImGui::SliderFloat("Parallax", &new_layer_parallax_, 0.0f, 1.0f);
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                           "(0.0 = static, 1.0 = moves with camera)");
-        ImGui::InputInt("Depth##new_layer", &new_layer_depth_);
-        if (ImGui::IsItemHovered()) {
-            ImGui::BeginTooltip();
-            ImGui::Text("Background Layer Rendering Order");
-            ImGui::Separator();
-            ImGui::TextWrapped(
-                "Controls which background layer appears in front or behind "
-                "OTHER background layers.\n\n"
-                "- Lower values (e.g., 0, 1) render first (furthest back)\n"
-                "- Higher values (e.g., 10, 100) render last (closest)\n"
-                "- Multiple layers can share the same depth value\n\n"
-                "Note: ALL background layers always render behind the game "
-                "scene (platforms, monsters, player).");
-            ImGui::EndTooltip();
-        }
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                           "(Lower = rendered behind)");
-
-        if (ImGui::Button("Add Layer")) {
-            BackgroundLayer layer(
-                new_layer_name_, new_layer_parallax_, new_layer_depth_);
-            if (background_manager_->add_layer(layer)) {
-                std::snprintf(
-                    new_layer_name_, sizeof(new_layer_name_), "New Layer");
-                new_layer_parallax_ = 0.5f;
-                new_layer_depth_ = 0;
+        if (ImGui::CollapsingHeader("Add New Layer",
+                                    ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::BeginGroup();
+            ImGui::InputText("Name", new_layer_name_, sizeof(new_layer_name_));
+            ImGui::SliderFloat("Parallax", &new_layer_parallax_, 0.0f, 1.0f);
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                               "(0.0 = static, 1.0 = moves with camera)");
+            ImGui::InputInt("Depth##new_layer", &new_layer_depth_);
+            if (ImGui::IsItemHovered()) {
+                ImGui::BeginTooltip();
+                ImGui::Text("Background Layer Rendering Order");
+                ImGui::Separator();
+                ImGui::TextWrapped(
+                    "Controls which background layer appears in front or "
+                    "behind "
+                    "OTHER background layers.\n\n"
+                    "- Lower values (e.g., 0, 1) render first (furthest back)\n"
+                    "- Higher values (e.g., 10, 100) render last (closest)\n"
+                    "- Multiple layers can share the same depth value\n\n"
+                    "Note: ALL background layers always render behind the game "
+                    "scene (platforms, monsters, player).");
+                ImGui::EndTooltip();
             }
+            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                               "(Lower = rendered behind)");
+
+            if (ImGui::Button("Add Layer")) {
+                BackgroundLayer layer(
+                    new_layer_name_, new_layer_parallax_, new_layer_depth_);
+                if (background_manager_->add_layer(layer)) {
+                    std::snprintf(
+                        new_layer_name_, sizeof(new_layer_name_), "New Layer");
+                    new_layer_parallax_ = 0.5f;
+                    new_layer_depth_ = 0;
+                }
+            }
+
+            ImGui::EndGroup();
+            ImDrawList* dl = ImGui::GetWindowDrawList();
+            dl->AddRect(ImGui::GetItemRectMin(),
+                        ImGui::GetItemRectMax(),
+                        IM_COL32(255, 230, 120, 255),
+                        3.0f,
+                        0,
+                        2.0f);
         }
         ImGui::Separator();
     } else {
@@ -99,7 +133,7 @@ void BackgroundModeHandler::render_layer_list() {
     }
 
     // Layer list
-    ImGui::Text("Layers:");
+    ImGui::TextColored(ImVec4(1, 0.5f, 0, 1), "Select Available Layer:");
     const auto& layers = background_manager_->get_layers();
     auto selected = background_manager_->get_selected_layer();
 
@@ -169,13 +203,27 @@ void BackgroundModeHandler::render_layer_list() {
     }
 
     ImGui::Separator();
+}
 
-    // Layer Properties Section
+[[nodiscard]] bool BackgroundModeHandler::has_selected_layer() const {
+    const auto& layers = background_manager_->get_layers();
+    const auto selected = background_manager_->get_selected_layer();
+    return selected.has_value();
+}
+
+void BackgroundModeHandler::render_layer_properties() {
+    const auto& layers = background_manager_->get_layers();
+    auto selected = background_manager_->get_selected_layer();
+    // Add object controls - only if layer is selected
     if (selected.has_value()) {
         BackgroundLayer* layer =
             background_manager_->get_layer(selected.value());
-        if (layer) {
-            ImGui::Text("Layer Properties");
+        if (ImGui::CollapsingHeader("Selected Layer Properties",
+                                    ImGuiTreeNodeFlags_DefaultOpen)) {
+            ImGui::BeginChild("selected_layer_properties_child",
+                              ImVec2(0, 300),
+                              true,
+                              ImGuiWindowFlags_HorizontalScrollbar);
 
             char name_buf[128];
             std::strncpy(
@@ -229,11 +277,11 @@ void BackgroundModeHandler::render_layer_list() {
             }
             if (ImGui::IsItemHovered()) {
                 ImGui::SetTooltip(
-                    "Enable infinite looping when scrolling (otherwise stops "
+                    "Enable infinite looping when scrolling (otherwise "
+                    "stops "
                     "at texture edge)");
             }
-
-            ImGui::Separator();
+            ImGui::EndChild();
         }
     }
 }
@@ -243,166 +291,185 @@ void BackgroundModeHandler::render_object_controls() {
     auto selected = background_manager_->get_selected_layer();
 
     // Add object controls - only if layer is selected
-    if (!selected.has_value()) {
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                           "Select a layer to add objects");
-        background_placing_mode_ = false;
-    } else {
-        // Allows adding objects when a layer is selected
+    if (selected.has_value()) {
+        ImGui::Separator();
 
-        ImGui::Text("Add Objects to: %s",
-                    layers[selected.value()].get_name().c_str());
+        if (ImGui::CollapsingHeader("Selected Layer - Add Objects",
+                                    ImGuiTreeNodeFlags_DefaultOpen)) {
+            // Allows adding objects when a layer is selected
+            ImGui::BeginChild("bg_object_presets_child",
+                              ImVec2(0, 300),
+                              true,
+                              ImGuiWindowFlags_HorizontalScrollbar);
 
-        // Show available presets as clickable list
-        if (background_preset_manager_->has_presets()) {
-            const auto& presets = background_preset_manager_->get_presets();
+            ImGui::TextColored(ImVec4(1, 0.5f, 0, 1),
+                               "Layer : %s",
+                               layers[selected.value()].get_name().c_str());
 
-            ImGui::Text("Available Objects:");
-            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                               "(Click to select, then click in scene)");
+            // Show available presets as clickable list
+            if (background_preset_manager_->has_presets()) {
+                const auto& presets = background_preset_manager_->get_presets();
 
-            // Display presets as a grid of 64x64 tiles
-            const float tile_size = 64.0f;
-            const float padding = 4.0f;
-            const float available_width = ImGui::GetContentRegionAvail().x;
-            const int tiles_per_row = static_cast<int>(
-                (available_width + padding) / (tile_size + padding));
+                ImGui::Text("Available Objects:");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                                   "(Click to select, then click in scene)");
 
-            if (tiles_per_row > 0) {
-                for (size_t i = 0; i < presets.size(); ++i) {
-                    ImGui::PushID(static_cast<int>(i + 500));
+                // Display presets as a grid of 64x64 tiles
+                const float tile_size = 64.0f;
+                const float padding = 4.0f;
+                const float available_width = ImGui::GetContentRegionAvail().x;
+                const int tiles_per_row = static_cast<int>(
+                    (available_width + padding) / (tile_size + padding));
 
-                    bool is_selected =
-                        (selected_preset_idx_ == static_cast<int>(i)) &&
-                        background_placing_mode_;
+                if (tiles_per_row > 0) {
+                    for (size_t i = 0; i < presets.size(); ++i) {
+                        ImGui::PushID(static_cast<int>(i + 500));
 
-                    // Load texture for preview
-                    Texture2D texture =
-                        load_preview_texture(presets[i].sprite_sheet);
+                        bool is_selected =
+                            (selected_preset_idx_ == static_cast<int>(i)) &&
+                            background_placing_mode_;
 
-                    if (texture.id != 0) {
-                        // Calculate UV coordinates for the tile in sprite sheet
-                        float tile_w = static_cast<float>(presets[i].tile_size);
-                        float tile_h = static_cast<float>(presets[i].tile_size);
-                        float u0 =
-                            (presets[i].tile_col * tile_w) / texture.width;
-                        float v0 =
-                            (presets[i].tile_row * tile_h) / texture.height;
-                        float u1 = u0 + (tile_w / texture.width);
-                        float v1 = v0 + (tile_h / texture.height);
+                        // Load texture for preview
+                        Texture2D texture =
+                            load_preview_texture(presets[i].sprite_sheet);
 
-                        // Highlight selected preset
-                        ImVec4 tint_color =
-                            is_selected ? ImVec4(0.5f, 1.0f, 0.5f, 1.0f)
-                                        : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+                        if (texture.id != 0) {
+                            // Calculate UV coordinates for the tile in sprite
+                            // sheet
+                            float tile_w =
+                                static_cast<float>(presets[i].tile_size);
+                            float tile_h =
+                                static_cast<float>(presets[i].tile_size);
+                            float u0 =
+                                (presets[i].tile_col * tile_w) / texture.width;
+                            float v0 =
+                                (presets[i].tile_row * tile_h) / texture.height;
+                            float u1 = u0 + (tile_w / texture.width);
+                            float v1 = v0 + (tile_h / texture.height);
 
-                        ImVec4 border_color =
-                            is_selected ? ImVec4(0.2f, 0.8f, 0.2f, 1.0f)
-                                        : ImVec4(0.4f, 0.4f, 0.4f, 0.5f);
+                            // Highlight selected preset
+                            ImVec4 tint_color =
+                                is_selected ? ImVec4(0.5f, 1.0f, 0.5f, 1.0f)
+                                            : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-                        // Draw tile as ImageButton
-                        ImGui::PushStyleColor(ImGuiCol_Button,
-                                              ImVec4(0, 0, 0, 0));
-                        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                              ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
-                        ImGui::PushStyleColor(ImGuiCol_ButtonActive,
-                                              ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
-                        ImGui::PushStyleColor(ImGuiCol_Border, border_color);
-                        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,
-                                            2.0f);
+                            ImVec4 border_color =
+                                is_selected ? ImVec4(0.2f, 0.8f, 0.2f, 1.0f)
+                                            : ImVec4(0.4f, 0.4f, 0.4f, 0.5f);
 
-                        char button_id[64];
-                        std::snprintf(
-                            button_id, sizeof(button_id), "##bg_obj_%zu", i);
+                            // Draw tile as ImageButton
+                            ImGui::PushStyleColor(ImGuiCol_Button,
+                                                  ImVec4(0, 0, 0, 0));
+                            ImGui::PushStyleColor(
+                                ImGuiCol_ButtonHovered,
+                                ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
+                            ImGui::PushStyleColor(
+                                ImGuiCol_ButtonActive,
+                                ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+                            ImGui::PushStyleColor(ImGuiCol_Border,
+                                                  border_color);
+                            ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize,
+                                                2.0f);
 
-                        if (ImGui::ImageButton(
-                                button_id,
-                                static_cast<ImTextureID>(texture.id),
-                                ImVec2(tile_size, tile_size),
-                                ImVec2(u0, v0),
-                                ImVec2(u1, v1),
-                                ImVec4(0, 0, 0, 0),  // background
-                                tint_color)) {
-                            selected_preset_idx_ = static_cast<int>(i);
-                            new_bg_object_scale_ = presets[i].default_scale;
-                            background_placing_mode_ = true;
+                            char button_id[64];
+                            std::snprintf(button_id,
+                                          sizeof(button_id),
+                                          "##bg_obj_%zu",
+                                          i);
+
+                            if (ImGui::ImageButton(
+                                    button_id,
+                                    static_cast<ImTextureID>(texture.id),
+                                    ImVec2(tile_size, tile_size),
+                                    ImVec2(u0, v0),
+                                    ImVec2(u1, v1),
+                                    ImVec4(0, 0, 0, 0),  // background
+                                    tint_color)) {
+                                selected_preset_idx_ = static_cast<int>(i);
+                                new_bg_object_scale_ = presets[i].default_scale;
+                                background_placing_mode_ = true;
+                            }
+
+                            ImGui::PopStyleVar();
+                            ImGui::PopStyleColor(4);
+
+                            // Show tooltip with object name on hover
+                            if (ImGui::IsItemHovered()) {
+                                ImGui::BeginTooltip();
+                                ImGui::Text("%s", presets[i].name.c_str());
+                                ImGui::TextColored(
+                                    ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                                    "Size: %dx%d",
+                                    presets[i].tile_size,
+                                    presets[i].tile_size);
+                                ImGui::TextColored(
+                                    ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                                    "Default scale: %.1fx",
+                                    presets[i].default_scale);
+                                ImGui::EndTooltip();
+                            }
+                        } else {
+                            // Fallback to text button if texture fails to load
+                            if (ImGui::Button(presets[i].name.c_str(),
+                                              ImVec2(tile_size, tile_size))) {
+                                selected_preset_idx_ = static_cast<int>(i);
+                                new_bg_object_scale_ = presets[i].default_scale;
+                                background_placing_mode_ = true;
+                            }
                         }
 
-                        ImGui::PopStyleVar();
-                        ImGui::PopStyleColor(4);
+                        // Layout grid: add separator or new line
+                        if ((i + 1) % tiles_per_row != 0 &&
+                            i < presets.size() - 1) {
+                            ImGui::SameLine(0.0f, padding);
+                        }
 
-                        // Show tooltip with object name on hover
-                        if (ImGui::IsItemHovered()) {
-                            ImGui::BeginTooltip();
-                            ImGui::Text("%s", presets[i].name.c_str());
-                            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                                               "Size: %dx%d",
-                                               presets[i].tile_size,
-                                               presets[i].tile_size);
-                            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                                               "Default scale: %.1fx",
-                                               presets[i].default_scale);
-                            ImGui::EndTooltip();
-                        }
-                    } else {
-                        // Fallback to text button if texture fails to load
-                        if (ImGui::Button(presets[i].name.c_str(),
-                                          ImVec2(tile_size, tile_size))) {
-                            selected_preset_idx_ = static_cast<int>(i);
-                            new_bg_object_scale_ = presets[i].default_scale;
-                            background_placing_mode_ = true;
-                        }
+                        ImGui::PopID();
                     }
+                }
 
-                    // Layout grid: add separator or new line
-                    if ((i + 1) % tiles_per_row != 0 &&
-                        i < presets.size() - 1) {
-                        ImGui::SameLine(0.0f, padding);
+                // Scale slider for current selection
+                if (background_placing_mode_) {
+                    ImGui::Separator();
+                    ImGui::Text("Placing: %s",
+                                presets[selected_preset_idx_].name.c_str());
+                    ImGui::SliderFloat(
+                        "Scale", &new_bg_object_scale_, 0.1f, 5.0f);
+                    if (ImGui::Button("Cancel Placement")) {
+                        background_placing_mode_ = false;
                     }
+                }
+            } else {
+                ImGui::TextColored(ImVec4(1, 0.5f, 0, 1), "No presets loaded");
+                background_placing_mode_ = false;
+            }
 
+            ImGui::Separator();
+
+            // Show objects in selected layer
+            ImGui::Text("Objects in Layer:");
+            const auto& objects = layers[selected.value()].get_objects();
+            if (objects.empty()) {
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                                   "No objects yet");
+            } else {
+                for (size_t i = 0; i < objects.size(); ++i) {
+                    ImGui::PushID(static_cast<int>(i + 1000));
+                    ImGui::Text("%zu: %s", i, objects[i].sprite_name.c_str());
+                    ImGui::SameLine();
+                    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
+                                       "(%.0f, %.0f) x%.1f",
+                                       objects[i].x,
+                                       objects[i].y,
+                                       objects[i].scale);
+                    ImGui::SameLine();
+                    if (ImGui::SmallButton("X")) {
+                        background_manager_->remove_object(selected.value(), i);
+                    }
                     ImGui::PopID();
                 }
             }
 
-            // Scale slider for current selection
-            if (background_placing_mode_) {
-                ImGui::Separator();
-                ImGui::Text("Placing: %s",
-                            presets[selected_preset_idx_].name.c_str());
-                ImGui::SliderFloat("Scale", &new_bg_object_scale_, 0.1f, 5.0f);
-                if (ImGui::Button("Cancel Placement")) {
-                    background_placing_mode_ = false;
-                }
-            }
-        } else {
-            ImGui::TextColored(ImVec4(1, 0.5f, 0, 1), "No presets loaded");
-            background_placing_mode_ = false;
-        }
-
-        ImGui::Separator();
-
-        // Show objects in selected layer
-        ImGui::Text("Objects in Layer:");
-        const auto& objects = layers[selected.value()].get_objects();
-        if (objects.empty()) {
-            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                               "No objects yet");
-        } else {
-            for (size_t i = 0; i < objects.size(); ++i) {
-                ImGui::PushID(static_cast<int>(i + 1000));
-                ImGui::Text("%zu: %s", i, objects[i].sprite_name.c_str());
-                ImGui::SameLine();
-                ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
-                                   "(%.0f, %.0f) x%.1f",
-                                   objects[i].x,
-                                   objects[i].y,
-                                   objects[i].scale);
-                ImGui::SameLine();
-                if (ImGui::SmallButton("X")) {
-                    background_manager_->remove_object(selected.value(), i);
-                }
-                ImGui::PopID();
-            }
+            ImGui::EndChild();
         }
     }
 }
