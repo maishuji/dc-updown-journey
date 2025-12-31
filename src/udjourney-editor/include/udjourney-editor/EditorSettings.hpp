@@ -26,6 +26,10 @@ class EditorSettings {
     int hud_snap_grid =
         1;  // 1 = no snapping, 4, 8, 16, 32, 64 for grid snapping
 
+    // Platform snap setting (in pixels)
+    int platform_snap =
+        1;  // 1 = no snapping, 4, 8, 16, 32, 64 for grid snapping
+
     // Future settings can be added here:
     // bool snap_to_grid = true;
     // float grid_opacity = 1.0f;

@@ -184,8 +184,21 @@ void render_cursor_(Level& level, EditorPanel& editor_panel,
             // Calculate which tile the mouse is over
             ImVec2 tile_pos =
                 ImVec2((pos.x - origin.x) / 32.0f, (pos.y - origin.y) / 32.0f);
-            int tile_x = static_cast<int>(tile_pos.x);
-            int tile_y = static_cast<int>(tile_pos.y);
+            float tile_x = tile_pos.x;
+            float tile_y = tile_pos.y;
+
+            // Apply snapping to preview (matching placement behavior, in
+            // pixels)
+            int snap_pixels = EditorSettings::instance().platform_snap;
+            if (snap_pixels > 1) {
+                // Convert to world pixels, snap, then back to tiles
+                float world_x = tile_x * 32.0f;
+                float world_y = tile_y * 32.0f;
+                world_x = std::round(world_x / snap_pixels) * snap_pixels;
+                world_y = std::round(world_y / snap_pixels) * snap_pixels;
+                tile_x = world_x / 32.0f;
+                tile_y = world_y / 32.0f;
+            }
 
             // Calculate the center of that tile (where platform will be placed)
             float center_x = origin.x + tile_x * 32.0f + 16.0f;
@@ -196,7 +209,7 @@ void render_cursor_(Level& level, EditorPanel& editor_panel,
             draw_list->AddRectFilled(
                 ImVec2(center_x - width / 2, center_y - height / 2),
                 ImVec2(center_x + width / 2, center_y + height / 2),
-                IM_COL32(255, 255, 0, 128));  // Semi-transparent yellow
+                IM_COL32(255, 0, 0, 128));  // Semi-transparent red
             break;
         }
         default:
@@ -940,12 +953,27 @@ void EditorScene::handle_platform_mode_input(Level& level,
                                              const ImVec2& mouse_pos,
                                              const ImVec2& origin) {
     ImVec2 tile_pos = screen_to_tile_pos(mouse_pos, origin);
-    int tile_x = static_cast<int>(tile_pos.x);
-    int tile_y = static_cast<int>(tile_pos.y);
+    float tile_x = tile_pos.x;
+    float tile_y = tile_pos.y;
+
+    // Apply snapping based on the current platform snap setting (in pixels)
+    int snap_pixels = EditorSettings::instance().platform_snap;
+    if (snap_pixels > 1) {
+        // Convert to world pixels, snap, then back to tiles
+        float world_x = tile_x * tile_size_;
+        float world_y = tile_y * tile_size_;
+        world_x = std::round(world_x / snap_pixels) * snap_pixels;
+        world_y = std::round(world_y / snap_pixels) * snap_pixels;
+        tile_x = world_x / tile_size_;
+        tile_y = world_y / tile_size_;
+    }
+
+    int tile_x_int = static_cast<int>(tile_x);
+    int tile_y_int = static_cast<int>(tile_y);
 
     // Check bounds
-    if (tile_x < 0 || tile_x >= static_cast<int>(level.col_cnt) || tile_y < 0 ||
-        tile_y >= static_cast<int>(level.row_cnt)) {
+    if (tile_x_int < 0 || tile_x_int >= static_cast<int>(level.col_cnt) ||
+        tile_y_int < 0 || tile_y_int >= static_cast<int>(level.row_cnt)) {
         return;
     }
 
@@ -953,7 +981,8 @@ void EditorScene::handle_platform_mode_input(Level& level,
     // If any do not allow left click to add/replace
     EditorPlatform* existing_platform = nullptr;
     for (auto& platform : level.platforms) {
-        if (platform.tile_x == tile_x && platform.tile_y == tile_y) {
+        if (static_cast<int>(platform.tile_x) == tile_x_int &&
+            static_cast<int>(platform.tile_y) == tile_y_int) {
             existing_platform = &platform;
             break;
         }
@@ -997,7 +1026,7 @@ void EditorScene::handle_platform_mode_input(Level& level,
 
         // Remove existing platform at this position first
         if (existing_platform) {
-            level.remove_platform_at(tile_x, tile_y);
+            level.remove_platform_at(tile_x_int, tile_y_int);
             // Clear selection if we replaced the selected platform
             if (editor_panel.get_selected_platform() == existing_platform) {
                 editor_panel.set_selected_platform(nullptr);

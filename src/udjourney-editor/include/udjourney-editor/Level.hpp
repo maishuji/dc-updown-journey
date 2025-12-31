@@ -22,8 +22,8 @@ enum class PlatformBehaviorType {
 enum class PlatformFeatureType { None, Spikes, Checkpoint };
 
 struct EditorPlatform {
-    int tile_x;
-    int tile_y;
+    float tile_x;
+    float tile_y;
     float width_tiles = 1.0f;
     float height_tiles = 1.0f;
     PlatformBehaviorType behavior_type = PlatformBehaviorType::Static;

@@ -472,6 +472,22 @@ void Editor::run() {
                     ImGui::EndMenu();
                 }
 
+                // Platform Snap Grid submenu
+                if (ImGui::BeginMenu("Platform Snap Grid")) {
+                    const int snap_values[] = {1, 4, 8, 16, 32, 64};
+                    const char *snap_labels[] = {
+                        "1 (No Snap)", "4", "8", "16", "32", "64"};
+                    for (int i = 0; i < 6; i++) {
+                        if (ImGui::MenuItem(
+                                snap_labels[i],
+                                nullptr,
+                                settings.platform_snap == snap_values[i])) {
+                            settings.platform_snap = snap_values[i];
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+
                 ImGui::EndMenu();
             }
 
