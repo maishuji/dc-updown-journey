@@ -16,6 +16,7 @@
 
 #include <nlohmann/json.hpp>
 #include "udj-core/CoreUtils.hpp"
+#include "udj-core/Logger.hpp"
 #include "udjourney-editor/EditorSettings.hpp"
 
 // HUD Renderer includes
@@ -1842,8 +1843,18 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
 
         printf("Dragging: delta=(%.1f, %.1f)\n", mouse_delta.x, mouse_delta.y);
 
-        selected->offset.x = fud_drag_start_offset_.x + mouse_delta.x;
-        selected->offset.y = fud_drag_start_offset_.y + mouse_delta.y;
+        float new_x = fud_drag_start_offset_.x + mouse_delta.x;
+        float new_y = fud_drag_start_offset_.y + mouse_delta.y;
+
+        // Apply snapping based on the current snap grid setting
+        int snap_grid = EditorSettings::instance().hud_snap_grid;
+        if (snap_grid > 1) {
+            new_x = std::round(new_x / snap_grid) * snap_grid;
+            new_y = std::round(new_y / snap_grid) * snap_grid;
+        }
+
+        selected->offset.x = new_x;
+        selected->offset.y = new_y;
         return;
     }
 
@@ -1898,18 +1909,16 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
         float dist_sq =
             mouse_delta.x * mouse_delta.x + mouse_delta.y * mouse_delta.y;
 
-        printf(
-            "Check drag: dist_sq=%.2f, delta=(%.1f, %.1f), start=(%.1f, "
-            "%.1f)\n",
-            dist_sq,
-            mouse_delta.x,
-            mouse_delta.y,
-            fud_drag_start_mouse_.x,
-            fud_drag_start_mouse_.y);
+        udj::core::Logger::info("Check drag: dist_sq=%, delta=%, %, start=%, %",
+                                dist_sq,
+                                mouse_delta.x,
+                                mouse_delta.y,
+                                fud_drag_start_mouse_.x,
+                                fud_drag_start_mouse_.y);
 
         // Start dragging if moved more than 2 pixels
         if (dist_sq > 4.0f) {
-            printf("Started dragging!\n");
+            udj::core::Logger::info("Started dragging!\n");
             dragging_fud_ = true;
         }
     }

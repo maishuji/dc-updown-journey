@@ -1,0 +1,100 @@
+{
+  "backgrounds": {
+    "layers": []
+  },
+  "huds": [],
+  "monsters": [],
+  "name": "Untitled Level",
+  "platforms": [
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 3,
+      "y": 3
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 3,
+      "y": 4
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 3,
+      "y": 6
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 3,
+      "y": 7
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 3,
+      "y": 8
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 3,
+      "y": 9
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 3,
+      "y": 10
+    },
+    {
+      "behavior": "static",
+      "height": 3.0,
+      "width": 5.0,
+      "x": 3,
+      "y": 13
+    },
+    {
+      "behavior": "static",
+      "height": 3.0,
+      "width": 4.800000190734863,
+      "x": 0,
+      "y": 17
+    },
+    {
+      "behavior": "static",
+      "height": 3.0,
+      "width": 4.699999809265137,
+      "x": 5,
+      "y": 17
+    },
+    {
+      "behavior": "static",
+      "height": 3.0,
+      "width": 4.599999904632568,
+      "x": 10,
+      "y": 17
+    },
+    {
+      "behavior": "static",
+      "height": 3.0,
+      "width": 4.599999904632568,
+      "x": 15,
+      "y": 17
+    }
+  ],
+  "player_spawn": {
+    "x": 3,
+    "y": 1
+  },
+  "scene_type": "level",
+  "scroll_speed": 1.0
+}

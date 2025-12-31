@@ -22,6 +22,10 @@ class EditorSettings {
     bool show_background_visible_rect = true;
     bool show_background_to_scene_center_hints = true;
 
+    // HUD snap grid setting (in pixels)
+    int hud_snap_grid =
+        1;  // 1 = no snapping, 4, 8, 16, 32, 64 for grid snapping
+
     // Future settings can be added here:
     // bool snap_to_grid = true;
     // float grid_opacity = 1.0f;
