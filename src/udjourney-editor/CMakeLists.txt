@@ -58,7 +58,6 @@ add_library(udjourney_editor_lib
   src/ui/NewLevelPopup.cpp
   src/background/BackgroundLayer.cpp
   src/background/BackgroundManager.cpp
-  src/background/BackgroundPanel.cpp
   src/background/BackgroundObjectPresetManager.cpp
   src/mode_handlers/TileModeHandler.cpp
   src/mode_handlers/PlatformModeHandler.cpp

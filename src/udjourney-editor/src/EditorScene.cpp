@@ -183,8 +183,7 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
     ImVec2 origin = ImGui::GetCursorScreenPos();
 
     // Render the grid (background) - skip when placing background objects
-    bool is_placing_bg = editor_panel.get_edit_mode() == EditMode::Background &&
-                         editor_panel.is_background_placing_mode();
+    bool is_placing_bg = editor_panel.get_edit_mode() == EditMode::Background;
     if (!is_placing_bg) {
         render_grid(level, draw_list, origin);
     }
