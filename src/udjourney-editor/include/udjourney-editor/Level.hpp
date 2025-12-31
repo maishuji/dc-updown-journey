@@ -93,7 +93,7 @@ struct Level {
         platforms.push_back(platform);
     }
 
-    void remove_platform_at(int tile_x, int tile_y) {
+    void remove_platform_at(float tile_x, float tile_y) {
         platforms.erase(
             std::remove_if(platforms.begin(),
                            platforms.end(),

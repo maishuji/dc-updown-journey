@@ -1091,7 +1091,8 @@ void EditorScene::handle_platform_mode_input(Level& level,
 
         // Remove existing platform at this position first
         if (existing_platform) {
-            level.remove_platform_at(tile_x_int, tile_y_int);
+            level.remove_platform_at(static_cast<float>(tile_x_int),
+                                     static_cast<float>(tile_y_int));
             // Clear selection if we replaced the selected platform
             if (editor_panel.get_selected_platform() == existing_platform) {
                 editor_panel.set_selected_platform(nullptr);
