@@ -25,6 +25,7 @@
 #include "udjourney-editor/EditorScene.hpp"
 #include "udjourney-editor/Level.hpp"
 #include "udjourney-editor/EditorPanel.hpp"
+#include "udjourney-editor/EditorSettings.hpp"
 #include "udjourney-editor/background/BackgroundManager.hpp"
 #include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
 #include "udjourney-editor/strategies/level/LevelCreationStrategy.hpp"
@@ -290,6 +291,13 @@ void Editor::run() {
             pimpl->editor_panel.request_focus();
         }
 
+        // Toggle grid visibility (Ctrl+G)
+        if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) &&
+            IsKeyPressed(KEY_G)) {
+            EditorSettings::instance().show_grid =
+                !EditorSettings::instance().show_grid;
+        }
+
         // Export as JSON shortcut (Ctrl+E)
         if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) &&
             IsKeyPressed(KEY_E)) {
@@ -421,6 +429,34 @@ void Editor::run() {
                 ImGui::EndMenu();
             }
 
+            if (ImGui::BeginMenu("View")) {
+                auto &settings = EditorSettings::instance();
+                if (ImGui::MenuItem(
+                        "Show Grid", "Ctrl+G", &settings.show_grid)) {
+                    // Grid visibility toggled
+                }
+
+                if (ImGui::MenuItem("Show Background Placeable Rect",
+                                    nullptr,
+                                    &settings.show_background_placeable_rect)) {
+                }
+                if (ImGui::MenuItem("Show Background Visible Rect",
+                                    nullptr,
+                                    &settings.show_background_visible_rect)) {
+                }
+                if (ImGui::MenuItem(
+                        "Show Background to Scene Center Hints",
+                        nullptr,
+                        &settings.show_background_to_scene_center_hints)) {
+                }
+                if (ImGui::MenuItem("Show Tiles Hints",
+                                    nullptr,
+                                    &settings.show_tiles_hints)) {
+                }
+
+                ImGui::EndMenu();
+            }
+
             if (ImGui::BeginMenu("Settings")) {
                 if (ImGui::MenuItem("Animation Preset Editor")) {
                     pimpl->animation_preset_panel.set_open(true);
@@ -455,7 +491,8 @@ void Editor::run() {
                     }
                     if (ImGui::IsItemHovered()) {
                         ImGui::SetTooltip(
-                            "Camera vertical scrolling speed during gameplay\n"
+                            "Camera vertical scrolling speed during "
+                            "gameplay\n"
                             "Default: 1.0 px/frame\n"
                             "Lower = slower scrolling, Higher = faster "
                             "scrolling");

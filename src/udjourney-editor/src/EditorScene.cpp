@@ -16,6 +16,7 @@
 
 #include <nlohmann/json.hpp>
 #include "udj-core/CoreUtils.hpp"
+#include "udjourney-editor/EditorSettings.hpp"
 
 // HUD Renderer includes
 #include "udjourney-editor/hud/IHUDRenderer.hpp"
@@ -60,6 +61,31 @@ static void draw_dashed_line(ImDrawList* draw_list, const ImVec2& p1,
         draw_dash = !draw_dash;
     }
 }
+namespace {
+
+void render_every_5_tiles_hints(ImDrawList* draw_list, const ImVec2& origin,
+                                const Level& level, float tile_size_) {
+    constexpr float SCREEN_WIDTH = 640.0f;
+    constexpr float SCREEN_HEIGHT = 480.0f;
+    float level_height = level.row_cnt * tile_size_;
+    float max_scroll = std::max(0.0f, level_height - SCREEN_HEIGHT);
+
+    // Draw guide lines every 5 tiles
+    for (int row = 0; row <= level.row_cnt; row += 5) {
+        float scene_y = row * 32.0f;
+
+        // Draw horizontal line across the scene at scene_y
+        ImVec2 line_start(origin.x, origin.y + scene_y);
+        ImVec2 line_end(origin.x + SCREEN_WIDTH, origin.y + scene_y);
+
+        draw_list->AddLine(line_start,
+                           line_end,
+                           IM_COL32(0, 0, 255, 100),
+                           1.0f);  // Semi-transparent blue line
+    }
+}
+
+}  // namespace
 
 Texture2D load_texture_cached(const std::string& filename) {
     auto iter = texture_cache.find(filename);
@@ -182,10 +208,17 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     ImVec2 origin = ImGui::GetCursorScreenPos();
 
-    // Render the grid (background) - skip when placing background objects
+    // Render the grid (background) - skip when placing background objects or
+    // when disabled
     bool is_placing_bg = editor_panel.get_edit_mode() == EditMode::Background;
-    if (!is_placing_bg) {
+
+    bool show_grid = EditorSettings::instance().show_grid;
+    if (show_grid) {
         render_grid(level, draw_list, origin);
+    }
+    bool show_tiles_hints = EditorSettings::instance().show_tiles_hints;
+    if (EditorSettings::instance().show_tiles_hints) {
+        render_every_5_tiles_hints(draw_list, origin, level, tile_size_);
     }
 
     // Render background objects first (behind everything)
@@ -216,37 +249,33 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
         ImVec2 screen_end(screen_origin.x + screen_width,
                           screen_origin.y + screen_height);
 
-        // Draw outer boundary (bright yellow)
-        draw_list->AddRect(screen_origin,
-                           screen_end,
-                           IM_COL32(255, 255, 0, 255),
-                           0.0f,
-                           0,
-                           4.0f);
+        // Draw outer boundary
+        draw_list->AddRect(
+            screen_origin, screen_end, IM_COL32(0, 255, 0, 255), 0.0f, 0, 4.0f);
 
         // Draw inner safe area guide (dimmer yellow, 10px inset)
         ImVec2 safe_origin(screen_origin.x + 10, screen_origin.y + 10);
         ImVec2 safe_end(screen_end.x - 10, screen_end.y - 10);
         draw_list->AddRect(
-            safe_origin, safe_end, IM_COL32(255, 255, 0, 100), 0.0f, 0, 1.0f);
+            safe_origin, safe_end, IM_COL32(255, 50, 0, 100), 0.0f, 0, 4.0f);
 
         // Draw center crosshair
         float center_x = screen_origin.x + screen_width * 0.5f;
         float center_y = screen_origin.y + screen_height * 0.5f;
         draw_list->AddLine(ImVec2(center_x - 10, center_y),
                            ImVec2(center_x + 10, center_y),
-                           IM_COL32(255, 255, 0, 150),
+                           IM_COL32(255, 0, 0, 150),
                            1.0f);
         draw_list->AddLine(ImVec2(center_x, center_y - 10),
                            ImVec2(center_x, center_y + 10),
-                           IM_COL32(255, 255, 0, 150),
+                           IM_COL32(255, 0, 0, 150),
                            1.0f);
 
         // Label the resolution
         char res_label[32];
         snprintf(res_label, sizeof(res_label), "640x480");
         draw_list->AddText(ImVec2(screen_origin.x + 5, screen_origin.y + 5),
-                           IM_COL32(255, 255, 0, 200),
+                           IM_COL32(255, 0, 0, 200),
                            res_label);
     }
 
@@ -446,10 +475,67 @@ void EditorScene::setup_scene_window(const ImGuiIO& io) {
         ImGuiCond_Always);
 }
 
+void render_background_to_scene_center_hints(ImDrawList* draw_list,
+                                             const ImVec2& origin,
+                                             const Level& level,
+                                             const BackgroundLayer& layer,
+                                             float tile_size_) {
+    constexpr float SCREEN_WIDTH = 640.0f;
+    constexpr float SCREEN_HEIGHT = 480.0f;
+    float level_height = level.row_cnt * tile_size_;
+    float max_scroll = std::max(0.0f, level_height - SCREEN_HEIGHT);
+    float parallax_factor = layer.get_parallax_factor();
+    float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
+
+    const auto& selected_layer = layer;
+
+    float base_spannable_height =
+        max_scroll * (1.0f - parallax_factor) + SCREEN_HEIGHT;
+    float spannable_height = base_spannable_height + SCREEN_HEIGHT * 0.1f;
+
+    // Scene center: middle of the red-bordered platform area
+    float scene_center_x = origin.x + SCREEN_WIDTH / 2.0f;
+    float scene_center_y = origin.y + level_height / 2.0f;
+
+    // Background layer center: middle of the blue spannable area
+    // Horizontally: center of spannable width
+    float bg_center_x = origin.x + bg_horizontal_offset;
+    float bg_center_y = origin.y + spannable_height / 2.0f;
+
+    // Draw pink diagonal line connecting the two centers
+    draw_list->AddLine(ImVec2(scene_center_x, scene_center_y),
+                       ImVec2(bg_center_x, bg_center_y),
+                       IM_COL32(255, 100, 200, 220),
+                       3.0f);
+
+    // Add "C" label in the middle of the line
+    draw_list->AddText(ImVec2((scene_center_x + bg_center_x) / 2.0f - 5,
+                              (scene_center_y + bg_center_y) / 2.0f - 10),
+                       IM_COL32(255, 100, 200, 255),
+                       "C");
+
+    // Add "Sc" label at scene center endpoint
+    draw_list->AddText(ImVec2(scene_center_x + 5, scene_center_y - 10),
+                       IM_COL32(255, 100, 200, 255),
+                       "Sc");
+
+    // Add "Bg" label at background center endpoint
+    draw_list->AddText(ImVec2(bg_center_x + 5, bg_center_y - 10),
+                       IM_COL32(255, 100, 200, 255),
+                       "Bg");
+}
+
 void EditorScene::render_background(BackgroundManager* bg_manager,
                                     ImDrawList* draw_list, const ImVec2& origin,
                                     const Level& level) {
     if (!bg_manager) return;
+
+    bool show_background_placeable_rect =
+        EditorSettings::instance().show_background_placeable_rect;
+    bool show_background_visible_rect =
+        EditorSettings::instance().show_background_visible_rect;
+    bool show_background_to_scene_center_hints =
+        EditorSettings::instance().show_background_to_scene_center_hints;
 
     const auto& layers = bg_manager->get_layers();
     auto selected = bg_manager->get_selected_layer();
@@ -499,23 +585,28 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
         float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
         float extended_left_offset = SCREEN_WIDTH * 1.5f;  // Extended boundary
 
+        // Draw bounds rectqngle for placable area
+        // It corresponds to the spqannable area where background objects can be
+        // placed + margin to facilitate placement of objects not fully visible
         // Draw spannable bounds rectangle (centered, with extended left side)
         ImVec2 bounds_min = ImVec2(origin.x - extended_left_offset, origin.y);
         ImVec2 bounds_max =
             ImVec2(origin.x + SCREEN_WIDTH + bg_horizontal_offset,
                    origin.y + spannable_height);
 
-        // Draw semi-transparent fill
-        draw_list->AddRectFilled(
-            bounds_min, bounds_max, IM_COL32(100, 150, 255, 30));
+        if (show_background_placeable_rect) {
+            // Draw semi-transparent fill
+            draw_list->AddRectFilled(
+                bounds_min, bounds_max, IM_COL32(100, 150, 255, 30));
 
-        // Draw border
-        draw_list->AddRect(bounds_min,
-                           bounds_max,
-                           IM_COL32(100, 150, 255, 200),
-                           0.0f,
-                           0,
-                           2.0f);
+            // Draw border
+            draw_list->AddRect(bounds_min,
+                               bounds_max,
+                               IM_COL32(100, 150, 255, 200),
+                               0.0f,
+                               0,
+                               5.0f);
+        }
 
         // Draw exact mapping bounds (without margin) as a dashed line
         ImVec2 exact_bounds_min =
@@ -581,7 +672,8 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
             draw_dashed_line(
                 draw_list, scene_left, scene_right, line_color, 2.0f, 10.0f);
 
-            // Draw dashed horizontal line on background (blue spannable area)
+            // Draw dashed horizontal line on background (blue spannable
+            // area)
             draw_dashed_line(
                 draw_list, bg_left, bg_right, line_color, 2.0f, 10.0f);
 
@@ -626,8 +718,8 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
                 static_cast<float>(obj.tile_size)};
 
             // Calculate destination position and size
-            // Center background horizontally by offsetting left by half screen
-            // width
+            // Center background horizontally by offsetting left by half
+            // screen width
             constexpr float SCREEN_WIDTH = 640.0f;
             float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
             float scaled_size = obj.tile_size * obj.scale;
@@ -696,49 +788,10 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
     }
 
     // DRAW CENTER LINE LAST (so it appears on top of everything)
-    if (selected.has_value() && selected.value() < layers.size()) {
-        const auto& selected_layer = layers[selected.value()];
-        float parallax_factor = selected_layer.get_parallax_factor();
-
-        constexpr float SCREEN_WIDTH = 640.0f;
-        constexpr float SCREEN_HEIGHT = 480.0f;
-        float level_height = level.row_cnt * tile_size_;
-        float max_scroll = std::max(0.0f, level_height - SCREEN_HEIGHT);
-        float base_spannable_height =
-            max_scroll * (1.0f - parallax_factor) + SCREEN_HEIGHT;
-        float spannable_height = base_spannable_height + SCREEN_HEIGHT * 0.1f;
-        float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
-
-        // Scene center: middle of the red-bordered platform area
-        float scene_center_x = origin.x + SCREEN_WIDTH / 2.0f;
-        float scene_center_y = origin.y + level_height / 2.0f;
-
-        // Background layer center: middle of the blue spannable area
-        // Horizontally: center of spannable width
-        float bg_center_x = origin.x + bg_horizontal_offset;
-        float bg_center_y = origin.y + spannable_height / 2.0f;
-
-        // Draw pink diagonal line connecting the two centers
-        draw_list->AddLine(ImVec2(scene_center_x, scene_center_y),
-                           ImVec2(bg_center_x, bg_center_y),
-                           IM_COL32(255, 100, 200, 220),
-                           3.0f);
-
-        // Add "C" label in the middle of the line
-        draw_list->AddText(ImVec2((scene_center_x + bg_center_x) / 2.0f - 5,
-                                  (scene_center_y + bg_center_y) / 2.0f - 10),
-                           IM_COL32(255, 100, 200, 255),
-                           "C");
-
-        // Add "Sc" label at scene center endpoint
-        draw_list->AddText(ImVec2(scene_center_x + 5, scene_center_y - 10),
-                           IM_COL32(255, 100, 200, 255),
-                           "Sc");
-
-        // Add "Bg" label at background center endpoint
-        draw_list->AddText(ImVec2(bg_center_x + 5, bg_center_y - 10),
-                           IM_COL32(255, 100, 200, 255),
-                           "Bg");
+    if (show_background_to_scene_center_hints && selected.has_value() &&
+        selected.value() < layers.size()) {
+        render_background_to_scene_center_hints(
+            draw_list, origin, level, layers[selected.value()], tile_size_);
     }
 }
 
@@ -771,8 +824,8 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
     bool left_clicked = ImGui::IsMouseClicked(0);
     bool right_clicked = ImGui::IsMouseClicked(1);
 
-    // HUD mode needs to handle dragging even when not clicking, but only when
-    // hovered
+    // HUD mode needs to handle dragging even when not clicking, but only
+    // when hovered
     EditMode mode = editor_panel.get_edit_mode();
     if (mode == EditMode::HUD && hovered) {
         handle_fud_mode_input(level,
@@ -1509,9 +1562,9 @@ void EditorScene::render_background_placement_preview(
     // coverage
     float min_overlap = preview_size * 0.25f;
 
-    // Background is centered, so spannable width extends further left to allow
-    // objects with negative x coordinates (extends from -960 to 960, total
-    // 1920)
+    // Background is centered, so spannable width extends further left to
+    // allow objects with negative x coordinates (extends from -960 to 960,
+    // total 1920)
     float spannable_width_left = -SCREEN_WIDTH * 1.5f;                 // -960
     float spannable_width_right = SCREEN_WIDTH + SCREEN_WIDTH / 2.0f;  // 960
 
