@@ -181,11 +181,21 @@ void render_cursor_(Level& level, EditorPanel& editor_panel,
         }
         case EditMode::Platforms: {
             // Show platform preview (centered on tile, matching game behavior)
+            // Calculate which tile the mouse is over
+            ImVec2 tile_pos =
+                ImVec2((pos.x - origin.x) / 32.0f, (pos.y - origin.y) / 32.0f);
+            int tile_x = static_cast<int>(tile_pos.x);
+            int tile_y = static_cast<int>(tile_pos.y);
+
+            // Calculate the center of that tile (where platform will be placed)
+            float center_x = origin.x + tile_x * 32.0f + 16.0f;
+            float center_y = origin.y + tile_y * 32.0f + 16.0f;
+
             float width = editor_panel.get_platform_size().x * 32.0f;
             float height = editor_panel.get_platform_size().y * 32.0f;
             draw_list->AddRectFilled(
-                ImVec2(pos.x - width / 2, pos.y - height / 2),
-                ImVec2(pos.x + width / 2, pos.y + height / 2),
+                ImVec2(center_x - width / 2, center_y - height / 2),
+                ImVec2(center_x + width / 2, center_y + height / 2),
                 IM_COL32(255, 255, 0, 128));  // Semi-transparent yellow
             break;
         }
