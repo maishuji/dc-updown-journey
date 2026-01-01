@@ -305,6 +305,12 @@ bool Scene::load_from_file(const std::string& filename) {
         m_name = scene_data.value("name", "Unnamed Level");
         m_scroll_speed = scene_data.value("scroll_speed", 1.0f);
 
+        // Load physics config
+        m_physics_config.gravity =
+            scene_data.value("gravity", m_physics_config.gravity);
+        m_physics_config.terminal_velocity = scene_data.value(
+            "terminal_velocity", m_physics_config.terminal_velocity);
+
         // Load scene type (defaults to LEVEL for backward compatibility)
 
         m_scene_type = get_scene_type_(scene_data);
@@ -387,6 +393,8 @@ bool Scene::save_to_file(const std::string& filename) const {
 
         scene_data["name"] = m_name;
         scene_data["scroll_speed"] = m_scroll_speed;
+        scene_data["gravity"] = m_physics_config.gravity;
+        scene_data["terminal_velocity"] = m_physics_config.terminal_velocity;
 
         // Save scene type
         scene_data["scene_type"] =

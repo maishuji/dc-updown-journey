@@ -6,6 +6,7 @@
 #include <string>
 
 #include <nlohmann/json.hpp>
+#include <udj-core/Logger.hpp>
 
 #include "udjourney-editor/background/BackgroundManager.hpp"
 
@@ -18,11 +19,11 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
     error_message_.clear();
 
     std::ifstream in(file_path_);
-    std::cout << "Importing level from: " << file_path_ << std::endl;
+    udj::core::Logger::info("Importing level from: %", file_path_);
 
     if (!in.is_open()) {
         error_message_ = "Failed to open file: " + file_path_;
-        std::cerr << error_message_ << std::endl;
+        udj::core::Logger::error(error_message_);
         return;
     }
 
@@ -41,7 +42,7 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
             level.scene_type = (scene_type_str == "ui_screen")
                                    ? SceneType::UI_SCREEN
                                    : SceneType::LEVEL;
-            std::cout << "Loaded scene type: " << scene_type_str << std::endl;
+            udj::core::Logger::info("Loaded scene type: %", scene_type_str);
         } else {
             level.scene_type = SceneType::LEVEL;
         }
@@ -49,11 +50,16 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
         // Load scroll speed (defaults to 1.0)
         if (jlevel.contains("scroll_speed")) {
             level.scroll_speed = jlevel["scroll_speed"].get<float>();
-            std::cout << "Loaded scroll speed: " << level.scroll_speed
-                      << std::endl;
+            udj::core::Logger::info("Loaded scroll speed: %",
+                                    level.scroll_speed);
         } else {
             level.scroll_speed = 1.0f;  // Default
         }
+
+        // Load physics config
+        level.physics_config.gravity = jlevel.value("gravity", 0.5f);
+        level.physics_config.terminal_velocity =
+            jlevel.value("terminal_velocity", 10.0f);
 
         // Get level dimensions from JSON if available, otherwise use provided
         int level_rows = tiles_y;
@@ -210,18 +216,17 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
                     from_json(jfud, hud);  // Explicit call to from_json
                     level.huds.push_back(hud);
                 } catch (const std::exception& e) {
-                    std::cerr << "Warning: Failed to load FUD: " << e.what()
-                              << std::endl;
+                    udj::core::Logger::error("Failed to load FUD: %", e.what());
                 }
             }
         }
 
         import_success_ = true;
-        std::cout << "Successfully imported level from: " << file_path_
-                  << std::endl;
+        udj::core::Logger::info("Successfully imported level from: %",
+                                file_path_);
     } catch (const std::exception& e) {
         error_message_ = std::string("Error importing level JSON: ") + e.what();
-        std::cerr << error_message_ << std::endl;
+        udj::core::Logger::error("%", error_message_);
         import_success_ = false;
     }
 }

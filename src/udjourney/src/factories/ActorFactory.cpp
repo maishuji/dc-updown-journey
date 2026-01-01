@@ -38,8 +38,11 @@ std::unique_ptr<IActor> MonsterFactory::create_actor(Rectangle rect) {
 
     // Create a Monster actor instance with animation controller loaded from
     // JSON
-    auto monster = std::make_unique<Monster>(
-        m_game, rect, std::move(anim_controller), m_event_dispatcher);
+    auto monster = std::make_unique<Monster>(m_game,
+                                             rect,
+                                             std::move(anim_controller),
+                                             m_event_dispatcher,
+                                             physics_config_);
 
     // Set patrol range relative to spawn position
     monster->set_patrol_range(rect.x - 100.0f, rect.x + 100.0f);
@@ -92,7 +95,8 @@ std::unique_ptr<IActor> MonsterFactory::create_actor_from_monster_data(
     auto monster = std::make_unique<Monster>(m_game,
                                              monster_rect,
                                              std::move(monster_anim_controller),
-                                             m_event_dispatcher);
+                                             m_event_dispatcher,
+                                             physics_config_);
 
     udjourney::Logger::debug("Monster created successfully!");
 
@@ -135,8 +139,11 @@ std::unique_ptr<IActor> PlayerFactory::create_actor(Rectangle rect) {
         udjourney::loaders::AnimationConfigLoader::load_and_create(config_path);
 
     // Create Player with animation controller loaded from JSON
-    auto player = std::make_unique<Player>(
-        m_game, rect, m_event_dispatcher, std::move(anim_controller));
+    auto player = std::make_unique<Player>(m_game,
+                                           rect,
+                                           m_event_dispatcher,
+                                           std::move(anim_controller),
+                                           physics_config_);
 
     return player;
 }

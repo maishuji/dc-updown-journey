@@ -36,8 +36,6 @@ const float kMoveSpeedYDefault = 5.0F;
 const float kMoveSpeedXDefault = 3.0F;
 const float kDashSpeed = 15.0F;
 const float kJumpExhaustion = 0.1F;
-const float kGravityAcceleration = 0.5F;  // Gravity acceleration per frame
-const float kMaxFallSpeed = 10.0F;        // Terminal velocity
 const float kJumpStrength = -8.0F;  // Initial jump velocity (negative = up)
 
 struct InputMapping {
@@ -98,12 +96,14 @@ struct Player::PImpl {
 
 Player::Player(const IGame &iGame, Rectangle iRect,
                udjourney::core::events::EventDispatcher &ioDispatcher,
-               AnimSpriteController anim_controller) :
+               AnimSpriteController anim_controller,
+               const scene::LevelPhysicsConfig &physics_config) :
     IActor(iGame),
     r(iRect),
     m_pimpl(std::make_unique<Player::PImpl>()),
     anim_controller_(std::move(anim_controller)),
-    m_dispatcher(ioDispatcher) {
+    m_dispatcher(ioDispatcher),
+    m_physics_config(physics_config) {
     if (m_texture.id == 0) {
         auto &texture_manager = TextureManager::get_instance();
         m_texture = texture_manager.get_texture("placeholder.png");
@@ -149,10 +149,10 @@ void Player::update(float iDelta) {
     anim_controller_.update(iDelta);
 
     // Apply gravity
-    m_pimpl->velocity_y += kGravityAcceleration;
+    m_pimpl->velocity_y += m_physics_config.gravity;
     // Clamp to terminal velocity
-    if (m_pimpl->velocity_y > kMaxFallSpeed) {
-        m_pimpl->velocity_y = kMaxFallSpeed;
+    if (m_pimpl->velocity_y > m_physics_config.terminal_velocity) {
+        m_pimpl->velocity_y = m_physics_config.terminal_velocity;
     }
 
     // Apply vertical velocity to position

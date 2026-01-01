@@ -134,6 +134,8 @@ void Editor::export_platform_level_json(const std::string &export_path) {
     // Level metadata
     jlevel["name"] = "Untitled Level";
     jlevel["scroll_speed"] = pimpl->level.scroll_speed;
+    jlevel["gravity"] = pimpl->level.physics_config.gravity;
+    jlevel["terminal_velocity"] = pimpl->level.physics_config.terminal_velocity;
 
     // Scene type
     jlevel["scene_type"] = (pimpl->level.scene_type == SceneType::UI_SCREEN)
@@ -531,6 +533,41 @@ void Editor::run() {
                             "Lower = slower scrolling, Higher = faster "
                             "scrolling");
                     }
+
+                    ImGui::Separator();
+
+                    // Gravity settings
+                    ImGui::Text("Gravity");
+                    if (ImGui::SliderFloat("##Gravity",
+                                           &pimpl->level.physics_config.gravity,
+                                           0.0f,
+                                           3.0f,
+                                           "%.2f acceleration")) {
+                        // Value updated by ImGui
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip(
+                            "Gravity acceleration per frame\n"
+                            "Default: 0.5 (Player), 1.0 (Monster)\n"
+                            "Lower = moon gravity, Higher = heavy gravity");
+                    }
+
+                    ImGui::Text("Terminal Velocity");
+                    if (ImGui::SliderFloat(
+                            "##TerminalVelocity",
+                            &pimpl->level.physics_config.terminal_velocity,
+                            1.0f,
+                            20.0f,
+                            "%.1f max speed")) {
+                        // Value updated by ImGui
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip(
+                            "Maximum falling speed\n"
+                            "Default: 10.0\n"
+                            "Lower = slower falls, Higher = faster falls");
+                    }
+
                     ImGui::Separator();
                 }
                 // ...inside ImGui::BeginMenu("File")...

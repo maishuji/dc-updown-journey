@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "udjourney-editor/hud/HUDElement.hpp"
+#include "udjourney/scene/LevelPhysicsConfig.hpp"
 
 // Forward declarations for udjourney types
 enum class PlatformBehaviorType {
@@ -64,6 +65,8 @@ struct Level {
     int player_spawn_y = 8;
     SceneType scene_type = SceneType::LEVEL;  // Default to level
     float scroll_speed = 1.0f;  // Camera scroll speed (pixels per frame)
+    udjourney::scene::LevelPhysicsConfig
+        physics_config;  // Physics configuration
 
     void clear() {
         tiles.clear();

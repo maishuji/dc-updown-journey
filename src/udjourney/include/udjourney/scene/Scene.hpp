@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "LevelPhysicsConfig.hpp"
+
 namespace udjourney {
 namespace scene {
 
@@ -170,6 +172,9 @@ class Scene {
     const std::string& get_name() const { return m_name; }
     SceneType get_type() const { return m_scene_type; }
     float get_scroll_speed() const { return m_scroll_speed; }
+    const LevelPhysicsConfig& get_physics_config() const {
+        return m_physics_config;
+    }
     const GameMenuData& get_game_menu() const { return m_game_menu; }
     bool has_game_menu() const { return !m_game_menu.items.empty(); }
 
@@ -177,6 +182,9 @@ class Scene {
     void set_name(const std::string& name) { m_name = name; }
     void set_type(SceneType type) { m_scene_type = type; }
     void set_scroll_speed(float speed) { m_scroll_speed = speed; }
+    void set_physics_config(const LevelPhysicsConfig& config) {
+        m_physics_config = config;
+    }
     void add_platform(const PlatformData& platform) {
         m_platforms.push_back(platform);
     }
@@ -207,6 +215,7 @@ class Scene {
         SceneType::Level;  // Default to level for backward compatibility
     float m_scroll_speed =
         1.0f;  // Default camera scroll speed (pixels per frame)
+    LevelPhysicsConfig m_physics_config;  // Physics configuration
 };
 
 }  // namespace scene

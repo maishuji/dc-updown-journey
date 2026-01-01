@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "udjourney/interfaces/IActor.hpp"
+#include "udjourney/scene/LevelPhysicsConfig.hpp"
 
 // Forward declaration
 namespace udjourney {
@@ -39,9 +40,14 @@ class MonsterFactory : public ActorFactory {
     std::unique_ptr<IActor> create_actor_from_monster_data(
         const scene::MonsterSpawnData &monster_data);
 
+    void set_physics_config(const scene::LevelPhysicsConfig &config) {
+        physics_config_ = config;
+    }
+
  private:
     const IGame &m_game;
     udjourney::core::events::EventDispatcher &m_event_dispatcher;
+    scene::LevelPhysicsConfig physics_config_;
 };
 
 class PlayerFactory : public ActorFactory {
@@ -51,8 +57,13 @@ class PlayerFactory : public ActorFactory {
     std::unique_ptr<IActor> create_actor() override;
     std::unique_ptr<IActor> create_actor(Rectangle rect);
 
+    void set_physics_config(const scene::LevelPhysicsConfig &config) {
+        physics_config_ = config;
+    }
+
  private:
     const IGame &m_game;
     udjourney::core::events::EventDispatcher &m_event_dispatcher;
+    scene::LevelPhysicsConfig physics_config_;
 };
 }  // namespace udjourney

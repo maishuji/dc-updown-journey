@@ -12,6 +12,7 @@
 #include "udjourney/interfaces/IObservable.hpp"
 #include "udjourney/interfaces/IObserver.hpp"
 #include "udjourney/AnimSpriteController.hpp"
+#include "udjourney/scene/LevelPhysicsConfig.hpp"
 
 // Forward declarations
 namespace udjourney {
@@ -22,7 +23,8 @@ class Player : public IActor, public IObservable {
  public:
     Player(const IGame &iGame, Rectangle iRect,
            udjourney::core::events::EventDispatcher &ioDispatcher,
-           AnimSpriteController anim_controller);
+           AnimSpriteController anim_controller,
+           const scene::LevelPhysicsConfig &physics_config);
     ~Player() override;
     void draw() const override;
     void update(float iDelta) override;
@@ -72,6 +74,9 @@ class Player : public IActor, public IObservable {
 
  private:
     float m_invincibility_timer = 0.0F;
+
+    // Physics configuration
+    scene::LevelPhysicsConfig m_physics_config;
 
     // Projectile system
     std::unique_ptr<udjourney::ProjectilePresetLoader> projectile_loader_;

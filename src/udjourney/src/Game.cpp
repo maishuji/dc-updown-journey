@@ -266,11 +266,17 @@ void Game::run() {
                 spawn_data.tile_x, spawn_data.tile_y);
         }
 
+        // Get physics config from scene
+        const auto &physics_config = m_current_scene
+                                         ? m_current_scene->get_physics_config()
+                                         : scene::LevelPhysicsConfig{};
+
         m_player = std::make_unique<Player>(
             *this,
             Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
             m_event_dispatcher,
-            create_player_animation_controller());
+            create_player_animation_controller(),
+            physics_config);
         m_player->add_observer(static_cast<IObserver *>(this));
 
         create_platforms_from_scene();
@@ -1307,6 +1313,9 @@ void Game::create_monsters_from_scene() {
     const auto &monster_spawn_data = m_current_scene->get_monster_spawns();
     MonsterFactory factory(*this, m_event_dispatcher);
 
+    // Set physics config from scene
+    factory.set_physics_config(m_current_scene->get_physics_config());
+
     for (const auto &monster_data : monster_spawn_data) {
         try {
             // Use MonsterFactory to create the monster
@@ -1351,8 +1360,6 @@ void Game::restart_level() {
     create_monsters_from_scene();
     // Create HUD objects from scene
 
-    // Reset player position
-
     // Set initial checkpoint if starting fresh
     if (m_current_scene) {
         auto spawn_data = m_current_scene->get_player_spawn();
@@ -1360,16 +1367,23 @@ void Game::restart_level() {
             spawn_data.tile_x, spawn_data.tile_y);
     }
 
-    // Reset player at last checkpoint
-    if (m_player) {
-        m_player->set_rectangle(
-            Rectangle{m_last_checkpoint.x, m_last_checkpoint.y, 20, 20});
+    // Recreate player with updated physics config from reloaded scene
+    if (m_current_scene) {
+        const auto &physics_config = m_current_scene->get_physics_config();
+
+        m_player = std::make_unique<Player>(
+            *this,
+            Rectangle{m_last_checkpoint.x, m_last_checkpoint.y, 20, 20},
+            m_event_dispatcher,
+            create_player_animation_controller(),
+            physics_config);
+        m_player->add_observer(static_cast<IObserver *>(this));
         m_player->set_invicibility(1.8f);  // Brief invincibility after restart
 
-        // Reset player health to full
-        if (auto *health = m_player->get_component<HealthComponent>()) {
-            health->heal(health->get_max_health());  // Restore to max health
-        }
+        // Load projectile presets
+        m_player->load_projectile_presets("projectiles.json");
+        m_player->set_current_projectile("bullet");
+
         create_huds_from_scene();
     }
 
@@ -1647,11 +1661,17 @@ void Game::initialize_gameplay() {
             spawn_data.tile_x, spawn_data.tile_y);
     }
 
+    // Get physics config from scene
+    const auto &physics_config = m_current_scene
+                                     ? m_current_scene->get_physics_config()
+                                     : scene::LevelPhysicsConfig{};
+
     m_player = std::make_unique<Player>(
         *this,
         Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
         m_event_dispatcher,
-        create_player_animation_controller());
+        create_player_animation_controller(),
+        physics_config);
     m_player->add_observer(static_cast<IObserver *>(this));
 
     // Create HUD objects from scene

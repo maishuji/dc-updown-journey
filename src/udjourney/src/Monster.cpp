@@ -23,12 +23,14 @@ using udj::core::Logger;
 namespace udjourney {
 Monster::Monster(const IGame& game, Rectangle rect,
                  AnimSpriteController anim_controller,
-                 udjourney::core::events::EventDispatcher& dispatcher) :
+                 udjourney::core::events::EventDispatcher& dispatcher,
+                 const scene::LevelPhysicsConfig& physics_config) :
     IActor(game),
     game_(game),
     rect_(rect),
     anim_controller_(std::move(anim_controller)),
-    dispatcher_(dispatcher) {
+    dispatcher_(dispatcher),
+    physics_config_(physics_config) {
     // Use default stats for now
     health_ = 100.0f;
     max_health_ = 100.0f;
@@ -241,9 +243,9 @@ void Monster::set_patrol_range(float min_x, float max_x) {
 
 void Monster::apply_gravity(float delta) {
     if (!grounded_) {
-        velocity_y_ += GRAVITY;
-        if (velocity_y_ > MAX_FALL_SPEED) {
-            velocity_y_ = MAX_FALL_SPEED;
+        velocity_y_ += physics_config_.gravity;
+        if (velocity_y_ > physics_config_.terminal_velocity) {
+            velocity_y_ = physics_config_.terminal_velocity;
         }
     }
 }
