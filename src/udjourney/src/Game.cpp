@@ -1197,6 +1197,9 @@ bool Game::load_scene(const std::string &filename) {
         return false;
     }
 
+    // Track the current scene filename for restart functionality
+    m_current_scene_filename = filename;
+
     // Bind background system to the new scene (sort layers + preload textures)
     m_background_manager.set_scene(*m_current_scene);
 
@@ -1324,6 +1327,15 @@ void Game::create_monsters_from_scene() {
 }
 
 void Game::restart_level() {
+    // Reload the current scene from file to ensure we have fresh data
+    if (!m_current_scene_filename.empty() && m_current_scene) {
+        if (!m_current_scene->load_from_file(m_current_scene_filename)) {
+            Logger::error("Failed to reload scene for restart: %",
+                          m_current_scene_filename);
+            return;
+        }
+    }
+
     // Reset game state
     m_state = GameState::PLAY;
 

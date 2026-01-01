@@ -144,5 +144,6 @@ class Game : public IGame, public IObserver {
     // State-specific renderers
     std::unordered_map<GameState, std::unique_ptr<IStateRenderer>>
         m_state_renderers;
+    std::string m_current_scene_filename;  // Track current scene for restart
 };
 }  // namespace udjourney
