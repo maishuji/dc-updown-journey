@@ -1200,6 +1200,11 @@ bool Game::load_scene(const std::string &filename) {
     // Track the current scene filename for restart functionality
     m_current_scene_filename = filename;
 
+    // Track gameplay levels separately so we can restart from game over screen
+    if (m_current_scene->get_type() == udjourney::scene::SceneType::Level) {
+        m_last_gameplay_level_filename = filename;
+    }
+
     // Bind background system to the new scene (sort layers + preload textures)
     m_background_manager.set_scene(*m_current_scene);
 
@@ -1472,16 +1477,24 @@ void Game::attack_nearby_monsters() {
 }
 
 void Game::register_menu_actions() {
-    // Start Game action
+    // Start Game action (restart last gameplay level or load level1 if no level
+    // was played)
     ActionDispatcher::register_action(
         "start_game", [](IGame *game, const std::vector<std::string> &params) {
             std::cout << "[ACTION] Start Game triggered" << std::endl;
             auto &g = static_cast<Game &>(*game);
-            // Load level1 scene first
-            std::string level_path =
-                udjourney::coreutils::get_assets_path("levels/level1.json");
-            g.m_state = GameState::PLAY;
-            g.load_and_apply_scene(level_path);
+
+            // If we have a last gameplay level, load and restart it
+            if (!g.m_last_gameplay_level_filename.empty()) {
+                g.m_state = GameState::PLAY;
+                g.load_and_apply_scene(g.m_last_gameplay_level_filename);
+            } else {
+                // Load level1 scene (for initial game start)
+                std::string level_path =
+                    udjourney::coreutils::get_assets_path("levels/level1.json");
+                g.m_state = GameState::PLAY;
+                g.load_and_apply_scene(level_path);
+            }
         });
 
     // Load Level action (format: "load_level:level_name")
