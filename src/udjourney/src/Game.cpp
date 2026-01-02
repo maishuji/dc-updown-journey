@@ -223,14 +223,7 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     m_world_bounds.set_bounds(
         0.0f, static_cast<float>(iWidth), 0.0f, static_cast<float>(iHeight));
 
-    // Register ScoreEvent handler to update score
-    m_event_dispatcher.register_handler(
-        udjourney::core::events::ScoreEvent::TYPE,
-        [this](const udjourney::core::events::IEvent &evt) {
-            const auto &score_ev =
-                static_cast<const udjourney::core::events::ScoreEvent &>(evt);
-            m_score += score_ev.value;
-        });
+    register_core_event_handlers_();
 
     // Register menu action callbacks
     register_menu_actions();
@@ -429,7 +422,6 @@ void Game::clear_scene() {
                                   }),
                    m_actors.end());
 
-    m_event_dispatcher.clear_all_handlers();
     // Clear background HUDs
     m_hud_manager.clear_background_huds();
 
@@ -443,6 +435,19 @@ void Game::clear_scene() {
     m_player.reset();
 }
 
+void Game::register_core_event_handlers_() {
+    // Core game-wide handlers that should persist across scenes.
+    // Scene-specific handlers (HUD listeners, etc.) are expected to be
+    // registered by their respective objects and are cleared on scene switch.
+    m_event_dispatcher.register_handler(
+        udjourney::core::events::ScoreEvent::TYPE,
+        [this](const udjourney::core::events::IEvent &evt) {
+            const auto &score_ev =
+                static_cast<const udjourney::core::events::ScoreEvent &>(evt);
+            m_score += score_ev.value;
+        });
+}
+
 /**
  * Applies the currently loaded scene by creating platforms, monsters,
  * and HUDs defined in the scene.
@@ -450,6 +455,7 @@ void Game::clear_scene() {
  */
 void Game::apply_current_scene(SceneApplyMode mode) {
     m_event_dispatcher.clear_all_handlers();
+    register_core_event_handlers_();
     if (!m_current_scene) {
         udj::core::Logger::error("No current scene to apply!");
         return;
@@ -970,6 +976,9 @@ void Game::update() {
                     if (player_bottom >= m_level_height * 0.98f) {
                         m_state = GameState::WIN;
 
+                        // Save final score for display on win screen
+                        m_final_score = m_score;
+
                         // Load win screen with widgets
                         std::string win_path =
                             udjourney::coreutils::get_assets_path(
@@ -1106,9 +1115,9 @@ void Game::on_notify(const std::string &iEvent) {
                 return;
             }
             m_state = GameState::GAMEOVER;
-            // Save current score to history
+            // Save current score to history and final score for display
             m_score_history.add_score(m_score);
-            m_score = 0;  // Reset score
+            m_final_score = m_score;
 
             // Load game over screen with widgets
             std::string gameover_path = udjourney::coreutils::get_assets_path(
@@ -1131,6 +1140,7 @@ void Game::on_notify(const std::string &iEvent) {
                 // Load game over screen widgets
                 create_huds_from_scene();
                 m_rect.y = 0;  // Reset camera
+                m_score = 0;  // Reset score for next game
             }
         } break;
         case kModeScoring:

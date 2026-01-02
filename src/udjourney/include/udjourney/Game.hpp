@@ -54,7 +54,13 @@ class Game : public IGame, public IObserver {
     }
 
     // Score access for HUDs
-    [[nodiscard]] int get_score() const { return m_score; }
+    [[nodiscard]] int get_score() const { 
+        // Return final score on game over/win screens for display
+        if (m_state == GameState::GAMEOVER || m_state == GameState::WIN) {
+            return m_final_score;
+        }
+        return m_score; 
+    }
 
     // Public accessors for state renderers
     const std::vector<std::unique_ptr<IActor>> &get_actors() const {
@@ -84,6 +90,8 @@ class Game : public IGame, public IObserver {
     HUDManager &get_hud_manager() { return m_hud_manager; }
 
  private:
+     void register_core_event_handlers_();
+
     // Level selection helper methods
     void show_level_select_menu();
     void hide_level_select_menu();
@@ -122,6 +130,7 @@ class Game : public IGame, public IObserver {
     BonusManager m_bonus_manager;
     ScoreHistory<int64_t> m_score_history;
     int m_score = 0;
+    int m_final_score = 0;  // Score to display on game over/win screens
     HUDManager m_hud_manager;
     BackgroundManager m_background_manager;
     udjourney::core::events::EventDispatcher m_event_dispatcher;
