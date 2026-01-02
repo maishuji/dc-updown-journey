@@ -54,12 +54,12 @@ class Game : public IGame, public IObserver {
     }
 
     // Score access for HUDs
-    [[nodiscard]] int get_score() const { 
+    [[nodiscard]] int get_score() const {
         // Return final score on game over/win screens for display
         if (m_state == GameState::GAMEOVER || m_state == GameState::WIN) {
             return m_final_score;
         }
-        return m_score; 
+        return m_score;
     }
 
     // Public accessors for state renderers
@@ -90,7 +90,7 @@ class Game : public IGame, public IObserver {
     HUDManager &get_hud_manager() { return m_hud_manager; }
 
  private:
-     void register_core_event_handlers_();
+    void register_core_event_handlers_();
 
     // Level selection helper methods
     void show_level_select_menu();

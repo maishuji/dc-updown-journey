@@ -1140,7 +1140,7 @@ void Game::on_notify(const std::string &iEvent) {
                 // Load game over screen widgets
                 create_huds_from_scene();
                 m_rect.y = 0;  // Reset camera
-                m_score = 0;  // Reset score for next game
+                m_score = 0;   // Reset score for next game
             }
         } break;
         case kModeScoring:

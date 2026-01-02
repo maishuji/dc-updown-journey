@@ -11,7 +11,8 @@
 namespace udjourney {
 
 // Helper function to parse color from JSON array string
-static Color parse_color_from_property(const std::string& color_str) {
+static Color parse_color_from_property(const std::string& color_str,
+                                       Color default_color = BLACK) {
     try {
         // Parse JSON array string like "[255,255,0]" or "[255,255,0,255]"
         auto color_json = nlohmann::json::parse(color_str);
@@ -28,7 +29,7 @@ static Color parse_color_from_property(const std::string& color_str) {
     } catch (const std::exception& e) {
         std::cerr << "Error parsing color: " << e.what() << std::endl;
     }
-    return WHITE;  // Default fallback
+    return default_color;  // Default fallback
 }
 
 ButtonWidget::ButtonWidget(const IGame& game,
@@ -36,10 +37,10 @@ ButtonWidget::ButtonWidget(const IGame& game,
     IWidget(game),
     text_("Button"),
     font_size_(24),
-    normal_color_(WHITE),
-    hover_color_(YELLOW),
+    normal_color_(BLACK),
+    hover_color_(GREEN),
     click_color_(GREEN),
-    focused_color_(YELLOW),
+    focused_color_(BLUE),
     bg_color_(ColorAlpha(BLACK, 0.7f)),
     border_thickness_(2) {
     // Calculate anchor position based on screen size (same as

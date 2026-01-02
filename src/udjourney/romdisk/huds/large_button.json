@@ -42,6 +42,15 @@
       ],
       "description": "Text color when hovered"
     },
+    "focused_color": {
+      "type": "color",
+      "default": [
+        0,
+        0,
+        255
+      ],
+      "description": "Text color when hovered"
+    },
     "click_color": {
       "type": "color",
       "default": [
