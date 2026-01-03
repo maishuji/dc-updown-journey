@@ -58,29 +58,17 @@ void ButtonHUDRenderer::render(const HUDElement& hud, ImDrawList* draw_list,
 }
 
 std::string ButtonHUDRenderer::get_button_text(const HUDElement& hud) const {
-    try {
-        if (hud.properties.count("text")) {
-            auto& text_prop = hud.properties.at("text");
-            if (text_prop.is_string()) {
-                return text_prop.get<std::string>();
-            }
-        }
-    } catch (...) {
+    auto opt_text = hud.get_string_from_property("text");
+    if (opt_text.has_value()) {
+        return opt_text.value();
     }
     return "Button";
 }
 
 int ButtonHUDRenderer::get_font_size(const HUDElement& hud) const {
-    try {
-        if (hud.properties.count("font_size")) {
-            auto& size_prop = hud.properties.at("font_size");
-            if (size_prop.is_number_integer()) {
-                return size_prop.get<int>();
-            } else if (size_prop.is_string()) {
-                return std::stoi(size_prop.get<std::string>());
-            }
-        }
-    } catch (...) {
+    auto opt_size = hud.get_int_from_property("font_size");
+    if (opt_size.has_value()) {
+        return opt_size.value();
     }
     return 24;  // Default font size
 }

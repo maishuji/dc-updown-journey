@@ -3,6 +3,7 @@
 
 #include <imgui.h>
 #include <string>
+#include <optional>
 #include <nlohmann/json.hpp>
 
 // HUD anchor position on screen
@@ -101,6 +102,14 @@ struct HUDElement {
         offset(offset),
         size(size),
         visible(true) {}
+
+ public:
+    [[nodiscard]] ImU32 get_color_from_property(
+        const std::string& property) const;
+    [[nodiscard]] std::optional<int> get_int_from_property(
+        const std::string& property) const;
+    [[nodiscard]] std::optional<std::string> get_string_from_property(
+        const std::string& property) const;
 };
 
 // JSON serialization

@@ -3,25 +3,268 @@
     "layers": [
       {
         "auto_scroll_enabled": true,
-        "depth": 0,
-        "name": "Celebration Stars",
-        "objects": [],
-        "parallax_factor": 1.0,
-        "repeat": false,
-        "scroll_speed_x": 0.0,
-        "scroll_speed_y": 0.0,
-        "texture_file": "backgrounds/stars.png"
-      },
-      {
-        "auto_scroll_enabled": true,
         "depth": 1,
-        "name": "Victory Clouds",
-        "objects": [],
-        "parallax_factor": 0.8999999761581421,
-        "repeat": false,
+        "name": "back",
+        "objects": [
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 160.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 160.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 160.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 160.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 160.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 288.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 288.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 288.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 288.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 288.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Pattern 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.9980000257492065,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 352.0,
+            "y": 352.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.3969999551773071,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 544.0,
+            "y": 416.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 0.9409999847412109,
+            "sprite_name": "Tree Winter",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 1,
+            "tile_row": 1,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 480.0
+          }
+        ],
+        "parallax_factor": 1.0,
+        "repeat": true,
         "scroll_speed_x": 0.0,
         "scroll_speed_y": 0.0,
-        "texture_file": "backgrounds/clouds.png"
+        "texture_file": ""
       }
     ]
   },
@@ -38,16 +281,21 @@
       "background_tile_width": 2,
       "name": "Play Again Button",
       "offset": {
-        "x": -152.0,
-        "y": 8.0
+        "x": -128.0,
+        "y": 16.0
       },
       "properties": {
         "border_thickness": "2",
         "button_action": "start_game",
         "click_color": [
-          209,
+          211,
           5,
           172
+        ],
+        "focused_color": [
+          222,
+          34,
+          34
         ],
         "font_size": "24",
         "hover_color": [
@@ -64,7 +312,7 @@
         "text": "PLAY AGAIN"
       },
       "size": {
-        "x": 251.0,
+        "x": 256.0,
         "y": 64.0
       },
       "type_id": "menu_button",
@@ -81,7 +329,7 @@
       "background_tile_width": 2,
       "name": "Return to Title Button",
       "offset": {
-        "x": -152.0,
+        "x": -128.0,
         "y": 80.0
       },
       "properties": {
@@ -91,6 +339,11 @@
           130,
           3,
           178
+        ],
+        "focused_color": [
+          222,
+          34,
+          34
         ],
         "font_size": "20",
         "hover_color": [
@@ -107,7 +360,7 @@
         "text": "RETURN TO TITLE"
       },
       "size": {
-        "x": 258.0,
+        "x": 256.0,
         "y": 64.0
       },
       "type_id": "menu_button",
@@ -124,8 +377,8 @@
       "background_tile_width": 2,
       "name": "Quit Button",
       "offset": {
-        "x": -160.0,
-        "y": 152.0
+        "x": -128.0,
+        "y": 144.0
       },
       "properties": {
         "border_thickness": "2",
@@ -134,6 +387,11 @@
           118,
           0,
           141
+        ],
+        "focused_color": [
+          222,
+          34,
+          34
         ],
         "font_size": "20",
         "hover_color": [
@@ -150,7 +408,7 @@
         "text": "QUIT"
       },
       "size": {
-        "x": 271.0,
+        "x": 256.0,
         "y": 64.0
       },
       "type_id": "menu_button",
@@ -163,6 +421,44 @@
       "background_tile_col": 0,
       "background_tile_height": 1,
       "background_tile_row": 1,
+      "background_tile_size": 64,
+      "background_tile_width": 1,
+      "name": "Icon Button",
+      "offset": {
+        "x": -80.0,
+        "y": 256.0
+      },
+      "properties": {
+        "border_thickness": 2,
+        "button_action": "none",
+        "font_size": 24,
+        "hover_color": [
+          255,
+          0,
+          0
+        ],
+        "normal_color": [
+          255,
+          255,
+          255
+        ],
+        "selectable": false,
+        "text": ""
+      },
+      "size": {
+        "x": 64.0,
+        "y": 64.0
+      },
+      "type_id": "icon_button",
+      "visible": true
+    },
+    {
+      "anchor": "TopRight",
+      "background_render_mode": "Stretch",
+      "background_sheet": "ui/ui_elements.png",
+      "background_tile_col": 0,
+      "background_tile_height": 1,
+      "background_tile_row": 2,
       "background_tile_size": 64,
       "background_tile_width": 1,
       "name": "Icon Button",
@@ -196,48 +492,10 @@
     },
     {
       "anchor": "TopRight",
-      "background_render_mode": "Stretch",
-      "background_sheet": "ui/ui_elements.png",
-      "background_tile_col": 0,
-      "background_tile_height": 1,
-      "background_tile_row": 2,
-      "background_tile_size": 64,
-      "background_tile_width": 1,
-      "name": "Icon Button",
-      "offset": {
-        "x": -208.0,
-        "y": 256.0
-      },
-      "properties": {
-        "border_thickness": 2,
-        "button_action": "none",
-        "font_size": 24,
-        "hover_color": [
-          255,
-          0,
-          0
-        ],
-        "normal_color": [
-          255,
-          255,
-          255
-        ],
-        "selectable": false,
-        "text": ""
-      },
-      "size": {
-        "x": 64.0,
-        "y": 64.0
-      },
-      "type_id": "icon_button",
-      "visible": true
-    },
-    {
-      "anchor": "TopRight",
       "name": "Score Display",
       "offset": {
-        "x": -616.0,
-        "y": 352.0
+        "x": -448.0,
+        "y": 152.0
       },
       "properties": {
         "background_color": [
@@ -247,12 +505,12 @@
           128
         ],
         "background_visible": true,
-        "font_size": 24,
+        "font_size": 30,
         "prefix_text": "Score: ",
         "text_color": [
-          255,
-          255,
-          255
+          0,
+          0,
+          0
         ]
       },
       "size": {
@@ -273,7 +531,7 @@
       "background_tile_width": 1,
       "name": "Icon Button",
       "offset": {
-        "x": -616.0,
+        "x": -624.0,
         "y": 256.0
       },
       "properties": {
@@ -311,7 +569,7 @@
       "background_tile_width": 1,
       "name": "Icon Button",
       "offset": {
-        "x": -552.0,
+        "x": -560.0,
         "y": 256.0
       },
       "properties": {

@@ -1,6 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney-editor/hud/HUDElement.hpp"
 #include <string>
+#include <udj-core/Logger.hpp>
 
 std::string fud_anchor_to_string(HUDAnchor anchor) {
     switch (anchor) {
@@ -169,4 +170,59 @@ void from_json(const nlohmann::json& j, HUDElement& hud) {
             j.value("foreground_render_mode", "Stretch"));
     }
     hud.image_scale = j.value("image_scale", 1.0f);
+}
+
+[[nodiscard]] ImU32 HUDElement::get_color_from_property(
+    const std::string& property) const {
+    try {
+        if (this->properties.count(property)) {
+            auto& color_prop = this->properties.at(property);
+            if (color_prop.is_array() && color_prop.size() >= 3) {
+                int r = color_prop[0].get<int>();
+                int g = color_prop[1].get<int>();
+                int b = color_prop[2].get<int>();
+                int a =
+                    (color_prop.size() >= 4) ? color_prop[3].get<int>() : 255;
+                return IM_COL32(r, g, b, a);
+            }
+        }
+    } catch (...) {
+    }
+    return IM_COL32(255, 255, 255, 255);  // Default white
+}
+
+[[nodiscard]] std::optional<int> HUDElement::get_int_from_property(
+    const std::string& property) const {
+    try {
+        if (this->properties.count(property)) {
+            auto& size_prop = this->properties.at(property);
+            if (size_prop.is_number_integer()) {
+                return size_prop.get<int>();
+            } else if (size_prop.is_string()) {
+                return std::stoi(size_prop.get<std::string>());
+            }
+        }
+    } catch (...) {
+        udj::core::Logger::error(
+            "HUDElement::get_int_from_property: failed to parse property '%'",
+            property);
+    }
+    return std::nullopt;  // Default font size
+}
+[[nodiscard]] std::optional<std::string> HUDElement::get_string_from_property(
+    const std::string& property) const {
+    try {
+        if (this->properties.count(property)) {
+            auto& text_prop = this->properties.at(property);
+            if (text_prop.is_string()) {
+                return text_prop.get<std::string>();
+            }
+        }
+    } catch (...) {
+        udj::core::Logger::error(
+            "HUDElement::get_string _from_property: failed to parse property "
+            "'%'",
+            property);
+    }
+    return std::nullopt;  // Default empty string
 }

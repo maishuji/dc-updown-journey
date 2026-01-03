@@ -42,6 +42,15 @@
       ],
       "description": "Text color when hovered"
     },
+    "focused_color": {
+      "type": "color",
+      "default": [
+        0,
+        191,
+        255
+      ],
+      "description": "Text color when focused with keyboard navigation"
+    },
     "click_color": {
       "type": "color",
       "default": [
