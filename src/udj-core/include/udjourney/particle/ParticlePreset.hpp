@@ -41,7 +41,8 @@ struct ParticlePreset {
     float rotation_speed = 0.0f;  // Degrees per second
 
     // Emitter properties
-    float emitter_lifetime = 0.0f;  // 0 = infinite, >0 = auto-destroy after time
+    float emitter_lifetime =
+        0.0f;  // 0 = infinite, >0 = auto-destroy after time
 };
 
 }  // namespace udjourney

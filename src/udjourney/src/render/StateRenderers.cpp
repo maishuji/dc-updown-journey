@@ -69,7 +69,7 @@ void PlayStateRenderer::render(const Game& game) const {
 
     // Draw finish line
     draw_finish_line_(game);
-    
+
     // Draw particles
     game.draw_particles();
 

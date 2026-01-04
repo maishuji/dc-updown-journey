@@ -33,9 +33,9 @@ struct FrameSpec {
  * Configuration for a single sprite sheet used in an animation
  */
 struct SpriteSheetConfig {
-    std::string filename;     // Path to sprite sheet image
-    int sprite_width = 64;    // Width of each sprite in pixels
-    int sprite_height = 64;   // Height of each sprite in pixels
+    std::string filename;           // Path to sprite sheet image
+    int sprite_width = 64;          // Width of each sprite in pixels
+    int sprite_height = 64;         // Height of each sprite in pixels
     std::vector<FrameSpec> frames;  // Frames to use (in order)
     float frame_duration = 0.1f;    // Duration per frame in seconds
     bool loop = true;               // Should animation loop

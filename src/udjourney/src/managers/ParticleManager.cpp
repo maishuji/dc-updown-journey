@@ -7,9 +7,7 @@
 
 namespace udjourney {
 
-ParticleManager::~ParticleManager() {
-    unload_textures_();
-}
+ParticleManager::~ParticleManager() { unload_textures_(); }
 
 void ParticleManager::update(float delta) {
     // Update all emitters
@@ -18,18 +16,16 @@ void ParticleManager::update(float delta) {
             emitter->update(delta);
         }
     }
-    
+
     // Remove dead emitters
     cleanup_dead_emitters_();
 }
 
-void ParticleManager::draw() const {
-    draw(Vector2{0.0f, 0.0f});
-}
+void ParticleManager::draw() const { draw(Vector2{0.0f, 0.0f}); }
 
 void ParticleManager::draw(Vector2 camera_offset) const {
     ensure_textures_loaded_();
-    
+
     // Draw all particles from all emitters (including inactive burst emitters)
     for (const auto& emitter : emitters_) {
         if (emitter) {
@@ -46,22 +42,24 @@ void ParticleManager::draw(Vector2 camera_offset) const {
     }
 }
 
-ParticleEmitter* ParticleManager::create_emitter(const ParticlePreset& preset, Vector2 position) {
+ParticleEmitter* ParticleManager::create_emitter(const ParticlePreset& preset,
+                                                 Vector2 position) {
     auto emitter = std::make_unique<ParticleEmitter>(preset);
     emitter->set_position(position);
-    
+
     ParticleEmitter* ptr = emitter.get();
     emitters_.push_back(std::move(emitter));
-    
+
     return ptr;
 }
 
-void ParticleManager::create_burst(const ParticlePreset& preset, Vector2 position) {
+void ParticleManager::create_burst(const ParticlePreset& preset,
+                                   Vector2 position) {
     auto emitter = std::make_unique<ParticleEmitter>(preset);
     emitter->set_position(position);
     emitter->emit_burst();
-    emitter->set_active(false); // Disable continuous emission
-    
+    emitter->set_active(false);  // Disable continuous emission
+
     emitters_.push_back(std::move(emitter));
 }
 
@@ -83,19 +81,19 @@ size_t ParticleManager::get_total_particle_count() const {
 
 void ParticleManager::cleanup_dead_emitters_() {
     emitters_.erase(
-        std::remove_if(emitters_.begin(), emitters_.end(),
-                      [](const std::unique_ptr<ParticleEmitter>& emitter) {
-                          return emitter == nullptr || emitter->is_dead();
-                      }),
-        emitters_.end()
-    );
+        std::remove_if(emitters_.begin(),
+                       emitters_.end(),
+                       [](const std::unique_ptr<ParticleEmitter>& emitter) {
+                           return emitter == nullptr || emitter->is_dead();
+                       }),
+        emitters_.end());
 }
 
 void ParticleManager::ensure_textures_loaded_() const {
     if (textures_loaded_) {
         return;
     }
-    
+
     // Textures will be loaded on-demand when presets are used
     // For now, mark as loaded
     textures_loaded_ = true;

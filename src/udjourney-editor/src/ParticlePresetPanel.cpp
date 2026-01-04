@@ -34,7 +34,8 @@ int uniform_int(std::mt19937& rng, int min_value, int max_value) {
 }  // namespace
 
 ParticlePresetPanel::ParticlePresetPanel() {
-    particles_json_path_ = udjourney::coreutils::get_assets_path("particles.json");
+    particles_json_path_ =
+        udjourney::coreutils::get_assets_path("particles.json");
 
     std::random_device rd;
     rng_ = std::mt19937(rd());
@@ -64,7 +65,8 @@ void ParticlePresetPanel::draw() {
         if (ImGui::Button("Reload")) {
             load_from_assets_();
             if (!presets_.empty()) {
-                if (selected_index_ < 0 || selected_index_ >= static_cast<int>(presets_.size())) {
+                if (selected_index_ < 0 ||
+                    selected_index_ >= static_cast<int>(presets_.size())) {
                     select_preset_(0);
                 } else {
                     select_preset_(selected_index_);
@@ -116,7 +118,8 @@ void ParticlePresetPanel::draw_left_panel_() {
 }
 
 void ParticlePresetPanel::draw_right_panel_() {
-    if (selected_index_ < 0 || selected_index_ >= static_cast<int>(presets_.size())) {
+    if (selected_index_ < 0 ||
+        selected_index_ >= static_cast<int>(presets_.size())) {
         ImGui::TextDisabled("Select a preset to edit");
         return;
     }
@@ -145,34 +148,44 @@ void ParticlePresetPanel::draw_preset_editor_() {
 
     // Name + texture
     std::strncpy(name_buffer_, p.name.c_str(), sizeof(name_buffer_) - 1);
-    std::strncpy(texture_file_buffer_, p.texture_file.c_str(), sizeof(texture_file_buffer_) - 1);
+    std::strncpy(texture_file_buffer_,
+                 p.texture_file.c_str(),
+                 sizeof(texture_file_buffer_) - 1);
 
     if (ImGui::InputText("Name", name_buffer_, sizeof(name_buffer_))) {
         p.name = name_buffer_;
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("Unique preset identifier used to reference this effect in code/JSON.");
+    tooltip(
+        "Unique preset identifier used to reference this effect in code/JSON.");
 
-    if (ImGui::InputText("Texture File", texture_file_buffer_, sizeof(texture_file_buffer_))) {
+    if (ImGui::InputText("Texture File",
+                         texture_file_buffer_,
+                         sizeof(texture_file_buffer_))) {
         p.texture_file = texture_file_buffer_;
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("Optional texture file for particles (relative to assets).\nIf empty, the preview uses simple circles.");
+    tooltip(
+        "Optional texture file for particles (relative to assets).\nIf empty, "
+        "the preview uses simple circles.");
 
     if (ImGui::Checkbox("Use Atlas", &p.use_atlas)) {
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("When enabled, particles are rendered using a sub-rectangle (Source Rect) of the texture.");
+    tooltip(
+        "When enabled, particles are rendered using a sub-rectangle (Source "
+        "Rect) of the texture.");
 
     // Source rect
     ImGui::Text("Source Rect");
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort)) {
         ImGui::SetTooltip(
             "Texture sub-rectangle used when Use Atlas is enabled.\n"
-            "X/Y are the top-left pixel in the texture; W/H are the size in pixels.");
+            "X/Y are the top-left pixel in the texture; W/H are the size in "
+            "pixels.");
     }
     int rect_x = static_cast<int>(p.source_rect.x);
     int rect_y = static_cast<int>(p.source_rect.y);
@@ -199,48 +212,66 @@ void ParticlePresetPanel::draw_preset_editor_() {
     ImGui::Separator();
 
     // Emission
-    if (ImGui::InputFloat("Emission Rate", &p.emission_rate, 1.0f, 10.0f, "%.2f")) {
+    if (ImGui::InputFloat(
+            "Emission Rate", &p.emission_rate, 1.0f, 10.0f, "%.2f")) {
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("Continuous emission rate in particles/second.\nSet to 0 for burst-only effects.");
+    tooltip(
+        "Continuous emission rate in particles/second.\nSet to 0 for "
+        "burst-only effects.");
     if (ImGui::InputInt("Burst Count", &p.burst_count)) {
         p.burst_count = std::max(0, p.burst_count);
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("If > 0, spawns this many particles at once (burst).\nIf 0, the effect relies on Emission Rate.");
+    tooltip(
+        "If > 0, spawns this many particles at once (burst).\nIf 0, the effect "
+        "relies on Emission Rate.");
 
     // Lifetimes
-    if (ImGui::InputFloat("Particle Lifetime", &p.particle_lifetime, 0.05f, 0.2f, "%.2f")) {
+    if (ImGui::InputFloat(
+            "Particle Lifetime", &p.particle_lifetime, 0.05f, 0.2f, "%.2f")) {
         p.particle_lifetime = std::max(0.01f, p.particle_lifetime);
         has_unsaved_changes_ = true;
         reset_preview_();
     }
     tooltip("Base lifetime (seconds) for each particle before it disappears.");
-    if (ImGui::InputFloat("Lifetime Variance", &p.lifetime_variance, 0.01f, 0.1f, "%.2f")) {
+    if (ImGui::InputFloat(
+            "Lifetime Variance", &p.lifetime_variance, 0.01f, 0.1f, "%.2f")) {
         p.lifetime_variance = std::max(0.0f, p.lifetime_variance);
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("Random +/- variance added to Particle Lifetime for each particle (seconds).");
+    tooltip(
+        "Random +/- variance added to Particle Lifetime for each particle "
+        "(seconds).");
 
     // Velocity/acceleration
-    if (ImGui::SliderFloat2("Velocity Min", &p.velocity_min.x, -500.0f, 500.0f, "%.1f")) {
+    if (ImGui::SliderFloat2(
+            "Velocity Min", &p.velocity_min.x, -500.0f, 500.0f, "%.1f")) {
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("Minimum initial velocity (x,y).\nEach particle picks a random velocity between Min and Max.");
-    if (ImGui::SliderFloat2("Velocity Max", &p.velocity_max.x, -500.0f, 500.0f, "%.1f")) {
+    tooltip(
+        "Minimum initial velocity (x,y).\nEach particle picks a random "
+        "velocity between Min and Max.");
+    if (ImGui::SliderFloat2(
+            "Velocity Max", &p.velocity_max.x, -500.0f, 500.0f, "%.1f")) {
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("Maximum initial velocity (x,y).\nEach particle picks a random velocity between Min and Max.");
-    if (ImGui::SliderFloat2("Acceleration", &p.acceleration.x, -1000.0f, 1000.0f, "%.1f")) {
+    tooltip(
+        "Maximum initial velocity (x,y).\nEach particle picks a random "
+        "velocity between Min and Max.");
+    if (ImGui::SliderFloat2(
+            "Acceleration", &p.acceleration.x, -1000.0f, 1000.0f, "%.1f")) {
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("Constant acceleration applied every frame (x,y).\nUse this like gravity or wind.");
+    tooltip(
+        "Constant acceleration applied every frame (x,y).\nUse this like "
+        "gravity or wind.");
 
     // Colors (0..255 stored)
     float start_rgba[4] = {p.start_color.r / 255.0f,
@@ -253,24 +284,36 @@ void ParticlePresetPanel::draw_preset_editor_() {
                          p.end_color.a / 255.0f};
 
     if (ImGui::ColorEdit4("Start Color", start_rgba)) {
-        p.start_color.r = static_cast<unsigned char>(clamp01(start_rgba[0]) * 255.0f);
-        p.start_color.g = static_cast<unsigned char>(clamp01(start_rgba[1]) * 255.0f);
-        p.start_color.b = static_cast<unsigned char>(clamp01(start_rgba[2]) * 255.0f);
-        p.start_color.a = static_cast<unsigned char>(clamp01(start_rgba[3]) * 255.0f);
+        p.start_color.r =
+            static_cast<unsigned char>(clamp01(start_rgba[0]) * 255.0f);
+        p.start_color.g =
+            static_cast<unsigned char>(clamp01(start_rgba[1]) * 255.0f);
+        p.start_color.b =
+            static_cast<unsigned char>(clamp01(start_rgba[2]) * 255.0f);
+        p.start_color.a =
+            static_cast<unsigned char>(clamp01(start_rgba[3]) * 255.0f);
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("Particle color at spawn (RGBA).\nParticles interpolate from Start Color to End Color over lifetime.");
+    tooltip(
+        "Particle color at spawn (RGBA).\nParticles interpolate from Start "
+        "Color to End Color over lifetime.");
 
     if (ImGui::ColorEdit4("End Color", end_rgba)) {
-        p.end_color.r = static_cast<unsigned char>(clamp01(end_rgba[0]) * 255.0f);
-        p.end_color.g = static_cast<unsigned char>(clamp01(end_rgba[1]) * 255.0f);
-        p.end_color.b = static_cast<unsigned char>(clamp01(end_rgba[2]) * 255.0f);
-        p.end_color.a = static_cast<unsigned char>(clamp01(end_rgba[3]) * 255.0f);
+        p.end_color.r =
+            static_cast<unsigned char>(clamp01(end_rgba[0]) * 255.0f);
+        p.end_color.g =
+            static_cast<unsigned char>(clamp01(end_rgba[1]) * 255.0f);
+        p.end_color.b =
+            static_cast<unsigned char>(clamp01(end_rgba[2]) * 255.0f);
+        p.end_color.a =
+            static_cast<unsigned char>(clamp01(end_rgba[3]) * 255.0f);
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("Particle color at the end of its life (RGBA).\nCommonly fades alpha to 0.");
+    tooltip(
+        "Particle color at the end of its life (RGBA).\nCommonly fades alpha "
+        "to 0.");
 
     // Size / rotation / emitter lifetime
     if (ImGui::InputFloat("Start Size", &p.start_size, 0.5f, 2.0f, "%.2f")) {
@@ -285,17 +328,23 @@ void ParticlePresetPanel::draw_preset_editor_() {
         reset_preview_();
     }
     tooltip("Particle size at the end of its life (pixels).");
-    if (ImGui::InputFloat("Rotation Speed", &p.rotation_speed, 10.0f, 50.0f, "%.1f")) {
+    if (ImGui::InputFloat(
+            "Rotation Speed", &p.rotation_speed, 10.0f, 50.0f, "%.1f")) {
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("Rotation speed in degrees/second.\nOnly visible when using textured rendering.");
-    if (ImGui::InputFloat("Emitter Lifetime", &p.emitter_lifetime, 0.1f, 0.5f, "%.2f")) {
+    tooltip(
+        "Rotation speed in degrees/second.\nOnly visible when using textured "
+        "rendering.");
+    if (ImGui::InputFloat(
+            "Emitter Lifetime", &p.emitter_lifetime, 0.1f, 0.5f, "%.2f")) {
         p.emitter_lifetime = std::max(0.0f, p.emitter_lifetime);
         has_unsaved_changes_ = true;
         reset_preview_();
     }
-    tooltip("How long the emitter keeps spawning particles (seconds).\n0 means infinite (never auto-stops).");
+    tooltip(
+        "How long the emitter keeps spawning particles (seconds).\n0 means "
+        "infinite (never auto-stops).");
 }
 
 void ParticlePresetPanel::draw_preview_() {
@@ -311,13 +360,17 @@ void ParticlePresetPanel::draw_preview_() {
                        IM_COL32(80, 80, 80, 255));
 
     for (const auto& particle : preview_particles_) {
-        float t = particle.lifetime > 0.0f ? particle.age / particle.lifetime : 1.0f;
+        float t =
+            particle.lifetime > 0.0f ? particle.age / particle.lifetime : 1.0f;
         t = clamp01(t);
 
-        float size = lerp_(preview_preset_.start_size, preview_preset_.end_size, t);
-        ImU32 col = lerp_color_(preview_preset_.start_color, preview_preset_.end_color, t);
+        float size =
+            lerp_(preview_preset_.start_size, preview_preset_.end_size, t);
+        ImU32 col = lerp_color_(
+            preview_preset_.start_color, preview_preset_.end_color, t);
 
-        ImVec2 p(center.x + particle.position.x, center.y + particle.position.y);
+        ImVec2 p(center.x + particle.position.x,
+                 center.y + particle.position.y);
         float radius = std::max(0.5f, size * 0.5f);
         draw_list->AddCircleFilled(p, radius, col, 12);
     }
@@ -330,7 +383,8 @@ bool ParticlePresetPanel::load_from_assets_() {
 
     std::ifstream file(particles_json_path_);
     if (!file.is_open()) {
-        std::cerr << "Failed to open particle presets: " << particles_json_path_ << std::endl;
+        std::cerr << "Failed to open particle presets: " << particles_json_path_
+                  << std::endl;
         return false;
     }
 
@@ -339,7 +393,9 @@ bool ParticlePresetPanel::load_from_assets_() {
         file >> j;
 
         if (!j.contains("particles") || !j["particles"].is_array()) {
-            std::cerr << "Invalid particles.json format: missing particles array" << std::endl;
+            std::cerr
+                << "Invalid particles.json format: missing particles array"
+                << std::endl;
             return false;
         }
 
@@ -376,7 +432,8 @@ bool ParticlePresetPanel::load_from_assets_() {
                 p.acceleration.y = pjson["acceleration"].value("y", 0.0f);
             }
 
-            if (pjson.contains("start_color") && pjson["start_color"].is_array() &&
+            if (pjson.contains("start_color") &&
+                pjson["start_color"].is_array() &&
                 pjson["start_color"].size() == 4) {
                 p.start_color.r = pjson["start_color"][0].get<int>();
                 p.start_color.g = pjson["start_color"][1].get<int>();
@@ -420,21 +477,29 @@ bool ParticlePresetPanel::save_to_assets_() {
             pj["name"] = p.name;
             pj["texture_file"] = p.texture_file;
             pj["use_atlas"] = p.use_atlas;
-            pj["source_rect"] = {{"x", static_cast<int>(p.source_rect.x)},
-                                {"y", static_cast<int>(p.source_rect.y)},
-                                {"width", static_cast<int>(p.source_rect.width)},
-                                {"height", static_cast<int>(p.source_rect.height)}};
+            pj["source_rect"] = {
+                {"x", static_cast<int>(p.source_rect.x)},
+                {"y", static_cast<int>(p.source_rect.y)},
+                {"width", static_cast<int>(p.source_rect.width)},
+                {"height", static_cast<int>(p.source_rect.height)}};
 
             pj["emission_rate"] = p.emission_rate;
             pj["burst_count"] = p.burst_count;
             pj["particle_lifetime"] = p.particle_lifetime;
             pj["lifetime_variance"] = p.lifetime_variance;
-            pj["velocity_min"] = {{"x", p.velocity_min.x}, {"y", p.velocity_min.y}};
-            pj["velocity_max"] = {{"x", p.velocity_max.x}, {"y", p.velocity_max.y}};
-            pj["acceleration"] = {{"x", p.acceleration.x}, {"y", p.acceleration.y}};
+            pj["velocity_min"] = {{"x", p.velocity_min.x},
+                                  {"y", p.velocity_min.y}};
+            pj["velocity_max"] = {{"x", p.velocity_max.x},
+                                  {"y", p.velocity_max.y}};
+            pj["acceleration"] = {{"x", p.acceleration.x},
+                                  {"y", p.acceleration.y}};
 
-            pj["start_color"] = {p.start_color.r, p.start_color.g, p.start_color.b, p.start_color.a};
-            pj["end_color"] = {p.end_color.r, p.end_color.g, p.end_color.b, p.end_color.a};
+            pj["start_color"] = {p.start_color.r,
+                                 p.start_color.g,
+                                 p.start_color.b,
+                                 p.start_color.a};
+            pj["end_color"] = {
+                p.end_color.r, p.end_color.g, p.end_color.b, p.end_color.a};
 
             pj["start_size"] = p.start_size;
             pj["end_size"] = p.end_size;
@@ -446,7 +511,8 @@ bool ParticlePresetPanel::save_to_assets_() {
 
         std::ofstream out(particles_json_path_);
         if (!out.is_open()) {
-            std::cerr << "Failed to write particles.json: " << particles_json_path_ << std::endl;
+            std::cerr << "Failed to write particles.json: "
+                      << particles_json_path_ << std::endl;
             return false;
         }
         out << j.dump(2);
@@ -461,8 +527,12 @@ void ParticlePresetPanel::select_preset_(int index) {
     if (index < 0 || index >= static_cast<int>(presets_.size())) return;
     selected_index_ = index;
 
-    std::strncpy(name_buffer_, presets_[selected_index_].name.c_str(), sizeof(name_buffer_) - 1);
-    std::strncpy(texture_file_buffer_, presets_[selected_index_].texture_file.c_str(), sizeof(texture_file_buffer_) - 1);
+    std::strncpy(name_buffer_,
+                 presets_[selected_index_].name.c_str(),
+                 sizeof(name_buffer_) - 1);
+    std::strncpy(texture_file_buffer_,
+                 presets_[selected_index_].texture_file.c_str(),
+                 sizeof(texture_file_buffer_) - 1);
 
     reset_preview_();
 }
@@ -506,7 +576,8 @@ void ParticlePresetPanel::reset_preview_() {
     preview_emitter_age_ = 0.0f;
     preview_burst_emitted_ = false;
 
-    if (selected_index_ >= 0 && selected_index_ < static_cast<int>(presets_.size())) {
+    if (selected_index_ >= 0 &&
+        selected_index_ < static_cast<int>(presets_.size())) {
         preview_preset_ = presets_[selected_index_];
 
         // Burst presets need an immediate emission to be visible.
@@ -520,7 +591,8 @@ void ParticlePresetPanel::reset_preview_() {
 }
 
 void ParticlePresetPanel::update_preview_(float delta_seconds) {
-    if (selected_index_ < 0 || selected_index_ >= static_cast<int>(presets_.size())) {
+    if (selected_index_ < 0 ||
+        selected_index_ >= static_cast<int>(presets_.size())) {
         return;
     }
 
@@ -544,7 +616,8 @@ void ParticlePresetPanel::update_preview_(float delta_seconds) {
         }
 
         if (preview_preset_.emission_rate > 0.0f) {
-            preview_emission_accumulator_ += preview_preset_.emission_rate * delta_seconds;
+            preview_emission_accumulator_ +=
+                preview_preset_.emission_rate * delta_seconds;
             while (preview_emission_accumulator_ >= 1.0f) {
                 spawn_preview_particle_();
                 preview_emission_accumulator_ -= 1.0f;
@@ -563,13 +636,15 @@ void ParticlePresetPanel::update_preview_(float delta_seconds) {
     }
 
     // Cleanup dead
-    preview_particles_.erase(
-        std::remove_if(preview_particles_.begin(),
-                       preview_particles_.end(),
-                       [](const PreviewParticle& p) { return p.age >= p.lifetime; }),
-        preview_particles_.end());
+    preview_particles_.erase(std::remove_if(preview_particles_.begin(),
+                                            preview_particles_.end(),
+                                            [](const PreviewParticle& p) {
+                                                return p.age >= p.lifetime;
+                                            }),
+                             preview_particles_.end());
 
-    // If everything died (burst presets), restart automatically so the preview keeps showing.
+    // If everything died (burst presets), restart automatically so the preview
+    // keeps showing.
     if (preview_particles_.empty() && preview_preset_.burst_count > 0) {
         preview_emitter_age_ = 0.0f;
         preview_burst_emitted_ = false;
@@ -580,12 +655,16 @@ void ParticlePresetPanel::spawn_preview_particle_() {
     PreviewParticle p;
     p.position = {0.0f, 0.0f};
 
-    p.velocity.x = uniform_float(rng_, preview_preset_.velocity_min.x, preview_preset_.velocity_max.x);
-    p.velocity.y = uniform_float(rng_, preview_preset_.velocity_min.y, preview_preset_.velocity_max.y);
+    p.velocity.x = uniform_float(
+        rng_, preview_preset_.velocity_min.x, preview_preset_.velocity_max.x);
+    p.velocity.y = uniform_float(
+        rng_, preview_preset_.velocity_min.y, preview_preset_.velocity_max.y);
 
     float variance = std::max(0.0f, preview_preset_.lifetime_variance);
-    float lifetime_min = std::max(0.01f, preview_preset_.particle_lifetime - variance);
-    float lifetime_max = std::max(lifetime_min, preview_preset_.particle_lifetime + variance);
+    float lifetime_min =
+        std::max(0.01f, preview_preset_.particle_lifetime - variance);
+    float lifetime_max =
+        std::max(lifetime_min, preview_preset_.particle_lifetime + variance);
     p.lifetime = uniform_float(rng_, lifetime_min, lifetime_max);
 
     // Small random initial offset helps dense bursts read better
@@ -599,7 +678,8 @@ float ParticlePresetPanel::lerp_(float a, float b, float t) {
     return a + (b - a) * t;
 }
 
-ImU32 ParticlePresetPanel::lerp_color_(const Color& a, const Color& b, float t) {
+ImU32 ParticlePresetPanel::lerp_color_(const Color& a, const Color& b,
+                                       float t) {
     t = clamp01(t);
 
     auto lerp_u8 = [t](unsigned char av, unsigned char bv) {

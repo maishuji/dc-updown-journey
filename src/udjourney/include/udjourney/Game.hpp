@@ -95,7 +95,7 @@ class Game : public IGame, public IObserver {
 
     // HUD manager access for LevelSelectManager
     HUDManager &get_hud_manager() { return m_hud_manager; }
-    
+
     // Particle manager access
     ParticleManager &get_particle_manager() { return m_particle_manager; }
 
