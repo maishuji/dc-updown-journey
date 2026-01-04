@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <unordered_set>
 
 #include <udj-core/Logger.hpp>
@@ -192,6 +193,24 @@ void BackgroundManager::draw(float gameplay_camera_y, bool use_ui_scroll,
             continue;
         }
 
+        // When repeating, derive the wrap height from the layer contents.
+        // This avoids a "wait until the whole background ends" gap caused by
+        // using an arbitrary wrap height.
+        float layer_min_y = std::numeric_limits<float>::infinity();
+        float layer_max_y = -std::numeric_limits<float>::infinity();
+        if (layer->repeat && !layer->objects.empty()) {
+            for (const auto& obj : layer->objects) {
+                const float scaled_size = obj.tile_size * obj.scale;
+                layer_min_y = std::min(layer_min_y, obj.y);
+                layer_max_y = std::max(layer_max_y, obj.y + scaled_size);
+            }
+        }
+        const bool has_layer_bounds = std::isfinite(layer_min_y) &&
+                                      std::isfinite(layer_max_y) &&
+                                      (layer_max_y > layer_min_y);
+        const float layer_wrap_height =
+            has_layer_bounds ? (layer_max_y - layer_min_y) : 0.0f;
+
         float parallax_offset_x =
             camera_pos.x * (1.0f - layer->parallax_factor);
         float parallax_offset_y =
@@ -221,16 +240,31 @@ void BackgroundManager::draw(float gameplay_camera_y, bool use_ui_scroll,
                 layer->auto_scroll_enabled) {
                 float base_y = obj.y - m_ui_scroll_y;
                 if (layer->repeat) {
-                    // Preserve old wrap height behavior
-                    float wrap_height = 1280.0f;
-                    screen_y = std::fmod(base_y, wrap_height);
-                    if (screen_y < -128.0f) {
-                        screen_y += wrap_height;
+                    const float wrap_height = (layer_wrap_height > 0.0f)
+                                                  ? layer_wrap_height
+                                                  : 1280.0f;
+
+                    // Normalize into (-wrap_height, 0] so scrolling upward is
+                    // continuous, then draw a second copy directly below.
+                    // This makes the bottom connect to the top smoothly.
+                    float local_base = base_y;
+                    if (has_layer_bounds && layer_wrap_height > 0.0f) {
+                        local_base = (obj.y - layer_min_y) - m_ui_scroll_y;
                     }
 
-                    float scaled_size = obj.tile_size * obj.scale;
+                    float wrapped = std::fmod(local_base, wrap_height);
+                    if (wrapped > 0.0f) {
+                        wrapped -= wrap_height;
+                    }
+
+                    screen_y = wrapped;
+                    if (has_layer_bounds && layer_wrap_height > 0.0f) {
+                        screen_y += layer_min_y;
+                    }
+
+                    const float scaled_size = obj.tile_size * obj.scale;
                     Rectangle dest_wrap = {screen_x,
-                                           screen_y - wrap_height,
+                                           screen_y + wrap_height,
                                            scaled_size,
                                            scaled_size};
                     DrawTexturePro(

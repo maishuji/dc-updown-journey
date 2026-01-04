@@ -1,4 +1,583 @@
 {
+  "backgrounds": {
+    "layers": [
+      {
+        "auto_scroll_enabled": true,
+        "depth": 1,
+        "name": "bqck",
+        "objects": [
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": -32.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 96.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 224.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 352.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 608.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 736.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 864.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 992.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 1120.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 1120.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 992.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 864.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 736.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 608.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 352.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 224.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 96.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 96.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 224.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 352.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 608.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 736.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 864.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 992.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 1120.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 1120.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 1120.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 992.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 992.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 864.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 864.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 736.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 608.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 352.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 224.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 96.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 96.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 224.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 352.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 480.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 608.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Bush",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 0,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 736.0
+          }
+        ],
+        "parallax_factor": 0.5,
+        "repeat": false,
+        "scroll_speed_x": 0.0,
+        "scroll_speed_y": 0.0,
+        "texture_file": ""
+      }
+    ]
+  },
+  "gravity": 0.5,
+  "huds": [],
   "monsters": [
     {
       "preset_name": "goblin",
@@ -34,6 +613,21 @@
       "preset_name": "spider",
       "x": 16,
       "y": 28
+    },
+    {
+      "preset_name": "spider",
+      "x": 9,
+      "y": 10
+    },
+    {
+      "preset_name": "spider",
+      "x": 15,
+      "y": 16
+    },
+    {
+      "preset_name": "spider",
+      "x": 19,
+      "y": 21
     }
   ],
   "name": "Untitled Level",
@@ -42,439 +636,491 @@
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 0,
-      "y": 2
+      "x": 0.0,
+      "y": 2.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 1,
-      "y": 3
+      "x": 1.0,
+      "y": 3.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 2,
-      "y": 4
+      "x": 2.0,
+      "y": 4.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 3,
-      "y": 5
+      "x": 3.0,
+      "y": 5.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 4,
-      "y": 6
+      "x": 4.0,
+      "y": 6.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 5,
-      "y": 7
+      "x": 5.0,
+      "y": 7.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 6,
-      "y": 8
+      "x": 6.0,
+      "y": 8.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 7,
-      "y": 9
+      "x": 7.0,
+      "y": 9.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 8,
-      "y": 10
+      "x": 8.0,
+      "y": 10.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 9,
-      "y": 11
+      "x": 9.0,
+      "y": 11.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 10,
-      "y": 12
+      "x": 10.0,
+      "y": 12.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 11,
-      "y": 13
+      "x": 11.0,
+      "y": 13.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 12,
-      "y": 14
+      "x": 12.0,
+      "y": 14.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 13,
-      "y": 15
+      "x": 13.0,
+      "y": 15.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 14,
-      "y": 16
+      "x": 14.0,
+      "y": 16.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 15,
-      "y": 17
+      "x": 15.0,
+      "y": 17.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 16,
-      "y": 18
+      "x": 16.0,
+      "y": 18.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 17,
-      "y": 19
+      "x": 17.0,
+      "y": 19.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 18,
-      "y": 20
+      "x": 18.0,
+      "y": 20.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 19,
-      "y": 21
+      "x": 21.0,
+      "y": 23.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 20,
-      "y": 22
+      "x": 22.0,
+      "y": 24.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 21,
-      "y": 23
+      "x": 23.0,
+      "y": 25.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 22,
-      "y": 24
+      "x": 24.0,
+      "y": 26.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 23,
-      "y": 25
+      "x": 25.0,
+      "y": 27.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 24,
-      "y": 26
+      "x": 26.0,
+      "y": 28.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 25,
-      "y": 27
+      "x": 27.0,
+      "y": 29.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 26,
-      "y": 28
+      "x": 29.0,
+      "y": 32.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 27,
-      "y": 29
+      "x": 28.0,
+      "y": 33.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 29,
-      "y": 32
+      "x": 27.0,
+      "y": 34.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 28,
-      "y": 33
+      "x": 26.0,
+      "y": 35.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 27,
-      "y": 34
+      "x": 25.0,
+      "y": 36.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 26,
-      "y": 35
+      "x": 24.0,
+      "y": 37.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 25,
-      "y": 36
+      "x": 23.0,
+      "y": 38.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 24,
-      "y": 37
+      "x": 22.0,
+      "y": 39.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 23,
-      "y": 38
+      "x": 21.0,
+      "y": 40.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 22,
-      "y": 39
+      "x": 20.0,
+      "y": 41.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 21,
-      "y": 40
+      "x": 19.0,
+      "y": 42.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 20,
-      "y": 41
+      "x": 18.0,
+      "y": 43.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 19,
-      "y": 42
+      "x": 17.0,
+      "y": 44.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 18,
-      "y": 43
+      "x": 16.0,
+      "y": 45.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 17,
-      "y": 44
+      "x": 15.0,
+      "y": 46.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 16,
-      "y": 45
+      "x": 14.0,
+      "y": 47.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 15,
-      "y": 46
+      "x": 13.0,
+      "y": 48.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 14,
-      "y": 47
+      "x": 12.0,
+      "y": 49.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 13,
-      "y": 48
+      "x": 11.0,
+      "y": 50.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 12,
-      "y": 49
+      "x": 10.0,
+      "y": 51.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 11,
-      "y": 50
+      "x": 9.0,
+      "y": 52.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 10,
-      "y": 51
+      "x": 8.0,
+      "y": 53.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 9,
-      "y": 52
+      "x": 7.0,
+      "y": 54.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 8,
-      "y": 53
+      "x": 6.0,
+      "y": 55.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 7,
-      "y": 54
+      "x": 5.0,
+      "y": 56.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 6,
-      "y": 55
+      "x": 4.0,
+      "y": 57.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 5,
-      "y": 56
+      "x": 3.0,
+      "y": 58.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 4,
-      "y": 57
+      "x": 2.0,
+      "y": 59.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 3,
-      "y": 58
+      "x": 14.0,
+      "y": 10.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 2,
-      "y": 59
+      "x": 16.0,
+      "y": 10.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 14,
-      "y": 10
+      "x": 14.0,
+      "y": 31.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 16,
-      "y": 10
+      "x": 16.0,
+      "y": 31.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 14,
-      "y": 31
+      "x": 14.0,
+      "y": 54.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 16,
-      "y": 31
+      "x": 16.0,
+      "y": 54.0
     },
     {
       "behavior": "static",
       "height": 1.0,
-      "width": 1.0,
-      "x": 14,
-      "y": 54
+      "width": 2.4000000953674316,
+      "x": 18.28125,
+      "y": 24.96875
     },
     {
       "behavior": "static",
       "height": 1.0,
-      "width": 1.0,
-      "x": 16,
-      "y": 54
+      "width": 2.4000000953674316,
+      "x": 14.59375,
+      "y": 27.5625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.4000000953674316,
+      "x": 10.28125,
+      "y": 30.625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.4000000953674316,
+      "x": 6.375,
+      "y": 33.28125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.4000000953674316,
+      "x": 3.25,
+      "y": 35.40625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.4000000953674316,
+      "x": 1.03125,
+      "y": 38.625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.4000000953674316,
+      "x": 3.9375,
+      "y": 40.34375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.4000000953674316,
+      "x": 7.1875,
+      "y": 41.375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.4000000953674316,
+      "x": 10.1875,
+      "y": 42.4375
     }
   ],
   "player_spawn": {
-    "x": 2,
-    "y": 8
-  }
+    "x": 5,
+    "y": 3
+  },
+  "scene_type": "level",
+  "scroll_speed": 1.0,
+  "terminal_velocity": 10.0
 }
