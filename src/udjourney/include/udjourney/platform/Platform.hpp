@@ -8,6 +8,7 @@
 #include <any>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -78,6 +79,18 @@ class Platform : public IActor {
 
     void add_feature(std::unique_ptr<PlatformFeatureBase> feature);
 
+    void set_texture_file(std::string texture_file) {
+        m_texture_file = std::move(texture_file);
+    }
+    void set_texture_tiled(bool tiled) noexcept { m_texture_tiled = tiled; }
+    [[nodiscard]] bool is_texture_tiled() const noexcept {
+        return m_texture_tiled;
+    }
+    void clear_texture() { m_texture_file.clear(); }
+    [[nodiscard]] bool has_texture() const noexcept {
+        return !m_texture_file.empty();
+    }
+
     auto get_features() const
         -> const std::vector<std::unique_ptr<PlatformFeatureBase>> & {
         return m_features;
@@ -96,6 +109,8 @@ class Platform : public IActor {
     std::unique_ptr<PlatformReuseStrategy> m_reuse_strategy;
     Rectangle m_rect;
     Color m_color = BLUE;
+    std::string m_texture_file;
+    bool m_texture_tiled = false;
     bool m_repeated_y = false;
     std::unique_ptr<PlatformBehaviorStrategy> m_behavior;
     std::vector<std::unique_ptr<PlatformFeatureBase>> m_features;

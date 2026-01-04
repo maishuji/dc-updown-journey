@@ -161,6 +161,13 @@ void Editor::export_platform_level_json(const std::string &export_path) {
             jplatform["width"] = platform.width_tiles;
             jplatform["height"] = platform.height_tiles;
 
+            if (!platform.texture_file.empty()) {
+                jplatform["texture"] = platform.texture_file;
+                if (platform.texture_tiled) {
+                    jplatform["texture_tiled"] = true;
+                }
+            }
+
             // Behavior type
             switch (platform.behavior_type) {
                 case PlatformBehaviorType::Static:
@@ -657,6 +664,7 @@ void Editor::run() {
         pimpl->editor_panel.set_current_level(&pimpl->level);
 
         pimpl->editor_panel.draw();
+        pimpl->editor_panel.render_file_dialogs();
 
         // Render the main scene view using EditorScene
         pimpl->scene.render(pimpl->level,

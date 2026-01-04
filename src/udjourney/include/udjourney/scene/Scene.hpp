@@ -48,6 +48,12 @@ struct PlatformData {
 
     // Visual
     Color color = BLUE;
+
+    // Optional texture rendering (empty = draw solid color)
+    std::string texture_file;
+    bool texture_tiled = false;  // false=stretch, true=repeat/tile
+    bool use_atlas = false;
+    Rectangle source_rect{0, 0, 0, 0};
 };
 
 struct PlayerSpawnData {

@@ -53,6 +53,9 @@ class EditorPanel {
     EditorPanel& operator=(EditorPanel&&) = delete;
     void draw();
 
+    // Render dialogs that must be displayed outside windows
+    void render_file_dialogs();
+
     // Set the current level for scene type awareness
     void set_current_level(Level* level) { current_level_ = level; }
 
@@ -65,6 +68,9 @@ class EditorPanel {
     inline PlatformBehaviorType get_platform_behavior() const noexcept {
         return platform_behavior;
     }
+
+    const std::string& get_new_platform_texture_file() const;
+    bool get_new_platform_texture_tiled() const noexcept;
 
     // Get selected features for new platforms
     std::vector<PlatformFeatureType> get_selected_features() const;

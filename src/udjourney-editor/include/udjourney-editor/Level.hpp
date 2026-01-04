@@ -30,6 +30,12 @@ struct EditorPlatform {
     PlatformBehaviorType behavior_type = PlatformBehaviorType::Static;
     std::vector<PlatformFeatureType> features;
     ImU32 color = IM_COL32(0, 0, 255, 255);  // Blue default
+
+    // Optional texture (asset-relative path, e.g. "tiles/platform.png")
+    std::string texture_file;
+
+    // If true, repeat/tile texture over platform rect; otherwise stretch
+    bool texture_tiled = false;
 };
 
 struct EditorMonster {

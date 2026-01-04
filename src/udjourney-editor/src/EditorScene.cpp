@@ -1082,6 +1082,10 @@ void EditorScene::handle_platform_mode_input(Level& level,
         // Get selected features from tile panel
         platform.features = editor_panel.get_selected_features();
 
+        // Optional default texture for newly created platforms
+        platform.texture_file = editor_panel.get_new_platform_texture_file();
+        platform.texture_tiled = editor_panel.get_new_platform_texture_tiled();
+
         // Calculate color based on behavior and features
         PlatformFeatureType primary_feature = platform.features.empty()
                                                   ? PlatformFeatureType::None

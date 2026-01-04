@@ -136,6 +136,12 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
                     }
                 }
 
+                // Optional platform texture
+                platform.texture_file = jplatform.value(
+                    "texture", jplatform.value("texture_file", ""));
+                platform.texture_tiled =
+                    jplatform.value("texture_tiled", false);
+
                 // Set platform color based on behavior and features
                 PlatformFeatureType primary_feature =
                     platform.features.empty() ? PlatformFeatureType::None

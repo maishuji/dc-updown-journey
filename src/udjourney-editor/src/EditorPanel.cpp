@@ -39,6 +39,27 @@ EditorPanel::EditorPanel() {
 // Destructor must be defined in .cpp where handler types are complete
 EditorPanel::~EditorPanel() = default;
 
+void EditorPanel::render_file_dialogs() {
+    if (platform_handler_) {
+        platform_handler_->render_file_dialogs();
+    }
+}
+
+const std::string& EditorPanel::get_new_platform_texture_file() const {
+    static const std::string kEmpty;
+    if (platform_handler_) {
+        return platform_handler_->get_new_platform_texture_file();
+    }
+    return kEmpty;
+}
+
+bool EditorPanel::get_new_platform_texture_tiled() const noexcept {
+    if (platform_handler_) {
+        return platform_handler_->get_new_platform_texture_tiled();
+    }
+    return false;
+}
+
 void EditorPanel::set_background_managers(
     BackgroundManager* bg_manager,
     BackgroundObjectPresetManager* preset_manager) {

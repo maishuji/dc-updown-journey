@@ -47,6 +47,11 @@ std::unique_ptr<Platform> PlatformFactory::create(
                                                platform_color,
                                                false);  // not Y-repeated
 
+    if (!platform_data.texture_file.empty()) {
+        platform->set_texture_file(platform_data.texture_file);
+        platform->set_texture_tiled(platform_data.texture_tiled);
+    }
+
     // Set behavior based on platform data
     switch (platform_data.behavior_type) {
         case udjourney::scene::PlatformBehaviorType::Horizontal: {

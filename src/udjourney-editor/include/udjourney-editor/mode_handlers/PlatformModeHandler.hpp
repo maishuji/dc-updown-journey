@@ -15,6 +15,9 @@ class PlatformModeHandler : public IModeHandler {
     PlatformModeHandler();
 
     void render() override;
+
+    // Must be called outside any ImGui window
+    void render_file_dialogs();
     void set_scale(float scale) override { scale_ = scale; }
 
     // Platform-specific API
@@ -23,6 +26,14 @@ class PlatformModeHandler : public IModeHandler {
     }
     ImVec2 get_platform_size() const { return platform_size_; }
     std::vector<PlatformFeatureType> get_selected_features() const;
+
+    const std::string& get_new_platform_texture_file() const {
+        return new_platform_texture_file_;
+    }
+
+    bool get_new_platform_texture_tiled() const noexcept {
+        return new_platform_texture_tiled_;
+    }
 
     EditorPlatform* get_selected_platform() const { return selected_platform_; }
     void set_selected_platform(EditorPlatform* platform) {
@@ -40,6 +51,22 @@ class PlatformModeHandler : public IModeHandler {
 
     // Currently selected platform for editing
     EditorPlatform* selected_platform_ = nullptr;
+
+    // Buffer for editing texture path (ImGui InputText needs stable storage)
+    EditorPlatform* texture_platform_ = nullptr;
+    char texture_file_buf_[256] = {0};
+
+    // Default texture for newly created platforms
+    std::string new_platform_texture_file_;
+    char new_texture_file_buf_[256] = {0};
+    bool new_platform_texture_tiled_ = false;
+
+    enum class TextureDialogTarget {
+        SelectedPlatform,
+        NewPlatforms,
+    };
+    TextureDialogTarget texture_dialog_target_ =
+        TextureDialogTarget::SelectedPlatform;
 
     void render_creator();
     void render_editor();

@@ -100,6 +100,21 @@ void load_level_platforms_(const json& scene_data,
                 }
             }
 
+            // Optional texture assignment
+            platform.texture_file = platform_json.value(
+                "texture", platform_json.value("texture_file", ""));
+            platform.texture_tiled =
+                platform_json.value("texture_tiled", false);
+            platform.use_atlas = platform_json.value("use_atlas", false);
+            if (platform.use_atlas && platform_json.contains("source_rect") &&
+                platform_json["source_rect"].is_object()) {
+                const auto& rect = platform_json["source_rect"];
+                platform.source_rect = Rectangle{rect.value("x", 0.0f),
+                                                 rect.value("y", 0.0f),
+                                                 rect.value("width", 0.0f),
+                                                 rect.value("height", 0.0f)};
+            }
+
             platforms.push_back(platform);
         }
     }
@@ -453,6 +468,23 @@ bool Scene::save_to_file(const std::string& filename) const {
                 // Save feature parameters
                 if (!platform.feature_params.empty()) {
                     platform_json["feature_params"] = platform.feature_params;
+                }
+
+                // Save optional texture assignment
+                if (!platform.texture_file.empty()) {
+                    platform_json["texture"] = platform.texture_file;
+                    if (platform.texture_tiled) {
+                        platform_json["texture_tiled"] = true;
+                    }
+                    if (platform.use_atlas) {
+                        platform_json["use_atlas"] = true;
+                        platform_json["source_rect"] = {
+                            {"x", platform.source_rect.x},
+                            {"y", platform.source_rect.y},
+                            {"width", platform.source_rect.width},
+                            {"height", platform.source_rect.height},
+                        };
+                    }
                 }
 
                 platforms_json.push_back(platform_json);
