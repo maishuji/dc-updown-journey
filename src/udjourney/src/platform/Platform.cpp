@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <any>
+#include <cmath>
 #include <map>
 #include <memory>
 #include <utility>
@@ -41,6 +42,70 @@ void draw_texture_tiled(const Texture2D &texture, Rectangle dest, Color tint) {
         }
     }
 }
+
+void draw_rounded_rect_outline(Rectangle rect, float radius_px, float thickness,
+                               Color color, int segments) {
+    if (rect.width <= 0.0f || rect.height <= 0.0f) {
+        return;
+    }
+
+    const float min_side = std::min(rect.width, rect.height);
+    float radius = std::clamp(radius_px, 0.0f, min_side * 0.5f);
+    if (radius <= 0.0f || thickness <= 0.0f) {
+        DrawRectangleLinesEx(rect, thickness, color);
+        return;
+    }
+
+    segments = std::max(segments, 4);
+
+    const float x = rect.x;
+    const float y = rect.y;
+    const float w = rect.width;
+    const float h = rect.height;
+
+    const Vector2 tl = {x + radius, y + radius};
+    const Vector2 tr = {x + w - radius, y + radius};
+    const Vector2 br = {x + w - radius, y + h - radius};
+    const Vector2 bl = {x + radius, y + h - radius};
+
+    auto draw_arc = [&](Vector2 center, float start_deg, float end_deg) {
+        constexpr float pi = 3.14159265358979323846f;
+        const float start = start_deg * (pi / 180.0f);
+        const float end = end_deg * (pi / 180.0f);
+        const float step = (end - start) / static_cast<float>(segments);
+
+        for (int i = 0; i < segments; ++i) {
+            const float a0 = start + step * static_cast<float>(i);
+            const float a1 = start + step * static_cast<float>(i + 1);
+
+            const Vector2 p0 = {center.x + std::cos(a0) * radius,
+                                center.y + std::sin(a0) * radius};
+            const Vector2 p1 = {center.x + std::cos(a1) * radius,
+                                center.y + std::sin(a1) * radius};
+            DrawLineEx(p0, p1, thickness, color);
+        }
+    };
+
+    // Straight edges between arcs
+    DrawLineEx(
+        Vector2{x + radius, y}, Vector2{x + w - radius, y}, thickness, color);
+    DrawLineEx(Vector2{x + w, y + radius},
+               Vector2{x + w, y + h - radius},
+               thickness,
+               color);
+    DrawLineEx(Vector2{x + w - radius, y + h},
+               Vector2{x + radius, y + h},
+               thickness,
+               color);
+    DrawLineEx(
+        Vector2{x, y + h - radius}, Vector2{x, y + radius}, thickness, color);
+
+    // Corner arcs (degrees)
+    draw_arc(tl, 180.0f, 270.0f);
+    draw_arc(tr, 270.0f, 360.0f);
+    draw_arc(br, 0.0f, 90.0f);
+    draw_arc(bl, 90.0f, 180.0f);
+}
 }  // namespace
 
 Platform::Platform(const IGame &iGame, Rectangle iRect, Color iColor,
@@ -63,11 +128,7 @@ Rectangle Platform::get_drawing_rect() const {
 }
 
 void Platform::draw() const {
-    auto rect = m_rect;
-    const auto &game = get_game();
-    // Convert to screen coordinates
-    rect.x -= game.get_rectangle().x;
-    rect.y -= game.get_rectangle().y;
+    Rectangle rect = get_drawing_rect();
 
     bool drew_texture = false;
     if (!m_texture_file.empty()) {
@@ -92,6 +153,23 @@ void Platform::draw() const {
 
     if (!drew_texture) {
         DrawRectangleRec(rect, m_color);
+    } else {
+        // Visually "round" textured platforms by drawing a rounded
+        // outline over the texture (no shaders, no special textures).
+        const float radius_px = 4.0f;
+        const float thickness = 4.0f;
+        const int segments = 12;
+
+        // Adjust rect to account for outline thickness
+        // Radius need ajustment to void visual artifacts
+        auto rect_copy = rect;
+        rect_copy.x -= thickness / 4.0f;
+        rect_copy.y -= thickness / 4.0f;
+        rect_copy.width += thickness / 2.0f;
+        rect_copy.height += thickness / 2.0f;
+
+        draw_rounded_rect_outline(
+            rect_copy, radius_px, thickness, Fade(BLACK, 1.0f), segments);
     }
 
     for (const auto &feature : m_features) {
