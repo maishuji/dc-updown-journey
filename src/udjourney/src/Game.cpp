@@ -231,10 +231,15 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     // Initialize state renderers
     init_state_renderers_();
 
+    // Load particle presets
+    if (!m_particle_preset_loader.load_from_file("particles.json")) {
+        udj::core::Logger::warning("Warning: Could not load particles.json");
+    }
+
     // Load title screen scene
     if (!load_scene(udjourney::coreutils::get_assets_path(
             "levels/title_screen.json"))) {
-        std::cout << "ERROR: Could not load title_screen.json" << std::endl;
+        udj::core::Logger::error("ERROR: Could not load title_screen.json");
     }
 }
 
@@ -660,6 +665,9 @@ void Game::update() {
                                               static_cast<float>(kBaseHeight));
     }
 
+    // Update particle system
+    m_particle_manager.update(GetFrameTime());
+
     // Widget input handling for TITLE, WIN, and GAMEOVER states
     if (m_state == GameState::TITLE || m_state == GameState::WIN ||
         m_state == GameState::GAMEOVER) {
@@ -919,26 +927,50 @@ void Game::update() {
 
                         if (CheckCollisionRecs(proj_rect, monster_rect)) {
                             // Hit! Monster takes damage from projectile
-                            std::cout << "Projectile hit monster! Damage: "
-                                      << projectile->get_damage()
-                                      << " Monster ptr: " << monster
-                                      << std::endl;
+                            udj::core::Logger::info(
+                                "Projectile hit monster! Damage: " +
+                                std::to_string(projectile->get_damage()) +
+                                " Monster ptr: " +
+                                std::to_string(
+                                    reinterpret_cast<uintptr_t>(monster)));
 
                             if (monster) {
-                                std::cout << "Calling monster->take_damage..."
-                                          << std::endl;
+                                udj::core::Logger::info(
+                                    "Calling monster->take_damage...");
                                 monster->take_damage(static_cast<float>(
                                     projectile->get_damage()));
-                                std::cout << "take_damage returned"
-                                          << std::endl;
+                                udj::core::Logger::info("take_damage returned");
                             } else {
-                                std::cout << "ERROR: Monster pointer is null!"
-                                          << std::endl;
+                                udj::core::Logger::error(
+                                    "ERROR: Monster pointer is null!");
+                            }
+
+                            // Create sparkle particle effect at hit location
+                            const ParticlePreset *sparkle_preset =
+                                m_particle_preset_loader.get_preset("sparkle");
+                            if (sparkle_preset) {
+                                Vector2 hit_pos = {
+                                    proj_rect.x + proj_rect.width / 2.0f,
+                                    proj_rect.y + proj_rect.height / 2.0f};
+                                udj::core::Logger::info(
+                                    "Creating impact burst at position: " +
+                                    std::to_string(hit_pos.x) + ", " +
+                                    std::to_string(hit_pos.y));
+                                m_particle_manager.create_burst(*sparkle_preset,
+                                                                hit_pos);
+                                udj::core::Logger::info(
+                                    "Particle count: " +
+                                    std::to_string(
+                                        m_particle_manager
+                                            .get_total_particle_count()));
+                            } else {
+                                udj::core::Logger::error(
+                                    "ERROR: Could not find 'impact' preset!");
                             }
 
                             projectile->destroy();
-                            std::cout << "Projectile destroyed after hit"
-                                      << std::endl;
+                            udj::core::Logger::info(
+                                "Projectile destroyed after hit");
                             break;
                         }
                     }

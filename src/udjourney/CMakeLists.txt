@@ -38,6 +38,7 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/BonusManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/LevelSelectManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/MenuManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/ParticleManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/render/StateRenderers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/DialogBoxHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/GameMenuHUD.cpp
@@ -56,6 +57,10 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SpriteAnim.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AnimSpriteController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/loaders/AnimationConfigLoader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/loaders/ParticlePresetLoader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/particle/Particle.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/particle/ParticleEmitter.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/ParticleEmitterComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/factories/ActorFactory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/factories/PlatformFactory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/factories/UiFactory.cpp

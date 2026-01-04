@@ -69,6 +69,9 @@ void PlayStateRenderer::render(const Game& game) const {
 
     // Draw finish line
     draw_finish_line_(game);
+    
+    // Draw particles
+    game.draw_particles();
 
     // Draw dash HUD (TODO: move to HUDManager)
     const auto& dash_hud = game.get_dash_hud();

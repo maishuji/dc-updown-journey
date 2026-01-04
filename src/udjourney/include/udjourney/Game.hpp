@@ -22,6 +22,9 @@
 #include "udjourney/managers/HUDManager.hpp"
 #include "udjourney/managers/LevelSelectManager.hpp"
 #include "udjourney/managers/MenuManager.hpp"
+#include "udjourney/managers/ParticleManager.hpp"
+#include "udjourney/loaders/ParticlePresetLoader.hpp"
+#include "udjourney/loaders/ParticlePresetLoader.hpp"
 #include "udjourney/render/IStateRenderer.hpp"
 #include "udjourney/scene/Scene.hpp"
 #include "udjourney/Player.hpp"
@@ -75,6 +78,10 @@ class Game : public IGame, public IObserver {
     // Public draw helpers for renderers
     void draw_backgrounds() const { draw_backgrounds_(); }
     void draw_huds() const { draw_huds_(); }
+    void draw_particles() const {
+        Rectangle rect = get_rectangle();
+        m_particle_manager.draw(Vector2{rect.x, rect.y});
+    }
 
     // Scene management
     bool load_scene(const std::string &filename);
@@ -88,6 +95,9 @@ class Game : public IGame, public IObserver {
 
     // HUD manager access for LevelSelectManager
     HUDManager &get_hud_manager() { return m_hud_manager; }
+    
+    // Particle manager access
+    ParticleManager &get_particle_manager() { return m_particle_manager; }
 
  private:
     void register_core_event_handlers_();
@@ -133,6 +143,8 @@ class Game : public IGame, public IObserver {
     int m_final_score = 0;  // Score to display on game over/win screens
     HUDManager m_hud_manager;
     BackgroundManager m_background_manager;
+    ParticleManager m_particle_manager;
+    ParticlePresetLoader m_particle_preset_loader;
     udjourney::core::events::EventDispatcher m_event_dispatcher;
     std::unique_ptr<udjourney::scene::Scene> m_current_scene;
     float m_level_height = 0.0f;  // Track level height for win condition

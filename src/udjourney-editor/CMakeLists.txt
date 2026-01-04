@@ -50,6 +50,7 @@ add_library(udjourney_editor_lib
   src/EditorScene.cpp
   src/EditorPanel.cpp
   src/AnimationPresetPanel.cpp
+  src/ParticlePresetPanel.cpp
   src/MonsterPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
@@ -89,7 +90,6 @@ add_library(udjourney_editor_lib
 )
 
 target_include_directories(udjourney_editor_lib PUBLIC include)
-target_include_directories(udjourney_editor_lib PUBLIC ../udjourney/include)
 target_link_libraries(udjourney_editor_lib PUBLIC udj-core raylib nlohmann_json::nlohmann_json)
 
 # Set EDITOR_TESTING flag when building for tests
@@ -107,6 +107,7 @@ add_library(udjourney_editor_lib_test
   src/EditorScene.cpp
   src/EditorPanel.cpp
   src/AnimationPresetPanel.cpp
+  src/ParticlePresetPanel.cpp
   src/MonsterPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
@@ -146,7 +147,6 @@ add_library(udjourney_editor_lib_test
 )
 
 target_include_directories(udjourney_editor_lib_test PUBLIC include PRIVATE src tests)
-target_include_directories(udjourney_editor_lib_test PUBLIC ../udjourney/include)
 target_link_libraries(udjourney_editor_lib_test PUBLIC udj-core raylib nlohmann_json::nlohmann_json)
 target_compile_definitions(udjourney_editor_lib_test PRIVATE EDITOR_TESTING)
 
