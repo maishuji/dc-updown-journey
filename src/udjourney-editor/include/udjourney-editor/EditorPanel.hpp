@@ -77,6 +77,9 @@ class EditorPanel {
 
     ImVec2 get_platform_size() const noexcept;
 
+    // Get behavior parameters for new platforms
+    std::map<std::string, float> get_behavior_params() const;
+
     void set_button(const std::string& iId, ImU32 color);
     void set_scale(float scale) noexcept;
 

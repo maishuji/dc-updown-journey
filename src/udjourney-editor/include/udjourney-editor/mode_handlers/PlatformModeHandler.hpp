@@ -40,6 +40,9 @@ class PlatformModeHandler : public IModeHandler {
         selected_platform_ = platform;
     }
 
+    // Get behavior parameters for new platforms
+    std::map<std::string, float> get_behavior_params() const;
+
  private:
     float scale_ = 1.0f;
     ImVec2 platform_size_ = ImVec2(1.0f, 1.0f);
@@ -48,6 +51,21 @@ class PlatformModeHandler : public IModeHandler {
     // Feature selection for new platforms
     bool feature_spikes_ = false;
     bool feature_checkpoint_ = false;
+
+    // Behavior parameters for new platforms
+    // Horizontal behavior
+    float horizontal_speed_ = 2.0f;
+    float horizontal_range_ = 5.0f;
+    float horizontal_initial_offset_ = 0.0f;
+
+    // Eight Turn behavior
+    float eight_turn_speed_ = 1.0f;
+    float eight_turn_amplitude_ = 4.0f;
+
+    // Oscillating Size behavior
+    float oscillating_speed_ = 2.0f;
+    float oscillating_min_scale_ = 0.5f;
+    float oscillating_max_scale_ = 1.5f;
 
     // Currently selected platform for editing
     EditorPlatform* selected_platform_ = nullptr;

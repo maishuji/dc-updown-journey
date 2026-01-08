@@ -136,6 +136,18 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
                     }
                 }
 
+                // Load behavior parameters
+                platform.behavior_params.clear();
+                if (jplatform.contains("behavior_params") &&
+                    jplatform["behavior_params"].is_object()) {
+                    for (auto& [key, value] :
+                         jplatform["behavior_params"].items()) {
+                        if (value.is_number()) {
+                            platform.behavior_params[key] = value.get<float>();
+                        }
+                    }
+                }
+
                 // Optional platform texture
                 platform.texture_file = jplatform.value(
                     "texture", jplatform.value("texture_file", ""));

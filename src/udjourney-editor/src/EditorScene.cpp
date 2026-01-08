@@ -1082,6 +1082,9 @@ void EditorScene::handle_platform_mode_input(Level& level,
         // Get selected features from tile panel
         platform.features = editor_panel.get_selected_features();
 
+        // Get behavior parameters from editor panel
+        platform.behavior_params = editor_panel.get_behavior_params();
+
         // Optional default texture for newly created platforms
         platform.texture_file = editor_panel.get_new_platform_texture_file();
         platform.texture_tiled = editor_panel.get_new_platform_texture_tiled();

@@ -36,6 +36,9 @@ struct EditorPlatform {
 
     // If true, repeat/tile texture over platform rect; otherwise stretch
     bool texture_tiled = false;
+
+    // Behavior-specific parameters (e.g., speed, range, amplitude)
+    std::map<std::string, float> behavior_params;
 };
 
 struct EditorMonster {

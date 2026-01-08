@@ -101,6 +101,33 @@ std::vector<PlatformFeatureType> PlatformModeHandler::get_selected_features()
     return features;
 }
 
+std::map<std::string, float> PlatformModeHandler::get_behavior_params() const {
+    std::map<std::string, float> params;
+
+    switch (platform_behavior_) {
+        case PlatformBehaviorType::Horizontal:
+            params["speed"] = horizontal_speed_;
+            params["range"] = horizontal_range_;
+            params["initial_offset"] = horizontal_initial_offset_;
+            break;
+        case PlatformBehaviorType::EightTurnHorizontal:
+            params["speed"] = eight_turn_speed_;
+            params["amplitude"] = eight_turn_amplitude_;
+            break;
+        case PlatformBehaviorType::OscillatingSize:
+            params["speed"] = oscillating_speed_;
+            params["min_scale"] = oscillating_min_scale_;
+            params["max_scale"] = oscillating_max_scale_;
+            break;
+        case PlatformBehaviorType::Static:
+        default:
+            // No parameters for static platforms
+            break;
+    }
+
+    return params;
+}
+
 void PlatformModeHandler::render_creator() {
     ImGui::Text("Platform Creator");
     ImGui::Separator();
@@ -131,6 +158,51 @@ void PlatformModeHandler::render_creator() {
             "Width", &platform_size_.x, 0.5f, 5.0f, "%.1f tiles");
         ImGui::SliderFloat(
             "Height", &platform_size_.y, 0.5f, 3.0f, "%.1f tiles");
+    }
+
+    // Behavior Parameters
+    if (ImGui::CollapsingHeader("Behavior Parameters",
+                                ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (platform_behavior_ == PlatformBehaviorType::Horizontal) {
+            ImGui::TextWrapped("Horizontal Movement:");
+            ImGui::SliderFloat(
+                "Speed##new", &horizontal_speed_, 0.5f, 10.0f, "%.1f");
+            ImGui::SliderFloat(
+                "Range##new", &horizontal_range_, 1.0f, 15.0f, "%.1f tiles");
+            ImGui::SliderFloat("Initial Offset##new",
+                               &horizontal_initial_offset_,
+                               -10.0f,
+                               10.0f,
+                               "%.1f tiles");
+        } else if (platform_behavior_ ==
+                   PlatformBehaviorType::EightTurnHorizontal) {
+            ImGui::TextWrapped("Eight Turn Movement:");
+            ImGui::SliderFloat(
+                "Speed##new_et", &eight_turn_speed_, 0.1f, 5.0f, "%.1f");
+            ImGui::SliderFloat("Amplitude##new_et",
+                               &eight_turn_amplitude_,
+                               1.0f,
+                               10.0f,
+                               "%.1f tiles");
+        } else if (platform_behavior_ ==
+                   PlatformBehaviorType::OscillatingSize) {
+            ImGui::TextWrapped("Oscillating Size:");
+            ImGui::SliderFloat(
+                "Speed##new_osc", &oscillating_speed_, 0.5f, 5.0f, "%.1f");
+            ImGui::SliderFloat("Min Scale##new_osc",
+                               &oscillating_min_scale_,
+                               0.3f,
+                               1.0f,
+                               "%.1f");
+            ImGui::SliderFloat("Max Scale##new_osc",
+                               &oscillating_max_scale_,
+                               1.0f,
+                               2.0f,
+                               "%.1f");
+        } else {
+            ImGui::TextDisabled(
+                "Static platforms have no behavior parameters.");
+        }
     }
 
     ImGui::Separator();
@@ -227,6 +299,98 @@ void PlatformModeHandler::render_editor() {
                            0.5f,
                            3.0f,
                            "%.1f tiles");
+    }
+
+    // Behavior Parameters for selected platform
+    if (ImGui::CollapsingHeader("Behavior Parameters",
+                                ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (selected_platform_->behavior_type ==
+            PlatformBehaviorType::Horizontal) {
+            ImGui::TextWrapped("Horizontal Movement:");
+
+            // Get or initialize parameters
+            float speed = selected_platform_->behavior_params.count("speed")
+                              ? selected_platform_->behavior_params["speed"]
+                              : 2.0f;
+            float range = selected_platform_->behavior_params.count("range")
+                              ? selected_platform_->behavior_params["range"]
+                              : 5.0f;
+            float initial_offset =
+                selected_platform_->behavior_params.count("initial_offset")
+                    ? selected_platform_->behavior_params["initial_offset"]
+                    : 0.0f;
+
+            if (ImGui::SliderFloat(
+                    "Speed##edit", &speed, 0.5f, 10.0f, "%.1f")) {
+                selected_platform_->behavior_params["speed"] = speed;
+            }
+            if (ImGui::SliderFloat(
+                    "Range##edit", &range, 1.0f, 15.0f, "%.1f tiles")) {
+                selected_platform_->behavior_params["range"] = range;
+            }
+            if (ImGui::SliderFloat("Initial Offset##edit",
+                                   &initial_offset,
+                                   -10.0f,
+                                   10.0f,
+                                   "%.1f tiles")) {
+                selected_platform_->behavior_params["initial_offset"] =
+                    initial_offset;
+            }
+        } else if (selected_platform_->behavior_type ==
+                   PlatformBehaviorType::EightTurnHorizontal) {
+            ImGui::TextWrapped("Eight Turn Movement:");
+
+            float speed = selected_platform_->behavior_params.count("speed")
+                              ? selected_platform_->behavior_params["speed"]
+                              : 1.0f;
+            float amplitude =
+                selected_platform_->behavior_params.count("amplitude")
+                    ? selected_platform_->behavior_params["amplitude"]
+                    : 4.0f;
+
+            if (ImGui::SliderFloat(
+                    "Speed##edit_et", &speed, 0.1f, 5.0f, "%.1f")) {
+                selected_platform_->behavior_params["speed"] = speed;
+            }
+            if (ImGui::SliderFloat("Amplitude##edit_et",
+                                   &amplitude,
+                                   1.0f,
+                                   10.0f,
+                                   "%.1f tiles")) {
+                selected_platform_->behavior_params["amplitude"] = amplitude;
+            }
+        } else if (selected_platform_->behavior_type ==
+                   PlatformBehaviorType::OscillatingSize) {
+            ImGui::TextWrapped("Oscillating Size:");
+
+            float speed = selected_platform_->behavior_params.count("speed")
+                              ? selected_platform_->behavior_params["speed"]
+                              : 2.0f;
+            float min_scale =
+                selected_platform_->behavior_params.count("min_scale")
+                    ? selected_platform_->behavior_params["min_scale"]
+                    : 0.5f;
+            float max_scale =
+                selected_platform_->behavior_params.count("max_scale")
+                    ? selected_platform_->behavior_params["max_scale"]
+                    : 1.5f;
+
+            if (ImGui::SliderFloat(
+                    "Speed##edit_osc", &speed, 0.5f, 5.0f, "%.1f")) {
+                selected_platform_->behavior_params["speed"] = speed;
+            }
+            if (ImGui::SliderFloat(
+                    "Min Scale##edit_osc", &min_scale, 0.3f, 1.0f, "%.1f")) {
+                selected_platform_->behavior_params["min_scale"] = min_scale;
+            }
+            if (ImGui::SliderFloat(
+                    "Max Scale##edit_osc", &max_scale, 1.0f, 2.0f, "%.1f")) {
+                selected_platform_->behavior_params["max_scale"] = max_scale;
+            }
+        } else {
+            ImGui::TextDisabled(
+                "Static platforms have no behavior parameters.");
+        }
     }
 
     if (ImGui::CollapsingHeader("Features", ImGuiTreeNodeFlags_DefaultOpen)) {

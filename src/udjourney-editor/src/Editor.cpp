@@ -184,6 +184,14 @@ void Editor::export_platform_level_json(const std::string &export_path) {
                     break;
             }
 
+            // Behavior parameters
+            if (!platform.behavior_params.empty()) {
+                jplatform["behavior_params"] = nlohmann::json::object();
+                for (const auto &[key, value] : platform.behavior_params) {
+                    jplatform["behavior_params"][key] = value;
+                }
+            }
+
             // Features
             if (!platform.features.empty()) {
                 jplatform["features"] = nlohmann::json::array();

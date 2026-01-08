@@ -307,6 +307,13 @@ void EditorPanel::draw() {
 
 ImVec2 EditorPanel::get_platform_size() const noexcept { return platform_size; }
 
+std::map<std::string, float> EditorPanel::get_behavior_params() const {
+    if (platform_handler_) {
+        return platform_handler_->get_behavior_params();
+    }
+    return {};
+}
+
 std::vector<PlatformFeatureType> EditorPanel::get_selected_features() const {
     std::vector<PlatformFeatureType> features;
     if (feature_spikes) {
