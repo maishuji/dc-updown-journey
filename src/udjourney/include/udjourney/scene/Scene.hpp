@@ -29,8 +29,8 @@ enum class PlatformFeatureType { None, Spikes, Checkpoint };
 
 struct PlatformData {
     // Tile-based position (will be converted to world coordinates)
-    int tile_x;
-    int tile_y;
+    float tile_x;
+    float tile_y;
 
     // Size in tiles (supports fractional values like 0.3)
     float width_tiles = 1.0f;
@@ -202,9 +202,9 @@ class Scene {
     }
 
     // Tile conversion
-    static Rectangle tile_to_world_rect(int tile_x, int tile_y,
+    static Rectangle tile_to_world_rect(float tile_x, float tile_y,
                                         float width_tiles, float height_tiles);
-    static Vector2 tile_to_world_pos(int tile_x, int tile_y);
+    static Vector2 tile_to_world_pos(float tile_x, float tile_y);
 
     // Constants
     static constexpr float kTileSize = 32.0f;

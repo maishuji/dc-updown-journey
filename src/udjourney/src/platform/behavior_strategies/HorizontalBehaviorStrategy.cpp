@@ -37,23 +37,24 @@ void HorizontalBehaviorStrategy::reset() {
 }
 
 void HorizontalBehaviorStrategy::update(Platform &platform, float delta) {
-    // No movement
     const auto &gameRect = platform.get_game().get_rectangle();
     const auto &rect = platform.get_rectangle();
 
     if (std::isnan(m_pimpl->pivot_x)) {
-        // Init the pivot and apply initial offset
-        m_pimpl->pivot_x = rect.x - m_pimpl->initial_offset;
+        // Init the pivot at the center of the platform and apply initial offset
+        m_pimpl->pivot_x = rect.x + rect.width / 2.0F - m_pimpl->initial_offset;
     }
 
-    if (rect.x < m_pimpl->pivot_x - m_pimpl->max_offset) {
+    // Check bounds using the center position
+    float center_x = rect.x + rect.width / 2.0F;
+    if (center_x < m_pimpl->pivot_x - m_pimpl->max_offset) {
         m_pimpl->factor = 1.0F;
-    } else if (rect.x > m_pimpl->pivot_x + m_pimpl->max_offset) {
+    } else if (center_x > m_pimpl->pivot_x + m_pimpl->max_offset) {
         m_pimpl->factor = -1.0F;
     }
 
     platform.move(delta * m_pimpl->speed_x * m_pimpl->factor, 0.0F);
-    m_pimpl->current_offset = rect.x - m_pimpl->pivot_x;
+    m_pimpl->current_offset = center_x - m_pimpl->pivot_x;
 
     if (rect.y + rect.height < gameRect.y) {
         platform.set_state(ActorState::CONSUMED);

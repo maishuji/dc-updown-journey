@@ -102,8 +102,8 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
                 }
 
                 EditorPlatform platform;
-                platform.tile_x = jplatform["x"].get<int>();
-                platform.tile_y = jplatform["y"].get<int>();
+                platform.tile_x = jplatform["x"].get<float>();
+                platform.tile_y = jplatform["y"].get<float>();
                 platform.width_tiles = jplatform["width"].get<float>();
                 platform.height_tiles = jplatform["height"].get<float>();
 

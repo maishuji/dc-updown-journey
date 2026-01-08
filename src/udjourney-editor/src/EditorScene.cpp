@@ -218,6 +218,62 @@ void render_cursor_(Level& level, EditorPanel& editor_panel,
                 ImVec2(center_x - width / 2, center_y - height / 2),
                 ImVec2(center_x + width / 2, center_y + height / 2),
                 preview_color);
+
+            // Show range preview for horizontal platforms
+            if (editor_panel.get_platform_behavior() ==
+                PlatformBehaviorType::Horizontal) {
+                auto behavior_params = editor_panel.get_behavior_params();
+                float range = 5.0f;  // Default
+                float initial_offset = 0.0f;
+
+                if (behavior_params.count("range")) {
+                    range = behavior_params.at("range");
+                }
+                if (behavior_params.count("initial_offset")) {
+                    initial_offset = behavior_params.at("initial_offset");
+                }
+
+                float range_pixels = range * 32.0f;
+                float offset_pixels = initial_offset * 32.0f;
+
+                // Calculate pivot point using center of platform (matching new
+                // game behavior)
+                float pivot_x = center_x - offset_pixels;
+
+                // In the game, the CENTER moves between pivot_x ± range
+                float center_min_x = pivot_x - range_pixels;
+                float center_max_x = pivot_x + range_pixels;
+
+                // Calculate where the edges will be at extreme positions
+                float half_width = width / 2.0f;
+                float left_edge_min = center_min_x - half_width;
+                float right_edge_max = center_max_x + half_width;
+
+                // Draw range area (full extent the platform occupies)
+                draw_list->AddRectFilled(
+                    ImVec2(left_edge_min, center_y - height / 2),
+                    ImVec2(right_edge_max, center_y + height / 2),
+                    IM_COL32(0, 255, 0, 40));
+
+                // Draw range boundaries at the extreme positions
+                draw_list->AddLine(
+                    ImVec2(left_edge_min, center_y - height / 2 - 5),
+                    ImVec2(left_edge_min, center_y + height / 2 + 5),
+                    IM_COL32(0, 200, 0, 150),
+                    2.0f);
+                draw_list->AddLine(
+                    ImVec2(right_edge_max, center_y - height / 2 - 5),
+                    ImVec2(right_edge_max, center_y + height / 2 + 5),
+                    IM_COL32(0, 200, 0, 150),
+                    2.0f);
+
+                // Draw pivot marker
+                draw_list->AddCircle(ImVec2(pivot_x, center_y),
+                                     4.0f,
+                                     IM_COL32(255, 165, 0, 180),
+                                     0,
+                                     2.0f);
+            }
             break;
         }
         default:
@@ -1220,9 +1276,9 @@ void EditorScene::render_platforms(Level& level, EditorPanel& editor_panel,
                                    const ImVec2& origin) {
     for (const auto& platform : level.platforms) {
         // Calculate platform center (matching game behavior)
-        // tile_x, tile_y represent the CENTER of the platform
-        float center_x = platform.tile_x * tile_size_ + tile_size_ / 2;
-        float center_y = platform.tile_y * tile_size_ + tile_size_ / 2;
+        // tile_x, tile_y represent the CENTER of the platform in tiles
+        float center_x = platform.tile_x * tile_size_;
+        float center_y = platform.tile_y * tile_size_;
         float width = platform.width_tiles * tile_size_;
         float height = platform.height_tiles * tile_size_;
 
@@ -1272,6 +1328,110 @@ void EditorScene::render_platforms(Level& level, EditorPanel& editor_panel,
                     default:
                         break;
                 }
+            }
+        }
+
+        // Draw movement range for horizontal platforms
+        if (platform.behavior_type == PlatformBehaviorType::Horizontal) {
+            float range = 5.0f;           // Default range in tiles
+            float initial_offset = 0.0f;  // Default initial offset in tiles
+
+            // Get range from behavior_params if available
+            if (platform.behavior_params.count("range")) {
+                range = platform.behavior_params.at("range");
+            }
+            if (platform.behavior_params.count("initial_offset")) {
+                initial_offset = platform.behavior_params.at("initial_offset");
+            }
+
+            // Convert to pixels
+            float range_pixels = range * tile_size_;
+            float offset_pixels = initial_offset * tile_size_;
+
+            // Calculate pivot point using center of platform (matching new game
+            // behavior) In the game: pivot_x = center - initial_offset
+            // Note: platform.tile_x already represents the center in tile
+            // coords So platform.tile_x * tile_size_ is the center in world
+            // coords
+            float pivot_x =
+                origin.x + platform.tile_x * tile_size_ - offset_pixels;
+
+            // In the game, the CENTER of the platform moves between:
+            // center_x >= pivot_x - max_offset  and  center_x <= pivot_x +
+            // max_offset
+            float center_min_x = pivot_x - range_pixels;
+            float center_max_x = pivot_x + range_pixels;
+
+            // Calculate where the edges will be at extreme positions
+            float half_width = width / 2.0f;
+            float left_edge_min = center_min_x - half_width;
+            float right_edge_max = center_max_x + half_width;
+
+            // Draw semi-transparent range area (full extent the platform
+            // occupies)
+            ImVec2 range_top_left = ImVec2(left_edge_min, top_left.y);
+            ImVec2 range_bottom_right = ImVec2(right_edge_max, bottom_right.y);
+            draw_list->AddRectFilled(
+                range_top_left,
+                range_bottom_right,
+                IM_COL32(0, 255, 0, 30));  // Light green overlay
+
+            // Draw range boundary lines at the extreme positions
+            ImVec2 left_line_top = ImVec2(left_edge_min, top_left.y - 5);
+            ImVec2 left_line_bottom = ImVec2(left_edge_min, bottom_right.y + 5);
+            ImVec2 right_line_top = ImVec2(right_edge_max, top_left.y - 5);
+            ImVec2 right_line_bottom =
+                ImVec2(right_edge_max, bottom_right.y + 5);
+
+            draw_list->AddLine(left_line_top,
+                               left_line_bottom,
+                               IM_COL32(0, 200, 0, 200),
+                               2.0f);
+            draw_list->AddLine(right_line_top,
+                               right_line_bottom,
+                               IM_COL32(0, 200, 0, 200),
+                               2.0f);
+
+            // Draw pivot point marker
+            draw_list->AddCircleFilled(
+                ImVec2(pivot_x, center.y), 4.0f, IM_COL32(255, 165, 0, 200));
+
+            // Draw arrows showing movement direction
+            float arrow_y = center.y;
+            float arrow_size = 8.0f;
+
+            // Left arrow
+            ImVec2 left_arrow_tip = ImVec2(left_edge_min - 10, arrow_y);
+            ImVec2 left_arrow_p1 =
+                ImVec2(left_edge_min - 2, arrow_y - arrow_size);
+            ImVec2 left_arrow_p2 =
+                ImVec2(left_edge_min - 2, arrow_y + arrow_size);
+            draw_list->AddTriangleFilled(left_arrow_tip,
+                                         left_arrow_p1,
+                                         left_arrow_p2,
+                                         IM_COL32(0, 200, 0, 200));
+
+            // Right arrow
+            ImVec2 right_arrow_tip = ImVec2(right_edge_max + 10, arrow_y);
+            ImVec2 right_arrow_p1 =
+                ImVec2(right_edge_max + 2, arrow_y - arrow_size);
+            ImVec2 right_arrow_p2 =
+                ImVec2(right_edge_max + 2, arrow_y + arrow_size);
+            draw_list->AddTriangleFilled(right_arrow_tip,
+                                         right_arrow_p1,
+                                         right_arrow_p2,
+                                         IM_COL32(0, 200, 0, 200));
+
+            // Draw range label (only if selected)
+            if (is_selected) {
+                char range_label[64];
+                snprintf(range_label,
+                         sizeof(range_label),
+                         "Range: %.1f tiles",
+                         range);
+                ImVec2 label_pos = ImVec2(pivot_x - 30, top_left.y - 20);
+                draw_list->AddText(
+                    label_pos, IM_COL32(255, 255, 255, 255), range_label);
             }
         }
     }

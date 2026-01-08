@@ -39,8 +39,8 @@ void load_level_platforms_(const json& scene_data,
         for (const auto& platform_json : scene_data["platforms"]) {
             PlatformData platform;
 
-            platform.tile_x = platform_json.value("x", 0);
-            platform.tile_y = platform_json.value("y", 0);
+            platform.tile_x = platform_json.value("x", 0.0f);
+            platform.tile_y = platform_json.value("y", 0.0f);
             platform.width_tiles = platform_json.value("width", 1.0f);
             platform.height_tiles = platform_json.value("height", 1.0f);
 
@@ -286,12 +286,12 @@ void load_fuds_(const json& scene_data, std::vector<scene::HUDData>& huds) {
 
 Scene::Scene(const std::string& filename) { load_from_file(filename); }
 
-Rectangle Scene::tile_to_world_rect(int tile_x, int tile_y, float width_tiles,
-                                    float height_tiles) {
+Rectangle Scene::tile_to_world_rect(float tile_x, float tile_y,
+                                    float width_tiles, float height_tiles) {
     // Platform is centered on the tile position
-    // tile_x, tile_y represent the CENTER of the platform
-    float center_x = static_cast<float>(tile_x) * kTileSize + kTileSize / 2;
-    float center_y = static_cast<float>(tile_y) * kTileSize + kTileSize / 2;
+    // tile_x, tile_y represent the CENTER of the platform in tiles
+    float center_x = static_cast<float>(tile_x) * kTileSize;
+    float center_y = static_cast<float>(tile_y) * kTileSize;
     float width = width_tiles * kTileSize;
     float height = height_tiles * kTileSize;
 
@@ -299,7 +299,7 @@ Rectangle Scene::tile_to_world_rect(int tile_x, int tile_y, float width_tiles,
         center_x - width / 2, center_y - height / 2, width, height};
 }
 
-Vector2 Scene::tile_to_world_pos(int tile_x, int tile_y) {
+Vector2 Scene::tile_to_world_pos(float tile_x, float tile_y) {
     return Vector2{static_cast<float>(tile_x) * kTileSize,
                    static_cast<float>(tile_y) * kTileSize};
 }

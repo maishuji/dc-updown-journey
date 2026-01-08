@@ -1,0 +1,236 @@
+{
+  "backgrounds": {
+    "layers": []
+  },
+  "gravity": 0.5,
+  "huds": [],
+  "monsters": [],
+  "name": "Untitled Level",
+  "platforms": [
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": 0.0,
+        "range": 5.0,
+        "speed": 2.0
+      },
+      "height": 1.0,
+      "width": 1.0,
+      "x": 9.0,
+      "y": 12.0
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": 0.0,
+        "range": 5.0,
+        "speed": 2.0
+      },
+      "height": 1.0,
+      "width": 1.0,
+      "x": 9.0,
+      "y": 17.0
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": 0.0,
+        "range": 5.0,
+        "speed": 2.0
+      },
+      "height": 1.0,
+      "width": 1.100000023841858,
+      "x": 10.0,
+      "y": 23.0
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": 0.0,
+        "range": 10.0,
+        "speed": 10.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 9.0,
+      "y": 28.0
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": 0.0,
+        "range": 10.0,
+        "speed": 10.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 9.0,
+      "y": 30.0
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": 5.599999904632568,
+        "range": 7.400000095367432,
+        "speed": 10.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 15.0,
+      "y": 33.0
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": 4.099999904632568,
+        "range": 7.5,
+        "speed": 10.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 14.0,
+      "y": 35.0
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": -7.099999904632568,
+        "range": 7.5,
+        "speed": 10.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 2.0,
+      "y": 38.0
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": -3.799999952316284,
+        "range": 7.5,
+        "speed": 10.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 6.15625,
+      "y": 39.96875
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": -7.199999809265137,
+        "range": 10.0,
+        "speed": 10.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 2.0,
+      "y": 9.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 2.0,
+      "y": 14.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 1.0,
+      "y": 15.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 17.0,
+      "y": 13.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 16.0,
+      "y": 15.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 4.0,
+      "y": 20.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 14.0,
+      "y": 20.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 9.0,
+      "y": 43.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 4.25,
+      "y": 44.96875
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 14.0,
+      "y": 47.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 0.0,
+      "y": 47.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 0.0,
+      "y": 43.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 19.0,
+      "y": 43.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 19.0,
+      "y": 46.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 0.0,
+      "y": 37.0
+    }
+  ],
+  "player_spawn": {
+    "x": 2,
+    "y": 8
+  },
+  "scene_type": "level",
+  "scroll_speed": 1.0,
+  "terminal_velocity": 5.0
+}
