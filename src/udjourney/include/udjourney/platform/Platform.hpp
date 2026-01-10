@@ -26,7 +26,7 @@ class Platform : public IActor {
              std::unique_ptr<PlatformReuseStrategy> reuseStrategy = nullptr);
     void draw() const override;
     void update(float delta) override;
-    Rectangle get_drawing_rect() const;
+    [[nodiscard]] Rectangle get_drawing_rect() const;
 
     [[nodiscard]] float get_dx() const noexcept { return m_delta_x; }
     void process_input() override;
@@ -86,12 +86,18 @@ class Platform : public IActor {
     [[nodiscard]] bool is_texture_tiled() const noexcept {
         return m_texture_tiled;
     }
+    void set_use_atlas(bool use_atlas) noexcept { m_use_atlas = use_atlas; }
+    void set_source_rect(Rectangle rect) noexcept { m_source_rect = rect; }
+    [[nodiscard]] bool is_using_atlas() const noexcept { return m_use_atlas; }
+    [[nodiscard]] Rectangle get_source_rect() const noexcept {
+        return m_source_rect;
+    }
     void clear_texture() { m_texture_file.clear(); }
     [[nodiscard]] bool has_texture() const noexcept {
         return !m_texture_file.empty();
     }
 
-    auto get_features() const
+    [[nodiscard]] auto get_features() const
         -> const std::vector<std::unique_ptr<PlatformFeatureBase>> & {
         return m_features;
     }
@@ -111,6 +117,8 @@ class Platform : public IActor {
     Color m_color = BLUE;
     std::string m_texture_file;
     bool m_texture_tiled = false;
+    bool m_use_atlas = false;
+    Rectangle m_source_rect = {0, 0, 0, 0};
     bool m_repeated_y = false;
     std::unique_ptr<PlatformBehaviorStrategy> m_behavior;
     std::vector<std::unique_ptr<PlatformFeatureBase>> m_features;

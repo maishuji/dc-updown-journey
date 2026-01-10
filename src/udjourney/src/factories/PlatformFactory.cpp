@@ -50,6 +50,10 @@ std::unique_ptr<Platform> PlatformFactory::create(
     if (!platform_data.texture_file.empty()) {
         platform->set_texture_file(platform_data.texture_file);
         platform->set_texture_tiled(platform_data.texture_tiled);
+        platform->set_use_atlas(platform_data.use_atlas);
+        if (platform_data.use_atlas) {
+            platform->set_source_rect(platform_data.source_rect);
+        }
     }
 
     // Set behavior based on platform data

@@ -3,9 +3,18 @@
 
 #include <imgui.h>
 #include <vector>
+#include <memory>
 
 #include "udjourney-editor/mode_handlers/IModeHandler.hpp"
 #include "udjourney-editor/Level.hpp"
+
+// Forward declarations
+namespace udjourney {
+namespace editor {
+class PlatformPresetManager;
+struct PlatformPresetInfo;
+}  // namespace editor
+}  // namespace udjourney
 
 /**
  * @brief Handler for Platform edit mode
@@ -27,12 +36,15 @@ class PlatformModeHandler : public IModeHandler {
     ImVec2 get_platform_size() const { return platform_size_; }
     std::vector<PlatformFeatureType> get_selected_features() const;
 
-    const std::string& get_new_platform_texture_file() const {
-        return new_platform_texture_file_;
+    [[nodiscard]] const std::string& get_selected_platform_preset() const {
+        return selected_platform_preset_;
     }
 
-    bool get_new_platform_texture_tiled() const noexcept {
-        return new_platform_texture_tiled_;
+    [[nodiscard]] const udjourney::editor::PlatformPresetInfo*
+    get_selected_preset_info() const;
+
+    [[nodiscard]] bool get_tile_render_tiled() const noexcept {
+        return tile_render_tiled_;
     }
 
     EditorPlatform* get_selected_platform() const { return selected_platform_; }
@@ -74,10 +86,12 @@ class PlatformModeHandler : public IModeHandler {
     EditorPlatform* texture_platform_ = nullptr;
     char texture_file_buf_[256] = {0};
 
-    // Default texture for newly created platforms
-    std::string new_platform_texture_file_;
-    char new_texture_file_buf_[256] = {0};
-    bool new_platform_texture_tiled_ = false;
+    // Platform preset selection
+    std::unique_ptr<udjourney::editor::PlatformPresetManager>
+        platform_preset_manager_;
+    std::string selected_platform_preset_;
+    int selected_preset_index_ = 0;
+    bool tile_render_tiled_ = false;  // false=stretch, true=tile/repeat
 
     enum class TextureDialogTarget {
         SelectedPlatform,

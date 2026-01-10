@@ -8,222 +8,580 @@
   "name": "Untitled Level",
   "platforms": [
     {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": 0.0,
-        "range": 5.0,
-        "speed": 2.0
-      },
+      "behavior": "static",
       "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
       "width": 1.0,
-      "x": 9.0,
-      "y": 12.0
-    },
-    {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": 0.0,
-        "range": 5.0,
-        "speed": 2.0
-      },
-      "height": 1.0,
-      "width": 1.0,
-      "x": 9.0,
-      "y": 17.0
-    },
-    {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": 0.0,
-        "range": 5.0,
-        "speed": 2.0
-      },
-      "height": 1.0,
-      "width": 1.100000023841858,
-      "x": 10.0,
-      "y": 23.0
-    },
-    {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": 0.0,
-        "range": 10.0,
-        "speed": 10.0
-      },
-      "height": 1.0,
-      "width": 5.0,
-      "x": 9.0,
-      "y": 28.0
-    },
-    {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": 0.0,
-        "range": 10.0,
-        "speed": 10.0
-      },
-      "height": 1.0,
-      "width": 5.0,
-      "x": 9.0,
-      "y": 30.0
-    },
-    {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": 5.599999904632568,
-        "range": 7.400000095367432,
-        "speed": 10.0
-      },
-      "height": 1.0,
-      "width": 5.0,
-      "x": 15.0,
-      "y": 33.0
-    },
-    {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": 4.099999904632568,
-        "range": 7.5,
-        "speed": 10.0
-      },
-      "height": 1.0,
-      "width": 5.0,
-      "x": 14.0,
-      "y": 35.0
-    },
-    {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": -7.099999904632568,
-        "range": 7.5,
-        "speed": 10.0
-      },
-      "height": 1.0,
-      "width": 5.0,
-      "x": 2.0,
-      "y": 38.0
-    },
-    {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": -3.799999952316284,
-        "range": 7.5,
-        "speed": 10.0
-      },
-      "height": 1.0,
-      "width": 5.0,
-      "x": 6.15625,
-      "y": 39.96875
-    },
-    {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": -7.199999809265137,
-        "range": 10.0,
-        "speed": 10.0
-      },
-      "height": 1.0,
-      "width": 5.0,
-      "x": 2.0,
-      "y": 9.0
+      "x": 6.6875,
+      "y": 8.9375
     },
     {
       "behavior": "static",
       "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 1.0,
+      "x": 4.5625,
+      "y": 13.0625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 1.0,
+      "x": 9.21875,
+      "y": 17.875
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 1.0,
+      "x": 12.21875,
+      "y": 13.40625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
       "width": 5.0,
-      "x": 2.0,
+      "x": 4.5625,
+      "y": 5.03125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 10.46875,
+      "y": 5.625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 14.15625,
+      "y": 7.90625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 9.21875,
+      "y": 9.34375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 8.3125,
+      "y": 12.8125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 13.59375,
+      "y": 15.53125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 4.1875,
+      "y": 16.9375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 13.625,
+      "y": 18.59375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 8.21875,
+      "y": 21.15625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 4.25,
+      "y": 23.65625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 14.125,
+      "y": 23.5
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 11.0625,
+      "y": 25.03125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 5.15625,
+      "y": 27.78125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 14.5625,
+      "y": 27.53125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 15.3125,
+      "y": 29.9375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 7.78125,
+      "y": 30.875
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 6.65625,
+      "y": 33.46875
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 11.25,
+      "y": 33.25
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 64.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 14.71875,
+      "y": 34.46875
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 2.96875,
+      "y": 10.15625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 4.34375,
+      "y": 6.90625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 15.34375,
+      "y": 10.53125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 13.53125,
+      "y": 11.53125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 6.40625,
       "y": 14.0
     },
     {
       "behavior": "static",
       "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
       "width": 5.0,
-      "x": 1.0,
-      "y": 15.0
+      "x": 6.3125,
+      "y": 15.625
     },
     {
       "behavior": "static",
       "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
       "width": 5.0,
-      "x": 17.0,
-      "y": 13.0
+      "x": 4.21875,
+      "y": 18.8125
     },
     {
       "behavior": "static",
       "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
       "width": 5.0,
-      "x": 16.0,
-      "y": 15.0
+      "x": 14.90625,
+      "y": 20.03125
     },
     {
       "behavior": "static",
       "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
       "width": 5.0,
-      "x": 4.0,
-      "y": 20.0
+      "x": 3.53125,
+      "y": 25.53125
     },
     {
       "behavior": "static",
       "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
       "width": 5.0,
-      "x": 14.0,
-      "y": 20.0
+      "x": 8.84375,
+      "y": 28.78125
     },
     {
       "behavior": "static",
       "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
       "width": 5.0,
-      "x": 9.0,
-      "y": 43.0
+      "x": 16.125,
+      "y": 31.28125
     },
     {
       "behavior": "static",
       "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
       "width": 5.0,
-      "x": 4.25,
-      "y": 44.96875
+      "x": 3.0,
+      "y": 35.25
     },
     {
       "behavior": "static",
       "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "texture_tiled": true,
+      "use_atlas": true,
       "width": 5.0,
-      "x": 14.0,
-      "y": 47.0
-    },
-    {
-      "behavior": "static",
-      "height": 1.0,
-      "width": 1.0,
-      "x": 0.0,
-      "y": 47.0
-    },
-    {
-      "behavior": "static",
-      "height": 1.0,
-      "width": 1.0,
-      "x": 0.0,
-      "y": 43.0
-    },
-    {
-      "behavior": "static",
-      "height": 1.0,
-      "width": 1.0,
-      "x": 19.0,
-      "y": 43.0
-    },
-    {
-      "behavior": "static",
-      "height": 1.0,
-      "width": 1.0,
-      "x": 19.0,
-      "y": 46.0
-    },
-    {
-      "behavior": "static",
-      "height": 1.0,
-      "width": 1.0,
-      "x": 0.0,
-      "y": 37.0
+      "x": 16.21875,
+      "y": 5.5
     }
   ],
   "player_spawn": {

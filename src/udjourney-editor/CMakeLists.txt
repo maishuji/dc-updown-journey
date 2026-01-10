@@ -52,6 +52,7 @@ add_library(udjourney_editor_lib
   src/AnimationPresetPanel.cpp
   src/ParticlePresetPanel.cpp
   src/MonsterPresetManager.cpp
+  src/PlatformPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/strategies/level/ImportFromFileStrategy.cpp
@@ -109,6 +110,7 @@ add_library(udjourney_editor_lib_test
   src/AnimationPresetPanel.cpp
   src/ParticlePresetPanel.cpp
   src/MonsterPresetManager.cpp
+  src/PlatformPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/strategies/level/ImportFromFileStrategy.cpp
@@ -184,6 +186,7 @@ add_executable(editorpanel_tests
   src/EditorPanel.cpp
   src/EditorScene.cpp
   src/MonsterPresetManager.cpp
+  src/PlatformPresetManager.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/strategies/level/ImportFromFileStrategy.cpp
   src/strategies/level/StaircaseLevelStrategy.cpp

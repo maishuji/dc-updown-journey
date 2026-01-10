@@ -5,8 +5,14 @@
 #include <cstdio>
 #include <filesystem>
 #include <vector>
+#include <memory>
+#include <unordered_map>
 
 #include "ImGuiFileDialog.h"
+#include "udjourney-editor/PlatformPresetManager.hpp"
+
+// Texture cache for preset previews
+static std::unordered_map<std::string, Texture2D> preset_texture_cache;
 
 namespace {
 constexpr const char* kChoosePlatformTextureDlgKey = "ChoosePlatformTextureDlg";
@@ -52,7 +58,24 @@ std::string make_asset_relative_or_keep(const std::string& filepath) {
 }
 }  // namespace
 
-PlatformModeHandler::PlatformModeHandler() {}
+PlatformModeHandler::PlatformModeHandler() :
+    platform_preset_manager_(
+        std::make_unique<udjourney::editor::PlatformPresetManager>()) {
+    // Initialize with first preset if available
+    auto preset_names = platform_preset_manager_->get_preset_names();
+    if (!preset_names.empty()) {
+        selected_platform_preset_ = preset_names[0];
+        selected_preset_index_ = 0;
+    }
+}
+
+const udjourney::editor::PlatformPresetInfo*
+PlatformModeHandler::get_selected_preset_info() const {
+    if (selected_platform_preset_.empty() || !platform_preset_manager_) {
+        return nullptr;
+    }
+    return platform_preset_manager_->get_preset(selected_platform_preset_);
+}
 
 void PlatformModeHandler::render() {
     if (selected_platform_) {
@@ -73,13 +96,7 @@ void PlatformModeHandler::render_file_dialogs() {
 
             std::string relative_path = make_asset_relative_or_keep(filepath);
 
-            if (texture_dialog_target_ == TextureDialogTarget::NewPlatforms) {
-                new_platform_texture_file_ = relative_path;
-                std::snprintf(new_texture_file_buf_,
-                              sizeof(new_texture_file_buf_),
-                              "%s",
-                              relative_path.c_str());
-            } else if (selected_platform_) {
+            if (selected_platform_) {
                 selected_platform_->texture_file = relative_path;
                 texture_platform_ = selected_platform_;
                 std::snprintf(texture_file_buf_,
@@ -218,37 +235,128 @@ void PlatformModeHandler::render_creator() {
 
     ImGui::Separator();
     if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::TextWrapped(
-            "Default texture for newly created platforms (asset-relative). "
-            "Empty = solid color.");
-
-        if (ImGui::InputText("Texture##new",
-                             new_texture_file_buf_,
-                             sizeof(new_texture_file_buf_))) {
-            new_platform_texture_file_ = new_texture_file_buf_;
+        ImGui::TextWrapped("Tile Render Mode:");
+        if (ImGui::RadioButton("Stretch to fit", !tile_render_tiled_)) {
+            tile_render_tiled_ = false;
         }
-
         ImGui::SameLine();
-        if (ImGui::Button("Browse...##new")) {
-            texture_dialog_target_ = TextureDialogTarget::NewPlatforms;
-            auto config = IGFD::FileDialogConfig();
-            std::filesystem::path assets_dir = find_assets_dir();
-            if (!assets_dir.empty()) {
-                config.path = assets_dir.string();
+        if (ImGui::RadioButton("Tile/Repeat", tile_render_tiled_)) {
+            tile_render_tiled_ = true;
+        }
+
+        ImGui::Separator();
+        ImGui::TextWrapped("Select platform preset:");
+
+        if (!platform_preset_manager_) {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
+                               "Platform preset manager not initialized!");
+            return;
+        }
+
+        auto presets = platform_preset_manager_->get_presets();
+        if (!presets.empty()) {
+            const float tile_size = 64.0f;
+            const float padding = 4.0f;
+            const float available_width = ImGui::GetContentRegionAvail().x;
+            const int tiles_per_row =
+                std::max(1,
+                         static_cast<int>((available_width + padding) /
+                                          (tile_size + padding)));
+
+            for (size_t i = 0; i < presets.size(); ++i) {
+                ImGui::PushID(static_cast<int>(i));
+
+                const auto& preset = presets[i];
+                bool is_selected = (selected_platform_preset_ == preset.name);
+
+                // Load texture for preview (with cache)
+                std::string full_path = "assets/" + preset.sprite_sheet;
+                Texture2D texture;
+                auto it = preset_texture_cache.find(full_path);
+                if (it != preset_texture_cache.end()) {
+                    texture = it->second;
+                } else {
+                    texture = LoadTexture(full_path.c_str());
+                    if (texture.id != 0) {
+                        preset_texture_cache[full_path] = texture;
+                    }
+                }
+
+                if (texture.id != 0) {
+                    Rectangle src = preset.get_source_rect();
+
+                    // Calculate UV coordinates
+                    float u0 = src.x / texture.width;
+                    float v0 = src.y / texture.height;
+                    float u1 = (src.x + src.width) / texture.width;
+                    float v1 = (src.y + src.height) / texture.height;
+
+                    // Style for button
+                    ImVec4 tint_color = is_selected
+                                            ? ImVec4(0.5f, 1.0f, 0.5f, 1.0f)
+                                            : ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+                    ImVec4 border_color = is_selected
+                                              ? ImVec4(0.2f, 0.8f, 0.2f, 1.0f)
+                                              : ImVec4(0.4f, 0.4f, 0.4f, 0.5f);
+
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
+                                          ImVec4(0.3f, 0.3f, 0.3f, 0.3f));
+                    ImGui::PushStyleColor(ImGuiCol_ButtonActive,
+                                          ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+                    ImGui::PushStyleColor(ImGuiCol_Border, border_color);
+                    ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
+
+                    if (ImGui::ImageButton("##preset",
+                                           static_cast<ImTextureID>(texture.id),
+                                           ImVec2(tile_size, tile_size),
+                                           ImVec2(u0, v0),
+                                           ImVec2(u1, v1),
+                                           ImVec4(0, 0, 0, 0),
+                                           tint_color)) {
+                        selected_preset_index_ = static_cast<int>(i);
+                        selected_platform_preset_ = preset.name;
+                    }
+
+                    ImGui::PopStyleVar();
+                    ImGui::PopStyleColor(4);
+
+                    // Show tooltip with preset info
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::BeginTooltip();
+                        ImGui::Text("%s", preset.name.c_str());
+                        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                                           "Sheet: %s",
+                                           preset.sprite_sheet.c_str());
+                        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                                           "Tile: [%d, %d] Size: %d",
+                                           preset.tile_col,
+                                           preset.tile_row,
+                                           preset.tile_size);
+                        ImGui::EndTooltip();
+                    }
+                } else {
+                    // Fallback to text button if texture fails to load
+                    if (ImGui::Button(preset.name.c_str(),
+                                      ImVec2(tile_size, tile_size))) {
+                        selected_preset_index_ = static_cast<int>(i);
+                        selected_platform_preset_ = preset.name;
+                    }
+                }
+
+                // Layout in grid
+                if ((i + 1) % tiles_per_row != 0 && i + 1 < presets.size()) {
+                    ImGui::SameLine();
+                }
+
+                ImGui::PopID();
             }
-            ImGuiFileDialog::Instance()->OpenDialog(
-                kChoosePlatformTextureDlgKey,
-                "Choose Platform Texture",
-                ".png,.PNG",
-                config);
+        } else {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
+                               "No platform presets available!");
+            ImGui::TextWrapped(
+                "Make sure platform_presets.json is accessible.");
         }
-
-        if (ImGui::Button("Clear Texture##new", ImVec2(-1, 0))) {
-            new_texture_file_buf_[0] = '\0';
-            new_platform_texture_file_.clear();
-        }
-
-        ImGui::Checkbox("Tile Texture##new", &new_platform_texture_tiled_);
     }
 }
 

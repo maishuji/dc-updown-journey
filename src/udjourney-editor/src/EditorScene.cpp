@@ -18,6 +18,7 @@
 #include "udj-core/CoreUtils.hpp"
 #include "udj-core/Logger.hpp"
 #include "udjourney-editor/EditorSettings.hpp"
+#include "udjourney-editor/PlatformPresetManager.hpp"
 
 // HUD Renderer includes
 #include "udjourney-editor/hud/IHUDRenderer.hpp"
@@ -1141,9 +1142,20 @@ void EditorScene::handle_platform_mode_input(Level& level,
         // Get behavior parameters from editor panel
         platform.behavior_params = editor_panel.get_behavior_params();
 
-        // Optional default texture for newly created platforms
-        platform.texture_file = editor_panel.get_new_platform_texture_file();
-        platform.texture_tiled = editor_panel.get_new_platform_texture_tiled();
+        // Get platform preset information
+        const udjourney::editor::PlatformPresetInfo* preset_info =
+            editor_panel.get_selected_platform_preset_info();
+        if (preset_info && preset_info->is_valid) {
+            // Use atlas-based rendering with preset info
+            platform.texture_file = preset_info->sprite_sheet;
+            platform.texture_tiled = editor_panel.get_tile_render_tiled();
+            platform.use_atlas = true;
+            platform.source_rect = preset_info->get_source_rect();
+        } else {
+            // Fallback to no texture (solid color)
+            platform.texture_file.clear();
+            platform.texture_tiled = false;
+        }
 
         // Calculate color based on behavior and features
         PlatformFeatureType primary_feature = platform.features.empty()
@@ -1296,14 +1308,52 @@ void EditorScene::render_platforms(Level& level, EditorPanel& editor_panel,
         ImVec2 unit_bottom_right =
             ImVec2(center.x + tile_size_ / 2, center.y + tile_size_ / 2);
 
-        // Draw platform with its color
-        auto preview_color = platform.color;
-        preview_color &= IM_COL32(255, 255, 255, 100);
-        draw_list->AddRectFilled(top_left, bottom_right, preview_color);
+        // Try to draw platform with texture if available
+        bool drew_texture = false;
+        if (platform.use_atlas && !platform.texture_file.empty()) {
+            Texture2D texture = load_texture_cached(platform.texture_file);
+            if (texture.id != 0) {
+                void* tex_id =
+                    reinterpret_cast<void*>(static_cast<uintptr_t>(texture.id));
 
-        // Draw unit tile (for reference)
-        draw_list->AddRectFilled(
-            unit_top_left, unit_bottom_right, platform.color);
+                // Calculate UV coordinates from source rect
+                ImVec2 uv0(platform.source_rect.x / texture.width,
+                           platform.source_rect.y / texture.height);
+                ImVec2 uv1(
+                    (platform.source_rect.x + platform.source_rect.width) /
+                        texture.width,
+                    (platform.source_rect.y + platform.source_rect.height) /
+                        texture.height);
+
+                // Draw textured platform (semi-transparent)
+                draw_list->AddImage(tex_id,
+                                    top_left,
+                                    bottom_right,
+                                    uv0,
+                                    uv1,
+                                    IM_COL32(255, 255, 255, 180));
+
+                // Draw center tile with texture at full opacity
+                draw_list->AddImage(tex_id,
+                                    unit_top_left,
+                                    unit_bottom_right,
+                                    uv0,
+                                    uv1,
+                                    IM_COL32(255, 255, 255, 255));
+                drew_texture = true;
+            }
+        }
+
+        if (!drew_texture) {
+            // Fallback to colored rectangles
+            auto preview_color = platform.color;
+            preview_color &= IM_COL32(255, 255, 255, 100);
+            draw_list->AddRectFilled(top_left, bottom_right, preview_color);
+
+            // Draw unit tile (for reference)
+            draw_list->AddRectFilled(
+                unit_top_left, unit_bottom_right, platform.color);
+        }
 
         // Draw platform border (highlighted if selected)
         bool is_selected = (editor_panel.get_selected_platform() == &platform);

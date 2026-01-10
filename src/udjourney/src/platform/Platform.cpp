@@ -43,6 +43,36 @@ void draw_texture_tiled(const Texture2D &texture, Rectangle dest, Color tint) {
     }
 }
 
+void draw_texture_tiled_from_atlas(const Texture2D &texture,
+                                   Rectangle source_rect, Rectangle dest,
+                                   Color tint) {
+    if (texture.id == 0 || dest.width <= 0.0f || dest.height <= 0.0f) {
+        return;
+    }
+    if (source_rect.width <= 0.0f || source_rect.height <= 0.0f) {
+        return;
+    }
+
+    const float tile_w = source_rect.width;
+    const float tile_h = source_rect.height;
+    const float right = dest.x + dest.width;
+    const float bottom = dest.y + dest.height;
+
+    for (float y = dest.y; y < bottom; y += tile_h) {
+        const float remaining_h = bottom - y;
+        const float draw_h = std::min(tile_h, remaining_h);
+
+        for (float x = dest.x; x < right; x += tile_w) {
+            const float remaining_w = right - x;
+            const float draw_w = std::min(tile_w, remaining_w);
+
+            Rectangle src = {source_rect.x, source_rect.y, draw_w, draw_h};
+            Rectangle dst = {x, y, draw_w, draw_h};
+            DrawTexturePro(texture, src, dst, Vector2{0.0f, 0.0f}, 0.0f, tint);
+        }
+    }
+}
+
 void draw_rounded_rect_outline(Rectangle rect, float radius_px, float thickness,
                                Color color, int segments) {
     if (rect.width <= 0.0f || rect.height <= 0.0f) {
@@ -135,19 +165,35 @@ void Platform::draw() const {
         Texture2D texture =
             TextureManager::get_instance().get_texture(m_texture_file);
         if (texture.id != 0) {
-            Rectangle src = {0.0f,
-                             0.0f,
-                             static_cast<float>(texture.width),
-                             static_cast<float>(texture.height)};
+            Rectangle src;
             Vector2 origin = {0.0f, 0.0f};
-            if (m_texture_tiled) {
-                (void)src;
-                (void)origin;
+
+            if (m_use_atlas && m_source_rect.width > 0 &&
+                m_source_rect.height > 0) {
+                // Use specific tile from atlas
+                if (m_texture_tiled) {
+                    // Tile the atlas tile across the platform
+                    draw_texture_tiled_from_atlas(
+                        texture, m_source_rect, rect, WHITE);
+                } else {
+                    // Stretch the atlas tile to fit the platform
+                    src = m_source_rect;
+                    DrawTexturePro(texture, src, rect, origin, 0.0f, WHITE);
+                }
+                drew_texture = true;
+            } else if (m_texture_tiled) {
+                // Tiled rendering no atlas (legacy)
                 draw_texture_tiled(texture, rect, WHITE);
+                drew_texture = true;
             } else {
+                // Stretch entire texture no atlas (legacy)
+                src = {0.0f,
+                       0.0f,
+                       static_cast<float>(texture.width),
+                       static_cast<float>(texture.height)};
                 DrawTexturePro(texture, src, rect, origin, 0.0f, WHITE);
+                drew_texture = true;
             }
-            drew_texture = true;
         }
     }
 

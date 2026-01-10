@@ -1,0 +1,20 @@
+{
+  "presets": [
+    {
+      "name": "Platform1",
+      "sprite_sheet": "platforms/platforms_64_atlas-Sheet.png",
+      "tile_size": 64,
+      "tile_row": 0,
+      "tile_col": 0,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Platform2",
+      "sprite_sheet": "platforms/platforms_64_atlas-Sheet.png",
+      "tile_size": 64,
+      "tile_row": 0,
+      "tile_col": 1,
+      "default_scale": 1.0
+    }
+  ]
+}

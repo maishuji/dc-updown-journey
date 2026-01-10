@@ -2,6 +2,7 @@
 #pragma once
 
 #include <imgui.h>
+#include <raylib.h>
 
 #include <algorithm>
 #include <iostream>
@@ -36,6 +37,11 @@ struct EditorPlatform {
 
     // If true, repeat/tile texture over platform rect; otherwise stretch
     bool texture_tiled = false;
+
+    // Atlas-based rendering (for platform presets)
+    bool use_atlas = false;
+    Rectangle source_rect = {
+        0.0f, 0.0f, 0.0f, 0.0f};  // Source rectangle in atlas
 
     // Behavior-specific parameters (e.g., speed, range, amplitude)
     std::map<std::string, float> behavior_params;

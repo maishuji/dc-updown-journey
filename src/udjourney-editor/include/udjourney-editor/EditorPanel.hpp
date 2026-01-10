@@ -13,6 +13,13 @@
 #include "udjourney-editor/background/BackgroundManager.hpp"
 #include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
 
+// Forward declarations
+namespace udjourney {
+namespace editor {
+struct PlatformPresetInfo;
+}
+}  // namespace udjourney
+
 // Forward declare mode handlers
 class IModeHandler;
 class TileModeHandler;
@@ -69,16 +76,21 @@ class EditorPanel {
         return platform_behavior;
     }
 
-    const std::string& get_new_platform_texture_file() const;
-    bool get_new_platform_texture_tiled() const noexcept;
+    [[nodiscard]] const std::string& get_new_platform_texture_file() const;
+    [[nodiscard]] bool get_new_platform_texture_tiled() const noexcept;
+    [[nodiscard]] const std::string& get_selected_platform_preset() const;
+    [[nodiscard]] const udjourney::editor::PlatformPresetInfo*
+    get_selected_platform_preset_info() const;
+    [[nodiscard]] bool get_tile_render_tiled() const noexcept;
 
     // Get selected features for new platforms
-    std::vector<PlatformFeatureType> get_selected_features() const;
+    [[nodiscard]] std::vector<PlatformFeatureType> get_selected_features()
+        const;
 
-    ImVec2 get_platform_size() const noexcept;
+    [[nodiscard]] ImVec2 get_platform_size() const noexcept;
 
     // Get behavior parameters for new platforms
-    std::map<std::string, float> get_behavior_params() const;
+    [[nodiscard]] std::map<std::string, float> get_behavior_params() const;
 
     void set_button(const std::string& iId, ImU32 color);
     void set_scale(float scale) noexcept;

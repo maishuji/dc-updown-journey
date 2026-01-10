@@ -10,6 +10,7 @@
 #include <cstring>
 
 #include "udjourney-editor/Level.hpp"
+#include "udjourney-editor/PlatformPresetManager.hpp"
 #include "udjourney-editor/mode_handlers/TileModeHandler.hpp"
 #include "udjourney-editor/mode_handlers/PlatformModeHandler.hpp"
 #include "udjourney-editor/mode_handlers/SpawnModeHandler.hpp"
@@ -47,15 +48,36 @@ void EditorPanel::render_file_dialogs() {
 
 const std::string& EditorPanel::get_new_platform_texture_file() const {
     static const std::string kEmpty;
-    if (platform_handler_) {
-        return platform_handler_->get_new_platform_texture_file();
-    }
+    // Platform presets replace direct texture file specification
+    // This method is kept for backward compatibility
     return kEmpty;
 }
 
 bool EditorPanel::get_new_platform_texture_tiled() const noexcept {
+    // Platform presets replace direct texture file specification
+    // This method is kept for backward compatibility
+    return false;
+}
+
+const std::string& EditorPanel::get_selected_platform_preset() const {
+    static const std::string kEmpty;
     if (platform_handler_) {
-        return platform_handler_->get_new_platform_texture_tiled();
+        return platform_handler_->get_selected_platform_preset();
+    }
+    return kEmpty;
+}
+
+const udjourney::editor::PlatformPresetInfo*
+EditorPanel::get_selected_platform_preset_info() const {
+    if (platform_handler_) {
+        return platform_handler_->get_selected_preset_info();
+    }
+    return nullptr;
+}
+
+bool EditorPanel::get_tile_render_tiled() const noexcept {
+    if (platform_handler_) {
+        return platform_handler_->get_tile_render_tiled();
     }
     return false;
 }

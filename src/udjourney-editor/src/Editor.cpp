@@ -166,6 +166,14 @@ void Editor::export_platform_level_json(const std::string &export_path) {
                 if (platform.texture_tiled) {
                     jplatform["texture_tiled"] = true;
                 }
+                if (platform.use_atlas) {
+                    jplatform["use_atlas"] = true;
+                    jplatform["source_rect"] = {
+                        {"x", platform.source_rect.x},
+                        {"y", platform.source_rect.y},
+                        {"width", platform.source_rect.width},
+                        {"height", platform.source_rect.height}};
+                }
             }
 
             // Behavior type

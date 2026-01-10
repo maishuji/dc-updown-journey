@@ -1,0 +1,751 @@
+{
+  "backgrounds": {
+    "layers": [
+      {
+        "auto_scroll_enabled": true,
+        "depth": 0,
+        "name": "New Layer",
+        "objects": [
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 0.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 128.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 256.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 0.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 0.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 0.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 0.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 128.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 256.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 128.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 128.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 256.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 128.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 256.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 256.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 384.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 512.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 768.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 896.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 1024.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 320.0,
+            "y": 1152.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 768.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 896.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 1024.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 832.0,
+            "y": 1152.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 768.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 896.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 1024.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 576.0,
+            "y": 1152.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 640.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 1024.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 2",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 3,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 1024.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 1152.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 1152.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 896.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 448.0,
+            "y": 768.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 768.0
+          },
+          {
+            "rotation": 0.0,
+            "scale": 1.0,
+            "sprite_name": "Wood 1",
+            "sprite_sheet": "background/background_128-Sheet.png",
+            "tile_col": 2,
+            "tile_row": 2,
+            "tile_size": 128,
+            "x": 704.0,
+            "y": 896.0
+          }
+        ],
+        "parallax_factor": 0.5,
+        "repeat": false,
+        "scroll_speed_x": 0.0,
+        "scroll_speed_y": 0.0,
+        "texture_file": ""
+      }
+    ]
+  },
+  "gravity": 0.5,
+  "huds": [],
+  "monsters": [
+    {
+      "preset_name": "poring",
+      "x": 13,
+      "y": 8
+    },
+    {
+      "preset_name": "poring",
+      "x": 9,
+      "y": 12
+    },
+    {
+      "preset_name": "poring",
+      "x": 16,
+      "y": 27
+    },
+    {
+      "preset_name": "poring",
+      "x": 7,
+      "y": 24
+    }
+  ],
+  "name": "Untitled Level",
+  "platforms": [
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": -10.0,
+        "range": 5.0,
+        "speed": 2.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 2.09375,
+      "y": 11.96875
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": -10.0,
+        "range": 5.0,
+        "speed": 2.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 2.0625,
+      "y": 16.0625
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": -10.0,
+        "range": 5.0,
+        "speed": 2.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 2.0,
+      "y": 23.9375
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": -10.0,
+        "range": 5.0,
+        "speed": 2.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 1.96875,
+      "y": 27.375
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": -10.0,
+        "range": 5.0,
+        "speed": 2.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 1.96875,
+      "y": 30.875
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": -10.0,
+        "range": 5.0,
+        "speed": 2.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 2.03125,
+      "y": 36.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 8.28125,
+      "y": 13.6875
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 7.84375,
+      "y": 17.9375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 6.84375,
+      "y": 25.96875
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 6.375,
+      "y": 29.3125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 6.25,
+      "y": 38.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 9.90625,
+      "y": 33.84375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 16.375,
+      "y": 29.15625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 16.0625,
+      "y": 37.625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 2.625,
+      "y": 5.03125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 7.4375,
+      "y": 7.15625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 5.0,
+      "x": 13.03125,
+      "y": 9.6875
+    }
+  ],
+  "player_spawn": {
+    "x": 2,
+    "y": 2
+  },
+  "scene_type": "level",
+  "scroll_speed": 1.0,
+  "terminal_velocity": 5.0
+}
