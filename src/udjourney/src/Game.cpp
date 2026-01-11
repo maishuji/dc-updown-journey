@@ -255,23 +255,7 @@ void Game::run() {
     // Load menu configuration
     m_menu_manager.load_config("menu_config.json");
 
-    // Only initialize gameplay if not in TITLE state
-    if (m_state != GameState::TITLE) {
-        // Spawn player at scene-defined location or default position
-
-        create_player();
-        create_platforms_from_scene();
-        create_monsters_from_scene();
-
-        m_actors.emplace_back(
-            std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
-
-        m_bonus_manager.add_observer(static_cast<IObserver *>(this));
-    } else {
-        // Load widgets from title screen scene
-        create_huds_from_scene();
-    }
-
+    create_huds_from_scene();
     SetTargetFPS(60);
     m_last_update_time = GetTime();
 
@@ -1256,8 +1240,6 @@ void Game::create_huds_from_scene() {
     // Then clear event handlers to prevent dangling callbacks
     m_event_dispatcher.clear_handlers(
         udjourney::core::events::WeaponSelectedEvent::TYPE);
-    m_event_dispatcher.clear_handlers(
-        udjourney::core::events::HealthChangedEvent::TYPE);
 
     if (!m_current_scene) {
         return;

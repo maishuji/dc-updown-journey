@@ -43,7 +43,7 @@ class WeaponHUD : public IHUD {
 
     const udjourney::scene::HUDData& m_hud_data;
     bool m_visible;
-    std::string m_weapon_name = "";
+    std::string m_weapon_name = "bullet";
 
     // Projectile preset system for weapon preview
     std::unique_ptr<udjourney::ProjectilePresetLoader> m_projectile_loader;
