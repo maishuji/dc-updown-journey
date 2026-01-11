@@ -91,6 +91,8 @@ class Game : public IGame, public IObserver {
     void apply_current_scene(SceneApplyMode mode = SceneApplyMode::Auto);
     bool load_and_apply_scene(const std::string &filename);
 
+    void create_player();
+
     void restart_level();
 
     // HUD manager access for LevelSelectManager

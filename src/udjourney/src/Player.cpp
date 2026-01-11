@@ -315,16 +315,17 @@ void Player::handle_collision(
 
                         // Check if player died
                         if (!health->is_alive()) {
-                            std::cout << "Player died! Health: "
-                                      << health->get_health() << std::endl;
+                            udj::core::Logger::debug(
+                                "Player died! Health: " +
+                                std::to_string(health->get_health()));
                             notify("12");  // Game over event
                             return;  // Stop processing - actors vector is being
                                      // modified
                         } else {
-                            std::cout
-                                << "Player took damage from monster! Health: "
-                                << health->get_health() << "/"
-                                << health->get_max_health() << std::endl;
+                            udj::core::Logger::debug(
+                                "Player took damage from monster! Health: " +
+                                std::to_string(health->get_health()) + "/" +
+                                std::to_string(health->get_max_health()));
                         }
                     }
 
@@ -436,15 +437,14 @@ void Player::attack_nearby_monsters() {
 }
 
 void Player::load_projectile_presets(const std::string &config_file) {
-    std::cout << "Loading projectile presets from: " << config_file
-              << std::endl;
+    udj::core::Logger::debug("Loading projectile presets from: " + config_file);
     if (!projectile_loader_) {
         projectile_loader_ =
             std::make_unique<udjourney::ProjectilePresetLoader>();
     }
     bool success = projectile_loader_->load_from_file(config_file);
-    std::cout << "Projectile presets loaded: "
-              << (success ? "SUCCESS" : "FAILED") << std::endl;
+    udj::core::Logger::debug("Projectile presets loaded: " +
+                             std::string(success ? "SUCCESS" : "FAILED"));
 }
 
 void Player::set_current_projectile(const std::string &preset_name) {
@@ -482,8 +482,8 @@ void Player::cycle_projectile_type() {
     }
 
     current_projectile_preset_ = *it;
-    std::cout << "Switched to projectile: " << current_projectile_preset_
-              << std::endl;
+    udj::core::Logger::debug("Switched to projectile: " +
+                             current_projectile_preset_);
 
     udjourney::core::events::WeaponSelectedEvent weapon_event{
         current_projectile_preset_};
@@ -497,7 +497,7 @@ const udjourney::ProjectilePreset *Player::get_current_projectile_preset()
 }
 
 void Player::reset_shoot_cooldown() {
-    shoot_cooldown_ = SHOOT_COOLDOWN_DURATION;
+    shoot_cooldown_ = kShootCooldownDuration;
 }
 
 Vector2 Player::get_shoot_position() const {

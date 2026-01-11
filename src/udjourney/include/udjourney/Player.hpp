@@ -82,7 +82,7 @@ class Player : public IActor, public IObservable {
     std::unique_ptr<udjourney::ProjectilePresetLoader> projectile_loader_;
     std::string current_projectile_preset_ = "bullet";
     float shoot_cooldown_ = 0.0f;
-    static constexpr float SHOOT_COOLDOWN_DURATION = 0.3f;
+    static constexpr float kShootCooldownDuration = 0.3f;
 
     void _reset_jump() noexcept;
     Rectangle r;

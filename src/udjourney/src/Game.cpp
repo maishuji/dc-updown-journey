@@ -62,6 +62,7 @@
 #include "udjourney/platform/reuse_strategies/NoReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
+#include "udjourney/commands/CallbackCommand.hpp"
 
 using udj::core::filesystem::file_exists;
 using udj::core::filesystem::get_assets_path;
@@ -257,26 +258,8 @@ void Game::run() {
     // Only initialize gameplay if not in TITLE state
     if (m_state != GameState::TITLE) {
         // Spawn player at scene-defined location or default position
-        Vector2 player_spawn_pos{320, 240};  // Default position
-        if (m_current_scene) {
-            auto spawn_data = m_current_scene->get_player_spawn();
-            player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
-                spawn_data.tile_x, spawn_data.tile_y);
-        }
 
-        // Get physics config from scene
-        const auto &physics_config = m_current_scene
-                                         ? m_current_scene->get_physics_config()
-                                         : scene::LevelPhysicsConfig{};
-
-        m_player = std::make_unique<Player>(
-            *this,
-            Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
-            m_event_dispatcher,
-            create_player_animation_controller(),
-            physics_config);
-        m_player->add_observer(static_cast<IObserver *>(this));
-
+        create_player();
         create_platforms_from_scene();
         create_monsters_from_scene();
 
@@ -389,20 +372,7 @@ void Game::process_input() {
                 (m_player && m_player->can_shoot() ? "yes" : "no"));
         }
         if (shoot_pressed && m_player && m_player->can_shoot()) {
-            const udjourney::ProjectilePreset *preset =
-                m_player->get_current_projectile_preset();
-            if (preset) {
-                auto projectile = std::make_unique<udjourney::Projectile>(
-                    *this,
-                    *preset,
-                    m_player->get_shoot_position(),
-                    m_player->get_shoot_direction());
-                add_actor(std::move(projectile));
-                m_player->reset_shoot_cooldown();
-                udj::core::Logger::info("Projectile spawned!");
-            } else {
-                udj::core::Logger::warning("No projectile preset found!");
-            }
+            m_player->execute_command("shoot_projectile");
         }
 
         // Handle projectile type cycling (C key / Y button)
@@ -1400,32 +1370,13 @@ void Game::restart_level() {
 
     // Respawn monsters from scene
     create_monsters_from_scene();
-    // Create HUD objects from scene
-
-    // Set initial checkpoint if starting fresh
-    if (m_current_scene) {
-        auto spawn_data = m_current_scene->get_player_spawn();
-        m_last_checkpoint = udjourney::scene::Scene::tile_to_world_pos(
-            spawn_data.tile_x, spawn_data.tile_y);
-    }
 
     // Recreate player with updated physics config from reloaded scene
     if (m_current_scene) {
-        const auto &physics_config = m_current_scene->get_physics_config();
-
-        m_player = std::make_unique<Player>(
-            *this,
-            Rectangle{m_last_checkpoint.x, m_last_checkpoint.y, 20, 20},
-            m_event_dispatcher,
-            create_player_animation_controller(),
-            physics_config);
-        m_player->add_observer(static_cast<IObserver *>(this));
+        create_player();
         m_player->set_invicibility(1.8f);  // Brief invincibility after restart
 
-        // Load projectile presets
-        m_player->load_projectile_presets("projectiles.json");
-        m_player->set_current_projectile("bullet");
-
+        // Create HUD objects from scene
         create_huds_from_scene();
     }
 
@@ -1695,6 +1646,22 @@ void Game::initialize_gameplay() {
     // Spawn monsters from scene
     create_monsters_from_scene();
 
+    create_player();
+
+    // Create HUD objects from scene
+    create_huds_from_scene();
+
+    // Add bonus item
+    m_actors.emplace_back(
+        std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
+
+    // Reset score and camera
+    m_score = 0;
+    m_rect.y = 0;
+    m_last_checkpoint = Vector2{320, 240};
+}
+
+void Game::create_player() {
     // Spawn player at scene-defined location or default position
     Vector2 player_spawn_pos{320, 240};  // Default position
     if (m_current_scene) {
@@ -1715,21 +1682,29 @@ void Game::initialize_gameplay() {
         create_player_animation_controller(),
         physics_config);
     m_player->add_observer(static_cast<IObserver *>(this));
-
-    // Create HUD objects from scene
-    create_huds_from_scene();
+    auto shoot_command =
+        std::make_unique<udjourney::commands::CallbackCommand>([this]() {
+            if (m_player) {
+                const udjourney::ProjectilePreset *preset =
+                    m_player->get_current_projectile_preset();
+                if (preset) {
+                    auto projectile = std::make_unique<udjourney::Projectile>(
+                        *this,
+                        *preset,
+                        m_player->get_shoot_position(),
+                        m_player->get_shoot_direction());
+                    add_actor(std::move(projectile));
+                    m_player->reset_shoot_cooldown();
+                    udj::core::Logger::info("Projectile spawned!");
+                } else {
+                    udj::core::Logger::warning("No projectile preset found!");
+                }
+            }
+        });
+    m_player->add_command("shoot_projectile", std::move(shoot_command));
 
     // Load projectile presets
     m_player->load_projectile_presets("projectiles.json");
     m_player->set_current_projectile("bullet");
-
-    // Add bonus item
-    m_actors.emplace_back(
-        std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
-
-    // Reset score and camera
-    m_score = 0;
-    m_rect.y = 0;
-    m_last_checkpoint = Vector2{320, 240};
 }
 }  // namespace udjourney
