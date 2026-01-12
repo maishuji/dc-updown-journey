@@ -49,7 +49,7 @@ bool MonsterStateBase::should_transition(
 
         float distance =
             std::abs(monster.get_rectangle().x - player_ptr->get_rectangle().x);
-        return distance < transition.condition_value;
+        return distance <= transition.condition_value;
 
     } else if (transition.condition == "player_out_of_range") {
         auto* player_ptr = monster.find_player();
