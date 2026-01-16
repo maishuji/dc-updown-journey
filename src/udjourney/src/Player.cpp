@@ -89,10 +89,11 @@ struct Player::PImpl {
     bool dashing = false;
     bool dashable = true;
     float velocity_y = 0.0F;  // Vertical velocity
+    float velocity_x = 0.0F;  // Horizontal velocity (for knockback)
     float dash_timer = 0.0F;
     float dash_cooldown = 0.0F;
     Platform *grounded_src = nullptr;
-    int max_jumps = 2;  // Allow double jump
+    int max_jumps = 2;      // Allow double jump
     int current_jumps = 0;  // Track how many jumps have been used
 };
 
@@ -174,6 +175,14 @@ void Player::update(float iDelta) {
 
     // Apply vertical velocity to position
     r.y += m_pimpl->velocity_y;
+
+    // Apply horizontal velocity (knockback)
+    r.x += m_pimpl->velocity_x;
+    // Apply friction to horizontal velocity
+    m_pimpl->velocity_x *= 0.85f;  // Damping factor
+    if (std::abs(m_pimpl->velocity_x) < 0.1f) {
+        m_pimpl->velocity_x = 0.0f;  // Stop when very slow
+    }
 
     // Follow platform movement when grounded
     if (m_pimpl->grounded && m_pimpl->grounded_src != nullptr) {
@@ -361,8 +370,27 @@ void Player::handle_collision(
                         }
                     }
 
+                    // Apply knockback - push player away from monster
+                    Rectangle monsterRect = monster->get_rectangle();
+                    float knockbackForce = 8.0f;
+                    float monsterCenterX =
+                        monsterRect.x + monsterRect.width / 2.0f;
+                    float playerCenterX = r.x + r.width / 2.0f;
+
+                    // Determine knockback direction based on relative positions
+                    if (playerCenterX < monsterCenterX) {
+                        // Player is on the left, push left
+                        m_pimpl->velocity_x = -knockbackForce;
+                    } else {
+                        // Player is on the right, push right
+                        m_pimpl->velocity_x = knockbackForce;
+                    }
+
+                    // Small upward knockback
+                    m_pimpl->velocity_y = -3.0f;
+
                     // Grant invincibility after taking damage
-                    set_invicibility(2.0f);
+                    set_invicibility(1.0f);
                 }
                 // Skip further processing of this monster
                 continue;
