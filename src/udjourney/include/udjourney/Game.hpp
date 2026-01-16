@@ -131,9 +131,15 @@ class Game : public IGame, public IObserver {
     void initialize_gameplay();
     void init_state_renderers_();
 
+    // Deferred notification processing
+    void process_pending_notifications();
+    void process_notification_immediate(const std::string &event);
+
     std::unique_ptr<Player> m_player;  // Player is now a member
     std::vector<std::unique_ptr<IActor>> m_pending_actors;
     std::vector<std::unique_ptr<IActor>> m_actors;
+    std::vector<std::string>
+        m_pending_notifications;  // Queued notifications for safe processing
     std::vector<std::unique_ptr<IActor>> m_dead_actors;
     bool m_updating_actors = false;
     GameState m_state = GameState::TITLE;

@@ -26,6 +26,16 @@ class Player : public IActor, public IObservable {
            AnimSpriteController anim_controller,
            const scene::LevelPhysicsConfig &physics_config);
     ~Player() override;
+
+    // Explicitly delete copy constructor and copy assignment
+    // (unique_ptr is not copyable, so Player shouldn't be either)
+    Player(const Player &) = delete;
+    Player &operator=(const Player &) = delete;
+
+    // Default move operations are fine
+    Player(Player &&) = default;
+    Player &operator=(Player &&) = default;
+
     void draw() const override;
     void update(float iDelta) override;
     void process_input() override;

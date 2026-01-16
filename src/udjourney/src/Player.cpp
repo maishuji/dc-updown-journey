@@ -130,8 +130,23 @@ void Player::draw() const {
 }
 
 void Player::update(float iDelta) {
+    if (!m_pimpl) {
+        udj::core::Logger::error("Player::update - m_pimpl is null!");
+        return;
+    }
+
     // Update all components
     update_components(iDelta);
+
+    // Check if player died - stop all further updates
+    if (auto *health = get_component<HealthComponent>()) {
+        if (!health->is_alive()) {
+            udj::core::Logger::debug("Player is dead - stopping update");
+            // Don't notify here - let it happen naturally in collision or
+            // elsewhere Just stop updating
+            return;
+        }
+    }
 
     if (m_invincibility_timer > 0.0F) {
         m_invincibility_timer -= iDelta;
@@ -198,6 +213,11 @@ void Player::update(float iDelta) {
 }
 
 void Player::process_input() {
+    if (!m_pimpl) {
+        udj::core::Logger::error("Player::process_input - m_pimpl is null!");
+        return;
+    }
+
     if (input_mapping.left_pressed()) {
         r.x -= m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
         m_facing_right = false;  // Update facing direction
@@ -276,6 +296,14 @@ void Player::resolve_collision(const IActor &iActor) noexcept {
 void Player::handle_collision(
     const std::vector<std::unique_ptr<IActor>> &platforms) noexcept {
     udj::core::Logger::debug("Player::handle_collision called");
+
+    // Defensive check: ensure m_pimpl is valid
+    if (!m_pimpl) {
+        udj::core::Logger::error(
+            "Player::handle_collision - m_pimpl is null! Player object may "
+            "have been moved or corrupted.");
+        return;
+    }
 
     const auto &gameRect = get_game().get_rectangle();
 
@@ -379,6 +407,15 @@ void Player::handle_collision(
         // Jump is reset as soon as the player collides with a platform
         _reset_jump();
     }
+
+    // Double-check m_pimpl before accessing (should never be null here)
+    if (!m_pimpl) {
+        udj::core::Logger::error(
+            "Player::handle_collision - m_pimpl became null during collision "
+            "processing!");
+        return;
+    }
+
     m_pimpl->colliding = tmp_colliding;
     m_pimpl->grounded = tmp_grounded;
     m_pimpl->grounded_src = tmp_grounded_src;
@@ -399,11 +436,21 @@ void Player::notify(const std::string &event) {
 }
 
 void Player::_reset_jump() noexcept {
+    if (!m_pimpl) {
+        udj::core::Logger::error("Player::_reset_jump - m_pimpl is null!");
+        return;
+    }
     m_pimpl->jumping = false;
     // Velocity is now managed by gravity system, no manual reset needed
 }
 
 void Player::update_animation_state() {
+    if (!m_pimpl) {
+        udj::core::Logger::error(
+            "Player::update_animation_state - m_pimpl is null!");
+        return;
+    }
+
     // Check if player is currently moving
     bool is_moving =
         input_mapping.left_pressed() || input_mapping.right_pressed();

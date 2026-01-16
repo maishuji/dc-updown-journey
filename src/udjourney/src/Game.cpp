@@ -391,7 +391,19 @@ void Game::clear_scene() {
     m_frames_since_scene_load = 0;
     m_background_manager.reset_ui_scroll();
     m_scene_huds.clear();
-    m_player.reset();
+
+    // Only reset player if not in GAMEOVER/WIN state
+    // (in those states, player destruction is deferred until after collision
+    // processing)
+    if (m_state != GameState::GAMEOVER && m_state != GameState::WIN) {
+        udj::core::Logger::debug(
+            "clear_scene: Resetting player (state is not GAMEOVER/WIN)");
+        m_player.reset();
+    } else {
+        udj::core::Logger::debug(
+            "clear_scene: NOT resetting player (state is GAMEOVER or WIN - "
+            "will be deferred)");
+    }
 }
 
 void Game::register_core_event_handlers_() {
@@ -770,6 +782,10 @@ void Game::update() {
             m_actors.push_back(std::move(pending_actor));
         }
         m_pending_actors.clear();
+
+        // Process all queued notifications AFTER all updates complete
+        // but BEFORE removing dead actors
+        process_pending_notifications();
     } else if (m_state == GameState::TITLE || m_state == GameState::WIN ||
                m_state == GameState::GAMEOVER) {
         // Update widgets for animations (e.g., ScrollableListWidget scroll
@@ -970,8 +986,8 @@ void Game::update() {
                             udjourney::coreutils::get_assets_path(
                                 "levels/win_screen.json");
                         if (load_scene(win_path)) {
-                            // Clean up gameplay objects
-                            m_player.reset();
+                            // DON'T destroy player immediately - defer until
+                            // after current frame
                             m_hud_manager.clear_background_huds();
 
                             // Remove all actors except widgets
@@ -993,19 +1009,35 @@ void Game::update() {
                 }
             }
 
-            // Only handle collisions if player exists (not in WIN/TITLE state)
-            if (m_player) {
+            // Only handle collisions if player exists and game is in PLAY state
+            if (m_player && m_state == GameState::PLAY) {
+                udj::core::Logger::debug(
+                    "Calling player handle_collision (state=PLAY)");
                 m_player->handle_collision(m_actors);
+            } else if (m_player) {
+                udj::core::Logger::debug(
+                    "Skipping player handle_collision (state != PLAY)");
             }
 
-            // Handle collision for all monsters
-            for (auto &actor : m_actors) {
-                if (actor->get_group_id() == 3) {  // Monster group ID
-                    Monster *monster = dynamic_cast<Monster *>(actor.get());
-                    if (monster) {
-                        monster->handle_collision(m_actors);
+            // Handle collision for all monsters (only during gameplay)
+            if (m_state == GameState::PLAY) {
+                for (auto &actor : m_actors) {
+                    if (actor->get_group_id() == 3) {  // Monster group ID
+                        Monster *monster = dynamic_cast<Monster *>(actor.get());
+                        if (monster) {
+                            monster->handle_collision(m_actors);
+                        }
                     }
                 }
+            }
+
+            // Clean up player after collisions are processed (deferred
+            // destruction)
+            if ((m_state == GameState::GAMEOVER || m_state == GameState::WIN) &&
+                m_player) {
+                udj::core::Logger::debug(
+                    "Cleaning up player after game over/win");
+                m_player.reset();
             }
         }
 
@@ -1073,6 +1105,19 @@ void process_bonus_(IGame &game, std::stringstream &token_stream) {
 }
 
 void Game::on_notify(const std::string &iEvent) {
+    // Queue the notification for processing at safe time
+    m_pending_notifications.push_back(iEvent);
+}
+
+void Game::process_pending_notifications() {
+    // Process all queued notifications
+    for (const auto &event : m_pending_notifications) {
+        process_notification_immediate(event);
+    }
+    m_pending_notifications.clear();
+}
+
+void Game::process_notification_immediate(const std::string &iEvent) {
     std::stringstream str_stream(iEvent);
     std::string token;
     int mode = 0;
@@ -1109,8 +1154,10 @@ void Game::on_notify(const std::string &iEvent) {
             std::string gameover_path = udjourney::coreutils::get_assets_path(
                 "levels/game_over_screen.json");
             if (load_scene(gameover_path)) {
-                // Clean up gameplay objects
-                m_player.reset();
+                // DON'T destroy player immediately - defer until after current
+                // frame This prevents destroying the player while it's still
+                // executing The player will be cleaned up at the end of update
+                // loop
                 m_hud_manager.clear_background_huds();
 
                 // Remove all actors except widgets

@@ -6,7 +6,77 @@
   "huds": [],
   "monsters": [],
   "name": "Untitled Level",
-  "platforms": [],
+  "platforms": [
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 1.0,
+      "x": 5.625,
+      "y": 7.90625
+    },
+    {
+      "behavior": "static",
+      "features": [
+        "spikes"
+      ],
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 5.71875,
+      "y": 11.34375
+    },
+    {
+      "behavior": "static",
+      "features": [
+        "spikes"
+      ],
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 9.5,
+      "y": 13.25
+    },
+    {
+      "behavior": "static",
+      "features": [
+        "spikes"
+      ],
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 2.4375,
+      "y": 15.6875
+    }
+  ],
   "player_spawn": {
     "x": 2,
     "y": 8
