@@ -119,6 +119,9 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
                 } else if (behavior == "oscillating_size") {
                     platform.behavior_type =
                         PlatformBehaviorType::OscillatingSize;
+                } else if (behavior == "camera_follow_vertical") {
+                    platform.behavior_type =
+                        PlatformBehaviorType::CameraFollowVertical;
                 }
 
                 // Parse features

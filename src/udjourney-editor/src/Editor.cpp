@@ -192,6 +192,9 @@ void Editor::export_platform_level_json(const std::string &export_path) {
                 case PlatformBehaviorType::OscillatingSize:
                     jplatform["behavior"] = "oscillating_size";
                     break;
+                case PlatformBehaviorType::CameraFollowVertical:
+                    jplatform["behavior"] = "camera_follow_vertical";
+                    break;
             }
 
             // Behavior parameters

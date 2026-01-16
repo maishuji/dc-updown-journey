@@ -1529,6 +1529,8 @@ ImU32 EditorScene::get_platform_color(PlatformBehaviorType behavior,
             return IM_COL32(255, 165, 0, 255);  // Orange
         case PlatformBehaviorType::OscillatingSize:
             return IM_COL32(128, 0, 128, 255);  // Purple
+        case PlatformBehaviorType::CameraFollowVertical:
+            return IM_COL32(255, 255, 0, 255);  // Yellow
         case PlatformBehaviorType::Static:
         default:
             return IM_COL32(0, 0, 255, 255);  // Blue

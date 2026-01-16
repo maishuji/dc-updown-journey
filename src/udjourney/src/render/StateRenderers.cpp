@@ -4,6 +4,8 @@
 #include <raylib/raylib.h>
 
 #include "udjourney/Game.hpp"
+#include "udjourney/platform/Platform.hpp"
+#include "udjourney/platform/behavior_strategies/CameraFollowVerticalBehaviorStrategy.hpp"
 
 namespace udjourney {
 
@@ -57,8 +59,23 @@ void UiScreenRenderer::render(const Game& game) const {
 void PlayStateRenderer::render(const Game& game) const {
     game.draw_backgrounds();
 
-    // Draw all actors
+    // Draw all actors except camera-following platforms
+    std::vector<const IActor*> camera_follow_platforms;
+
     for (const auto& actor : game.get_actors()) {
+        // Check if this is a camera-following platform
+        if (actor->get_group_id() == 1) {  // Platform group
+            auto* platform = dynamic_cast<const Platform*>(actor.get());
+            if (platform && platform->get_behavior()) {
+                auto* behavior = platform->get_behavior();
+                // Check if it's a CameraFollowVerticalBehaviorStrategy
+                if (dynamic_cast<const CameraFollowVerticalBehaviorStrategy*>(
+                        behavior)) {
+                    camera_follow_platforms.push_back(actor.get());
+                    continue;  // Skip drawing for now
+                }
+            }
+        }
         actor->draw();
     }
 
@@ -72,6 +89,11 @@ void PlayStateRenderer::render(const Game& game) const {
 
     // Draw particles
     game.draw_particles();
+
+    // Draw camera-following platforms last (on top of everything)
+    for (const auto* platform : camera_follow_platforms) {
+        platform->draw();
+    }
 
     // Draw dash HUD (TODO: move to HUDManager)
     const auto& dash_hud = game.get_dash_hud();

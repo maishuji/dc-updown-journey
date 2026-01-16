@@ -54,6 +54,9 @@ void load_level_platforms_(const json& scene_data,
                     PlatformBehaviorType::EightTurnHorizontal;
             } else if (behavior_str == "oscillating_size") {
                 platform.behavior_type = PlatformBehaviorType::OscillatingSize;
+            } else if (behavior_str == "camera_follow_vertical") {
+                platform.behavior_type =
+                    PlatformBehaviorType::CameraFollowVertical;
             } else {
                 platform.behavior_type = PlatformBehaviorType::Static;
             }
@@ -441,6 +444,9 @@ bool Scene::save_to_file(const std::string& filename) const {
                         break;
                     case PlatformBehaviorType::OscillatingSize:
                         platform_json["behavior"] = "oscillating_size";
+                        break;
+                    case PlatformBehaviorType::CameraFollowVertical:
+                        platform_json["behavior"] = "camera_follow_vertical";
                         break;
                     default:
                         platform_json["behavior"] = "static";

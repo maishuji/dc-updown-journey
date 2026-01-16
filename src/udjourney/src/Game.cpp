@@ -52,6 +52,7 @@
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/loaders/AnimationConfigLoader.hpp"
 #include "udjourney/platform/Platform.hpp"
+#include "udjourney/platform/behavior_strategies/CameraFollowVerticalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"

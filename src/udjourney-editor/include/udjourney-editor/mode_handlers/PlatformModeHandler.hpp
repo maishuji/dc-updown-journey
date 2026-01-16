@@ -79,6 +79,9 @@ class PlatformModeHandler : public IModeHandler {
     float oscillating_min_scale_ = 0.5f;
     float oscillating_max_scale_ = 1.5f;
 
+    // Camera Follow Vertical behavior
+    float camera_follow_offset_ = 0.0f;
+
     // Currently selected platform for editing
     EditorPlatform* selected_platform_ = nullptr;
 

@@ -136,6 +136,9 @@ std::map<std::string, float> PlatformModeHandler::get_behavior_params() const {
             params["min_scale"] = oscillating_min_scale_;
             params["max_scale"] = oscillating_max_scale_;
             break;
+        case PlatformBehaviorType::CameraFollowVertical:
+            params["offset"] = camera_follow_offset_;
+            break;
         case PlatformBehaviorType::Static:
         default:
             // No parameters for static platforms
@@ -168,6 +171,11 @@ void PlatformModeHandler::render_creator() {
             "Oscillating Size",
             platform_behavior_ == PlatformBehaviorType::OscillatingSize)) {
         platform_behavior_ = PlatformBehaviorType::OscillatingSize;
+    }
+    if (ImGui::RadioButton(
+            "Camera Follow Vertical",
+            platform_behavior_ == PlatformBehaviorType::CameraFollowVertical)) {
+        platform_behavior_ = PlatformBehaviorType::CameraFollowVertical;
     }
 
     if (ImGui::CollapsingHeader("Size", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -216,6 +224,17 @@ void PlatformModeHandler::render_creator() {
                                1.0f,
                                2.0f,
                                "%.1f");
+        } else if (platform_behavior_ ==
+                   PlatformBehaviorType::CameraFollowVertical) {
+            ImGui::TextWrapped("Camera Follow Vertical:");
+            ImGui::SliderFloat("Offset##new_cfv",
+                               &camera_follow_offset_,
+                               0.0f,
+                               15.0f,
+                               "%.1f tiles");
+            ImGui::TextWrapped(
+                "Platform will stay at this offset (in tiles) from the "
+                "camera's top edge.");
         } else {
             ImGui::TextDisabled(
                 "Static platforms have no behavior parameters.");
@@ -394,6 +413,13 @@ void PlatformModeHandler::render_editor() {
             selected_platform_->behavior_type =
                 PlatformBehaviorType::OscillatingSize;
         }
+        if (ImGui::RadioButton(
+                "Camera Follow Vertical##edit",
+                selected_platform_->behavior_type ==
+                    PlatformBehaviorType::CameraFollowVertical)) {
+            selected_platform_->behavior_type =
+                PlatformBehaviorType::CameraFollowVertical;
+        }
     }
 
     if (ImGui::CollapsingHeader("Size", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -495,6 +521,21 @@ void PlatformModeHandler::render_editor() {
                     "Max Scale##edit_osc", &max_scale, 1.0f, 2.0f, "%.1f")) {
                 selected_platform_->behavior_params["max_scale"] = max_scale;
             }
+        } else if (selected_platform_->behavior_type ==
+                   PlatformBehaviorType::CameraFollowVertical) {
+            ImGui::TextWrapped("Camera Follow Vertical:");
+
+            float offset = selected_platform_->behavior_params.count("offset")
+                               ? selected_platform_->behavior_params["offset"]
+                               : 5.0f;
+
+            if (ImGui::SliderFloat(
+                    "Offset##edit_cfv", &offset, 0.0f, 15.0f, "%.1f tiles")) {
+                selected_platform_->behavior_params["offset"] = offset;
+            }
+            ImGui::TextWrapped(
+                "Platform will stay at this offset (in tiles) from the "
+                "camera's top edge.");
         } else {
             ImGui::TextDisabled(
                 "Static platforms have no behavior parameters.");

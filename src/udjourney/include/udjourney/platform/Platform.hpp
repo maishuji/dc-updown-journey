@@ -63,7 +63,7 @@ class Platform : public IActor {
         m_behavior = std::move(ioBehavior);
     }
 
-    [[nodiscard]] inline auto get_behavior()
+    [[nodiscard]] inline auto get_behavior() const
         -> const PlatformBehaviorStrategy * {
         return m_behavior.get();
     }

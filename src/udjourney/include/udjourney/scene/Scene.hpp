@@ -22,7 +22,8 @@ enum class PlatformBehaviorType {
     Static,
     Horizontal,
     EightTurnHorizontal,
-    OscillatingSize
+    OscillatingSize,
+    CameraFollowVertical
 };
 
 enum class PlatformFeatureType { None, Spikes, Checkpoint };

@@ -1,6 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/factories/PlatformFactory.hpp"
 
+#include "udjourney/platform/behavior_strategies/CameraFollowVerticalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
@@ -23,6 +24,9 @@ std::unique_ptr<Platform> PlatformFactory::create(
             break;
         case udjourney::scene::PlatformBehaviorType::OscillatingSize:
             platform_color = PURPLE;
+            break;
+        case udjourney::scene::PlatformBehaviorType::CameraFollowVertical:
+            platform_color = YELLOW;
             break;
         case udjourney::scene::PlatformBehaviorType::Static:
         default:
@@ -120,6 +124,18 @@ std::unique_ptr<Platform> PlatformFactory::create(
             platform->set_behavior(
                 std::make_unique<OscillatingSizeBehaviorStrategy>(
                     speed, min_scale, max_scale));
+            break;
+        }
+        case udjourney::scene::PlatformBehaviorType::CameraFollowVertical: {
+            float offset = 0.0f;  // Default offset from camera
+
+            if (platform_data.behavior_params.count("offset")) {
+                offset = platform_data.behavior_params.at("offset") *
+                         32.0f;  // Convert tiles to pixels
+            }
+
+            platform->set_behavior(
+                std::make_unique<CameraFollowVerticalBehaviorStrategy>(offset));
             break;
         }
         case udjourney::scene::PlatformBehaviorType::Static:

@@ -8,81 +8,246 @@
   "name": "Untitled Level",
   "platforms": [
     {
-      "behavior": "horizontal",
+      "behavior": "camera_follow_vertical",
       "behavior_params": {
-        "initial_offset": 0.0,
-        "range": 5.0,
-        "speed": 2.0
+        "offset": 5.0
       },
       "height": 1.0,
-      "width": 1.0,
-      "x": 10.1875,
-      "y": 10.40625
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 2.5,
+      "y": 0.5
     },
     {
-      "behavior": "horizontal",
+      "behavior": "camera_follow_vertical",
       "behavior_params": {
-        "initial_offset": 0.0,
-        "range": 5.0,
-        "speed": 2.0
+        "offset": 5.0
       },
       "height": 1.0,
-      "width": 1.0,
-      "x": 14.46875,
-      "y": 7.625
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 7.5,
+      "y": 0.5
     },
     {
-      "behavior": "horizontal",
+      "behavior": "camera_follow_vertical",
       "behavior_params": {
-        "initial_offset": 0.0,
-        "range": 5.0,
-        "speed": 2.0
+        "offset": 5.0
       },
       "height": 1.0,
-      "width": 1.0,
-      "x": 14.125,
-      "y": 12.90625
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 12.5,
+      "y": 0.5
     },
     {
-      "behavior": "horizontal",
+      "behavior": "camera_follow_vertical",
       "behavior_params": {
-        "initial_offset": 0.0,
-        "range": 5.0,
-        "speed": 2.0
+        "offset": 5.0
       },
       "height": 1.0,
-      "width": 1.0,
-      "x": 14.5,
-      "y": 13.90625
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 17.5,
+      "y": 0.5
     },
     {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": 0.0,
-        "range": 5.0,
-        "speed": 2.0
-      },
+      "behavior": "static",
       "height": 1.0,
-      "width": 1.0,
-      "x": 14.40625,
-      "y": 15.3125
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 2.5,
+      "y": 5.5
     },
     {
-      "behavior": "horizontal",
-      "behavior_params": {
-        "initial_offset": 0.0,
-        "range": 5.0,
-        "speed": 2.0
-      },
+      "behavior": "static",
       "height": 1.0,
-      "width": 1.0,
-      "x": 14.375,
-      "y": 18.0625
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 7.5,
+      "y": 5.5
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 12.5,
+      "y": 5.5
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 13.5,
+      "y": 6.5
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 8.5,
+      "y": 6.5
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 3.5,
+      "y": 6.5
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 17.0,
+      "y": 9.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 12.0,
+      "y": 10.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 8.5,
+      "y": 10.5
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 5.0,
+      "y": 12.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 5.0,
+      "x": 2.0,
+      "y": 13.0
     }
   ],
   "player_spawn": {
     "x": 2,
-    "y": 8
+    "y": 2
   },
   "scene_type": "level",
   "scroll_speed": 1.0,
