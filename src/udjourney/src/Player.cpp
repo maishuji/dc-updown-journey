@@ -92,6 +92,8 @@ struct Player::PImpl {
     float dash_timer = 0.0F;
     float dash_cooldown = 0.0F;
     Platform *grounded_src = nullptr;
+    int max_jumps = 2;  // Allow double jump
+    int current_jumps = 0;  // Track how many jumps have been used
 };
 
 Player::Player(const IGame &iGame, Rectangle iRect,
@@ -229,12 +231,14 @@ void Player::process_input() {
         m_facing_right = true;  // Update facing direction
     }
 
-    // A to Jump
+    // A to Jump (with double jump support)
     if (input_mapping.jump_pressed()) {
-        if (!m_pimpl->jumping && m_pimpl->grounded) {
+        // Allow jump if: grounded OR still have jumps remaining
+        if (!m_pimpl->jumping && m_pimpl->current_jumps < m_pimpl->max_jumps) {
             m_pimpl->jumping = true;
             m_pimpl->velocity_y = kJumpStrength;  // Apply initial jump velocity
             m_pimpl->grounded = false;            // Player is now airborne
+            m_pimpl->current_jumps++;             // Increment jump counter
         }
     } else {
         m_pimpl->jumping = false;
@@ -403,8 +407,8 @@ void Player::handle_collision(
             }
         }
     }
-    if (tmp_colliding) {
-        // Jump is reset as soon as the player collides with a platform
+    if (tmp_grounded) {
+        // Jump is reset only when the player lands on top of a platform
         _reset_jump();
     }
 
@@ -441,6 +445,7 @@ void Player::_reset_jump() noexcept {
         return;
     }
     m_pimpl->jumping = false;
+    m_pimpl->current_jumps = 0;  // Reset jump counter on landing
     // Velocity is now managed by gravity system, no manual reset needed
 }
 
