@@ -1,0 +1,17 @@
+{
+  "backgrounds": {
+    "layers": []
+  },
+  "gravity": 0.5,
+  "huds": [],
+  "monsters": [],
+  "name": "Untitled Level",
+  "platforms": [],
+  "player_spawn": {
+    "x": 2,
+    "y": 8
+  },
+  "scene_type": "level",
+  "scroll_speed": 1.0,
+  "terminal_velocity": 5.0
+}

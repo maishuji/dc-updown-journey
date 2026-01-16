@@ -33,6 +33,7 @@
 #include "udjourney-editor/ui/NewLevelPopup.hpp"
 #include "udjourney-editor/AnimationPresetPanel.hpp"
 #include "udjourney-editor/ParticlePresetPanel.hpp"
+#include "udjourney-editor/ToastNotification.hpp"
 #include "udj-core/CoreUtils.hpp"
 
 struct Editor::PImpl {
@@ -49,6 +50,7 @@ struct Editor::PImpl {
     NewLevelPopup newLevelPopup;
     udjourney::editor::AnimationPresetPanel animation_preset_panel;
     udjourney::editor::ParticlePresetPanel particle_preset_panel;
+    udjourney::editor::ToastManager toast_manager;
 };
 
 Editor::Editor() : pimpl(std::make_unique<PImpl>()) { pimpl->running = true; }
@@ -256,6 +258,13 @@ void Editor::export_platform_level_json(const std::string &export_path) {
     out << jlevel.dump(2);
     out.close();
     pimpl->last_export_path = export_path;
+
+    // Show success toast
+    std::filesystem::path path(export_path);
+    pimpl->toast_manager.add_toast(
+        "Successfully exported level at " + path.filename().string(),
+        udjourney::editor::ToastType::Success,
+        4.0f);
 }
 
 void Editor::import_platform_level_json(const std::string &import_path) {
@@ -694,6 +703,9 @@ void Editor::run() {
         // Draw animation preset panel
         pimpl->animation_preset_panel.draw();
         pimpl->particle_preset_panel.draw();
+
+        // Draw toast notifications
+        pimpl->toast_manager.draw();
 
         ImGui::Render();
 

@@ -474,7 +474,7 @@ void Game::draw_finish_line_() const {
 
     // Calculate the finish line Y position (98% of level height where win
     // triggers)
-    float win_threshold = m_level_height * 0.98f;
+    float win_threshold = m_level_height * 1.00f;
 
     // Convert world coordinates to screen coordinates relative to game camera
     Rectangle game_rect = get_rectangle();
@@ -959,7 +959,7 @@ void Game::update() {
                     // Win if player reaches 98% of the level height (very close
                     // to actual bottom) This ensures player actually reaches
                     // the final platform area before winning
-                    if (player_bottom >= m_level_height * 0.98f) {
+                    if (player_bottom >= m_level_height * 1.00f) {
                         m_state = GameState::WIN;
 
                         // Save final score for display on win screen
