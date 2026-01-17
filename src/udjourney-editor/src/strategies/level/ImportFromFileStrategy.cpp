@@ -160,6 +160,16 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
                 platform.texture_tiled =
                     jplatform.value("texture_tiled", false);
 
+                // Load atlas information
+                platform.use_atlas = jplatform.value("use_atlas", false);
+                if (platform.use_atlas && jplatform.contains("source_rect")) {
+                    const auto& src = jplatform["source_rect"];
+                    platform.source_rect.x = src.value("x", 0.0f);
+                    platform.source_rect.y = src.value("y", 0.0f);
+                    platform.source_rect.width = src.value("width", 0.0f);
+                    platform.source_rect.height = src.value("height", 0.0f);
+                }
+
                 // Set platform color based on behavior and features
                 PlatformFeatureType primary_feature =
                     platform.features.empty() ? PlatformFeatureType::None

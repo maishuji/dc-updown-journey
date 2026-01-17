@@ -633,6 +633,111 @@
       "width": 5.0,
       "x": 17.5,
       "y": 0.75
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 1.0,
+      "x": 3.71875,
+      "y": 38.34375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 1.0,
+      "x": 6.71875,
+      "y": 37.65625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 1.0,
+      "x": 15.4375,
+      "y": 12.65625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 1.0,
+      "x": 16.9375,
+      "y": 12.1875
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 1.0,
+      "x": 17.625,
+      "y": 12.625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 1.0,
+      "x": 18.5,
+      "y": 13.875
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "source_rect": {
+        "height": 64.0,
+        "width": 64.0,
+        "x": 0.0,
+        "y": 0.0
+      },
+      "texture": "platforms/platforms_64_atlas-Sheet.png",
+      "use_atlas": true,
+      "width": 1.0,
+      "x": 12.34375,
+      "y": 12.875
     }
   ],
   "player_spawn": {
