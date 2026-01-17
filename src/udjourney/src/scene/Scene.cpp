@@ -85,7 +85,8 @@ void load_level_platforms_(const json& scene_data,
                             PlatformFeatureType::Spikes);
                     } else if (feature_str == "downward_spikes") {
                         Logger::info(
-                            "Loading downward spikes feature for platform at tile "
+                            "Loading downward spikes feature for platform at "
+                            "tile "
                             "(%, %)",
                             platform.tile_x,
                             platform.tile_y);

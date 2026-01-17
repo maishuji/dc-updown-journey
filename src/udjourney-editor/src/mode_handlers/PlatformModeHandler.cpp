@@ -550,10 +550,11 @@ void PlatformModeHandler::render_editor() {
                                     selected_platform_->features.end(),
                                     PlatformFeatureType::Spikes) !=
                           selected_platform_->features.end();
-        bool has_downward_spikes = std::find(selected_platform_->features.begin(),
-                                             selected_platform_->features.end(),
-                                             PlatformFeatureType::DownwardSpikes) !=
-                                   selected_platform_->features.end();
+        bool has_downward_spikes =
+            std::find(selected_platform_->features.begin(),
+                      selected_platform_->features.end(),
+                      PlatformFeatureType::DownwardSpikes) !=
+            selected_platform_->features.end();
         bool has_checkpoint = std::find(selected_platform_->features.begin(),
                                         selected_platform_->features.end(),
                                         PlatformFeatureType::Checkpoint) !=
