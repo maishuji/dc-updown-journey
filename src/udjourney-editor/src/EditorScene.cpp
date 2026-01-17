@@ -1265,6 +1265,24 @@ void render_spikes_(const ImVec2& top_left, const ImVec2& bottom_right,
     }
 }
 
+void render_downward_spikes_(const ImVec2& top_left, const ImVec2& bottom_right,
+                             ImDrawList& draw_list) {
+    // Render spikes pointing downward from the bottom of the platform
+    auto spike_count = 3;
+    auto spike_height = bottom_right.y - top_left.y;
+    auto indicator_offset_x = (bottom_right.x - top_left.x) / spike_count;
+
+    for (int i = 0; i < spike_count; ++i) {
+        draw_list.AddTriangleFilled(
+            ImVec2(top_left.x + i * indicator_offset_x, bottom_right.y),
+            ImVec2(top_left.x + (i + 1) * indicator_offset_x, bottom_right.y),
+            ImVec2(top_left.x + i * indicator_offset_x + indicator_offset_x / 2,
+                   bottom_right.y + spike_height),
+            IM_COL32(128, 0, 128, 255) &
+                IM_COL32(255, 255, 255, 150));  // Semi-transparent purple
+    }
+}
+
 void render_checkpoint_(const ImVec2& top_left, const ImVec2& bottom_right,
                         ImDrawList& draw_list) {
     auto center_x = (top_left.x + bottom_right.x) / 2;
@@ -1370,6 +1388,11 @@ void EditorScene::render_platforms(Level& level, EditorPanel& editor_panel,
                     case PlatformFeatureType::Spikes:
                         // Draw red triangles for spikes
                         render_spikes_(top_left, bottom_right, *draw_list);
+                        break;
+                    case PlatformFeatureType::DownwardSpikes:
+                        // Draw purple triangles for downward spikes
+                        render_downward_spikes_(
+                            top_left, bottom_right, *draw_list);
                         break;
                     case PlatformFeatureType::Checkpoint:
                         // Draw green flag for checkpoint
@@ -1515,6 +1538,8 @@ ImU32 EditorScene::get_platform_color(PlatformBehaviorType behavior,
     switch (feature) {
         case PlatformFeatureType::Spikes:
             return IM_COL32(255, 0, 0, 255);  // Red for spikes
+        case PlatformFeatureType::DownwardSpikes:
+            return IM_COL32(128, 0, 128, 255);  // Purple for downward spikes
         case PlatformFeatureType::Checkpoint:
             return IM_COL32(255, 165, 0, 255);  // Orange for checkpoint
         default:

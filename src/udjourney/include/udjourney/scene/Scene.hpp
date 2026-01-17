@@ -26,7 +26,7 @@ enum class PlatformBehaviorType {
     CameraFollowVertical
 };
 
-enum class PlatformFeatureType { None, Spikes, Checkpoint };
+enum class PlatformFeatureType { None, Spikes, DownwardSpikes, Checkpoint };
 
 struct PlatformData {
     // Tile-based position (will be converted to world coordinates)

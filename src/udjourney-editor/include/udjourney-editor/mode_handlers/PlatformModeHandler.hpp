@@ -62,6 +62,7 @@ class PlatformModeHandler : public IModeHandler {
 
     // Feature selection for new platforms
     bool feature_spikes_ = false;
+    bool feature_downward_spikes_ = false;
     bool feature_checkpoint_ = false;
 
     // Behavior parameters for new platforms

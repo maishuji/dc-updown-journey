@@ -83,6 +83,14 @@ void load_level_platforms_(const json& scene_data,
                             platform.tile_y);
                         platform.features.push_back(
                             PlatformFeatureType::Spikes);
+                    } else if (feature_str == "downward_spikes") {
+                        Logger::info(
+                            "Loading downward spikes feature for platform at tile "
+                            "(%, %)",
+                            platform.tile_x,
+                            platform.tile_y);
+                        platform.features.push_back(
+                            PlatformFeatureType::DownwardSpikes);
                     } else if (feature_str == "checkpoint") {
                         Logger::info(
                             "Loading checkpoint feature for platform at "
@@ -463,6 +471,8 @@ bool Scene::save_to_file(const std::string& filename) const {
                 for (auto feature : platform.features) {
                     if (feature == PlatformFeatureType::Spikes) {
                         features_json.push_back("spikes");
+                    } else if (feature == PlatformFeatureType::DownwardSpikes) {
+                        features_json.push_back("downward_spikes");
                     } else if (feature == PlatformFeatureType::Checkpoint) {
                         features_json.push_back("checkpoint");
                     }

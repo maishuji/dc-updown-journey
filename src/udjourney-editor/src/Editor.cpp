@@ -213,6 +213,9 @@ void Editor::export_platform_level_json(const std::string &export_path) {
                         case PlatformFeatureType::Spikes:
                             jplatform["features"].push_back("spikes");
                             break;
+                        case PlatformFeatureType::DownwardSpikes:
+                            jplatform["features"].push_back("downward_spikes");
+                            break;
                         case PlatformFeatureType::Checkpoint:
                             jplatform["features"].push_back("checkpoint");
                             break;

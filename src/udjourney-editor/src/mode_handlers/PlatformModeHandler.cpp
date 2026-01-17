@@ -113,6 +113,8 @@ std::vector<PlatformFeatureType> PlatformModeHandler::get_selected_features()
     const {
     std::vector<PlatformFeatureType> features;
     if (feature_spikes_) features.push_back(PlatformFeatureType::Spikes);
+    if (feature_downward_spikes_)
+        features.push_back(PlatformFeatureType::DownwardSpikes);
     if (feature_checkpoint_)
         features.push_back(PlatformFeatureType::Checkpoint);
     return features;
@@ -244,6 +246,7 @@ void PlatformModeHandler::render_creator() {
     ImGui::Separator();
     ImGui::TextWrapped("Features for new platforms:");
     ImGui::Checkbox("Spikes", &feature_spikes_);
+    ImGui::Checkbox("Downward Spikes", &feature_downward_spikes_);
     ImGui::Checkbox("Checkpoint", &feature_checkpoint_);
 
     ImGui::Separator();
@@ -547,6 +550,10 @@ void PlatformModeHandler::render_editor() {
                                     selected_platform_->features.end(),
                                     PlatformFeatureType::Spikes) !=
                           selected_platform_->features.end();
+        bool has_downward_spikes = std::find(selected_platform_->features.begin(),
+                                             selected_platform_->features.end(),
+                                             PlatformFeatureType::DownwardSpikes) !=
+                                   selected_platform_->features.end();
         bool has_checkpoint = std::find(selected_platform_->features.begin(),
                                         selected_platform_->features.end(),
                                         PlatformFeatureType::Checkpoint) !=
@@ -566,6 +573,24 @@ void PlatformModeHandler::render_editor() {
                     std::remove(selected_platform_->features.begin(),
                                 selected_platform_->features.end(),
                                 PlatformFeatureType::Spikes),
+                    selected_platform_->features.end());
+            }
+        }
+
+        if (ImGui::Checkbox("Downward Spikes##edit", &has_downward_spikes)) {
+            if (has_downward_spikes) {
+                if (std::find(selected_platform_->features.begin(),
+                              selected_platform_->features.end(),
+                              PlatformFeatureType::DownwardSpikes) ==
+                    selected_platform_->features.end()) {
+                    selected_platform_->features.push_back(
+                        PlatformFeatureType::DownwardSpikes);
+                }
+            } else {
+                selected_platform_->features.erase(
+                    std::remove(selected_platform_->features.begin(),
+                                selected_platform_->features.end(),
+                                PlatformFeatureType::DownwardSpikes),
                     selected_platform_->features.end());
             }
         }

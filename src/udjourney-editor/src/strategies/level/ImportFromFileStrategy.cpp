@@ -132,6 +132,9 @@ void ImportFromFileStrategy::create(Level& level, int tiles_x, int tiles_y) {
                         if (feature == "spikes") {
                             platform.features.push_back(
                                 PlatformFeatureType::Spikes);
+                        } else if (feature == "downward_spikes") {
+                            platform.features.push_back(
+                                PlatformFeatureType::DownwardSpikes);
                         } else if (feature == "checkpoint") {
                             platform.features.push_back(
                                 PlatformFeatureType::Checkpoint);

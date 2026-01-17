@@ -22,7 +22,7 @@ enum class PlatformBehaviorType {
     CameraFollowVertical
 };
 
-enum class PlatformFeatureType { None, Spikes, Checkpoint };
+enum class PlatformFeatureType { None, Spikes, DownwardSpikes, Checkpoint };
 
 struct EditorPlatform {
     float tile_x;

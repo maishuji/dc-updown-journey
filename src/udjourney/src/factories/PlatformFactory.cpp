@@ -7,6 +7,7 @@
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
 #include "udjourney/platform/features/CheckpointFeature.hpp"
 #include "udjourney/platform/features/SpikeFeature.hpp"
+#include "udjourney/platform/features/DownwardSpikeFeature.hpp"
 
 namespace udjourney {
 
@@ -36,10 +37,16 @@ std::unique_ptr<Platform> PlatformFactory::create(
 
     // Add spikes color indication
     bool has_spikes = false;
+    bool has_downward_spikes = false;
     for (auto feature : platform_data.features) {
         if (feature == udjourney::scene::PlatformFeatureType::Spikes) {
             platform_color = RED;
             has_spikes = true;
+            break;
+        } else if (feature ==
+                   udjourney::scene::PlatformFeatureType::DownwardSpikes) {
+            platform_color = DARKPURPLE;
+            has_downward_spikes = true;
             break;
         }
     }
@@ -154,6 +161,13 @@ std::unique_ptr<Platform> PlatformFactory::create(
             platform->add_feature(std::make_unique<SpikeFeature>());
             udjourney::Logger::info(
                 "Added spikes feature to platform at (%, %)",
+                platform_data.tile_x,
+                platform_data.tile_y);
+        } else if (feature ==
+                   udjourney::scene::PlatformFeatureType::DownwardSpikes) {
+            platform->add_feature(std::make_unique<DownwardSpikeFeature>());
+            udjourney::Logger::info(
+                "Added downward spikes feature to platform at (%, %)",
                 platform_data.tile_x,
                 platform_data.tile_y);
         } else if (feature ==
