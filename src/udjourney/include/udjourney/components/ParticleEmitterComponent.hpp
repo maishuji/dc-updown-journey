@@ -1,8 +1,9 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 
+#include <string>
+#include "raylib/raylib.h"
 #include "udjourney/interfaces/IComponent.hpp"
-#include "udjourney/particle/ParticlePreset.hpp"
 
 namespace udjourney {
 
@@ -21,11 +22,11 @@ class ParticleEmitterComponent : public IComponent {
     /**
      * @brief Construct particle emitter component
      * @param manager Reference to the particle manager
-     * @param preset Particle preset to use for this emitter
+     * @param preset_name Name of the particle preset to use for this emitter
      * @param offset Offset from actor position (default: center of actor)
      */
     explicit ParticleEmitterComponent(ParticleManager& manager,
-                                      const ParticlePreset& preset,
+                                      const std::string& preset_name,
                                       Vector2 offset = {0.0f, 0.0f});
 
     ~ParticleEmitterComponent() override;
@@ -51,7 +52,7 @@ class ParticleEmitterComponent : public IComponent {
 
  private:
     ParticleManager& manager_;
-    ParticlePreset preset_;
+    std::string preset_name_;
     Vector2 offset_;
     IActor* owner_ = nullptr;
     ParticleEmitter* emitter_ = nullptr;  // Owned by manager

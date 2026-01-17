@@ -234,7 +234,7 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     init_state_renderers_();
 
     // Load particle presets
-    if (!m_particle_preset_loader.load_from_file("particles.json")) {
+    if (!m_particle_manager.load_presets("particles.json")) {
         udj::core::Logger::warning("Warning: Could not load particles.json");
     }
 
@@ -917,18 +917,16 @@ void Game::update() {
                             }
 
                             // Create sparkle particle effect at hit location
-                            const ParticlePreset *sparkle_preset =
-                                m_particle_preset_loader.get_preset("sparkle");
-                            if (sparkle_preset) {
-                                Vector2 hit_pos = {
-                                    proj_rect.x + proj_rect.width / 2.0f,
-                                    proj_rect.y + proj_rect.height / 2.0f};
-                                udj::core::Logger::info(
-                                    "Creating impact burst at position: " +
-                                    std::to_string(hit_pos.x) + ", " +
-                                    std::to_string(hit_pos.y));
-                                m_particle_manager.create_burst(*sparkle_preset,
-                                                                hit_pos);
+                            Vector2 hit_pos = {
+                                proj_rect.x + proj_rect.width / 2.0f,
+                                proj_rect.y + proj_rect.height / 2.0f};
+                            udj::core::Logger::info(
+                                "Creating impact burst at position: " +
+                                std::to_string(hit_pos.x) + ", " +
+                                std::to_string(hit_pos.y));
+
+                            if (m_particle_manager.create_burst("sparkle",
+                                                                hit_pos)) {
                                 udj::core::Logger::info(
                                     "Particle count: " +
                                     std::to_string(
@@ -936,7 +934,7 @@ void Game::update() {
                                             .get_total_particle_count()));
                             } else {
                                 udj::core::Logger::error(
-                                    "ERROR: Could not find 'impact' preset!");
+                                    "ERROR: Could not find 'sparkle' preset!");
                             }
 
                             projectile->destroy();

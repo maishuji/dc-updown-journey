@@ -9,6 +9,7 @@
 #include "raylib/raylib.h"
 #include "udjourney/particle/ParticleEmitter.hpp"
 #include "udjourney/particle/ParticlePreset.hpp"
+#include "udjourney/loaders/ParticlePresetLoader.hpp"
 
 namespace udjourney {
 
@@ -46,20 +47,22 @@ class ParticleManager {
     void draw(Vector2 camera_offset) const;
 
     /**
-     * @brief Create a new emitter from a preset
-     * @param preset The particle preset to use
+     * @brief Create a new emitter from a preset name
+     * @param preset_name Name of the preset to use
      * @param position Initial position of the emitter
-     * @return Pointer to the created emitter (owned by manager)
+     * @return Pointer to the created emitter (owned by manager), or nullptr if
+     * preset not found
      */
-    ParticleEmitter* create_emitter(const ParticlePreset& preset,
+    ParticleEmitter* create_emitter(const std::string& preset_name,
                                     Vector2 position);
 
     /**
-     * @brief Create a one-shot burst effect
-     * @param preset The particle preset to use
+     * @brief Create a one-shot burst effect from a preset name
+     * @param preset_name Name of the preset to use
      * @param position Position to spawn the burst
+     * @return true if burst was created successfully
      */
-    void create_burst(const ParticlePreset& preset, Vector2 position);
+    bool create_burst(const std::string& preset_name, Vector2 position);
 
     /**
      * @brief Remove all emitters
@@ -76,12 +79,28 @@ class ParticleManager {
      */
     [[nodiscard]] size_t get_emitter_count() const { return emitters_.size(); }
 
+    /**
+     * @brief Load particle presets from a JSON file
+     * @param filename Path to the preset file
+     * @return true if loaded successfully
+     */
+    bool load_presets(const std::string& filename);
+
+    /**
+     * @brief Get a particle preset by name
+     * @param name Name of the preset
+     * @return Pointer to preset or nullptr if not found
+     */
+    [[nodiscard]] const ParticlePreset* get_preset(
+        const std::string& name) const;
+
  private:
     void cleanup_dead_emitters_();
     void ensure_textures_loaded_() const;
     void unload_textures_();
 
     std::vector<std::unique_ptr<ParticleEmitter>> emitters_;
+    ParticlePresetLoader preset_loader_;
 
     // Texture cache (similar to BackgroundManager pattern)
     mutable bool textures_loaded_ = false;

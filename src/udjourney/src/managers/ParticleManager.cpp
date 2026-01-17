@@ -42,9 +42,16 @@ void ParticleManager::draw(Vector2 camera_offset) const {
     }
 }
 
-ParticleEmitter* ParticleManager::create_emitter(const ParticlePreset& preset,
+ParticleEmitter* ParticleManager::create_emitter(const std::string& preset_name,
                                                  Vector2 position) {
-    auto emitter = std::make_unique<ParticleEmitter>(preset);
+    const ParticlePreset* preset = get_preset(preset_name);
+    if (!preset) {
+        udj::core::Logger::error("ParticleManager: Preset '" + preset_name +
+                                 "' not found");
+        return nullptr;
+    }
+
+    auto emitter = std::make_unique<ParticleEmitter>(*preset);
     emitter->set_position(position);
 
     ParticleEmitter* ptr = emitter.get();
@@ -53,14 +60,22 @@ ParticleEmitter* ParticleManager::create_emitter(const ParticlePreset& preset,
     return ptr;
 }
 
-void ParticleManager::create_burst(const ParticlePreset& preset,
+bool ParticleManager::create_burst(const std::string& preset_name,
                                    Vector2 position) {
-    auto emitter = std::make_unique<ParticleEmitter>(preset);
+    const ParticlePreset* preset = get_preset(preset_name);
+    if (!preset) {
+        udj::core::Logger::error("ParticleManager: Preset '" + preset_name +
+                                 "' not found");
+        return false;
+    }
+
+    auto emitter = std::make_unique<ParticleEmitter>(*preset);
     emitter->set_position(position);
     emitter->emit_burst();
     emitter->set_active(false);  // Disable continuous emission
 
     emitters_.push_back(std::move(emitter));
+    return true;
 }
 
 void ParticleManager::clear() {
@@ -107,6 +122,15 @@ void ParticleManager::unload_textures_() {
     }
     textures_.clear();
     textures_loaded_ = false;
+}
+
+bool ParticleManager::load_presets(const std::string& filename) {
+    return preset_loader_.load_from_file(filename);
+}
+
+const ParticlePreset* ParticleManager::get_preset(
+    const std::string& name) const {
+    return preset_loader_.get_preset(name);
 }
 
 }  // namespace udjourney

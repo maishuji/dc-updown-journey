@@ -5,10 +5,9 @@
 
 namespace udjourney {
 
-ParticleEmitterComponent::ParticleEmitterComponent(ParticleManager& manager,
-                                                   const ParticlePreset& preset,
-                                                   Vector2 offset) :
-    manager_(manager), preset_(preset), offset_(offset) {}
+ParticleEmitterComponent::ParticleEmitterComponent(
+    ParticleManager& manager, const std::string& preset_name, Vector2 offset) :
+    manager_(manager), preset_name_(preset_name), offset_(offset) {}
 
 ParticleEmitterComponent::~ParticleEmitterComponent() {
     // Emitter is owned by manager, no need to delete
@@ -39,7 +38,7 @@ void ParticleEmitterComponent::on_attach(IActor& actor) {
     Vector2 initial_pos = {actor_rect.x + actor_rect.width / 2.0f + offset_.x,
                            actor_rect.y + actor_rect.height / 2.0f + offset_.y};
 
-    emitter_ = manager_.create_emitter(preset_, initial_pos);
+    emitter_ = manager_.create_emitter(preset_name_, initial_pos);
 }
 
 void ParticleEmitterComponent::on_detach(IActor& actor) {

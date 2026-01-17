@@ -19,6 +19,7 @@
 #include "udjourney/Projectile.hpp"
 #include "udjourney/ProjectilePresetLoader.hpp"
 #include "udjourney/WorldBounds.hpp"
+#include "udjourney/managers/ParticleManager.hpp"
 #include "udjourney/components/HealthComponent.hpp"
 #include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/managers/TextureManager.hpp"
@@ -369,6 +370,23 @@ void Player::handle_collision(
                                 std::to_string(health->get_max_health()));
                         }
                     }
+
+                    // Create particle effect at collision point
+                    const IGame &game = get_game();
+                    ParticleManager &particle_manager =
+                        const_cast<IGame &>(game).get_particle_manager();
+
+                    // Calculate collision point between player and monster
+                    Vector2 collision_pos = {r.x + r.width / 2.0f,
+                                             r.y + r.height / 2.0f};
+
+                    udj::core::Logger::debug(
+                        "Creating impact particle effect at player-monster "
+                        "collision: " +
+                        std::to_string(collision_pos.x) + ", " +
+                        std::to_string(collision_pos.y));
+
+                    particle_manager.create_burst("impact", collision_pos);
 
                     // Apply knockback - push player away from monster
                     Rectangle monsterRect = monster->get_rectangle();

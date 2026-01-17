@@ -4,12 +4,14 @@
 #include <raylib/raylib.h>  // Rectangle
 
 #include <memory>  // unique_ptr
+#include <string>  // string
 #include <vector>  // vector
 
 namespace udjourney {
 class IActor;
 class Player;
 class WorldBounds;
+class ParticleManager;
 
 class IGame {
  public:
@@ -23,5 +25,8 @@ class IGame {
     [[nodiscard]] virtual Player* get_player() const = 0;
     [[nodiscard]] virtual const udjourney::WorldBounds& get_world_bounds()
         const = 0;
+
+    // Particle system access
+    [[nodiscard]] virtual ParticleManager& get_particle_manager() = 0;
 };
 }  // namespace udjourney
