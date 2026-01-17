@@ -345,7 +345,7 @@ void Player::handle_collision(
                 // Monster collision - damage player (monster attacks)
                 using udjourney::Monster;
                 Monster *monster = dynamic_cast<Monster *>(platform.get());
-                if (monster && !is_invincible()) {
+                if (monster && !is_invincible() && !monster->is_dying()) {
                     // Monster should be in attack state
                     if (monster->is_alive()) {
                         monster->change_state("attack");

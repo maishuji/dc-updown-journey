@@ -186,6 +186,11 @@ bool Monster::is_attacking() const {
     return anim_controller_.get_current_state_int() == ANIM_ATTACK;
 }
 
+bool Monster::is_dying() const {
+    // Check if current animation is death animation
+    return anim_controller_.get_current_state_int() == ANIM_DEATH;
+}
+
 void Monster::reverse_direction() {
     patrol_direction_right_ = !patrol_direction_right_;
     facing_right_ = patrol_direction_right_;

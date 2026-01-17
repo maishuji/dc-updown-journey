@@ -56,6 +56,7 @@ class Monster : public IActor, public IObservable {
 
     [[nodiscard]] bool is_alive() const { return health_ > 0.0f; }
     [[nodiscard]] bool is_attacking() const;
+    [[nodiscard]] bool is_dying() const;
 
     // State management
     void change_state(const std::string &new_state);
