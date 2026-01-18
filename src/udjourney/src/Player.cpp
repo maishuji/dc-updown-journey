@@ -47,6 +47,7 @@ struct InputMapping {
     std::function<bool()> jump_pressed;
     std::function<bool()> dash_pressed;
     std::function<bool()> shoot_pressed;
+    std::function<bool()> cycle_weapon_pressed;
 
     InputMapping() {
 #ifdef PLATFORM_DREAMCAST
@@ -66,7 +67,12 @@ struct InputMapping {
         dash_pressed = []() {
             return IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
         };
-        shoot_pressed = []() { return IsMouseButtonDown(MOUSE_LEFT_BUTTON); };
+        shoot_pressed = []() { 
+            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_UP);
+        };
+        cycle_weapon_pressed = []() {
+            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+        };
 #else
         left_pressed = []() { return IsKeyDown(KEY_A); };
         right_pressed = []() { return IsKeyDown(KEY_D); };
@@ -75,9 +81,11 @@ struct InputMapping {
         jump_pressed = []() { return IsKeyDown(KEY_SPACE); };
         dash_pressed = []() { return IsKeyDown(KEY_LEFT_SHIFT); };
         shoot_pressed = []() {
-            return IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+            return IsKeyPressed(KEY_E) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
         };
-
+        cycle_weapon_pressed = []() {
+            return IsKeyPressed(KEY_C);
+        };
 #endif
     }
 } input_mapping;
@@ -270,9 +278,14 @@ void Player::process_input() {
         notify("4;0");
     }
 
-    // Test attack input (X key) - damage nearby monsters
-    if (IsKeyPressed(KEY_X)) {
-        attack_nearby_monsters();
+    // Handle shooting input (X button / E key)
+    if (input_mapping.shoot_pressed() && can_shoot()) {
+        execute_command("shoot_projectile");
+    }
+
+    // Handle projectile type cycling (C key / Y button)
+    if (input_mapping.cycle_weapon_pressed()) {
+        cycle_projectile_type();
     }
 }
 

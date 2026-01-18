@@ -1,7 +1,7 @@
-DC_IP ?= 192.168.0.85
+DC_IP ?= 192.168.0.16
 
 run-dc:
-	dc-tool-ip -t $(DC_IP) -x build/Debug/src/udjourney/updown-journey.elf
+	dc-tool-ip -t $(DC_IP) -x build/src/udjourney/updown-journey.elf
 
 .PHONY: clean
 clean:

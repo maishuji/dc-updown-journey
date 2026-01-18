@@ -325,7 +325,12 @@ void Game::process_input() {
 
     // Pause / Unpause the game - show game menu on pause
     auto start_pressed = input_mapping.pressed_start();
+
     if (start_pressed) {
+
+        udj::core::Logger::debug("Start button pressed. Current state: %",
+                                static_cast<int>(m_state));
+
         if (m_state == GameState::PLAY) {
             show_game_menu();  // Show menu instead of just pausing
         } else if (m_state == GameState::PAUSE &&
@@ -340,36 +345,6 @@ void Game::process_input() {
             actor->process_input();
         }
         m_player->process_input();
-
-        // Handle shooting input (X button / E key)
-        bool shoot_pressed = false;
-#ifdef PLATFORM_DREAMCAST
-        shoot_pressed =
-            IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
-#else
-        shoot_pressed =
-            IsKeyPressed(KEY_E) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
-#endif
-        if (shoot_pressed) {
-            udj::core::Logger::debug(
-                "E key pressed! Player: % Can shoot: %",
-                (m_player ? "yes" : "no"),
-                (m_player && m_player->can_shoot() ? "yes" : "no"));
-        }
-        if (shoot_pressed && m_player && m_player->can_shoot()) {
-            m_player->execute_command("shoot_projectile");
-        }
-
-        // Handle projectile type cycling (C key / Y button)
-        bool cycle_pressed = false;
-#ifdef PLATFORM_DREAMCAST
-        cycle_pressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_UP);
-#else
-        cycle_pressed = IsKeyPressed(KEY_C);
-#endif
-        if (cycle_pressed && m_player) {
-            m_player->cycle_projectile_type();
-        }
     }
 }
 void Game::clear_scene() {
@@ -663,8 +638,20 @@ void Game::update() {
             // Handle keyboard input first (doesn't require collecting widgets)
             bool keyboard_input_handled = false;
 
-            if (IsKeyPressed(KEY_Z) || IsKeyPressed(KEY_S) ||
-                IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE) ||
+
+            #ifdef PLATFORM_DREAMCAST
+            // Dreamcast support
+            bool pressed_A = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+            bool pressed_down = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
+            bool pressed_up = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP);
+            #else
+            bool pressed_A = IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE);
+            bool pressed_down = IsKeyPressed(KEY_S);
+            bool pressed_up = IsKeyPressed(KEY_Z);
+            #endif
+
+
+            if (pressed_A || pressed_down || pressed_up ||
                 IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN) ||
                 IsKeyPressed(KEY_PAGE_UP) || IsKeyPressed(KEY_PAGE_DOWN) ||
                 GetMouseWheelMove() != 0.0f) {
@@ -682,13 +669,13 @@ void Game::update() {
 
                 if (!widgets.empty()) {
                     // Keyboard navigation: Z = up, S = down
-                    if (IsKeyPressed(KEY_Z)) {
+                    if (pressed_up) {
                         m_selected_widget_index =
                             (m_selected_widget_index - 1 +
                              static_cast<int>(widgets.size())) %
                             static_cast<int>(widgets.size());
                     }
-                    if (IsKeyPressed(KEY_S)) {
+                    if (pressed_down) {
                         m_selected_widget_index =
                             (m_selected_widget_index + 1) %
                             static_cast<int>(widgets.size());
@@ -714,6 +701,19 @@ void Game::update() {
                                 // Only handle list input if this list widget is
                                 // focused
                                 if (list->is_focused()) {
+
+                                    #ifdef PLATFORM_DREAMCAST
+                                    // Dreamcast D-pad support
+                                    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP)) {
+                                        list->scroll_up();
+                                        list_input_handled = true;
+                                    }
+                                    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN)) {
+                                        list->scroll_down();
+                                        list_input_handled = true;
+                                    }
+                                    #endif
+
                                     if (IsKeyPressed(KEY_UP)) {
                                         list->scroll_up();
                                         list_input_handled = true;
@@ -747,8 +747,9 @@ void Game::update() {
                     // Only activate widget with Enter/Space if no list
                     // navigation happened This prevents immediate activation
                     // when transitioning screens
+
                     if (!list_input_handled &&
-                        (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE))) {
+                        (pressed_A)) {
                         IWidget *focused_widget =
                             widgets[m_selected_widget_index];
 
