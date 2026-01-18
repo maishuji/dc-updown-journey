@@ -419,8 +419,10 @@ void Monster::load_preset(const std::string& preset_name) {
         }
 
         Logger::info("Monster configured with preset '" + preset_->name +
-                     "' (HP: " + std::to_string(max_health_) + ", Speed: " +
-                     std::to_string(speed_) + ", State: " + target_state + ")");
+                         "' (HP: %, Speed: %, State: %",
+                     max_health_,
+                     speed_,
+                     target_state);
     } catch (const std::exception& e) {
         Logger::error("Failed to load monster preset '" + preset_name +
                       "': " + e.what());

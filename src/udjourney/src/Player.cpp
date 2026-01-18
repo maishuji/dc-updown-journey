@@ -380,12 +380,6 @@ void Player::handle_collision(
                     Vector2 collision_pos = {r.x + r.width / 2.0f,
                                              r.y + r.height / 2.0f};
 
-                    udj::core::Logger::debug(
-                        "Creating impact particle effect at player-monster "
-                        "collision: " +
-                        std::to_string(collision_pos.x) + ", " +
-                        std::to_string(collision_pos.y));
-
                     particle_manager.create_burst("impact", collision_pos);
 
                     // Apply knockback - push player away from monster

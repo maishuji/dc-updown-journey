@@ -921,9 +921,9 @@ void Game::update() {
                                 proj_rect.x + proj_rect.width / 2.0f,
                                 proj_rect.y + proj_rect.height / 2.0f};
                             udj::core::Logger::info(
-                                "Creating impact burst at position: " +
-                                std::to_string(hit_pos.x) + ", " +
-                                std::to_string(hit_pos.y));
+                                "Creating impact burst at position: %, %",
+                                hit_pos.x,
+                                hit_pos.y);
 
                             if (m_particle_manager.create_burst("sparkle",
                                                                 hit_pos)) {

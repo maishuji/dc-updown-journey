@@ -12,7 +12,7 @@ clean:
 
 .PHONY: lint
 lint:
-	cpplint --filter=-build/c++11,-runtime/references,-build/header_guard,-build/c++17 --exclude=src/udjourney/include/udjourney/dreamcast_json_compat.h --recursive src/
+	cpplint --filter=-build/c++11,-runtime/references,-whitespace/indent_namespace,-build/header_guard,-build/c++17 --exclude=src/udjourney/include/udjourney/dreamcast_json_compat.h --recursive src/
 	
 .PHONY: lint-strict
 lint-strict: clean

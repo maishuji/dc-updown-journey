@@ -2,7 +2,7 @@
 #pragma once
 
 #include <imgui.h>
-#include <raylib.h>
+#include <raylib/raylib.h>
 
 #include <algorithm>
 #include <iostream>

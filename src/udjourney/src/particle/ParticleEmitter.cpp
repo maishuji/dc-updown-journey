@@ -2,20 +2,19 @@
 #include "udjourney/particle/ParticleEmitter.hpp"
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
+#include <random>
 #include <ctime>
 
 namespace udjourney {
 
 namespace {
-// Thread-local seed for rand_r
-thread_local unsigned int seed = static_cast<unsigned int>(time(nullptr));
+// Thread-local random number generator
+thread_local std::mt19937 rng(static_cast<unsigned int>(time(nullptr)));
 
 // Helper function for random float in range
 float random_float(float min, float max) {
-    float rand_val =
-        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
-    return min + rand_val * (max - min);
+    std::uniform_real_distribution<float> dist(min, max);
+    return dist(rng);
 }
 }  // namespace
 
