@@ -43,31 +43,31 @@ TEST_F(CoordinateConversionTest, TileToWorldPosition) {
 
 // Test tile to world rectangle conversion
 TEST_F(CoordinateConversionTest, TileToWorldRectangle) {
-    // Test single tile rectangle
+    // Test single tile rectangle (centered at 0,0)
     Rectangle rect1 = Scene::tile_to_world_rect(0, 0, 1, 1);
-    EXPECT_FLOAT_EQ(rect1.x, 0.0f);
-    EXPECT_FLOAT_EQ(rect1.y, 0.0f);
+    EXPECT_FLOAT_EQ(rect1.x, -kExpectedTileSize / 2);  // Center at 0, width 1
+    EXPECT_FLOAT_EQ(rect1.y, -kExpectedTileSize / 2);
     EXPECT_FLOAT_EQ(rect1.width, kExpectedTileSize);
     EXPECT_FLOAT_EQ(rect1.height, kExpectedTileSize);
 
-    // Test multi-tile rectangle
+    // Test multi-tile rectangle (centered at 2,3 with size 4x5)
     Rectangle rect2 = Scene::tile_to_world_rect(2, 3, 4, 5);
-    EXPECT_FLOAT_EQ(rect2.x, 2.0f * kExpectedTileSize);       // 64
-    EXPECT_FLOAT_EQ(rect2.y, 3.0f * kExpectedTileSize);       // 96
+    EXPECT_FLOAT_EQ(rect2.x, 0.0f);   // 2*32 - 4*32/2 = 64-64 = 0
+    EXPECT_FLOAT_EQ(rect2.y, 16.0f);  // 3*32 - 5*32/2 = 96-80 = 16
     EXPECT_FLOAT_EQ(rect2.width, 4.0f * kExpectedTileSize);   // 128
     EXPECT_FLOAT_EQ(rect2.height, 5.0f * kExpectedTileSize);  // 160
 
-    // Test horizontal platform
+    // Test horizontal platform (centered at 5,10 with size 8x1)
     Rectangle rect3 = Scene::tile_to_world_rect(5, 10, 8, 1);
-    EXPECT_FLOAT_EQ(rect3.x, 160.0f);      // 5 * 32
-    EXPECT_FLOAT_EQ(rect3.y, 320.0f);      // 10 * 32
+    EXPECT_FLOAT_EQ(rect3.x, 32.0f);       // 5*32 - 8*32/2 = 160-128 = 32
+    EXPECT_FLOAT_EQ(rect3.y, 304.0f);      // 10*32 - 1*32/2 = 320-16 = 304
     EXPECT_FLOAT_EQ(rect3.width, 256.0f);  // 8 * 32
     EXPECT_FLOAT_EQ(rect3.height, 32.0f);  // 1 * 32
 
-    // Test vertical platform
+    // Test vertical platform (centered at 12,6 with size 2x6)
     Rectangle rect4 = Scene::tile_to_world_rect(12, 6, 2, 6);
-    EXPECT_FLOAT_EQ(rect4.x, 384.0f);       // 12 * 32
-    EXPECT_FLOAT_EQ(rect4.y, 192.0f);       // 6 * 32
+    EXPECT_FLOAT_EQ(rect4.x, 352.0f);       // 12*32 - 2*32/2 = 384-32 = 352
+    EXPECT_FLOAT_EQ(rect4.y, 96.0f);        // 6*32 - 6*32/2 = 192-96 = 96
     EXPECT_FLOAT_EQ(rect4.width, 64.0f);    // 2 * 32
     EXPECT_FLOAT_EQ(rect4.height, 192.0f);  // 6 * 32
 }
@@ -100,9 +100,10 @@ TEST_F(CoordinateConversionTest, CoordinateConsistency) {
     Vector2 pos = Scene::tile_to_world_pos(tile_x, tile_y);
     Rectangle rect = Scene::tile_to_world_rect(tile_x, tile_y, width, height);
 
-    // Position should match rectangle corner
-    EXPECT_FLOAT_EQ(pos.x, rect.x);
-    EXPECT_FLOAT_EQ(pos.y, rect.y);
+    // Position is the center, rect.x/y are top-left corners
+    // So center should be at rect.x + width/2, rect.y + height/2
+    EXPECT_FLOAT_EQ(pos.x, rect.x + rect.width / 2);
+    EXPECT_FLOAT_EQ(pos.y, rect.y + rect.height / 2);
 
     // Rectangle dimensions should be correct
     EXPECT_FLOAT_EQ(rect.width, width * kExpectedTileSize);
@@ -140,11 +141,16 @@ TEST_F(CoordinateConversionTest, CommonGameScenarios) {
         Rectangle rect = Scene::tile_to_world_rect(
             test.tile_x, test.tile_y, test.width, test.height);
 
-        // Verify position
-        EXPECT_FLOAT_EQ(rect.x, test.tile_x * kExpectedTileSize)
-            << "Position X failed for: " << test.description;
-        EXPECT_FLOAT_EQ(rect.y, test.tile_y * kExpectedTileSize)
-            << "Position Y failed for: " << test.description;
+        // Verify center position (tile coords are center)
+        float expected_center_x = test.tile_x * kExpectedTileSize;
+        float expected_center_y = test.tile_y * kExpectedTileSize;
+        float actual_center_x = rect.x + rect.width / 2;
+        float actual_center_y = rect.y + rect.height / 2;
+
+        EXPECT_FLOAT_EQ(actual_center_x, expected_center_x)
+            << "Center X failed for: " << test.description;
+        EXPECT_FLOAT_EQ(actual_center_y, expected_center_y)
+            << "Center Y failed for: " << test.description;
 
         // Verify size
         EXPECT_FLOAT_EQ(rect.width, test.width * kExpectedTileSize)
@@ -186,33 +192,36 @@ TEST_F(CoordinateConversionTest, PlayerSpawnScenarios) {
 
 // Test fractional tile dimensions
 TEST_F(CoordinateConversionTest, FractionalTileDimensions) {
-    // Test 0.3 height platform (thin platform)
+    // Test 0.3 height platform (thin platform) centered at (5,10)
     Rectangle thin_platform = Scene::tile_to_world_rect(5, 10, 4.0f, 0.3f);
-    EXPECT_FLOAT_EQ(thin_platform.x, 160.0f);      // 5 * 32
-    EXPECT_FLOAT_EQ(thin_platform.y, 320.0f);      // 10 * 32
+    EXPECT_FLOAT_EQ(thin_platform.x, 96.0f);  // 5*32 - 4*32/2 = 160-64 = 96
+    EXPECT_FLOAT_EQ(thin_platform.y,
+                    315.2f);  // 10*32 - 0.3*32/2 = 320-4.8 = 315.2
     EXPECT_FLOAT_EQ(thin_platform.width, 128.0f);  // 4 * 32
     EXPECT_FLOAT_EQ(thin_platform.height, 9.6f);   // 0.3 * 32
-    
-    // Test 0.5 width platform (half-width)
+
+    // Test 0.5 width platform (half-width) centered at (2,8)
     Rectangle narrow_platform = Scene::tile_to_world_rect(2, 8, 0.5f, 2.0f);
-    EXPECT_FLOAT_EQ(narrow_platform.x, 64.0f);      // 2 * 32
-    EXPECT_FLOAT_EQ(narrow_platform.y, 256.0f);     // 8 * 32
-    EXPECT_FLOAT_EQ(narrow_platform.width, 16.0f);  // 0.5 * 32
-    EXPECT_FLOAT_EQ(narrow_platform.height, 64.0f); // 2 * 32
-    
-    // Test fractional dimensions for both width and height
+    EXPECT_FLOAT_EQ(narrow_platform.x, 56.0f);   // 2*32 - 0.5*32/2 = 64-8 = 56
+    EXPECT_FLOAT_EQ(narrow_platform.y, 224.0f);  // 8*32 - 2*32/2 = 256-32 = 224
+    EXPECT_FLOAT_EQ(narrow_platform.width, 16.0f);   // 0.5 * 32
+    EXPECT_FLOAT_EQ(narrow_platform.height, 64.0f);  // 2 * 32
+
+    // Test fractional dimensions for both width and height centered at (0,0)
     Rectangle small_platform = Scene::tile_to_world_rect(0, 0, 1.5f, 0.25f);
-    EXPECT_FLOAT_EQ(small_platform.x, 0.0f);
-    EXPECT_FLOAT_EQ(small_platform.y, 0.0f);
-    EXPECT_FLOAT_EQ(small_platform.width, 48.0f);   // 1.5 * 32
-    EXPECT_FLOAT_EQ(small_platform.height, 8.0f);   // 0.25 * 32
-    
-    // Test larger fractional values
+    EXPECT_FLOAT_EQ(small_platform.x, -24.0f);     // 0 - 1.5*32/2 = -24
+    EXPECT_FLOAT_EQ(small_platform.y, -4.0f);      // 0 - 0.25*32/2 = -4
+    EXPECT_FLOAT_EQ(small_platform.width, 48.0f);  // 1.5 * 32
+    EXPECT_FLOAT_EQ(small_platform.height, 8.0f);  // 0.25 * 32
+
+    // Test larger fractional values centered at (3,5)
     Rectangle large_fractional = Scene::tile_to_world_rect(3, 5, 2.75f, 1.8f);
-    EXPECT_FLOAT_EQ(large_fractional.x, 96.0f);      // 3 * 32
-    EXPECT_FLOAT_EQ(large_fractional.y, 160.0f);     // 5 * 32
-    EXPECT_FLOAT_EQ(large_fractional.width, 88.0f);  // 2.75 * 32
-    EXPECT_FLOAT_EQ(large_fractional.height, 57.6f); // 1.8 * 32
+    EXPECT_FLOAT_EQ(large_fractional.x,
+                    52.0f);  // 3*32 - 2.75*32/2 = 96-44 = 52
+    EXPECT_FLOAT_EQ(large_fractional.y,
+                    131.2f);  // 5*32 - 1.8*32/2 = 160-28.8 = 131.2
+    EXPECT_FLOAT_EQ(large_fractional.width, 88.0f);   // 2.75 * 32
+    EXPECT_FLOAT_EQ(large_fractional.height, 57.6f);  // 1.8 * 32
 }
 
 // Test win condition calculations for level design
@@ -221,24 +230,32 @@ TEST_F(CoordinateConversionTest, WinConditionCalculations) {
     // Level height should be (33 + 2) * 32 = 1120 pixels
     float final_platform_tile_y = 33.0f;
     float final_platform_height_tiles = 2.0f;
-    float level_height_world = (final_platform_tile_y + final_platform_height_tiles) * kExpectedTileSize;
+    float level_height_world =
+        (final_platform_tile_y + final_platform_height_tiles) *
+        kExpectedTileSize;
     EXPECT_FLOAT_EQ(level_height_world, 1120.0f);
-    
+
     // Test win condition thresholds
     float win_threshold_98_percent = level_height_world * 0.98f;
     float win_threshold_90_percent = level_height_world * 0.90f;
-    
-    EXPECT_FLOAT_EQ(win_threshold_98_percent, 1097.6f);  // New improved threshold
-    EXPECT_FLOAT_EQ(win_threshold_90_percent, 1008.0f);  // Old problematic threshold
-    
+
+    EXPECT_FLOAT_EQ(win_threshold_98_percent,
+                    1097.6f);  // New improved threshold
+    EXPECT_FLOAT_EQ(win_threshold_90_percent,
+                    1008.0f);  // Old problematic threshold
+
     // Final platform starts at y=33*32=1056
     float final_platform_start = final_platform_tile_y * kExpectedTileSize;
     EXPECT_FLOAT_EQ(final_platform_start, 1056.0f);
-    
-    // Verify that 98% threshold requires player to be well onto the final platform
-    EXPECT_GT(win_threshold_98_percent, final_platform_start);  // Must be past platform start
-    EXPECT_LT(win_threshold_98_percent, level_height_world);    // But before very end
-    
+
+    // Verify that 98% threshold requires player to be well onto the final
+    // platform
+    EXPECT_GT(win_threshold_98_percent,
+              final_platform_start);  // Must be past platform start
+    EXPECT_LT(win_threshold_98_percent,
+              level_height_world);  // But before very end
+
     // Verify that old 90% threshold was too early (before final platform)
-    EXPECT_LT(win_threshold_90_percent, final_platform_start);  // This was the problem!
+    EXPECT_LT(win_threshold_90_percent,
+              final_platform_start);  // This was the problem!
 }

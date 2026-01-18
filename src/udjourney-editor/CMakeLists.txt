@@ -210,12 +210,13 @@ add_executable(editorpanel_tests
   src/hud/ScrollableListHUDRenderer.cpp
   src/hud/WeaponHUDRenderer.cpp
   src/hud/TimerHUDRenderer.cpp
+  ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
   ${imgui_SOURCE_DIR}/imgui_tables.cpp
   ${imgui_SOURCE_DIR}/imgui_widgets.cpp
 )
-target_include_directories(editorpanel_tests PRIVATE include src ${imgui_SOURCE_DIR})
+target_include_directories(editorpanel_tests PRIVATE include src ${imgui_SOURCE_DIR} ${ImGuiFileDialog_SOURCE_DIR})
 target_include_directories(editorpanel_tests PRIVATE ../udjourney/include)
 target_link_libraries(editorpanel_tests PRIVATE udj-core gtest gtest_main nlohmann_json::nlohmann_json raylib)
 

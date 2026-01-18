@@ -9,6 +9,8 @@
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/WorldBounds.hpp"
 
+using namespace udjourney;
+
 // Mock Game class for testing
 class MockGame : public IGame {
  public:
@@ -26,10 +28,16 @@ class MockGame : public IGame {
         // Mock implementation - do nothing for tests
     }
     Player* get_player() const override { return nullptr; }
-    
-    const udjourney::WorldBounds& get_world_bounds() const override { 
+
+    ParticleManager& get_particle_manager() override {
+        // Return a reference to an uninitialized pointer cast
+        // This is safe for testing since platforms don't actually use it
+        return *reinterpret_cast<ParticleManager*>(this);
+    }
+
+    const udjourney::WorldBounds& get_world_bounds() const override {
         static udjourney::WorldBounds bounds;
-        return bounds; 
+        return bounds;
     }
 
  private:
