@@ -1,8 +1,14 @@
 // Copyright 2025 Quentin Cartier
 
 #include "udjourney/hud/GameMenuHUD.hpp"
-#include "udjourney/ActionDispatcher.hpp"
+
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <udj-core/Logger.hpp>
+
+#include "udjourney/ActionDispatcher.hpp"
 
 namespace udjourney {
 

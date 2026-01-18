@@ -1,5 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/components/ParticleEmitterComponent.hpp"
+
+#include <string>
+
 #include "udjourney/managers/ParticleManager.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 

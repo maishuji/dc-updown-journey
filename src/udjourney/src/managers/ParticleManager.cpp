@@ -2,7 +2,12 @@
 #include "udjourney/managers/ParticleManager.hpp"
 
 #include <algorithm>
+#include <memory>
+#include <string>
+#include <utility>
+
 #include <udj-core/Logger.hpp>
+
 #include "udjourney/managers/TextureManager.hpp"
 
 namespace udjourney {

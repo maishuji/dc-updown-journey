@@ -1,5 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/hud/scene/ScoreDisplayHUD.hpp"
+
+#include <cstdio>
+
 #include "udjourney/Game.hpp"
 
 namespace udjourney {

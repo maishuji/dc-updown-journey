@@ -2,6 +2,9 @@
 
 #include "udjourney/managers/LevelSelectManager.hpp"
 
+#include <memory>
+#include <string>
+
 #include <udj-core/CoreUtils.hpp>
 
 #include "udjourney/hud/HUDComponent.hpp"

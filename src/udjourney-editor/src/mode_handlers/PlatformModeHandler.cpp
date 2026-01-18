@@ -4,9 +4,11 @@
 #include <algorithm>
 #include <cstdio>
 #include <filesystem>
-#include <vector>
+#include <map>
 #include <memory>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "ImGuiFileDialog.h"
 #include "udjourney-editor/PlatformPresetManager.hpp"

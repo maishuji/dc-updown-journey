@@ -1,6 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/factories/PlatformFactory.hpp"
 
+#include <memory>
+
 #include "udjourney/platform/behavior_strategies/CameraFollowVerticalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"

@@ -2,6 +2,10 @@
 #include "udjourney/hud/scene/WeaponHUD.hpp"
 
 #include <raylib/raylib.h>
+
+#include <memory>
+#include <string>
+
 #include <udj-core/CoreUtils.hpp>
 #include <udj-core/Logger.hpp>
 

@@ -1,9 +1,12 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/hud/scene/HeartHealthHUD.hpp"
 
+#include <algorithm>
 #include <cctype>
 #include <fstream>
 #include <optional>
+#include <string>
+#include <unordered_map>
 
 #include <nlohmann/json.hpp>
 
