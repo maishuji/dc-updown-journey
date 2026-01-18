@@ -47,16 +47,18 @@ bool MonsterStateBase::should_transition(
         auto* player_ptr = monster.find_player();
         if (!player_ptr) return false;
 
-        float distance =
-            std::abs(monster.get_rectangle().x - player_ptr->get_rectangle().x);
+        float dx = monster.get_rectangle().x - player_ptr->get_rectangle().x;
+        float dy = monster.get_rectangle().y - player_ptr->get_rectangle().y;
+        float distance = std::sqrt(dx * dx + dy * dy);
         return distance <= transition.condition_value;
 
     } else if (transition.condition == "player_out_of_range") {
         auto* player_ptr = monster.find_player();
         if (!player_ptr) return true;
 
-        float distance =
-            std::abs(monster.get_rectangle().x - player_ptr->get_rectangle().x);
+        float dx = monster.get_rectangle().x - player_ptr->get_rectangle().x;
+        float dy = monster.get_rectangle().y - player_ptr->get_rectangle().y;
+        float distance = std::sqrt(dx * dx + dy * dy);
         return distance > transition.condition_value;
 
     } else if (transition.condition == "timer_expired") {
@@ -182,8 +184,23 @@ void MonsterAttackState::update(IActor& actor, float delta) {
     auto& monster = to_monster(actor);
     state_timer_ += delta;
 
-    // Monster stays stationary during attack
-    monster.set_velocity_x(0.0f);
+    // Move towards player during attack
+    auto* player_ptr = monster.find_player();
+    if (player_ptr) {
+        float player_x = player_ptr->get_rectangle().x;
+        float monster_x = monster.get_rectangle().x;
+
+        if (player_x > monster_x) {
+            monster.set_velocity_x(monster.get_chase_speed());
+            monster.set_facing_right(true);
+        } else {
+            monster.set_velocity_x(-monster.get_chase_speed());
+            monster.set_facing_right(false);
+        }
+    } else {
+        // No player found, stay stationary
+        monster.set_velocity_x(0.0f);
+    }
 
     // Check if attack animation is finished
     if (monster.is_animation_finished()) {

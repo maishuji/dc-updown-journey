@@ -95,7 +95,7 @@
       "name": "chase",
       "state_id": 12,
       "sprite_config": {
-        "filename": "char1-angry-Sheet.png",
+        "filename": "poring1-angry-Sheet.png",
         "sprite_width": 64,
         "sprite_height": 64,
         "frames": [
@@ -140,7 +140,7 @@
       "name": "attack",
       "state_id": 13,
       "sprite_config": {
-        "filename": "char1-angry-Sheet.png",
+        "filename": "poring1-attack-Sheet.png",
         "sprite_width": 64,
         "sprite_height": 64,
         "frames": [
