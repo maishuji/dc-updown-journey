@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include <raylib/raylib.h>
+
 #include <memory>
 #include <vector>
-
-#include <raylib/raylib.h>
 
 #include "udjourney/core/events/EventDispatcher.hpp"
 #include "udjourney/hud/scene/IHUD.hpp"

@@ -1,12 +1,15 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/hud/scene/HeartHealthHUD.hpp"
+
+#include <cctype>
+#include <fstream>
+#include <optional>
+
+#include <nlohmann/json.hpp>
+
 #include "udj-core/Logger.hpp"
 #include "udj-core/CoreUtils.hpp"
 #include "udjourney/core/events/HealthChangedEvent.hpp"
-#include <nlohmann/json.hpp>
-#include <fstream>
-#include <optional>
-#include <cctype>
 
 namespace udjourney {
 namespace hud {

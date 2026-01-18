@@ -3,6 +3,8 @@
 
 #include <raylib/raylib.h>
 
+#include <vector>
+
 #include "udjourney/Game.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/platform/behavior_strategies/CameraFollowVerticalBehaviorStrategy.hpp"

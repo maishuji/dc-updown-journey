@@ -1,10 +1,11 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 
+#include <raylib/raylib.h>
+
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include "raylib.h"
 
 namespace udjourney::editor {
 

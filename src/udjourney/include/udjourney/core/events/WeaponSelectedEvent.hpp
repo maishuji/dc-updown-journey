@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 
 #include "udjourney/core/events/EventDispatcher.hpp"
 #include "udjourney/core/events/EventPlugin.hpp"

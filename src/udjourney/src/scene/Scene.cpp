@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <string>
+#include <vector>
 
 // Include Dreamcast compatibility functions before nlohmann/json
 #ifdef PLATFORM_DREAMCAST

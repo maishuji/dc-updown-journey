@@ -1,8 +1,9 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 
-#include <memory>
 #include <raylib/raylib.h>
+
+#include <memory>
 
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/platform/Platform.hpp"

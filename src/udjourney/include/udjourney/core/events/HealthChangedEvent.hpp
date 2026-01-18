@@ -1,6 +1,8 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 
+#include <string>
+
 #include "udjourney/core/events/EventDispatcher.hpp"
 #include "udjourney/core/events/EventPlugin.hpp"
 

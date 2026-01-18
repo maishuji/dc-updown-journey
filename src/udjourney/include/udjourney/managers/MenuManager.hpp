@@ -2,11 +2,11 @@
 
 #pragma once
 
+#include <raylib/raylib.h>
+
 #include <functional>
 #include <string>
 #include <vector>
-
-#include <raylib/raylib.h>
 
 #include "udjourney/hud/GameMenuHUD.hpp"  // MenuItem
 

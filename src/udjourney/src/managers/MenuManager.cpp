@@ -90,7 +90,6 @@ bool MenuManager::load_config(const std::string &config_path) {
                                 config_path,
                                 m_default_game_menu.items.size());
         return true;
-
     } catch (const std::exception &e) {
         udj::core::Logger::error("Error loading menu config: %, using defaults",
                                  e.what());

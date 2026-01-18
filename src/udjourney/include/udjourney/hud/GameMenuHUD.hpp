@@ -2,12 +2,14 @@
 
 #pragma once
 
+#include <raylib/raylib.h>
+
+#include <functional>
+#include <string>
+#include <vector>
+
 #include "udjourney/hud/HUDComponent.hpp"
 #include "udjourney/interfaces/IGame.hpp"
-#include <raylib/raylib.h>
-#include <vector>
-#include <string>
-#include <functional>
 
 namespace udjourney {
 

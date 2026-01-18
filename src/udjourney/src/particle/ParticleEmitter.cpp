@@ -1,16 +1,21 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/particle/ParticleEmitter.hpp"
 #include <algorithm>
-#include <cstdlib>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
 
 namespace udjourney {
 
 namespace {
+// Thread-local seed for rand_r
+thread_local unsigned int seed = static_cast<unsigned int>(time(nullptr));
+
 // Helper function for random float in range
 float random_float(float min, float max) {
-    return min + static_cast<float>(rand()) / static_cast<float>(RAND_MAX) *
-                     (max - min);
+    float rand_val =
+        static_cast<float>(rand_r(&seed)) / static_cast<float>(RAND_MAX);
+    return min + rand_val * (max - min);
 }
 }  // namespace
 

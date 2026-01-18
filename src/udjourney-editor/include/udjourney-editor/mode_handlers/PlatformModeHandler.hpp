@@ -2,8 +2,10 @@
 #pragma once
 
 #include <imgui.h>
-#include <vector>
+#include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "udjourney-editor/mode_handlers/IModeHandler.hpp"
 #include "udjourney-editor/Level.hpp"

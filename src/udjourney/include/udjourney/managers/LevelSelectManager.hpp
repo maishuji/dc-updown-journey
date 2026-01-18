@@ -2,11 +2,11 @@
 
 #pragma once
 
+#include <raylib/raylib.h>
+
 #include <functional>
 #include <memory>
 #include <string>
-
-#include <raylib/raylib.h>
 
 namespace udjourney {
 

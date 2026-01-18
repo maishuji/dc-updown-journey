@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "LevelPhysicsConfig.hpp"
+#include "udjourney/scene/LevelPhysicsConfig.hpp"
 
 namespace udjourney {
 namespace scene {

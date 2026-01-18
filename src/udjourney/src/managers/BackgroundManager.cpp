@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <string>
 #include <unordered_set>
 
 #include <udj-core/Logger.hpp>

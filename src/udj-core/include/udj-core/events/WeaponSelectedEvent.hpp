@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 
 #include "udj-core/events/EventDispatcher.hpp"
 #include "udj-core/events/EventPlugin.hpp"

@@ -478,23 +478,18 @@ void Editor::run() {
                     // Grid visibility toggled
                 }
 
-                if (ImGui::MenuItem("Show Background Placeable Rect",
-                                    nullptr,
-                                    &settings.show_background_placeable_rect)) {
-                }
-                if (ImGui::MenuItem("Show Background Visible Rect",
-                                    nullptr,
-                                    &settings.show_background_visible_rect)) {
-                }
-                if (ImGui::MenuItem(
-                        "Show Background to Scene Center Hints",
-                        nullptr,
-                        &settings.show_background_to_scene_center_hints)) {
-                }
-                if (ImGui::MenuItem("Show Tiles Hints",
-                                    nullptr,
-                                    &settings.show_tiles_hints)) {
-                }
+                ImGui::MenuItem("Show Background Placeable Rect",
+                                nullptr,
+                                &settings.show_background_placeable_rect);
+                ImGui::MenuItem("Show Background Visible Rect",
+                                nullptr,
+                                &settings.show_background_visible_rect);
+                ImGui::MenuItem(
+                    "Show Background to Scene Center Hints",
+                    nullptr,
+                    &settings.show_background_to_scene_center_hints);
+                ImGui::MenuItem(
+                    "Show Tiles Hints", nullptr, &settings.show_tiles_hints);
 
                 ImGui::Separator();
 

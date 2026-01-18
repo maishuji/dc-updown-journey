@@ -1,7 +1,10 @@
+// Copyright 2025 Quentin Cartier
 #pragma once
 
-#include <udj-core/ICommand.hpp>
 #include <functional>
+#include <utility>
+
+#include <udj-core/ICommand.hpp>
 
 namespace udjourney::commands {
 
