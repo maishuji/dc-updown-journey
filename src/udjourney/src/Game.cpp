@@ -247,6 +247,7 @@ Game::Game(int iWidth, int iHeight) : IGame() {
 
 void Game::run() {
 #ifndef PLATFORM_DREAMCAST
+    SetTraceLogLevel(LOG_WARNING);  // Suppress INFO logs for dreamcast
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 #endif
     InitWindow(static_cast<int>(m_rect.width),
