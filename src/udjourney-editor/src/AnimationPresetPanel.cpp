@@ -11,6 +11,7 @@
 #include <nlohmann/json.hpp>
 #include "ImGuiFileDialog.h"
 #include <udj-core/CoreUtils.hpp>
+#include <udj-core/Logger.hpp>
 
 namespace udjourney {
 namespace editor {

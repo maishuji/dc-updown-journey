@@ -203,35 +203,36 @@ Player* Monster::find_player() const {
 }
 
 void Monster::take_damage(float damage) {
-    std::cout << "Monster::take_damage called! Damage: " << damage
-              << " Current health: " << health_ << std::endl;
+    udj::core::Logger::info(
+        "Monster::take_damage called! Damage: % Current health: %",
+        damage,
+        health_);
 
     if (anim_controller_.get_current_state_int() == ANIM_DEATH) {
-        std::cout << "Monster already in death animation, ignoring damage"
-                  << std::endl;
+        udj::core::Logger::info(
+            "Monster already in death animation, ignoring damage");
         return;
     }
 
     health_ -= damage;
-    std::cout << "After damage, health: " << health_ << std::endl;
-
+    udj::core::Logger::info("After damage, health: %", health_);
     if (health_ <= 0.0f) {
         health_ = 0.0f;
-        std::cout << "Monster health <= 0, entering death state" << std::endl;
+        udj::core::Logger::info("Monster health <= 0, entering death state");
 
         // Check if death state exists before trying to use it
         if (states_.find("death") != states_.end()) {
-            std::cout << "Death state found, changing to death" << std::endl;
+            udj::core::Logger::info("Death state found, changing to death");
             change_state("death");
         } else {
             // No death state defined, just mark as consumed
-            std::cout << "Monster killed (no death animation available)"
-                      << std::endl;
+            udj::core::Logger::info(
+                "Monster has no death state defined, marking as consumed");
             set_state(ActorState::CONSUMED);
         }
         velocity_x_ = 0.0f;
     } else {
-        std::cout << "Monster still alive, health: " << health_ << std::endl;
+        udj::core::Logger::info("Monster still alive, health: %", health_);
         // Check if hurt state exists
         if (states_.find("hurt") != states_.end()) {
             change_state("hurt");
@@ -448,8 +449,7 @@ void Monster::award_kill_points() const {
     udjourney::core::events::ScoreEvent score_event{points};
     dispatcher_.dispatch(score_event);
 
-    std::cout << "Monster awarded " << points << " points for kill"
-              << std::endl;
+    udj::core::Logger::info("Monster awarded % points for kill", points);
 }
 
 // Observable methods implementation (same as Player)

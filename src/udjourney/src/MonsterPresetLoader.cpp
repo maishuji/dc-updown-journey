@@ -9,6 +9,7 @@
 #include <set>
 
 #include <udj-core/CoreUtils.hpp>
+#include <udj-core/Logger.hpp>
 
 using json = nlohmann::json;
 
@@ -19,8 +20,7 @@ std::unique_ptr<MonsterPreset> MonsterPresetLoader::load_preset(
     std::string full_path =
         udjourney::coreutils::get_assets_path("monsters/" + preset_file);
 
-    std::cout << "[INFO] Loading monster preset from: " << full_path
-              << std::endl;
+    udj::core::Logger::info("Loading monster preset from: %", full_path);
 
     std::ifstream file(full_path);
     if (!file.is_open()) {
@@ -68,10 +68,8 @@ std::unique_ptr<MonsterPreset> MonsterPresetLoader::load_preset(
         preset->hurt_sound = audio.value("hurt", "");
         preset->death_sound = audio.value("death", "");
     }
-
-    std::cout << "[INFO] Successfully loaded monster preset '" << preset->name
-              << "'" << std::endl;
-
+    udj::core::Logger::info("Monster preset '%' loaded successfully",
+                            preset->name);
     return preset;
 }
 

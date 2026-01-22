@@ -8,6 +8,7 @@
 
 #include <nlohmann/json.hpp>
 #include <udj-core/CoreUtils.hpp>
+#include <udj-core/Logger.hpp>
 
 using json = nlohmann::json;
 
@@ -114,7 +115,7 @@ bool ParticlePresetLoader::load_from_file(const std::string& filepath) {
                 particle_json.value("emitter_lifetime", 0.0f);
 
             presets_[preset.name] = preset;
-            std::cout << "Loaded particle preset: " << preset.name << std::endl;
+            udj::core::Logger::info("Loaded particle preset: %", preset.name);
         }
 
         return true;

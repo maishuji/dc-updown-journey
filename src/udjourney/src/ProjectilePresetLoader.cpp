@@ -8,6 +8,7 @@
 
 #include <nlohmann/json.hpp>
 #include <udj-core/CoreUtils.hpp>
+#include <udj-core/Logger.hpp>
 
 using json = nlohmann::json;
 
@@ -17,8 +18,8 @@ bool ProjectilePresetLoader::load_from_file(const std::string& filepath) {
     std::string full_path = udj::core::filesystem::get_assets_path(filepath);
 
     if (!udj::core::filesystem::file_exists(full_path)) {
-        std::cerr << "Projectile preset file not found: " << full_path
-                  << std::endl;
+        udj::core::Logger::error("Projectile preset file not found: %",
+                                 full_path);
         return false;
     }
 
@@ -27,7 +28,8 @@ bool ProjectilePresetLoader::load_from_file(const std::string& filepath) {
         json j = json::parse(file);
 
         if (!j.contains("projectiles") || !j["projectiles"].is_array()) {
-            std::cerr << "Invalid projectile preset file format" << std::endl;
+            udj::core::Logger::error("Invalid projectile preset file format: %",
+                                     full_path);
             return false;
         }
 
@@ -82,14 +84,13 @@ bool ProjectilePresetLoader::load_from_file(const std::string& filepath) {
             }
 
             presets_[preset.name] = preset;
-            std::cout << "Loaded projectile preset: " << preset.name
-                      << std::endl;
+            udj::core::Logger::info("Loaded projectile preset: %", preset.name);
         }
 
         return true;
     } catch (const std::exception& e) {
-        std::cerr << "Error loading projectile presets: " << e.what()
-                  << std::endl;
+        udj::core::Logger::error("Error loading projectile presets: %",
+                                 e.what());
         return false;
     }
 }

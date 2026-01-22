@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <udj-core/CoreUtils.hpp>
+#include <udj-core/Logger.hpp>
 #include <nlohmann/json.hpp>
 
 #include "udjourney/widgets/ButtonWidget.hpp"
@@ -229,12 +230,11 @@ void ButtonWidget::process_input() {
 
 void ButtonWidget::on_click() {
     if (!action_.empty()) {
-        std::cout << "[DEBUG] Button clicked with action: " << action_
-                  << std::endl;
+        udj::core::Logger::debug("Button clicked with action: %", action_);
         // Execute the action through ActionDispatcher
         ActionDispatcher::execute(action_, const_cast<IGame*>(&get_game()));
     } else {
-        std::cout << "[DEBUG] Button clicked but no action set!" << std::endl;
+        udj::core::Logger::debug("Button clicked but no action set!");
     }
     is_pressed_ = true;
 }
@@ -333,9 +333,9 @@ void ButtonWidget::load_button_textures(const udjourney::scene::HUDData& hud) {
                 pressed_source_rect_ = hover_source_rect_;  // Fallback to hover
             }
 
-            std::cout << "[DEBUG] Button '" << text_
-                      << "' loaded texture from sheet: " << hud.background_sheet
-                      << std::endl;
+            udj::core::Logger::debug("Button '%' loaded texture from sheet: %",
+                                     text_,
+                                     hud.background_sheet);
         }
     }
 }

@@ -327,9 +327,8 @@ void Game::process_input() {
     auto start_pressed = input_mapping.pressed_start();
 
     if (start_pressed) {
-
         udj::core::Logger::debug("Start button pressed. Current state: %",
-                                static_cast<int>(m_state));
+                                 static_cast<int>(m_state));
 
         if (m_state == GameState::PLAY) {
             show_game_menu();  // Show menu instead of just pausing
@@ -638,18 +637,19 @@ void Game::update() {
             // Handle keyboard input first (doesn't require collecting widgets)
             bool keyboard_input_handled = false;
 
-
-            #ifdef PLATFORM_DREAMCAST
+#ifdef PLATFORM_DREAMCAST
             // Dreamcast support
-            bool pressed_A = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
-            bool pressed_down = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
-            bool pressed_up = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP);
-            #else
+            bool pressed_A =
+                IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+            bool pressed_down =
+                IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
+            bool pressed_up =
+                IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP);
+#else
             bool pressed_A = IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE);
             bool pressed_down = IsKeyPressed(KEY_S);
             bool pressed_up = IsKeyPressed(KEY_Z);
-            #endif
-
+#endif
 
             if (pressed_A || pressed_down || pressed_up ||
                 IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN) ||
@@ -701,18 +701,19 @@ void Game::update() {
                                 // Only handle list input if this list widget is
                                 // focused
                                 if (list->is_focused()) {
-
-                                    #ifdef PLATFORM_DREAMCAST
+#ifdef PLATFORM_DREAMCAST
                                     // Dreamcast D-pad support
-                                    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP)) {
+                                    if (IsGamepadButtonPressed(
+                                            0, GAMEPAD_BUTTON_LEFT_FACE_UP)) {
                                         list->scroll_up();
                                         list_input_handled = true;
                                     }
-                                    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN)) {
+                                    if (IsGamepadButtonPressed(
+                                            0, GAMEPAD_BUTTON_LEFT_FACE_DOWN)) {
                                         list->scroll_down();
                                         list_input_handled = true;
                                     }
-                                    #endif
+#endif
 
                                     if (IsKeyPressed(KEY_UP)) {
                                         list->scroll_up();
@@ -748,8 +749,7 @@ void Game::update() {
                     // navigation happened This prevents immediate activation
                     // when transitioning screens
 
-                    if (!list_input_handled &&
-                        (pressed_A)) {
+                    if (!list_input_handled && (pressed_A)) {
                         IWidget *focused_widget =
                             widgets[m_selected_widget_index];
 
@@ -1182,8 +1182,9 @@ void Game::process_notification_immediate(const std::string &iEvent) {
             if (std::optional<int16_t> score_inc_opt = extract_number_(token);
                 score_inc_opt.has_value()) {
                 m_score += score_inc_opt.value();
-                std::cout << "Score updated: +" << score_inc_opt.value()
-                          << " (Total: " << m_score << ")" << std::endl;
+                udj::core::Logger::info("Score updated: +% (Total: %)",
+                                        score_inc_opt.value(),
+                                        m_score);
             }
             break;
         case kModeBonus:
@@ -1430,9 +1431,10 @@ void Game::on_level_selected(const std::string &level_path) {
         // Successfully loaded new level - restart with new level
         hide_game_menu();
         restart_level();
-        std::cout << "Loaded level: " << level_path << std::endl;
+
+        udj::core::Logger::info("Level selected: %", level_path);
     } else {
-        std::cerr << "Failed to load level: " << level_path << std::endl;
+        udj::core::Logger::error("Failed to load level: %", level_path);
         // Still return to game even if level failed to load
         m_state = GameState::PLAY;
     }
@@ -1474,9 +1476,8 @@ void Game::attack_nearby_monsters() {
     Rectangle player_rect = m_player->get_rectangle();
     Vector2 player_center = {player_rect.x + player_rect.width / 2.0f,
                              player_rect.y + player_rect.height / 2.0f};
-
-    std::cout << "Player attack! Looking for monsters within " << ATTACK_RANGE
-              << " pixels..." << std::endl;
+    udj::core::Logger::info(
+        "Player at position: %, %", player_center.x, player_center.y);
 
     int monsters_hit = 0;
 
@@ -1496,8 +1497,8 @@ void Game::attack_nearby_monsters() {
                 float distance = sqrt(dx * dx + dy * dy);
 
                 if (distance <= ATTACK_RANGE) {
-                    std::cout << "Attacking monster at distance " << distance
-                              << std::endl;
+                    udj::core::Logger::info("Attacking monster at distance %",
+                                            distance);
                     monster->take_damage(ATTACK_DAMAGE);
                     monsters_hit++;
                 }
@@ -1506,9 +1507,9 @@ void Game::attack_nearby_monsters() {
     }
 
     if (monsters_hit == 0) {
-        std::cout << "No monsters in range to attack." << std::endl;
+        udj::core::Logger::info("No monsters in range to attack.");
     } else {
-        std::cout << "Hit " << monsters_hit << " monsters!" << std::endl;
+        udj::core::Logger::info("Hit % monsters!", monsters_hit);
     }
 }
 
@@ -1517,7 +1518,7 @@ void Game::register_menu_actions() {
     // was played)
     ActionDispatcher::register_action(
         "start_game", [](IGame *game, const std::vector<std::string> &params) {
-            std::cout << "[ACTION] Start Game triggered" << std::endl;
+            udj::core::Logger::info("[ACTION] Start Game triggered");
             auto &g = static_cast<Game &>(*game);
 
             // If we have a last gameplay level, load and restart it

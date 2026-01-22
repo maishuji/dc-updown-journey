@@ -67,7 +67,7 @@ struct InputMapping {
         dash_pressed = []() {
             return IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
         };
-        shoot_pressed = []() { 
+        shoot_pressed = []() {
             return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_UP);
         };
         cycle_weapon_pressed = []() {
@@ -81,11 +81,10 @@ struct InputMapping {
         jump_pressed = []() { return IsKeyDown(KEY_SPACE); };
         dash_pressed = []() { return IsKeyDown(KEY_LEFT_SHIFT); };
         shoot_pressed = []() {
-            return IsKeyPressed(KEY_E) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+            return IsKeyPressed(KEY_E) ||
+                   IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
         };
-        cycle_weapon_pressed = []() {
-            return IsKeyPressed(KEY_C);
-        };
+        cycle_weapon_pressed = []() { return IsKeyPressed(KEY_C); };
 #endif
     }
 } input_mapping;
@@ -536,7 +535,7 @@ void Player::update_animation_state() {
 }
 
 void Player::attack_nearby_monsters() {
-    std::cout << "Player attacking nearby monsters!" << std::endl;
+    udj::core::Logger::info("Player attacking nearby monsters!");
     // Use the event system to notify the game of an attack
     notify("99;attack");  // Custom attack event with mode 99
 }
