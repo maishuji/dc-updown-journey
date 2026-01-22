@@ -85,25 +85,40 @@ void GameMenuHUD::update(float delta) {
 void GameMenuHUD::handle_input() {
     if (m_items.empty()) return;
 
+#ifdef PLATFORM_DREAMCAST
+    // Dreamcast D-pad support
+    bool up_pressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP);
+    bool down_pressed =
+        IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
+    bool select_pressed =
+        IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+    bool close_pressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_MIDDLE_LEFT);
+#else
+    bool up_pressed = IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_Z);
+    bool down_pressed = IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S);
+    bool select_pressed = IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE);
+    bool close_pressed = IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_P);
+#endif
+
     // Navigation
-    if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_Z)) {
+    if (up_pressed) {
         m_selected_index =
             (m_selected_index - 1 + static_cast<int>(m_items.size())) %
             static_cast<int>(m_items.size());
     }
 
-    if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
+    if (down_pressed) {
         m_selected_index =
             (m_selected_index + 1) % static_cast<int>(m_items.size());
     }
 
     // Selection
-    if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE)) {
+    if (select_pressed) {
         execute_action(m_items[m_selected_index]);
     }
 
     // Close menu
-    if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_P)) {
+    if (close_pressed) {
         if (m_on_menu_closed) {
             m_on_menu_closed();
         }
