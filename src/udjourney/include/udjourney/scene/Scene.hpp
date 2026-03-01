@@ -8,27 +8,30 @@
 #include <string>
 #include <vector>
 
+#include "udjourney/scene/LevelPhysicsConfig.hpp"
+
 namespace udjourney {
 namespace scene {
 
 enum class SceneType {
-    LEVEL,     // Regular gameplay level with platforms/monsters
-    UI_SCREEN  // UI screen for menus (title/win/gameover)
+    Level,    // Regular gameplay level with platforms/monsters
+    UiScreen  // UI screen for menus (title/win/gameover)
 };
 
 enum class PlatformBehaviorType {
     Static,
     Horizontal,
     EightTurnHorizontal,
-    OscillatingSize
+    OscillatingSize,
+    CameraFollowVertical
 };
 
-enum class PlatformFeatureType { None, Spikes, Checkpoint };
+enum class PlatformFeatureType { None, Spikes, DownwardSpikes, Checkpoint };
 
 struct PlatformData {
     // Tile-based position (will be converted to world coordinates)
-    int tile_x;
-    int tile_y;
+    float tile_x;
+    float tile_y;
 
     // Size in tiles (supports fractional values like 0.3)
     float width_tiles = 1.0f;
@@ -46,6 +49,12 @@ struct PlatformData {
 
     // Visual
     Color color = BLUE;
+
+    // Optional texture rendering (empty = draw solid color)
+    std::string texture_file;
+    bool texture_tiled = false;  // false=stretch, true=repeat/tile
+    bool use_atlas = false;
+    Rectangle source_rect{0, 0, 0, 0};
 };
 
 struct PlayerSpawnData {
@@ -91,7 +100,7 @@ struct BackgroundLayerData {
     std::vector<BackgroundObjectData> objects;
 };
 
-enum class FUDAnchor {
+enum class HUDAnchor {
     TopLeft,
     TopCenter,
     TopRight,
@@ -103,10 +112,22 @@ enum class FUDAnchor {
     BottomRight
 };
 
-struct FUDData {
+struct MenuItemData {
+    std::string label;
+    std::string action;
+    std::vector<std::string> params;
+};
+
+struct GameMenuData {
+    std::string title;
+    std::vector<MenuItemData> items;
+    Rectangle rect{0, 0, 640, 480};  // Default full screen
+};
+
+struct HUDData {
     std::string name;
     std::string type_id;
-    FUDAnchor anchor = FUDAnchor::TopLeft;
+    HUDAnchor anchor = HUDAnchor::TopLeft;
     float offset_x = 0.0f;
     float offset_y = 0.0f;
     float size_x = 100.0f;
@@ -115,7 +136,6 @@ struct FUDData {
     std::map<std::string, std::string> properties;  // Simplified for runtime
 
     // Background sprite configuration
-    std::string background_image;    // Single image file (legacy)
     std::string background_sheet;    // Sprite sheet file
     int background_tile_size = 32;   // Size of each tile in sheet
     int background_tile_row = 0;     // Row in sprite sheet
@@ -124,7 +144,6 @@ struct FUDData {
     int background_tile_height = 1;  // Height in tiles (for multi-tile sprites)
 
     // Foreground sprite configuration
-    std::string foreground_image;    // Single image file (legacy)
     std::string foreground_sheet;    // Sprite sheet file
     int foreground_tile_size = 32;   // Size of each tile in sheet
     int foreground_tile_row = 0;     // Row in sprite sheet
@@ -156,13 +175,23 @@ class Scene {
     const std::vector<BackgroundLayerData>& get_background_layers() const {
         return m_background_layers;
     }
-    const std::vector<FUDData>& get_fuds() const { return m_fuds; }
+    const std::vector<HUDData>& get_huds() const { return m_huds; }
     const std::string& get_name() const { return m_name; }
     SceneType get_type() const { return m_scene_type; }
+    float get_scroll_speed() const { return m_scroll_speed; }
+    const LevelPhysicsConfig& get_physics_config() const {
+        return m_physics_config;
+    }
+    const GameMenuData& get_game_menu() const { return m_game_menu; }
+    bool has_game_menu() const { return !m_game_menu.items.empty(); }
 
     // Setters
     void set_name(const std::string& name) { m_name = name; }
     void set_type(SceneType type) { m_scene_type = type; }
+    void set_scroll_speed(float speed) { m_scroll_speed = speed; }
+    void set_physics_config(const LevelPhysicsConfig& config) {
+        m_physics_config = config;
+    }
     void add_platform(const PlatformData& platform) {
         m_platforms.push_back(platform);
     }
@@ -174,9 +203,9 @@ class Scene {
     }
 
     // Tile conversion
-    static Rectangle tile_to_world_rect(int tile_x, int tile_y,
+    static Rectangle tile_to_world_rect(float tile_x, float tile_y,
                                         float width_tiles, float height_tiles);
-    static Vector2 tile_to_world_pos(int tile_x, int tile_y);
+    static Vector2 tile_to_world_pos(float tile_x, float tile_y);
 
     // Constants
     static constexpr float kTileSize = 32.0f;
@@ -186,10 +215,14 @@ class Scene {
     PlayerSpawnData m_player_spawn{0, 0};
     std::vector<MonsterSpawnData> m_monster_spawns;
     std::vector<BackgroundLayerData> m_background_layers;
-    std::vector<FUDData> m_fuds;
+    std::vector<HUDData> m_huds;
+    GameMenuData m_game_menu;
     std::string m_name = "Unnamed Level";
     SceneType m_scene_type =
-        SceneType::LEVEL;  // Default to level for backward compatibility
+        SceneType::Level;  // Default to level for backward compatibility
+    float m_scroll_speed =
+        1.0f;  // Default camera scroll speed (pixels per frame)
+    LevelPhysicsConfig m_physics_config;  // Physics configuration
 };
 
 }  // namespace scene

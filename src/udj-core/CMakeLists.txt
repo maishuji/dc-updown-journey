@@ -14,7 +14,7 @@ target_compile_features(udj-core PUBLIC cxx_std_20)
 
 # Platform-specific defines
 if(PLATFORM_DREAMCAST)
-    target_compile_definitions(udj-core PUBLIC ASSETS_BASE_PATH="romdisk/")
+    target_compile_definitions(udj-core PUBLIC ASSETS_BASE_PATH="rd/")
 else()
     target_compile_definitions(udj-core PUBLIC ASSETS_BASE_PATH="assets/")
 endif()

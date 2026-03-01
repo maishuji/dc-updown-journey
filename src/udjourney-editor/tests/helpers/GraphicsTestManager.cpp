@@ -2,7 +2,7 @@
 #ifdef EDITOR_TESTING
 
 #include "helpers/GraphicsTestManager.hpp"
-#include <raylib.h>
+#include <raylib/raylib.h>
 
 void GraphicsTestManager::init_if_needed() {
     if (!initialized_) {

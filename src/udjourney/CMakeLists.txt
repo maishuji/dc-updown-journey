@@ -30,14 +30,23 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/HorizontalBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/behavior_strategies/CameraFollowVerticalBehaviorStrategy.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/features/CheckpointFeature.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/scene/Scene.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/TextureManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/BackgroundManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/HUDManager.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/BonusManager.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/ScoreHUD.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/LevelSelectManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/MenuManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/managers/ParticleManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/render/StateRenderers.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/DialogBoxHUD.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/GameMenuHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/LevelSelectHUD.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/scene/ScoreDisplayHUD.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/scene/HeartHealthHUD.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/hud/scene/WeaponHUD.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Game.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Player.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Bonus.cpp
@@ -49,7 +58,13 @@ add_executable(${TARGET_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SpriteAnim.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/AnimSpriteController.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/loaders/AnimationConfigLoader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/loaders/ParticlePresetLoader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/particle/Particle.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/particle/ParticleEmitter.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/components/ParticleEmitterComponent.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/factories/ActorFactory.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/factories/PlatformFactory.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/factories/UiFactory.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/WorldBounds.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ActionDispatcher.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/LevelMetadata.cpp
@@ -105,6 +120,25 @@ if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
     target_compile_options(${TARGET_NAME} PRIVATE 
         -include ${CMAKE_CURRENT_SOURCE_DIR}/include/udjourney/dreamcast_json_compat.h
     )
+    
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        target_compile_options(${TARGET_NAME} PRIVATE -flto)
+        target_link_options(${TARGET_NAME} PRIVATE -flto -fuse-linker-plugin)
+        message(STATUS "LTO enabled for Release build")
+    else()
+        # Enable LTO for Debug too, but with debug-friendly settings
+        target_compile_options(${TARGET_NAME} PRIVATE 
+            -flto 
+            -fno-lto-odr-type-merging  # Better debug info
+            -g3                         # Maximum debug info
+        )
+        target_link_options(${TARGET_NAME} PRIVATE 
+            -flto 
+            -fuse-linker-plugin
+            -g3
+        )
+        message(STATUS "LTO enabled for Debug build (with debug optimizations)")
+    endif()
     
     target_link_libraries(${TARGET_NAME} 
         PUBLIC 

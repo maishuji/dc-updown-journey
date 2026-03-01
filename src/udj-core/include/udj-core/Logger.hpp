@@ -14,7 +14,7 @@ namespace udj::core {
  */
 class Logger {
  public:
-    enum class Level { Info, Warning, Error, Debug };
+    enum class Level : int { Error = 0, Warning = 1, Info = 2, Debug = 3 };
 
     template <typename... Args>
     static void info(const std::string& format, Args&&... args) {
@@ -36,9 +36,15 @@ class Logger {
         log(Level::Debug, format, std::forward<Args>(args)...);
     }
 
+    // Set default log level
+    constexpr static Level log_level = Level::Error;
+
  private:
     template <typename... Args>
     static void log(Level level, const std::string& format, Args&&... args) {
+        if (level > log_level) {
+            return;
+        }
         std::string prefix;
         switch (level) {
             case Level::Info:

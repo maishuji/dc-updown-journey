@@ -9,6 +9,7 @@
 #include <vector>
 #include <memory>
 
+#include "udj-core/Logger.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/core/events/EventDispatcher.hpp"
@@ -17,14 +18,19 @@
 #include "udjourney/states/MonsterStates.hpp"
 #include "udjourney/WorldBounds.hpp"
 
+using udj::core::Logger;
+
+namespace udjourney {
 Monster::Monster(const IGame& game, Rectangle rect,
                  AnimSpriteController anim_controller,
-                 udjourney::core::events::EventDispatcher& dispatcher) :
+                 udjourney::core::events::EventDispatcher& dispatcher,
+                 const scene::LevelPhysicsConfig& physics_config) :
     IActor(game),
     game_(game),
     rect_(rect),
     anim_controller_(std::move(anim_controller)),
-    dispatcher_(dispatcher) {
+    dispatcher_(dispatcher),
+    physics_config_(physics_config) {
     // Use default stats for now
     health_ = 100.0f;
     max_health_ = 100.0f;
@@ -53,15 +59,15 @@ Monster::Monster(const IGame& game, Rectangle rect,
     if (states_.find(initial_state) != states_.end()) {
         current_state_ = states_[initial_state].get();
         current_state_->enter(*this);
-        std::cout << "Monster initialized with default state: " << initial_state
-                  << std::endl;
+        Logger::info("Monster initialized with default state: " +
+                     initial_state);
     } else {
-        std::cerr << "CRITICAL ERROR: Default 'idle' state not found! "
-                     "Available states: ";
+        Logger::error(
+            "CRITICAL ERROR: Default 'idle' state not found! "
+            "Available states: ");
         for (const auto& state_pair : states_) {
-            std::cerr << state_pair.first << " ";
+            Logger::error(state_pair.first);
         }
-        std::cerr << std::endl;
         throw std::runtime_error(
             "Monster initialization failed: No valid default state found");
     }
@@ -104,7 +110,9 @@ void Monster::draw() const {
 void Monster::update(float delta) {
     // Update current state (handles AI logic via State pattern)
     if (current_state_) {
+        udj::core::Logger::debug("Updating monster state - handle input");
         current_state_->handleInput(*this);
+        udj::core::Logger::debug("Updating monster state - update logic");
         current_state_->update(*this, delta);
     }
 
@@ -144,9 +152,8 @@ void Monster::change_state(const std::string& new_state) {
         }
 
         std::string monster_name = preset_ ? preset_->name : "default_monster";
-        std::cout << "Monster '" << monster_name
-                  << "' changing state: " << old_state_name << " -> "
-                  << new_state << std::endl;
+        Logger::info("Monster '" + monster_name + "' changing state: " +
+                     old_state_name + " -> " + new_state);
 
         current_state_ = it->second.get();
         current_state_->enter(*this);
@@ -167,19 +174,23 @@ void Monster::change_state(const std::string& new_state) {
         }
     } else if (it == states_.end()) {
         std::string monster_name = preset_ ? preset_->name : "default_monster";
-        std::cerr << "ERROR: Attempted to change to invalid state '"
-                  << new_state << "' for monster '" << monster_name
-                  << "'. Available states: ";
+        Logger::error("ERROR: Attempted to change to invalid state '" +
+                      new_state + "' for monster '" + monster_name +
+                      "'. Available states: ");
         for (const auto& state_pair : states_) {
-            std::cerr << state_pair.first << " ";
+            Logger::error(state_pair.first + " ");
         }
-        std::cerr << std::endl;
     }
 }
 
 bool Monster::is_attacking() const {
     // Check if current animation is attack animation
     return anim_controller_.get_current_state_int() == ANIM_ATTACK;
+}
+
+bool Monster::is_dying() const {
+    // Check if current animation is death animation
+    return anim_controller_.get_current_state_int() == ANIM_DEATH;
 }
 
 void Monster::reverse_direction() {
@@ -194,35 +205,36 @@ Player* Monster::find_player() const {
 }
 
 void Monster::take_damage(float damage) {
-    std::cout << "Monster::take_damage called! Damage: " << damage
-              << " Current health: " << health_ << std::endl;
+    udj::core::Logger::info(
+        "Monster::take_damage called! Damage: % Current health: %",
+        damage,
+        health_);
 
     if (anim_controller_.get_current_state_int() == ANIM_DEATH) {
-        std::cout << "Monster already in death animation, ignoring damage"
-                  << std::endl;
+        udj::core::Logger::info(
+            "Monster already in death animation, ignoring damage");
         return;
     }
 
     health_ -= damage;
-    std::cout << "After damage, health: " << health_ << std::endl;
-
+    udj::core::Logger::info("After damage, health: %", health_);
     if (health_ <= 0.0f) {
         health_ = 0.0f;
-        std::cout << "Monster health <= 0, entering death state" << std::endl;
+        udj::core::Logger::info("Monster health <= 0, entering death state");
 
         // Check if death state exists before trying to use it
         if (states_.find("death") != states_.end()) {
-            std::cout << "Death state found, changing to death" << std::endl;
+            udj::core::Logger::info("Death state found, changing to death");
             change_state("death");
         } else {
             // No death state defined, just mark as consumed
-            std::cout << "Monster killed (no death animation available)"
-                      << std::endl;
+            udj::core::Logger::info(
+                "Monster has no death state defined, marking as consumed");
             set_state(ActorState::CONSUMED);
         }
         velocity_x_ = 0.0f;
     } else {
-        std::cout << "Monster still alive, health: " << health_ << std::endl;
+        udj::core::Logger::info("Monster still alive, health: %", health_);
         // Check if hurt state exists
         if (states_.find("hurt") != states_.end()) {
             change_state("hurt");
@@ -239,9 +251,9 @@ void Monster::set_patrol_range(float min_x, float max_x) {
 
 void Monster::apply_gravity(float delta) {
     if (!grounded_) {
-        velocity_y_ += GRAVITY;
-        if (velocity_y_ > MAX_FALL_SPEED) {
-            velocity_y_ = MAX_FALL_SPEED;
+        velocity_y_ += physics_config_.gravity;
+        if (velocity_y_ > physics_config_.terminal_velocity) {
+            velocity_y_ = physics_config_.terminal_velocity;
         }
     }
 }
@@ -282,6 +294,7 @@ void Monster::handle_collision(
     }
 
     const uint8_t PLATFORM_TYPE_ID = 1;
+    const uint8_t MONSTER_TYPE_ID = 3;
 
     grounded_ = false;
 
@@ -334,6 +347,31 @@ void Monster::handle_collision(
                         velocity_y_ = 0.0f;
                     }
                 }
+            } else if (actor->get_group_id() == MONSTER_TYPE_ID) {
+                // Enemy-enemy collision: prevent overlapping
+                Rectangle other_rect = actor->get_rectangle();
+                Rectangle intersect = GetCollisionRec(rect_, other_rect);
+
+                // Only resolve horizontally to avoid interfering with
+                // gravity
+                if (intersect.width > 0 && intersect.height > 0) {
+                    // Push monsters apart horizontally
+                    if (rect_.x < other_rect.x) {
+                        // This monster is on the left, push it left
+                        rect_.x -= intersect.width / 2.0f;
+                    } else {
+                        // This monster is on the right, push it right
+                        rect_.x += intersect.width / 2.0f;
+                    }
+
+                    // Optionally reverse direction when colliding with
+                    // another enemy (prevents them from constantly pushing
+                    // into each other)
+                    if (anim_controller_.get_current_state_int() ==
+                        1) {  // PATROL
+                        patrol_direction_right_ = !patrol_direction_right_;
+                    }
+                }
             }
         }
     }
@@ -357,7 +395,7 @@ bool Monster::is_animation_finished() const {
 
 void Monster::load_preset(const std::string& preset_name) {
     try {
-        std::cout << "Loading monster preset: " << preset_name << std::endl;
+        Logger::info("Loading monster preset: " + preset_name);
 
         // Load preset from JSON file (MonsterPresetLoader handles the path
         // construction)
@@ -365,8 +403,7 @@ void Monster::load_preset(const std::string& preset_name) {
         preset_ = udjourney::MonsterPresetLoader::load_preset(preset_filename);
         preset_name_ = preset_name;
 
-        std::cout << "Monster preset loaded successfully: " << preset_name
-                  << std::endl;
+        Logger::info("Monster preset loaded successfully: " + preset_name);
 
         // Apply preset stats
         max_health_ = preset_->stats.max_health;
@@ -384,14 +421,15 @@ void Monster::load_preset(const std::string& preset_name) {
             change_state(target_state);
         }
 
-        std::cout << "Monster configured with preset '" << preset_->name
-                  << "' (HP: " << max_health_ << ", Speed: " << speed_
-                  << ", State: " << target_state << ")" << std::endl;
+        Logger::info("Monster configured with preset '" + preset_->name +
+                         "' (HP: %, Speed: %, State: %",
+                     max_health_,
+                     speed_,
+                     target_state);
     } catch (const std::exception& e) {
-        std::cerr << "ERROR: Failed to load monster preset '" << preset_name
-                  << "': " << e.what() << std::endl;
-        std::cerr << "Monster will continue with default settings."
-                  << std::endl;
+        Logger::error("Failed to load monster preset '" + preset_name +
+                      "': " + e.what());
+        Logger::error("Monster will continue with default settings.");
     }
 }
 
@@ -413,8 +451,7 @@ void Monster::award_kill_points() const {
     udjourney::core::events::ScoreEvent score_event{points};
     dispatcher_.dispatch(score_event);
 
-    std::cout << "Monster awarded " << points << " points for kill"
-              << std::endl;
+    udj::core::Logger::info("Monster awarded % points for kill", points);
 }
 
 // Observable methods implementation (same as Player)
@@ -432,3 +469,5 @@ void Monster::notify(const std::string& event) {
         observer->on_notify(event);
     }
 }
+
+}  // namespace udjourney

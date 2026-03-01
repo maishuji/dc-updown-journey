@@ -25,12 +25,15 @@
 #include "udjourney-editor/EditorScene.hpp"
 #include "udjourney-editor/Level.hpp"
 #include "udjourney-editor/EditorPanel.hpp"
+#include "udjourney-editor/EditorSettings.hpp"
 #include "udjourney-editor/background/BackgroundManager.hpp"
 #include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
 #include "udjourney-editor/strategies/level/LevelCreationStrategy.hpp"
 #include "udjourney-editor/strategies/level/ImportFromFileStrategy.hpp"
 #include "udjourney-editor/ui/NewLevelPopup.hpp"
 #include "udjourney-editor/AnimationPresetPanel.hpp"
+#include "udjourney-editor/ParticlePresetPanel.hpp"
+#include "udjourney-editor/ToastNotification.hpp"
 #include "udj-core/CoreUtils.hpp"
 
 struct Editor::PImpl {
@@ -46,6 +49,8 @@ struct Editor::PImpl {
     std::unique_ptr<LevelCreationStrategy> level_creation_strategy = nullptr;
     NewLevelPopup newLevelPopup;
     udjourney::editor::AnimationPresetPanel animation_preset_panel;
+    udjourney::editor::ParticlePresetPanel particle_preset_panel;
+    udjourney::editor::ToastManager toast_manager;
 };
 
 Editor::Editor() : pimpl(std::make_unique<PImpl>()) { pimpl->running = true; }
@@ -132,6 +137,9 @@ void Editor::export_platform_level_json(const std::string &export_path) {
 
     // Level metadata
     jlevel["name"] = "Untitled Level";
+    jlevel["scroll_speed"] = pimpl->level.scroll_speed;
+    jlevel["gravity"] = pimpl->level.physics_config.gravity;
+    jlevel["terminal_velocity"] = pimpl->level.physics_config.terminal_velocity;
 
     // Scene type
     jlevel["scene_type"] = (pimpl->level.scene_type == SceneType::UI_SCREEN)
@@ -155,6 +163,21 @@ void Editor::export_platform_level_json(const std::string &export_path) {
             jplatform["width"] = platform.width_tiles;
             jplatform["height"] = platform.height_tiles;
 
+            if (!platform.texture_file.empty()) {
+                jplatform["texture"] = platform.texture_file;
+                if (platform.texture_tiled) {
+                    jplatform["texture_tiled"] = true;
+                }
+                if (platform.use_atlas) {
+                    jplatform["use_atlas"] = true;
+                    jplatform["source_rect"] = {
+                        {"x", platform.source_rect.x},
+                        {"y", platform.source_rect.y},
+                        {"width", platform.source_rect.width},
+                        {"height", platform.source_rect.height}};
+                }
+            }
+
             // Behavior type
             switch (platform.behavior_type) {
                 case PlatformBehaviorType::Static:
@@ -169,6 +192,17 @@ void Editor::export_platform_level_json(const std::string &export_path) {
                 case PlatformBehaviorType::OscillatingSize:
                     jplatform["behavior"] = "oscillating_size";
                     break;
+                case PlatformBehaviorType::CameraFollowVertical:
+                    jplatform["behavior"] = "camera_follow_vertical";
+                    break;
+            }
+
+            // Behavior parameters
+            if (!platform.behavior_params.empty()) {
+                jplatform["behavior_params"] = nlohmann::json::object();
+                for (const auto &[key, value] : platform.behavior_params) {
+                    jplatform["behavior_params"][key] = value;
+                }
             }
 
             // Features
@@ -178,6 +212,9 @@ void Editor::export_platform_level_json(const std::string &export_path) {
                     switch (feature) {
                         case PlatformFeatureType::Spikes:
                             jplatform["features"].push_back("spikes");
+                            break;
+                        case PlatformFeatureType::DownwardSpikes:
+                            jplatform["features"].push_back("downward_spikes");
                             break;
                         case PlatformFeatureType::Checkpoint:
                             jplatform["features"].push_back("checkpoint");
@@ -217,16 +254,23 @@ void Editor::export_platform_level_json(const std::string &export_path) {
     jlevel["backgrounds"] = pimpl->background_manager.to_json();
 
     // Export FUDs
-    jlevel["fuds"] = nlohmann::json::array();
-    for (const auto &fud : pimpl->level.fuds) {
-        nlohmann::json jfud = fud;  // Uses to_json from FUDElement
-        jlevel["fuds"].push_back(jfud);
+    jlevel["huds"] = nlohmann::json::array();
+    for (const auto &hud : pimpl->level.huds) {
+        nlohmann::json jfud = hud;  // Uses to_json from HUDElement
+        jlevel["huds"].push_back(jfud);
     }
 
     std::ofstream out(export_path);
     out << jlevel.dump(2);
     out.close();
     pimpl->last_export_path = export_path;
+
+    // Show success toast
+    std::filesystem::path path(export_path);
+    pimpl->toast_manager.add_toast(
+        "Successfully exported level at " + path.filename().string(),
+        udjourney::editor::ToastType::Success,
+        4.0f);
 }
 
 void Editor::import_platform_level_json(const std::string &import_path) {
@@ -287,6 +331,13 @@ void Editor::run() {
         // Global keyboard shortcuts (using raylib for global detection)
         if (IsKeyPressed(KEY_F1)) {
             pimpl->editor_panel.request_focus();
+        }
+
+        // Toggle grid visibility (Ctrl+G)
+        if ((IsKeyDown(KEY_LEFT_CONTROL) || IsKeyDown(KEY_RIGHT_CONTROL)) &&
+            IsKeyPressed(KEY_G)) {
+            EditorSettings::instance().show_grid =
+                !EditorSettings::instance().show_grid;
         }
 
         // Export as JSON shortcut (Ctrl+E)
@@ -420,9 +471,69 @@ void Editor::run() {
                 ImGui::EndMenu();
             }
 
+            if (ImGui::BeginMenu("View")) {
+                auto &settings = EditorSettings::instance();
+                if (ImGui::MenuItem(
+                        "Show Grid", "Ctrl+G", &settings.show_grid)) {
+                    // Grid visibility toggled
+                }
+
+                ImGui::MenuItem("Show Background Placeable Rect",
+                                nullptr,
+                                &settings.show_background_placeable_rect);
+                ImGui::MenuItem("Show Background Visible Rect",
+                                nullptr,
+                                &settings.show_background_visible_rect);
+                ImGui::MenuItem(
+                    "Show Background to Scene Center Hints",
+                    nullptr,
+                    &settings.show_background_to_scene_center_hints);
+                ImGui::MenuItem(
+                    "Show Tiles Hints", nullptr, &settings.show_tiles_hints);
+
+                ImGui::Separator();
+
+                // HUD Snap Grid submenu
+                if (ImGui::BeginMenu("HUD Snap Grid")) {
+                    const int snap_values[] = {1, 4, 8, 16, 32, 64};
+                    const char *snap_labels[] = {
+                        "1 (No Snap)", "4", "8", "16", "32", "64"};
+                    for (int i = 0; i < 6; i++) {
+                        if (ImGui::MenuItem(
+                                snap_labels[i],
+                                nullptr,
+                                settings.hud_snap_grid == snap_values[i])) {
+                            settings.hud_snap_grid = snap_values[i];
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+
+                // Platform Snap Grid submenu
+                if (ImGui::BeginMenu("Platform Snap Grid")) {
+                    const int snap_values[] = {1, 4, 8, 16, 32, 64};
+                    const char *snap_labels[] = {
+                        "1 (No Snap)", "4", "8", "16", "32", "64"};
+                    for (int i = 0; i < 6; i++) {
+                        if (ImGui::MenuItem(
+                                snap_labels[i],
+                                nullptr,
+                                settings.platform_snap == snap_values[i])) {
+                            settings.platform_snap = snap_values[i];
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+
+                ImGui::EndMenu();
+            }
+
             if (ImGui::BeginMenu("Settings")) {
                 if (ImGui::MenuItem("Animation Preset Editor")) {
                     pimpl->animation_preset_panel.set_open(true);
+                }
+                if (ImGui::MenuItem("Particles Presets Editor")) {
+                    pimpl->particle_preset_panel.set_open(true);
                 }
                 ImGui::Separator();
                 // Scene Type toggle
@@ -442,6 +553,61 @@ void Editor::run() {
                     ImGui::EndMenu();
                 }
                 ImGui::Separator();
+                // Scroll Speed (for gameplay levels only)
+                if (pimpl->level.scene_type == SceneType::LEVEL) {
+                    ImGui::Text("Scroll Speed (Gameplay)");
+                    if (ImGui::SliderFloat("##ScrollSpeed",
+                                           &pimpl->level.scroll_speed,
+                                           0.1f,
+                                           5.0f,
+                                           "%.1f px/frame")) {
+                        // Value updated by ImGui
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip(
+                            "Camera vertical scrolling speed during "
+                            "gameplay\n"
+                            "Default: 1.0 px/frame\n"
+                            "Lower = slower scrolling, Higher = faster "
+                            "scrolling");
+                    }
+
+                    ImGui::Separator();
+
+                    // Gravity settings
+                    ImGui::Text("Gravity");
+                    if (ImGui::SliderFloat("##Gravity",
+                                           &pimpl->level.physics_config.gravity,
+                                           0.0f,
+                                           3.0f,
+                                           "%.2f acceleration")) {
+                        // Value updated by ImGui
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip(
+                            "Gravity acceleration per frame\n"
+                            "Default: 0.5 (Player), 1.0 (Monster)\n"
+                            "Lower = moon gravity, Higher = heavy gravity");
+                    }
+
+                    ImGui::Text("Terminal Velocity");
+                    if (ImGui::SliderFloat(
+                            "##TerminalVelocity",
+                            &pimpl->level.physics_config.terminal_velocity,
+                            1.0f,
+                            20.0f,
+                            "%.1f max speed")) {
+                        // Value updated by ImGui
+                    }
+                    if (ImGui::IsItemHovered()) {
+                        ImGui::SetTooltip(
+                            "Maximum falling speed\n"
+                            "Default: 10.0\n"
+                            "Lower = slower falls, Higher = faster falls");
+                    }
+
+                    ImGui::Separator();
+                }
                 // ...inside ImGui::BeginMenu("File")...
                 if (ImGui::BeginMenu("UI Scale")) {
                     float scales[] = {1.0f, 1.5f, 2.0f, 2.5f, 3.0f};
@@ -524,6 +690,7 @@ void Editor::run() {
         pimpl->editor_panel.set_current_level(&pimpl->level);
 
         pimpl->editor_panel.draw();
+        pimpl->editor_panel.render_file_dialogs();
 
         // Render the main scene view using EditorScene
         pimpl->scene.render(pimpl->level,
@@ -536,6 +703,10 @@ void Editor::run() {
 
         // Draw animation preset panel
         pimpl->animation_preset_panel.draw();
+        pimpl->particle_preset_panel.draw();
+
+        // Draw toast notifications
+        pimpl->toast_manager.draw();
 
         ImGui::Render();
 

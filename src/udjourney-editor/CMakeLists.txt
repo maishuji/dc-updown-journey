@@ -50,7 +50,9 @@ add_library(udjourney_editor_lib
   src/EditorScene.cpp
   src/EditorPanel.cpp
   src/AnimationPresetPanel.cpp
+  src/ParticlePresetPanel.cpp
   src/MonsterPresetManager.cpp
+  src/PlatformPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/strategies/level/ImportFromFileStrategy.cpp
@@ -58,24 +60,24 @@ add_library(udjourney_editor_lib
   src/ui/NewLevelPopup.cpp
   src/background/BackgroundLayer.cpp
   src/background/BackgroundManager.cpp
-  src/background/BackgroundPanel.cpp
   src/background/BackgroundObjectPresetManager.cpp
   src/mode_handlers/TileModeHandler.cpp
   src/mode_handlers/PlatformModeHandler.cpp
   src/mode_handlers/SpawnModeHandler.cpp
   src/mode_handlers/BackgroundModeHandler.cpp
   src/mode_handlers/MonsterModeHandler.cpp
-  src/mode_handlers/FUDModeHandler.cpp
-  src/fud/FUDElement.cpp
-  src/fud/FUDPresetManager.cpp
-  src/fud/UIAtlasPresetManager.cpp
-  src/fud/IFUDRenderer.cpp
-  src/fud/ButtonFUDRenderer.cpp
-  src/fud/HealthBarFUDRenderer.cpp
-  src/fud/HeartHealthFUDRenderer.cpp
-  src/fud/ScoreDisplayFUDRenderer.cpp
-  src/fud/ScrollableListFUDRenderer.cpp
-  src/fud/TimerFUDRenderer.cpp
+  src/mode_handlers/HUDModeHandler.cpp
+  src/hud/HUDElement.cpp
+  src/hud/HUDPresetManager.cpp
+  src/hud/UIAtlasPresetManager.cpp
+  src/hud/IHUDRenderer.cpp
+  src/hud/ButtonHUDRenderer.cpp
+  src/hud/HealthBarHUDRenderer.cpp
+  src/hud/HeartHealthHUDRenderer.cpp
+  src/hud/ScoreDisplayHUDRenderer.cpp
+  src/hud/ScrollableListHUDRenderer.cpp
+  src/hud/TimerHUDRenderer.cpp
+  src/hud/WeaponHUDRenderer.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -89,7 +91,6 @@ add_library(udjourney_editor_lib
 )
 
 target_include_directories(udjourney_editor_lib PUBLIC include)
-target_include_directories(udjourney_editor_lib PUBLIC ../udjourney/include)
 target_link_libraries(udjourney_editor_lib PUBLIC udj-core raylib nlohmann_json::nlohmann_json)
 
 # Set EDITOR_TESTING flag when building for tests
@@ -107,7 +108,9 @@ add_library(udjourney_editor_lib_test
   src/EditorScene.cpp
   src/EditorPanel.cpp
   src/AnimationPresetPanel.cpp
+  src/ParticlePresetPanel.cpp
   src/MonsterPresetManager.cpp
+  src/PlatformPresetManager.cpp
   src/DockingHelper.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/strategies/level/ImportFromFileStrategy.cpp
@@ -115,24 +118,24 @@ add_library(udjourney_editor_lib_test
   src/ui/NewLevelPopup.cpp
   src/background/BackgroundLayer.cpp
   src/background/BackgroundManager.cpp
-  src/background/BackgroundPanel.cpp
   src/background/BackgroundObjectPresetManager.cpp
   src/mode_handlers/TileModeHandler.cpp
   src/mode_handlers/PlatformModeHandler.cpp
   src/mode_handlers/SpawnModeHandler.cpp
   src/mode_handlers/BackgroundModeHandler.cpp
   src/mode_handlers/MonsterModeHandler.cpp
-  src/mode_handlers/FUDModeHandler.cpp
-  src/fud/FUDElement.cpp
-  src/fud/FUDPresetManager.cpp
-  src/fud/UIAtlasPresetManager.cpp
-  src/fud/IFUDRenderer.cpp
-  src/fud/ButtonFUDRenderer.cpp
-  src/fud/HealthBarFUDRenderer.cpp
-  src/fud/HeartHealthFUDRenderer.cpp
-  src/fud/ScoreDisplayFUDRenderer.cpp
-  src/fud/ScrollableListFUDRenderer.cpp
-  src/fud/TimerFUDRenderer.cpp
+  src/mode_handlers/HUDModeHandler.cpp
+  src/hud/HUDElement.cpp
+  src/hud/HUDPresetManager.cpp
+  src/hud/UIAtlasPresetManager.cpp
+  src/hud/IHUDRenderer.cpp
+  src/hud/ButtonHUDRenderer.cpp
+  src/hud/HealthBarHUDRenderer.cpp
+  src/hud/HeartHealthHUDRenderer.cpp
+  src/hud/ScoreDisplayHUDRenderer.cpp
+  src/hud/ScrollableListHUDRenderer.cpp
+  src/hud/TimerHUDRenderer.cpp
+  src/hud/WeaponHUDRenderer.cpp
   ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
 
   ${imgui_SOURCE_DIR}/imgui.cpp
@@ -146,7 +149,6 @@ add_library(udjourney_editor_lib_test
 )
 
 target_include_directories(udjourney_editor_lib_test PUBLIC include PRIVATE src tests)
-target_include_directories(udjourney_editor_lib_test PUBLIC ../udjourney/include)
 target_link_libraries(udjourney_editor_lib_test PUBLIC udj-core raylib nlohmann_json::nlohmann_json)
 target_compile_definitions(udjourney_editor_lib_test PRIVATE EDITOR_TESTING)
 
@@ -184,6 +186,7 @@ add_executable(editorpanel_tests
   src/EditorPanel.cpp
   src/EditorScene.cpp
   src/MonsterPresetManager.cpp
+  src/PlatformPresetManager.cpp
   src/strategies/level/BlankLevelStrategy.cpp
   src/strategies/level/ImportFromFileStrategy.cpp
   src/strategies/level/StaircaseLevelStrategy.cpp
@@ -195,23 +198,25 @@ add_executable(editorpanel_tests
   src/mode_handlers/SpawnModeHandler.cpp
   src/mode_handlers/BackgroundModeHandler.cpp
   src/mode_handlers/MonsterModeHandler.cpp
-  src/mode_handlers/FUDModeHandler.cpp
-  src/fud/FUDElement.cpp
-  src/fud/FUDPresetManager.cpp
-  src/fud/UIAtlasPresetManager.cpp
-  src/fud/IFUDRenderer.cpp
-  src/fud/ButtonFUDRenderer.cpp
-  src/fud/HealthBarFUDRenderer.cpp
-  src/fud/HeartHealthFUDRenderer.cpp
-  src/fud/ScoreDisplayFUDRenderer.cpp
-  src/fud/ScrollableListFUDRenderer.cpp
-  src/fud/TimerFUDRenderer.cpp
+  src/mode_handlers/HUDModeHandler.cpp
+  src/hud/HUDElement.cpp
+  src/hud/HUDPresetManager.cpp
+  src/hud/UIAtlasPresetManager.cpp
+  src/hud/IHUDRenderer.cpp
+  src/hud/ButtonHUDRenderer.cpp
+  src/hud/HealthBarHUDRenderer.cpp
+  src/hud/HeartHealthHUDRenderer.cpp
+  src/hud/ScoreDisplayHUDRenderer.cpp
+  src/hud/ScrollableListHUDRenderer.cpp
+  src/hud/WeaponHUDRenderer.cpp
+  src/hud/TimerHUDRenderer.cpp
+  ${ImGuiFileDialog_SOURCE_DIR}/ImGuiFileDialog.cpp
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
   ${imgui_SOURCE_DIR}/imgui_tables.cpp
   ${imgui_SOURCE_DIR}/imgui_widgets.cpp
 )
-target_include_directories(editorpanel_tests PRIVATE include src ${imgui_SOURCE_DIR})
+target_include_directories(editorpanel_tests PRIVATE include src ${imgui_SOURCE_DIR} ${ImGuiFileDialog_SOURCE_DIR})
 target_include_directories(editorpanel_tests PRIVATE ../udjourney/include)
 target_link_libraries(editorpanel_tests PRIVATE udj-core gtest gtest_main nlohmann_json::nlohmann_json raylib)
 

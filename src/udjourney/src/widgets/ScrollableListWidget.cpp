@@ -9,9 +9,9 @@
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/LevelMetadata.hpp"
 #include <udj-core/Logger.hpp>
-
+namespace udjourney {
 ScrollableListWidget::ScrollableListWidget(
-    const IGame& game, const udjourney::scene::FUDData& fud) :
+    const IGame& game, const udjourney::scene::HUDData& hud) :
     IWidget(game),
     selected_index_(0),
     scroll_offset_(0),
@@ -37,73 +37,73 @@ ScrollableListWidget::ScrollableListWidget(
     float anchor_x = 0.0f;
     float anchor_y = 0.0f;
 
-    switch (fud.anchor) {
-        case udjourney::scene::FUDAnchor::TopLeft:
+    switch (hud.anchor) {
+        case udjourney::scene::HUDAnchor::TopLeft:
             anchor_x = 0;
             anchor_y = 0;
             break;
-        case udjourney::scene::FUDAnchor::TopCenter:
+        case udjourney::scene::HUDAnchor::TopCenter:
             anchor_x = kBaseWidth / 2;
             anchor_y = 0;
             break;
-        case udjourney::scene::FUDAnchor::TopRight:
+        case udjourney::scene::HUDAnchor::TopRight:
             anchor_x = kBaseWidth;
             anchor_y = 0;
             break;
-        case udjourney::scene::FUDAnchor::MiddleLeft:
+        case udjourney::scene::HUDAnchor::MiddleLeft:
             anchor_x = 0;
             anchor_y = kBaseHeight / 2;
             break;
-        case udjourney::scene::FUDAnchor::MiddleCenter:
+        case udjourney::scene::HUDAnchor::MiddleCenter:
             anchor_x = kBaseWidth / 2;
             anchor_y = kBaseHeight / 2;
             break;
-        case udjourney::scene::FUDAnchor::MiddleRight:
+        case udjourney::scene::HUDAnchor::MiddleRight:
             anchor_x = kBaseWidth;
             anchor_y = kBaseHeight / 2;
             break;
-        case udjourney::scene::FUDAnchor::BottomLeft:
+        case udjourney::scene::HUDAnchor::BottomLeft:
             anchor_x = 0;
             anchor_y = kBaseHeight;
             break;
-        case udjourney::scene::FUDAnchor::BottomCenter:
+        case udjourney::scene::HUDAnchor::BottomCenter:
             anchor_x = kBaseWidth / 2;
             anchor_y = kBaseHeight;
             break;
-        case udjourney::scene::FUDAnchor::BottomRight:
+        case udjourney::scene::HUDAnchor::BottomRight:
             anchor_x = kBaseWidth;
             anchor_y = kBaseHeight;
             break;
     }
 
-    rect_ = Rectangle{anchor_x + fud.offset_x,
-                      anchor_y + fud.offset_y,
-                      fud.size_x,
-                      fud.size_y};
+    rect_ = Rectangle{anchor_x + hud.offset_x,
+                      anchor_y + hud.offset_y,
+                      hud.size_x,
+                      hud.size_y};
 
     // Load custom properties
     try {
         udjourney::Logger::info("Loading scrollable list properties...");
-        if (fud.properties.count("data_source")) {
-            data_source_ = fud.properties.at("data_source");
+        if (hud.properties.count("data_source")) {
+            data_source_ = hud.properties.at("data_source");
             udjourney::Logger::info("data_source: %", data_source_);
         }
-        if (fud.properties.count("item_action")) {
-            item_action_template_ = fud.properties.at("item_action");
+        if (hud.properties.count("item_action")) {
+            item_action_template_ = hud.properties.at("item_action");
             udjourney::Logger::info("item_action: %", item_action_template_);
         }
-        if (fud.properties.count("item_height")) {
-            item_height_ = std::stoi(fud.properties.at("item_height"));
+        if (hud.properties.count("item_height")) {
+            item_height_ = std::stoi(hud.properties.at("item_height"));
         }
-        if (fud.properties.count("font_size")) {
-            font_size_ = std::stoi(fud.properties.at("font_size"));
+        if (hud.properties.count("font_size")) {
+            font_size_ = std::stoi(hud.properties.at("font_size"));
         }
-        if (fud.properties.count("subtitle_font_size")) {
+        if (hud.properties.count("subtitle_font_size")) {
             subtitle_font_size_ =
-                std::stoi(fud.properties.at("subtitle_font_size"));
+                std::stoi(hud.properties.at("subtitle_font_size"));
         }
-        if (fud.properties.count("visible_items")) {
-            visible_items_ = std::stoi(fud.properties.at("visible_items"));
+        if (hud.properties.count("visible_items")) {
+            visible_items_ = std::stoi(hud.properties.at("visible_items"));
         }
     } catch (const std::exception& e) {
         udjourney::Logger::error("Error loading scrollable list properties: %",
@@ -544,3 +544,4 @@ const ScrollableListWidget::ListItem* ScrollableListWidget::get_selected_item()
     }
     return nullptr;
 }
+}  // namespace udjourney

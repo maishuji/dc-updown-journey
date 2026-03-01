@@ -2,6 +2,8 @@
 
 #include "udjourney/Bonus.hpp"
 
+namespace udjourney {
+
 Bonus::Bonus(const IGame &iGame, Rectangle iRect) :
     IActor(iGame), m_rect(iRect) {}
 
@@ -29,3 +31,5 @@ void Bonus::update(float iDelta) {
 void Bonus::process_input() {
     // Do nothing
 }
+
+}  // namespace udjourney

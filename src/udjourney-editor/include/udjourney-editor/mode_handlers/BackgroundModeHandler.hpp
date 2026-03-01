@@ -28,8 +28,15 @@ class BackgroundModeHandler : public IModeHandler {
         background_placing_mode_ = false;
         selected_preset_idx_ = -1;
     }
+    [[nodiscard]] bool has_selected_layer() const;
 
  private:
+    // Private rendering methods
+    void render_layer_list();
+    void render_layer_properties();
+    void render_object_controls();
+    void render_delete_confirmation();
+
     BackgroundManager* background_manager_;
     BackgroundObjectPresetManager* background_preset_manager_;
 
@@ -47,9 +54,4 @@ class BackgroundModeHandler : public IModeHandler {
     bool show_delete_layer_confirmation_ = false;
     size_t layer_to_delete_ = 0;
     size_t layer_object_count_ = 0;
-
-    // Private rendering methods
-    void render_layer_list();
-    void render_object_controls();
-    void render_delete_confirmation();
 };

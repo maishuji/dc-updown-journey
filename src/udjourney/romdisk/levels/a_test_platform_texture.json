@@ -1,0 +1,198 @@
+{
+  "backgrounds": {
+    "layers": []
+  },
+  "gravity": 0.5,
+  "huds": [],
+  "monsters": [],
+  "name": "Untitled Level",
+  "platforms": [
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 1.0,
+      "x": 2.40625,
+      "y": 11.28125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 1.0,
+      "x": 5.15625,
+      "y": 12.96875
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 3.21875,
+      "y": 15.3125
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 8.34375,
+      "y": 15.28125
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 13.15625,
+      "y": 15.28125
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 17.65625,
+      "y": 15.3125
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 15.59375,
+      "y": 18.53125
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 10.84375,
+      "y": 19.0625
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 6.09375,
+      "y": 18.84375
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 2.28125,
+      "y": 20.34375
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 6.1875,
+      "y": 22.15625
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 11.4375,
+      "y": 22.40625
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 16.21875,
+      "y": 22.15625
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 14.875,
+      "y": 24.59375
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 6.9375,
+      "y": 25.5625
+    },
+    {
+      "behavior": "static",
+      "height": 1.399999976158142,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 2.5625,
+      "y": 26.90625
+    },
+    {
+      "behavior": "static",
+      "height": 3.0,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.299999952316284,
+      "x": 13.625,
+      "y": 29.4375
+    },
+    {
+      "behavior": "static",
+      "height": 2.299999952316284,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 5.0,
+      "x": 7.3125,
+      "y": 30.84375
+    },
+    {
+      "behavior": "static",
+      "height": 2.299999952316284,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 5.0,
+      "x": 3.46875,
+      "y": 34.75
+    },
+    {
+      "behavior": "static",
+      "height": 2.299999952316284,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 5.0,
+      "x": 8.40625,
+      "y": 38.4375
+    }
+  ],
+  "player_spawn": {
+    "x": 2,
+    "y": 8
+  },
+  "scene_type": "level",
+  "scroll_speed": 1.0,
+  "terminal_velocity": 5.0
+}

@@ -13,7 +13,13 @@ KOS_INIT_FLAGS(INIT_DEFAULT);
 int main(int argc, char **argv) {
     constexpr int kWidth = 640;
     constexpr int kHeigth = 480;
+#if defined(PLATFORM_DREAMCAST) && defined(DEBUG)
+    dbglog(DBG_INFO, "Starting Up-Down Journey...");
+    gdb_init();
+    dbglog(DBG_INFO, "Stepping breakpoint");
+    gdb_breakpoint();
+#endif
 
-    Game game = Game(kWidth, kHeigth);
+    udjourney::Game game = udjourney::Game(kWidth, kHeigth);
     game.run();
 }

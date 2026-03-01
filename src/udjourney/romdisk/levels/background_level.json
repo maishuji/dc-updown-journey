@@ -660,7 +660,7 @@
       }
     ]
   },
-  "fuds": [
+  "huds": [
     {
       "anchor": "TopLeft",
       "name": "Health Bar",

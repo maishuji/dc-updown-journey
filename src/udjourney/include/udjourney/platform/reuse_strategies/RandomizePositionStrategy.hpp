@@ -1,12 +1,9 @@
 // Copyright 2025 Quentin Cartier
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_REUSE_STRATEGIES_RANDOMIZEPOSITIONSTRATEGY_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_REUSE_STRATEGIES_RANDOMIZEPOSITIONSTRATEGY_HPP_
-
+#pragma once
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
-
+namespace udjourney {
 class RandomizePositionStrategy : public PlatformReuseStrategy {
  public:
     void reuse(class Platform& platform) override;
 };
-
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_PLATFORM_REUSE_STRATEGIES_RANDOMIZEPOSITIONSTRATEGY_HPP_
+}  // namespace udjourney

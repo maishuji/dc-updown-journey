@@ -2,15 +2,18 @@
 #include <iostream>
 #include <string>
 #include <udj-core/CoreUtils.hpp>
+#include <udj-core/Logger.hpp>
 #include <nlohmann/json.hpp>
 
 #include "udjourney/widgets/ButtonWidget.hpp"
 #include "udjourney/ActionDispatcher.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/managers/TextureManager.hpp"
+namespace udjourney {
 
 // Helper function to parse color from JSON array string
-static Color parse_color_from_property(const std::string& color_str) {
+static Color parse_color_from_property(const std::string& color_str,
+                                       Color default_color = BLACK) {
     try {
         // Parse JSON array string like "[255,255,0]" or "[255,255,0,255]"
         auto color_json = nlohmann::json::parse(color_str);
@@ -27,110 +30,110 @@ static Color parse_color_from_property(const std::string& color_str) {
     } catch (const std::exception& e) {
         std::cerr << "Error parsing color: " << e.what() << std::endl;
     }
-    return WHITE;  // Default fallback
+    return default_color;  // Default fallback
 }
 
 ButtonWidget::ButtonWidget(const IGame& game,
-                           const udjourney::scene::FUDData& fud) :
+                           const udjourney::scene::HUDData& hud) :
     IWidget(game),
     text_("Button"),
     font_size_(24),
-    normal_color_(WHITE),
-    hover_color_(YELLOW),
+    normal_color_(BLACK),
+    hover_color_(GREEN),
     click_color_(GREEN),
-    focused_color_(YELLOW),
+    focused_color_(BLUE),
     bg_color_(ColorAlpha(BLACK, 0.7f)),
     border_thickness_(2) {
     // Calculate anchor position based on screen size (same as
-    // Game::draw_fuds_())
+    // Game::draw_huds_())
     const float kBaseWidth = 640.0f;
     const float kBaseHeight = 480.0f;
 
     float anchor_x = 0.0f;
     float anchor_y = 0.0f;
 
-    switch (fud.anchor) {
-        case udjourney::scene::FUDAnchor::TopLeft:
+    switch (hud.anchor) {
+        case udjourney::scene::HUDAnchor::TopLeft:
             anchor_x = 0;
             anchor_y = 0;
             break;
-        case udjourney::scene::FUDAnchor::TopCenter:
+        case udjourney::scene::HUDAnchor::TopCenter:
             anchor_x = kBaseWidth / 2;
             anchor_y = 0;
             break;
-        case udjourney::scene::FUDAnchor::TopRight:
+        case udjourney::scene::HUDAnchor::TopRight:
             anchor_x = kBaseWidth;
             anchor_y = 0;
             break;
-        case udjourney::scene::FUDAnchor::MiddleLeft:
+        case udjourney::scene::HUDAnchor::MiddleLeft:
             anchor_x = 0;
             anchor_y = kBaseHeight / 2;
             break;
-        case udjourney::scene::FUDAnchor::MiddleCenter:
+        case udjourney::scene::HUDAnchor::MiddleCenter:
             anchor_x = kBaseWidth / 2;
             anchor_y = kBaseHeight / 2;
             break;
-        case udjourney::scene::FUDAnchor::MiddleRight:
+        case udjourney::scene::HUDAnchor::MiddleRight:
             anchor_x = kBaseWidth;
             anchor_y = kBaseHeight / 2;
             break;
-        case udjourney::scene::FUDAnchor::BottomLeft:
+        case udjourney::scene::HUDAnchor::BottomLeft:
             anchor_x = 0;
             anchor_y = kBaseHeight;
             break;
-        case udjourney::scene::FUDAnchor::BottomCenter:
+        case udjourney::scene::HUDAnchor::BottomCenter:
             anchor_x = kBaseWidth / 2;
             anchor_y = kBaseHeight;
             break;
-        case udjourney::scene::FUDAnchor::BottomRight:
+        case udjourney::scene::HUDAnchor::BottomRight:
             anchor_x = kBaseWidth;
             anchor_y = kBaseHeight;
             break;
     }
 
     // Set rectangle from FUD: anchor + offset
-    rect_ = Rectangle{anchor_x + fud.offset_x,
-                      anchor_y + fud.offset_y,
-                      fud.size_x,
-                      fud.size_y};
+    rect_ = Rectangle{anchor_x + hud.offset_x,
+                      anchor_y + hud.offset_y,
+                      hud.size_x,
+                      hud.size_y};
 
     // Load properties from FUD
     try {
-        if (fud.properties.count("text")) {
-            text_ = fud.properties.at("text");
+        if (hud.properties.count("text")) {
+            text_ = hud.properties.at("text");
         }
-        if (fud.properties.count("button_action")) {
-            action_ = fud.properties.at("button_action");
+        if (hud.properties.count("button_action")) {
+            action_ = hud.properties.at("button_action");
         }
-        if (fud.properties.count("font_size")) {
-            font_size_ = std::stoi(fud.properties.at("font_size"));
+        if (hud.properties.count("font_size")) {
+            font_size_ = std::stoi(hud.properties.at("font_size"));
         }
-        if (fud.properties.count("border_thickness")) {
+        if (hud.properties.count("border_thickness")) {
             border_thickness_ =
-                std::stoi(fud.properties.at("border_thickness"));
+                std::stoi(hud.properties.at("border_thickness"));
         }
-        if (fud.properties.count("selectable")) {
-            std::string selectable_str = fud.properties.at("selectable");
+        if (hud.properties.count("selectable")) {
+            std::string selectable_str = hud.properties.at("selectable");
             is_selectable_ =
                 (selectable_str == "true" || selectable_str == "1");
         }
 
         // Parse colors if provided
-        if (fud.properties.count("normal_color")) {
+        if (hud.properties.count("normal_color")) {
             normal_color_ =
-                parse_color_from_property(fud.properties.at("normal_color"));
+                parse_color_from_property(hud.properties.at("normal_color"));
         }
-        if (fud.properties.count("hover_color")) {
+        if (hud.properties.count("hover_color")) {
             hover_color_ =
-                parse_color_from_property(fud.properties.at("hover_color"));
+                parse_color_from_property(hud.properties.at("hover_color"));
         }
-        if (fud.properties.count("click_color")) {
+        if (hud.properties.count("click_color")) {
             click_color_ =
-                parse_color_from_property(fud.properties.at("click_color"));
+                parse_color_from_property(hud.properties.at("click_color"));
         }
-        if (fud.properties.count("focused_color")) {
+        if (hud.properties.count("focused_color")) {
             focused_color_ =
-                parse_color_from_property(fud.properties.at("focused_color"));
+                parse_color_from_property(hud.properties.at("focused_color"));
         }
     } catch (const std::exception& e) {
         std::cerr << "Error loading button properties: " << e.what()
@@ -138,7 +141,7 @@ ButtonWidget::ButtonWidget(const IGame& game,
     }
 
     // Load button textures if configured
-    load_button_textures(fud);
+    load_button_textures(hud);
 }
 
 void ButtonWidget::draw() const {
@@ -227,12 +230,11 @@ void ButtonWidget::process_input() {
 
 void ButtonWidget::on_click() {
     if (!action_.empty()) {
-        std::cout << "[DEBUG] Button clicked with action: " << action_
-                  << std::endl;
+        udj::core::Logger::debug("Button clicked with action: %", action_);
         // Execute the action through ActionDispatcher
         ActionDispatcher::execute(action_, const_cast<IGame*>(&get_game()));
     } else {
-        std::cout << "[DEBUG] Button clicked but no action set!" << std::endl;
+        udj::core::Logger::debug("Button clicked but no action set!");
     }
     is_pressed_ = true;
 }
@@ -247,7 +249,7 @@ bool ButtonWidget::contains_point(Vector2 point) const {
     return CheckCollisionPointRec(point, rect_);
 }
 
-void ButtonWidget::load_button_textures(const udjourney::scene::FUDData& fud) {
+void ButtonWidget::load_button_textures(const udjourney::scene::HUDData& hud) {
     auto& texture_manager = TextureManager::get_instance();
 
     // Check if we have texture configuration
@@ -255,8 +257,7 @@ void ButtonWidget::load_button_textures(const udjourney::scene::FUDData& fud) {
     // Properties: idle_tile_col, idle_tile_row, hover_tile_col, hover_tile_row,
     // etc.
 
-    bool has_texture_config =
-        !fud.background_sheet.empty() || !fud.background_image.empty();
+    bool has_texture_config = !hud.background_sheet.empty();
 
     if (!has_texture_config) {
         use_textures_ = false;
@@ -264,11 +265,11 @@ void ButtonWidget::load_button_textures(const udjourney::scene::FUDData& fud) {
     }
 
     // Load sprite sheet if specified
-    if (!fud.background_sheet.empty()) {
-        sprite_sheet_path_ = fud.background_sheet;
+    if (!hud.background_sheet.empty()) {
+        sprite_sheet_path_ = hud.background_sheet;
 
         // Load the sheet texture
-        idle_texture_ = texture_manager.get_texture(fud.background_sheet);
+        idle_texture_ = texture_manager.get_texture(hud.background_sheet);
         hover_texture_ =
             idle_texture_;  // Share texture, different source rects
         focused_texture_ = idle_texture_;
@@ -277,78 +278,64 @@ void ButtonWidget::load_button_textures(const udjourney::scene::FUDData& fud) {
         if (idle_texture_.id != 0) {
             use_textures_ = true;
 
-            int tile_size = fud.background_tile_size;
+            int tile_size = hud.background_tile_size;
 
             // Load idle state (default from background config)
             idle_source_rect_ = Rectangle{
-                static_cast<float>(fud.background_tile_col * tile_size),
-                static_cast<float>(fud.background_tile_row * tile_size),
-                static_cast<float>(fud.background_tile_width * tile_size),
-                static_cast<float>(fud.background_tile_height * tile_size)};
+                static_cast<float>(hud.background_tile_col * tile_size),
+                static_cast<float>(hud.background_tile_row * tile_size),
+                static_cast<float>(hud.background_tile_width * tile_size),
+                static_cast<float>(hud.background_tile_height * tile_size)};
 
             // Try to load hover state from properties
-            if (fud.properties.count("hover_tile_col") &&
-                fud.properties.count("hover_tile_row")) {
-                int hover_col = std::stoi(fud.properties.at("hover_tile_col"));
-                int hover_row = std::stoi(fud.properties.at("hover_tile_row"));
+            if (hud.properties.count("hover_tile_col") &&
+                hud.properties.count("hover_tile_row")) {
+                int hover_col = std::stoi(hud.properties.at("hover_tile_col"));
+                int hover_row = std::stoi(hud.properties.at("hover_tile_row"));
                 hover_source_rect_ = Rectangle{
                     static_cast<float>(hover_col * tile_size),
                     static_cast<float>(hover_row * tile_size),
-                    static_cast<float>(fud.background_tile_width * tile_size),
-                    static_cast<float>(fud.background_tile_height * tile_size)};
+                    static_cast<float>(hud.background_tile_width * tile_size),
+                    static_cast<float>(hud.background_tile_height * tile_size)};
             } else {
                 hover_source_rect_ = idle_source_rect_;  // Fallback to idle
             }
 
             // Try to load focused/selected state from properties
-            if (fud.properties.count("focused_tile_col") &&
-                fud.properties.count("focused_tile_row")) {
+            if (hud.properties.count("focused_tile_col") &&
+                hud.properties.count("focused_tile_row")) {
                 int focused_col =
-                    std::stoi(fud.properties.at("focused_tile_col"));
+                    std::stoi(hud.properties.at("focused_tile_col"));
                 int focused_row =
-                    std::stoi(fud.properties.at("focused_tile_row"));
+                    std::stoi(hud.properties.at("focused_tile_row"));
                 focused_source_rect_ = Rectangle{
                     static_cast<float>(focused_col * tile_size),
                     static_cast<float>(focused_row * tile_size),
-                    static_cast<float>(fud.background_tile_width * tile_size),
-                    static_cast<float>(fud.background_tile_height * tile_size)};
+                    static_cast<float>(hud.background_tile_width * tile_size),
+                    static_cast<float>(hud.background_tile_height * tile_size)};
             } else {
                 focused_source_rect_ = hover_source_rect_;  // Fallback to hover
             }
 
             // Try to load pressed state from properties
-            if (fud.properties.count("pressed_tile_col") &&
-                fud.properties.count("pressed_tile_row")) {
+            if (hud.properties.count("pressed_tile_col") &&
+                hud.properties.count("pressed_tile_row")) {
                 int pressed_col =
-                    std::stoi(fud.properties.at("pressed_tile_col"));
+                    std::stoi(hud.properties.at("pressed_tile_col"));
                 int pressed_row =
-                    std::stoi(fud.properties.at("pressed_tile_row"));
+                    std::stoi(hud.properties.at("pressed_tile_row"));
                 pressed_source_rect_ = Rectangle{
                     static_cast<float>(pressed_col * tile_size),
                     static_cast<float>(pressed_row * tile_size),
-                    static_cast<float>(fud.background_tile_width * tile_size),
-                    static_cast<float>(fud.background_tile_height * tile_size)};
+                    static_cast<float>(hud.background_tile_width * tile_size),
+                    static_cast<float>(hud.background_tile_height * tile_size)};
             } else {
                 pressed_source_rect_ = hover_source_rect_;  // Fallback to hover
             }
 
-            std::cout << "[DEBUG] Button '" << text_
-                      << "' loaded texture from sheet: " << fud.background_sheet
-                      << std::endl;
-        }
-    } else if (!fud.background_image.empty()) {
-        // Load individual images (legacy support)
-        idle_texture_ = texture_manager.get_texture(fud.background_image);
-
-        if (idle_texture_.id != 0) {
-            use_textures_ = true;
-            hover_texture_ = idle_texture_;
-            focused_texture_ = idle_texture_;
-            pressed_texture_ = idle_texture_;
-
-            std::cout << "[DEBUG] Button '" << text_
-                      << "' loaded texture: " << fud.background_image
-                      << std::endl;
+            udj::core::Logger::debug("Button '%' loaded texture from sheet: %",
+                                     text_,
+                                     hud.background_sheet);
         }
     }
 }
@@ -377,3 +364,4 @@ Rectangle ButtonWidget::get_current_source_rect() const {
     }
     return idle_source_rect_;
 }
+}  // namespace udjourney

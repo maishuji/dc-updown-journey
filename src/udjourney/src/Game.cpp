@@ -21,26 +21,38 @@
 
 #include "udjourney/widgets/ScrollableListWidget.hpp"
 
-#include "udjourney/Bonus.hpp"
 #include <udj-core/CoreUtils.hpp>
+#include <udj-core/Logger.hpp>
+
+#include "udjourney/Bonus.hpp"
 #include "udjourney/Monster.hpp"
 #include "udjourney/Player.hpp"
 #include "udjourney/Projectile.hpp"
 #include "udjourney/AnimSpriteController.hpp"
 #include "udjourney/SpriteAnim.hpp"
 #include "udjourney/ScoreHistory.hpp"
-#include <udj-core/Logger.hpp>
+#include "udjourney/core/events/ScoreEvent.hpp"
+#include "udjourney/core/events/WeaponSelectedEvent.hpp"
+#include "udjourney/core/events/HealthChangedEvent.hpp"
 #include "udjourney/hud/DialogBoxHUD.hpp"
 #include "udjourney/hud/HUDComponent.hpp"
 #include "udjourney/ActionDispatcher.hpp"
 #include "udjourney/widgets/IWidget.hpp"
 #include "udjourney/widgets/WidgetFactory.hpp"
+#include "udjourney/factories/ActorFactory.hpp"
+#include "udjourney/factories/PlatformFactory.hpp"
+#include "udjourney/factories/UiFactory.hpp"
+#include "udjourney/hud/GameMenuHUD.hpp"
 #include "udjourney/hud/LevelSelectHUD.hpp"
-#include "udjourney/hud/ScoreHUD.hpp"
+#include "udjourney/render/StateRenderers.hpp"
+#include "udjourney/hud/scene/ScoreDisplayHUD.hpp"
+#include "udjourney/hud/scene/HeartHealthHUD.hpp"
+#include "udjourney/hud/scene/WeaponHUD.hpp"
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/loaders/AnimationConfigLoader.hpp"
 #include "udjourney/platform/Platform.hpp"
+#include "udjourney/platform/behavior_strategies/CameraFollowVerticalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/EightTurnHorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/HorizontalBehaviorStrategy.hpp"
 #include "udjourney/platform/behavior_strategies/OscillatingSizeBehaviorStrategy.hpp"
@@ -51,9 +63,12 @@
 #include "udjourney/platform/reuse_strategies/NoReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
 #include "udjourney/platform/reuse_strategies/RandomizePositionStrategy.hpp"
+#include "udjourney/commands/CallbackCommand.hpp"
 
 using udj::core::filesystem::file_exists;
 using udj::core::filesystem::get_assets_path;
+
+namespace udjourney {
 
 struct Resolution {
     int width;
@@ -113,9 +128,8 @@ const double kUpdateInterval = 0.0001;
 bool is_running = true;
 // player is now a member of Game class, not a global
 
-struct DashFud {
-    int16_t dashable = 1;
-} dash_fud;
+// Local helper functions at file scope (no namespace)
+DashHud dash_hud;
 
 std::vector<std::unique_ptr<IActor>> init_platforms(const Game &iGame) {
     std::vector<std::unique_ptr<IActor>> res;
@@ -211,60 +225,39 @@ Game::Game(int iWidth, int iHeight) : IGame() {
     m_world_bounds.set_bounds(
         0.0f, static_cast<float>(iWidth), 0.0f, static_cast<float>(iHeight));
 
+    register_core_event_handlers_();
+
     // Register menu action callbacks
     register_menu_actions();
+
+    // Initialize state renderers
+    init_state_renderers_();
+
+    // Load particle presets
+    if (!m_particle_manager.load_presets("particles.json")) {
+        udj::core::Logger::warning("Warning: Could not load particles.json");
+    }
 
     // Load title screen scene
     if (!load_scene(udjourney::coreutils::get_assets_path(
             "levels/title_screen.json"))) {
-        std::cout << "ERROR: Could not load title_screen.json" << std::endl;
+        udj::core::Logger::error("ERROR: Could not load title_screen.json");
     }
 }
 
 void Game::run() {
 #ifndef PLATFORM_DREAMCAST
+    SetTraceLogLevel(LOG_WARNING);  // Suppress INFO logs for dreamcast
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 #endif
     InitWindow(static_cast<int>(m_rect.width),
                static_cast<int>(m_rect.height),
                "Up-Down Journey");
 
-    // Only initialize gameplay if not in TITLE state
-    if (m_state != GameState::TITLE) {
-        // Create platforms from scene or fallback to random generation
-        create_platforms_from_scene();
+    // Load menu configuration
+    m_menu_manager.load_config("menu_config.json");
 
-        // Spawn monsters from scene
-        create_monsters_from_scene();
-
-        // Spawn player at scene-defined location or default position
-        Vector2 player_spawn_pos{320, 240};  // Default position
-        if (m_current_scene) {
-            auto spawn_data = m_current_scene->get_player_spawn();
-            player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
-                spawn_data.tile_x, spawn_data.tile_y);
-        }
-
-        m_player = std::make_unique<Player>(
-            *this,
-            Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
-            m_event_dispatcher,
-            create_player_animation_controller());
-        m_player->add_observer(static_cast<IObserver *>(this));
-
-        m_actors.emplace_back(
-            std::make_unique<Bonus>(*this, Rectangle{300, 300, 20, 20}));
-
-        m_bonus_manager.add_observer(static_cast<IObserver *>(this));
-
-        auto score_hud =
-            std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
-        m_hud_manager.add_background_hud(std::move(score_hud));
-    } else {
-        // Load widgets from title screen scene
-        load_widgets_from_scene();
-    }
-
+    create_huds_from_scene();
     SetTargetFPS(60);
     m_last_update_time = GetTime();
 
@@ -331,28 +324,19 @@ void Game::process_input() {
         return;  // Skip further input processing
     }
 
-    // Pause / Unpause the game
+    // Pause / Unpause the game - show game menu on pause
     auto start_pressed = input_mapping.pressed_start();
-    if (start_pressed) {
-        if (m_state == GameState::PLAY) {
-            m_state = GameState::PAUSE;
-        } else if (m_state == GameState::PAUSE && !m_showing_level_select) {
-            m_state = GameState::PLAY;
-        }
-    }
 
-    // Handle level selection input when paused (but only if level select menu
-    // is not shown)
-    if (m_state == GameState::PAUSE && !m_showing_level_select) {
-        bool level_select_pressed = false;
-#ifdef PLATFORM_DREAMCAST
-        level_select_pressed =
-            IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
-#else
-        level_select_pressed = IsKeyPressed(KEY_L);
-#endif
-        if (level_select_pressed) {
-            show_level_select_menu();
+    if (start_pressed) {
+        udj::core::Logger::debug("Start button pressed. Current state: %",
+                                 static_cast<int>(m_state));
+
+        if (m_state == GameState::PLAY) {
+            show_game_menu();  // Show menu instead of just pausing
+        } else if (m_state == GameState::PAUSE &&
+                   !m_level_select_manager.is_showing() &&
+                   !m_menu_manager.is_showing()) {
+            m_state = GameState::PLAY;
         }
     }
 
@@ -361,58 +345,115 @@ void Game::process_input() {
             actor->process_input();
         }
         m_player->process_input();
+    }
+}
+void Game::clear_scene() {
+    // Remove all widgets from m_actors
+    m_actors.erase(std::remove_if(m_actors.begin(),
+                                  m_actors.end(),
+                                  [](const std::unique_ptr<IActor> &actor) {
+                                      return actor->get_group_id() ==
+                                             4;  // Remove widgets
+                                  }),
+                   m_actors.end());
 
-        // Handle shooting input (X button / E key)
-        bool shoot_pressed = false;
-#ifdef PLATFORM_DREAMCAST
-        shoot_pressed =
-            IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
-#else
-        shoot_pressed =
-            IsKeyPressed(KEY_E) || IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
-#endif
-        if (shoot_pressed) {
-            udj::core::Logger::debug(
-                "E key pressed! Player: % Can shoot: %",
-                (m_player ? "yes" : "no"),
-                (m_player && m_player->can_shoot() ? "yes" : "no"));
-        }
-        if (shoot_pressed && m_player && m_player->can_shoot()) {
-            const udjourney::ProjectilePreset *preset =
-                m_player->get_current_projectile_preset();
-            if (preset) {
-                auto projectile = std::make_unique<udjourney::Projectile>(
-                    *this,
-                    *preset,
-                    m_player->get_shoot_position(),
-                    m_player->get_shoot_direction());
-                add_actor(std::move(projectile));
-                m_player->reset_shoot_cooldown();
-                udj::core::Logger::info("Projectile spawned!");
-            } else {
-                udj::core::Logger::warning("No projectile preset found!");
-            }
-        }
+    // Clear background HUDs
+    m_hud_manager.clear_background_huds();
 
-        // Handle projectile type cycling (C key / Y button)
-        bool cycle_pressed = false;
-#ifdef PLATFORM_DREAMCAST
-        cycle_pressed = IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_UP);
-#else
-        cycle_pressed = IsKeyPressed(KEY_C);
-#endif
-        if (cycle_pressed && m_player) {
-            m_player->cycle_projectile_type();
-        }
+    m_actors.clear();
+    m_pending_actors.clear();
+    m_updating_actors = false;
+    m_selected_widget_index = 0;
+    m_frames_since_scene_load = 0;
+    m_background_manager.reset_ui_scroll();
+    m_scene_huds.clear();
+
+    // Only reset player if not in GAMEOVER/WIN state
+    // (in those states, player destruction is deferred until after collision
+    // processing)
+    if (m_state != GameState::GAMEOVER && m_state != GameState::WIN) {
+        udj::core::Logger::debug(
+            "clear_scene: Resetting player (state is not GAMEOVER/WIN)");
+        m_player.reset();
+    } else {
+        udj::core::Logger::debug(
+            "clear_scene: NOT resetting player (state is GAMEOVER or WIN - "
+            "will be deferred)");
     }
 }
 
-void draw_pause_() {
-    DrawText(" -- PAUSE -- \n", 10, 10, 20, RED);
-    DrawText("Press START to resume\n", 300, 40, 20, WHITE);
-    DrawText("Press L to load level\n", 300, 70, 20, WHITE);
-    DrawText("Press B button to quit\n", 300, 100, 20, RED);
+void Game::register_core_event_handlers_() {
+    // Core game-wide handlers that should persist across scenes.
+    // Scene-specific handlers (HUD listeners, etc.) are expected to be
+    // registered by their respective objects and are cleared on scene switch.
+    m_event_dispatcher.register_handler(
+        udjourney::core::events::ScoreEvent::TYPE,
+        [this](const udjourney::core::events::IEvent &evt) {
+            const auto &score_ev =
+                static_cast<const udjourney::core::events::ScoreEvent &>(evt);
+            m_score += score_ev.value;
+        });
 }
+
+/**
+ * Applies the currently loaded scene by creating platforms, monsters,
+ * and HUDs defined in the scene.
+ * If no scene is loaded, logs an error message.
+ */
+void Game::apply_current_scene(SceneApplyMode mode) {
+    m_event_dispatcher.clear_all_handlers();
+    register_core_event_handlers_();
+    if (!m_current_scene) {
+        udj::core::Logger::error("No current scene to apply!");
+        return;
+    }
+
+    SceneApplyMode resolved = mode;
+    if (resolved == SceneApplyMode::Auto) {
+        resolved = (m_current_scene->get_type() ==
+                    udjourney::scene::SceneType::UiScreen)
+                       ? SceneApplyMode::UiScreen
+                       : SceneApplyMode::Gameplay;
+    }
+
+    clear_scene();
+
+    // Gameplay scenes: world + UI
+    if (resolved == SceneApplyMode::Gameplay) {
+        initialize_gameplay();
+        return;
+    }
+
+    m_rect.y = 0;                 // Reset camera
+    m_selected_widget_index = 0;  // Reset widget selection
+    m_frames_since_scene_load = 0;
+    m_background_manager.reset_ui_scroll();
+    m_scene_huds.clear();
+    m_actors.clear();
+    m_pending_actors.clear();
+    m_updating_actors = false;
+    m_selected_widget_index = 0;
+
+    create_huds_from_scene();
+}
+
+/**
+ * Loads a scene from the specified filename and applies it immediately.
+ * Returns true if the scene was loaded and applied successfully, false
+ * otherwise.
+ * @param filename The path to the scene file to load.
+ * @return True if the scene was loaded and applied successfully, false
+ * otherwise.
+ */
+bool Game::load_and_apply_scene(const std::string &filename) {
+    if (!load_scene(filename)) {
+        return false;
+    }
+    apply_current_scene(SceneApplyMode::Auto);
+    return true;
+}
+
+// Removed: draw_pause_() moved to PauseStateRenderer
 
 void Game::draw_finish_line_() const {
     if (!m_current_scene || m_level_height <= 0) {
@@ -421,7 +462,7 @@ void Game::draw_finish_line_() const {
 
     // Calculate the finish line Y position (98% of level height where win
     // triggers)
-    float win_threshold = m_level_height * 0.98f;
+    float win_threshold = m_level_height * 1.00f;
 
     // Convert world coordinates to screen coordinates relative to game camera
     Rectangle game_rect = get_rectangle();
@@ -479,621 +520,25 @@ bool Game::should_continue_scrolling_() const noexcept {
 
 // Scene system implementations
 
-void Game::draw_backgrounds() const {
+void Game::draw_backgrounds_() const {
     if (!m_current_scene) {
         return;
     }
 
-    const auto &layers = m_current_scene->get_background_layers();
-    if (layers.empty()) {
-        return;
-    }
-
-    // Get camera position for parallax effect
-    // Only vertical scrolling in this game - horizontal camera is fixed at 0
-    // For UI screens (TITLE, GAMEOVER, WIN), use scrolling background offset
-    // For gameplay, use m_rect.y for vertical scroll offset
-    float scroll_y =
+    const bool use_ui_scroll =
         (m_state == GameState::TITLE || m_state == GameState::GAMEOVER ||
-         m_state == GameState::WIN)
-            ? m_ui_background_scroll_y
-            : m_rect.y;
-    Vector2 camera_pos = {0, scroll_y};
+         m_state == GameState::WIN);
 
-    // Sort layers by depth (lower depth = further back)
-    std::vector<const udjourney::scene::BackgroundLayerData *> sorted_layers;
-    for (const auto &layer : layers) {
-        sorted_layers.push_back(&layer);
-    }
-    std::sort(sorted_layers.begin(),
-              sorted_layers.end(),
-              [](const auto *a, const auto *b) { return a->depth < b->depth; });
-
-    // Draw each layer
-    for (const auto *layer : sorted_layers) {
-        // Calculate parallax offset
-        // parallax_factor 0.0 = follows camera fully (moves with scene)
-        // parallax_factor 1.0 = static (doesn't move, stays fixed on screen)
-        float parallax_offset_x =
-            camera_pos.x * (1.0f - layer->parallax_factor);
-        float parallax_offset_y =
-            camera_pos.y * (1.0f - layer->parallax_factor);
-
-        // Note: texture_file at layer level is not used for rendering
-        // Background rendering is done through objects in the layer
-
-        // Draw background objects in this layer
-        for (const auto &obj : layer->objects) {
-            // Load sprite sheet texture if not cached
-            if (!obj.sprite_sheet.empty()) {
-                if (m_background_textures.find(obj.sprite_sheet) ==
-                    m_background_textures.end()) {
-                    std::string texture_path =
-                        std::string(ASSETS_BASE_PATH) + obj.sprite_sheet;
-                    Texture2D tex = LoadTexture(texture_path.c_str());
-                    if (tex.id > 0) {
-                        m_background_textures[obj.sprite_sheet] = tex;
-                        udj::core::Logger::info(
-                            "Loaded background sprite sheet: %", texture_path);
-                    } else {
-                        udj::core::Logger::error(
-                            "Failed to load background sprite sheet: %",
-                            texture_path);
-                    }
-                }
-
-                if (m_background_textures[obj.sprite_sheet].id > 0) {
-                    const auto &tex = m_background_textures[obj.sprite_sheet];
-
-                    // Calculate tile source rectangle (UV coordinates)
-                    Rectangle source = {
-                        static_cast<float>(obj.tile_col * obj.tile_size),
-                        static_cast<float>(obj.tile_row * obj.tile_size),
-                        static_cast<float>(obj.tile_size),
-                        static_cast<float>(obj.tile_size)};
-
-                    // Convert world coordinates to screen coordinates with
-                    // parallax Object positions are in world coordinates,
-                    // subtract game scroll with parallax factor
-                    // Background is centered: x=320 in background = screen
-                    // center
-                    constexpr float BG_CENTER_OFFSET = 320.0f;
-                    float screen_x =
-                        obj.x - parallax_offset_x - BG_CENTER_OFFSET;
-
-                    float screen_y;
-                    // For UI screens with auto-scroll enabled, apply scroll to
-                    // objects
-                    if (m_current_scene->get_type() ==
-                            udjourney::scene::SceneType::UI_SCREEN &&
-                        layer->auto_scroll_enabled) {
-                        // Apply scroll offset to objects for auto-scrolling
-                        // layers
-                        float base_y = obj.y - m_ui_background_scroll_y;
-
-                        // If repeat is enabled, wrap the objects vertically
-                        if (layer->repeat) {
-                            // Calculate wrap height based on object positions
-                            // in the layer Use 1280.0f as the wrap boundary
-                            // (screen height * 2)
-                            float wrap_height = 1280.0f;
-
-                            // Wrap: when object goes off bottom (base_y >
-                            // screen_height), bring it back to top (base_y -
-                            // wrap_height)
-                            screen_y = fmod(base_y, wrap_height);
-                            if (screen_y < -128.0f) {
-                                screen_y += wrap_height;
-                            }
-
-                            // Draw a second copy for seamless wrapping
-                            Rectangle dest_wrap = {
-                                screen_x,
-                                screen_y - wrap_height,
-                                static_cast<float>(obj.tile_size * obj.scale),
-                                static_cast<float>(obj.tile_size * obj.scale)};
-                            DrawTexturePro(tex,
-                                           source,
-                                           dest_wrap,
-                                           {0, 0},
-                                           obj.rotation,
-                                           WHITE);
-                        } else {
-                            screen_y = base_y;
-                        }
-                    } else if (m_current_scene->get_type() ==
-                               udjourney::scene::SceneType::UI_SCREEN) {
-                        // Static UI screen objects (no auto-scroll)
-                        screen_y = obj.y;
-                    } else {
-                        // Gameplay levels: apply parallax for scrolling
-                        screen_y = obj.y - parallax_offset_y;
-                    }
-
-                    // Calculate destination rectangle with scale
-                    float scaled_size = obj.tile_size * obj.scale;
-                    Rectangle dest = {
-                        screen_x, screen_y, scaled_size, scaled_size};
-
-                    // Draw the sprite tile
-                    Vector2 origin = {0, 0};
-                    DrawTexturePro(
-                        tex, source, dest, origin, obj.rotation, WHITE);
-                }
-            }
-        }
-    }
+    m_background_manager.draw(m_rect.y,
+                              use_ui_scroll,
+                              static_cast<float>(kBaseWidth),
+                              static_cast<float>(kBaseHeight));
 }
 
-void Game::draw_fuds_() const {
-    if (!m_current_scene) {
-        return;
-    }
-
-    const auto &fuds = m_current_scene->get_fuds();
-    if (fuds.empty()) {
-        return;
-    }
-
-    // FUDs are drawn in screen space (not affected by camera/scrolling)
-    for (const auto &fud : fuds) {
-        if (!fud.visible) {
-            continue;
-        }
-
-        // Calculate anchor position based on screen size
-        float anchor_x = 0.0f;
-        float anchor_y = 0.0f;
-
-        float screen_width = static_cast<float>(kBaseWidth);
-        float screen_height = static_cast<float>(kBaseHeight);
-
-        switch (fud.anchor) {
-            case udjourney::scene::FUDAnchor::TopLeft:
-                anchor_x = 0;
-                anchor_y = 0;
-                break;
-            case udjourney::scene::FUDAnchor::TopCenter:
-                anchor_x = screen_width / 2;
-                anchor_y = 0;
-                break;
-            case udjourney::scene::FUDAnchor::TopRight:
-                anchor_x = screen_width;
-                anchor_y = 0;
-                break;
-            case udjourney::scene::FUDAnchor::MiddleLeft:
-                anchor_x = 0;
-                anchor_y = screen_height / 2;
-                break;
-            case udjourney::scene::FUDAnchor::MiddleCenter:
-                anchor_x = screen_width / 2;
-                anchor_y = screen_height / 2;
-                break;
-            case udjourney::scene::FUDAnchor::MiddleRight:
-                anchor_x = screen_width;
-                anchor_y = screen_height / 2;
-                break;
-            case udjourney::scene::FUDAnchor::BottomLeft:
-                anchor_x = 0;
-                anchor_y = screen_height;
-                break;
-            case udjourney::scene::FUDAnchor::BottomCenter:
-                anchor_x = screen_width / 2;
-                anchor_y = screen_height;
-                break;
-            case udjourney::scene::FUDAnchor::BottomRight:
-                anchor_x = screen_width;
-                anchor_y = screen_height;
-                break;
-        }
-
-        // Calculate final FUD position
-        float fud_x = anchor_x + fud.offset_x;
-        float fud_y = anchor_y + fud.offset_y;
-
-        // Draw background image/sprite if specified
-        if (!fud.background_sheet.empty()) {
-            // Load sprite sheet if not cached
-            if (m_fud_textures.find(fud.background_sheet) ==
-                m_fud_textures.end()) {
-                std::string texture_path =
-                    std::string(ASSETS_BASE_PATH) + fud.background_sheet;
-                Texture2D tex = LoadTexture(texture_path.c_str());
-                if (tex.id > 0) {
-                    m_fud_textures[fud.background_sheet] = tex;
-                    udj::core::Logger::info("Loaded FUD sprite sheet: %",
-                                            texture_path);
-                } else {
-                    udj::core::Logger::error(
-                        "Failed to load FUD sprite sheet: %", texture_path);
-                }
-            }
-
-            // Draw sprite from sheet
-            if (m_fud_textures[fud.background_sheet].id > 0) {
-                const auto &tex = m_fud_textures[fud.background_sheet];
-
-                // Calculate source rectangle in sprite sheet
-                Rectangle source = {
-                    static_cast<float>(fud.background_tile_col *
-                                       fud.background_tile_size),
-                    static_cast<float>(fud.background_tile_row *
-                                       fud.background_tile_size),
-                    static_cast<float>(fud.background_tile_width *
-                                       fud.background_tile_size),
-                    static_cast<float>(fud.background_tile_height *
-                                       fud.background_tile_size)};
-
-                Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
-                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
-            }
-        } else if (!fud.background_image.empty()) {
-            // Legacy: single image file
-            if (m_fud_textures.find(fud.background_image) ==
-                m_fud_textures.end()) {
-                std::string texture_path =
-                    std::string(ASSETS_BASE_PATH) + fud.background_image;
-                Texture2D tex = LoadTexture(texture_path.c_str());
-                if (tex.id > 0) {
-                    m_fud_textures[fud.background_image] = tex;
-                    udj::core::Logger::info("Loaded FUD texture: %",
-                                            texture_path);
-                } else {
-                    udj::core::Logger::error("Failed to load FUD texture: %",
-                                             texture_path);
-                }
-            }
-
-            if (m_fud_textures[fud.background_image].id > 0) {
-                const auto &tex = m_fud_textures[fud.background_image];
-                Rectangle source = {0,
-                                    0,
-                                    static_cast<float>(tex.width),
-                                    static_cast<float>(tex.height)};
-                Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
-                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
-            }
-        }
-
-        // Draw FUD based on type
-        if (fud.type_id == "heart_health") {
-            // Draw health as hearts (Zelda-style)
-            // Parse properties
-            int max_hearts = 3;
-            int heart_spacing = 32;
-            bool show_empty = true;
-            int current_half_hearts = 6;  // Track half-hearts
-
-            // Get current health from player's HealthComponent
-            if (m_player) {
-                if (auto *health = m_player->get_component<HealthComponent>()) {
-                    // Health is stored as half-hearts (2 per full heart)
-                    current_half_hearts = health->get_health();
-                    max_hearts = (health->get_max_health() + 1) / 2;
-
-                    // Debug output
-                    static int last_health = -1;
-                    if (current_half_hearts != last_health) {
-                        std::cout
-                            << "FUD Drawing - Health: " << current_half_hearts
-                            << "/" << health->get_max_health() << std::endl;
-                        last_health = current_half_hearts;
-                    }
-                } else {
-                    std::cout << "WARNING: Player has no HealthComponent!"
-                              << std::endl;
-                }
-            } else {
-                std::cout << "WARNING: No player found for FUD health display!"
-                          << std::endl;
-            }
-
-            // Heart sprite configuration
-            std::string heart_sheet = "ui/ui_elements.png";
-            int heart_tile_size = 32;
-            int full_col = 0, full_row = 3;
-            int half_col = 3, half_row = 3;
-            int empty_col = 4, empty_row = 3;
-
-            try {
-                if (fud.properties.count("max_hearts")) {
-                    max_hearts = std::stoi(fud.properties.at("max_hearts"));
-                }
-                // NOTE: current_hearts is NOT loaded from JSON - it's read from
-                // Player's HealthComponent Removed the property parsing that
-                // was overwriting the player's health value
-                if (fud.properties.count("heart_spacing")) {
-                    heart_spacing =
-                        std::stoi(fud.properties.at("heart_spacing"));
-                }
-                if (fud.properties.count("show_empty_hearts")) {
-                    show_empty =
-                        (fud.properties.at("show_empty_hearts") == "true");
-                }
-
-                // Parse heart sprite configurations from JSON
-                if (fud.properties.count("heart_full_sprite")) {
-                    try {
-                        auto sprite_json = nlohmann::json::parse(
-                            fud.properties.at("heart_full_sprite"));
-                        heart_sheet = sprite_json.value("sheet", heart_sheet);
-                        heart_tile_size =
-                            sprite_json.value("tile_size", heart_tile_size);
-                        full_col = sprite_json.value("tile_col", full_col);
-                        full_row = sprite_json.value("tile_row", full_row);
-                    } catch (...) {
-                    }
-                }
-                if (fud.properties.count("heart_empty_sprite")) {
-                    try {
-                        auto sprite_json = nlohmann::json::parse(
-                            fud.properties.at("heart_empty_sprite"));
-                        empty_col = sprite_json.value("tile_col", empty_col);
-                        empty_row = sprite_json.value("tile_row", empty_row);
-                    } catch (...) {
-                    }
-                }
-            } catch (...) {
-                // Use defaults if parsing fails
-            }
-
-            // Load heart sprite sheet
-            if (m_fud_textures.find(heart_sheet) == m_fud_textures.end()) {
-                std::string texture_path =
-                    std::string(ASSETS_BASE_PATH) + heart_sheet;
-                Texture2D tex = LoadTexture(texture_path.c_str());
-                if (tex.id > 0) {
-                    m_fud_textures[heart_sheet] = tex;
-                    udj::core::Logger::info("Loaded heart sprite sheet: %",
-                                            texture_path);
-                } else {
-                    udj::core::Logger::error(
-                        "Failed to load heart sprite sheet: %", texture_path);
-                }
-            }
-
-            // Draw hearts horizontally
-            if (m_fud_textures[heart_sheet].id > 0) {
-                const auto &tex = m_fud_textures[heart_sheet];
-
-                for (int i = 0; i < max_hearts; ++i) {
-                    float heart_x = fud_x + (i * heart_spacing);
-                    float heart_y = fud_y;
-
-                    // Determine which heart sprite to draw based on half-hearts
-                    int half_hearts_for_this_position =
-                        current_half_hearts - (i * 2);
-                    int sprite_col, sprite_row;
-
-                    if (half_hearts_for_this_position >= 2) {
-                        // Full heart
-                        sprite_col = full_col;
-                        sprite_row = full_row;
-                    } else if (half_hearts_for_this_position == 1) {
-                        // Half heart
-                        sprite_col = half_col;
-                        sprite_row = half_row;
-                    } else {
-                        // Empty heart
-                        sprite_col = empty_col;
-                        sprite_row = empty_row;
-                    }
-
-                    if (!show_empty && half_hearts_for_this_position <= 0) {
-                        continue;  // Skip empty hearts if not showing them
-                    }
-
-                    // Calculate source rectangle in sprite sheet
-                    Rectangle source = {
-                        static_cast<float>(sprite_col * heart_tile_size),
-                        static_cast<float>(sprite_row * heart_tile_size),
-                        static_cast<float>(heart_tile_size),
-                        static_cast<float>(heart_tile_size)};
-
-                    Rectangle dest = {heart_x,
-                                      heart_y,
-                                      static_cast<float>(heart_spacing),
-                                      static_cast<float>(heart_spacing)};
-
-                    DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
-                }
-            } else {
-                // Fallback: draw circles if texture not available
-                for (int i = 0; i < max_hearts; ++i) {
-                    float heart_x = fud_x + (i * heart_spacing);
-                    float heart_y = fud_y;
-
-                    int half_hearts_for_this_position =
-                        current_half_hearts - (i * 2);
-                    bool is_full = (half_hearts_for_this_position >= 2);
-                    bool is_half = (half_hearts_for_this_position == 1);
-
-                    if (is_full) {
-                        DrawCircle(static_cast<int>(heart_x + 16),
-                                   static_cast<int>(heart_y + 16),
-                                   12,
-                                   RED);
-                    } else if (is_half) {
-                        DrawCircleSector(Vector2{heart_x + 16, heart_y + 16},
-                                         12,
-                                         90,
-                                         270,
-                                         16,
-                                         RED);
-                        DrawCircleSectorLines(
-                            Vector2{heart_x + 16, heart_y + 16},
-                            12,
-                            90,
-                            270,
-                            16,
-                            RED);
-                    } else if (show_empty) {
-                        DrawCircle(static_cast<int>(heart_x + 16),
-                                   static_cast<int>(heart_y + 16),
-                                   12,
-                                   ColorAlpha(RED, 0.3f));
-                        DrawCircleLines(static_cast<int>(heart_x + 16),
-                                        static_cast<int>(heart_y + 16),
-                                        12,
-                                        RED);
-                    }
-                }
-            }
-        } else if (fud.type_id == "healthbar" || fud.type_id == "mana_bar") {
-            // Draw a simple health/mana bar
-            Color bar_color = fud.type_id == "healthbar" ? RED : BLUE;
-            Color bg_color = DARKGRAY;
-
-            // Background
-            DrawRectangle(static_cast<int>(fud_x),
-                          static_cast<int>(fud_y),
-                          static_cast<int>(fud.size_x),
-                          static_cast<int>(fud.size_y),
-                          bg_color);
-
-            // Get fill percentage from player health for healthbar
-            float fill_percent = 0.8f;  // Default for mana_bar or if no health
-            if (fud.type_id == "healthbar" && m_player) {
-                if (auto *health = m_player->get_component<HealthComponent>()) {
-                    fill_percent = health->get_health_percentage();
-                }
-            }
-
-            // Bar
-            DrawRectangle(static_cast<int>(fud_x + 2),
-                          static_cast<int>(fud_y + 2),
-                          static_cast<int>((fud.size_x - 4) * fill_percent),
-                          static_cast<int>(fud.size_y - 4),
-                          bar_color);
-
-            // Border
-            DrawRectangleLines(static_cast<int>(fud_x),
-                               static_cast<int>(fud_y),
-                               static_cast<int>(fud.size_x),
-                               static_cast<int>(fud.size_y),
-                               WHITE);
-
-            // Text
-            DrawText(fud.name.c_str(),
-                     static_cast<int>(fud_x + 5),
-                     static_cast<int>(fud_y + 5),
-                     12,
-                     WHITE);
-        } else if (fud.type_id == "score_display") {
-            // Draw score display
-            DrawRectangle(static_cast<int>(fud_x),
-                          static_cast<int>(fud_y),
-                          static_cast<int>(fud.size_x),
-                          static_cast<int>(fud.size_y),
-                          ColorAlpha(BLACK, 0.5f));
-
-            char score_text[64];
-            snprintf(score_text, sizeof(score_text), "Score: %d", m_score);
-            DrawText(score_text,
-                     static_cast<int>(fud_x + 10),
-                     static_cast<int>(fud_y + 10),
-                     20,
-                     WHITE);
-        } else if (fud.type_id == "timer") {
-            // Draw timer
-            DrawRectangle(static_cast<int>(fud_x),
-                          static_cast<int>(fud_y),
-                          static_cast<int>(fud.size_x),
-                          static_cast<int>(fud.size_y),
-                          ColorAlpha(BLACK, 0.5f));
-
-            // Simple countdown timer (demo - would need actual timer logic)
-            int minutes = 3;
-            int seconds = 0;
-            char timer_text[32];
-            snprintf(
-                timer_text, sizeof(timer_text), "%02d:%02d", minutes, seconds);
-            DrawText(timer_text,
-                     static_cast<int>(fud_x + 10),
-                     static_cast<int>(fud_y + 5),
-                     24,
-                     YELLOW);
-        } else {
-            // Generic FUD - just draw a labeled box
-            DrawRectangle(static_cast<int>(fud_x),
-                          static_cast<int>(fud_y),
-                          static_cast<int>(fud.size_x),
-                          static_cast<int>(fud.size_y),
-                          ColorAlpha(YELLOW, 0.3f));
-            DrawRectangleLines(static_cast<int>(fud_x),
-                               static_cast<int>(fud_y),
-                               static_cast<int>(fud.size_x),
-                               static_cast<int>(fud.size_y),
-                               YELLOW);
-            DrawText(fud.name.c_str(),
-                     static_cast<int>(fud_x + 5),
-                     static_cast<int>(fud_y + 5),
-                     12,
-                     WHITE);
-        }
-
-        // Draw foreground image/sprite if specified (overlays on top)
-        if (!fud.foreground_sheet.empty()) {
-            // Load sprite sheet if not cached
-            if (m_fud_textures.find(fud.foreground_sheet) ==
-                m_fud_textures.end()) {
-                std::string texture_path =
-                    std::string(ASSETS_BASE_PATH) + fud.foreground_sheet;
-                Texture2D tex = LoadTexture(texture_path.c_str());
-                if (tex.id > 0) {
-                    m_fud_textures[fud.foreground_sheet] = tex;
-                    udj::core::Logger::info("Loaded FUD sprite sheet: %",
-                                            texture_path);
-                } else {
-                    udj::core::Logger::error(
-                        "Failed to load FUD sprite sheet: %", texture_path);
-                }
-            }
-
-            // Draw sprite from sheet
-            if (m_fud_textures[fud.foreground_sheet].id > 0) {
-                const auto &tex = m_fud_textures[fud.foreground_sheet];
-
-                // Calculate source rectangle in sprite sheet
-                Rectangle source = {
-                    static_cast<float>(fud.foreground_tile_col *
-                                       fud.foreground_tile_size),
-                    static_cast<float>(fud.foreground_tile_row *
-                                       fud.foreground_tile_size),
-                    static_cast<float>(fud.foreground_tile_width *
-                                       fud.foreground_tile_size),
-                    static_cast<float>(fud.foreground_tile_height *
-                                       fud.foreground_tile_size)};
-
-                Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
-                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
-            }
-        } else if (!fud.foreground_image.empty()) {
-            // Legacy: single image file
-            if (m_fud_textures.find(fud.foreground_image) ==
-                m_fud_textures.end()) {
-                std::string texture_path =
-                    std::string(ASSETS_BASE_PATH) + fud.foreground_image;
-                Texture2D tex = LoadTexture(texture_path.c_str());
-                if (tex.id > 0) {
-                    m_fud_textures[fud.foreground_image] = tex;
-                    udj::core::Logger::info("Loaded FUD texture: %",
-                                            texture_path);
-                } else {
-                    udj::core::Logger::error("Failed to load FUD texture: %",
-                                             texture_path);
-                }
-            }
-
-            if (m_fud_textures[fud.foreground_image].id > 0) {
-                const auto &tex = m_fud_textures[fud.foreground_image];
-                Rectangle source = {0,
-                                    0,
-                                    static_cast<float>(tex.width),
-                                    static_cast<float>(tex.height)};
-                Rectangle dest = {fud_x, fud_y, fud.size_x, fud.size_y};
-                DrawTexturePro(tex, source, dest, {0, 0}, 0.0f, WHITE);
-            }
+void Game::draw_huds_() const {
+    for (const auto &hud : m_scene_huds) {
+        if (hud) {
+            hud->draw();
         }
     }
 }
@@ -1102,12 +547,11 @@ void Game::draw() const {
     BeginDrawing();
     ClearBackground(SKYBLUE);  // Clear the background with a blue sky color
 
-    // Calculate scale factor
+    // Calculate viewport transform
     float scale_x = GetScreenWidth() / static_cast<float>(kBaseWidth);
     float scale_y = GetScreenHeight() / static_cast<float>(kBaseHeight);
     float scale = std::min(scale_x, scale_y);  // Uniform scaling
 
-    // Center the scene if window is not proportional
     float offset_x = (GetScreenWidth() - kBaseWidth * scale) * 0.5F;
     float offset_y = (GetScreenHeight() - kBaseHeight * scale) * 0.5F;
 
@@ -1115,102 +559,20 @@ void Game::draw() const {
     rlTranslatef(offset_x, offset_y, 0);
     rlScalef(scale, scale, 1.0F);
 
-    // Draw the rectangle
-    std::stringstream str_stream;
-
-    switch (m_state) {
-        case GameState::TITLE:
-            // Draw scrolling backgrounds
-            draw_backgrounds();
-
-            // Draw widgets (menu buttons)
-            for (const auto &actor : m_actors) {
-                if (actor->get_group_id() == 4) {  // Widget group ID
-                    actor->draw();
-                }
-            }
-            break;
-        case GameState::PLAY: {
-            // Draw backgrounds first (behind everything)
-            draw_backgrounds();
-
-            for (const auto &actor : m_actors) {
-                actor->draw();
-            }
-            m_player->draw();
-
-            // Draw finish line for level-based gameplay
-            if (m_current_scene && m_level_height > 0) {
-                draw_finish_line_();
-            }
-        }
-
-            // Draw dash status
-            DrawCircle(static_cast<int>(get_rectangle().width) - 50,
-                       45,
-                       17,
-                       dash_fud.dashable == 1 ? GREEN : RED);
-
-            break;
-        case GameState::PAUSE:
-            // Draw the game world in background
-            draw_backgrounds();
-
-            for (const auto &actor : m_actors) {
-                actor->draw();
-            }
-            if (m_player) {
-                m_player->draw();
-            }
-
-            // Draw finish line for level-based gameplay
-            if (m_current_scene && m_level_height > 0) {
-                draw_finish_line_();
-            }
-
-            // Draw pause overlay on top
-            draw_pause_();
-            break;
-        case GameState::GAMEOVER:
-            // Draw scrolling backgrounds
-            draw_backgrounds();
-
-            // Draw FUDs (game over message and score)
-            if (m_current_scene) {
-                draw_fuds_();
-            }
-
-            // Draw widgets (menu buttons)
-            for (const auto &actor : m_actors) {
-                if (actor->get_group_id() == 4) {  // Widget group ID
-                    actor->draw();
-                }
-            }
-            break;
-        case GameState::WIN:
-            // Draw scrolling backgrounds
-            draw_backgrounds();
-
-            // Draw FUDs (victory messages)
-            if (m_current_scene) {
-                draw_fuds_();
-            }
-
-            // Draw widgets (menu buttons)
-            for (const auto &actor : m_actors) {
-                if (actor->get_group_id() == 4) {  // Widget group ID
-                    actor->draw();
-                }
-            }
-            break;
+    // Delegate rendering to current state renderer
+    auto it = m_state_renderers.find(m_state);
+    if (it != m_state_renderers.end()) {
+        it->second->render(*this);
     }
+
+    // Always draw HUD manager on top
     m_hud_manager.draw();
 
     // Draw FUDs (Fixed UI Displays) from current scene
     // Skip for states that handle their own FUD/widget drawing
     if (m_current_scene && m_state != GameState::TITLE &&
         m_state != GameState::GAMEOVER && m_state != GameState::WIN) {
-        draw_fuds_();
+        draw_huds_();
     }
 
     rlPopMatrix();
@@ -1240,65 +602,13 @@ void Game::update() {
 
     // Update background scroll for UI screens
     if (m_current_scene &&
-        m_current_scene->get_type() == udjourney::scene::SceneType::UI_SCREEN) {
-        // Use per-layer auto-scroll settings from scene data
-        const auto &layers = m_current_scene->get_background_layers();
-        // Check all layers with auto-scroll enabled
-        float default_scroll_speed = 0.0f;
-        float max_scroll_limit = 0.0f;
-        bool should_clamp = false;
-
-        for (const auto &layer : layers) {
-            if (layer.auto_scroll_enabled) {
-                // Use first non-zero scroll speed found
-                if (default_scroll_speed == 0.0f &&
-                    layer.scroll_speed_y != 0.0f) {
-                    default_scroll_speed = layer.scroll_speed_y;
-                }
-
-                // Check if we should clamp scrolling for layers without repeat
-                if (!layer.repeat && !layer.objects.empty()) {
-                    should_clamp = true;
-                    // Calculate max Y position from objects in this layer
-                    // The layer stops when bottom of layer reaches bottom of
-                    // screen
-                    float max_y = 0.0f;
-                    for (const auto &obj : layer.objects) {
-                        float obj_bottom = obj.y + (obj.tile_size * obj.scale);
-                        max_y = std::max(max_y, obj_bottom);
-                    }
-                    // Scroll stops when bottom of content reaches bottom of
-                    // screen (kBaseHeight)
-                    if (max_y > static_cast<float>(kBaseHeight)) {
-                        float scroll_limit =
-                            max_y - static_cast<float>(kBaseHeight);
-                        max_scroll_limit =
-                            std::max(max_scroll_limit, scroll_limit);
-                    }
-                }
-            }
-        }
-
-        // If no explicit scroll speed, use default for backward compatibility
-        if (default_scroll_speed == 0.0f) {
-            // Check if any layer has auto-scroll enabled (legacy mode)
-            for (const auto &layer : layers) {
-                if (layer.auto_scroll_enabled) {
-                    default_scroll_speed = 30.0f;
-                    break;
-                }
-            }
-        }
-
-        // Update scroll position
-        m_ui_background_scroll_y += default_scroll_speed * GetFrameTime();
-
-        // Clamp to calculated scroll limit
-        if (should_clamp && max_scroll_limit > 0.0f) {
-            m_ui_background_scroll_y =
-                std::min(m_ui_background_scroll_y, max_scroll_limit);
-        }
+        m_current_scene->get_type() == udjourney::scene::SceneType::UiScreen) {
+        m_background_manager.update_ui_scroll(GetFrameTime(),
+                                              static_cast<float>(kBaseHeight));
     }
+
+    // Update particle system
+    m_particle_manager.update(GetFrameTime());
 
     // Widget input handling for TITLE, WIN, and GAMEOVER states
     if (m_state == GameState::TITLE || m_state == GameState::WIN ||
@@ -1328,8 +638,21 @@ void Game::update() {
             // Handle keyboard input first (doesn't require collecting widgets)
             bool keyboard_input_handled = false;
 
-            if (IsKeyPressed(KEY_Z) || IsKeyPressed(KEY_S) ||
-                IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE) ||
+#ifdef PLATFORM_DREAMCAST
+            // Dreamcast support
+            bool pressed_A =
+                IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN);
+            bool pressed_down =
+                IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN);
+            bool pressed_up =
+                IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP);
+#else
+            bool pressed_A = IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE);
+            bool pressed_down = IsKeyPressed(KEY_S);
+            bool pressed_up = IsKeyPressed(KEY_Z);
+#endif
+
+            if (pressed_A || pressed_down || pressed_up ||
                 IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN) ||
                 IsKeyPressed(KEY_PAGE_UP) || IsKeyPressed(KEY_PAGE_DOWN) ||
                 GetMouseWheelMove() != 0.0f) {
@@ -1347,13 +670,13 @@ void Game::update() {
 
                 if (!widgets.empty()) {
                     // Keyboard navigation: Z = up, S = down
-                    if (IsKeyPressed(KEY_Z)) {
+                    if (pressed_up) {
                         m_selected_widget_index =
                             (m_selected_widget_index - 1 +
                              static_cast<int>(widgets.size())) %
                             static_cast<int>(widgets.size());
                     }
-                    if (IsKeyPressed(KEY_S)) {
+                    if (pressed_down) {
                         m_selected_widget_index =
                             (m_selected_widget_index + 1) %
                             static_cast<int>(widgets.size());
@@ -1379,6 +702,20 @@ void Game::update() {
                                 // Only handle list input if this list widget is
                                 // focused
                                 if (list->is_focused()) {
+#ifdef PLATFORM_DREAMCAST
+                                    // Dreamcast D-pad support
+                                    if (IsGamepadButtonPressed(
+                                            0, GAMEPAD_BUTTON_LEFT_FACE_UP)) {
+                                        list->scroll_up();
+                                        list_input_handled = true;
+                                    }
+                                    if (IsGamepadButtonPressed(
+                                            0, GAMEPAD_BUTTON_LEFT_FACE_DOWN)) {
+                                        list->scroll_down();
+                                        list_input_handled = true;
+                                    }
+#endif
+
                                     if (IsKeyPressed(KEY_UP)) {
                                         list->scroll_up();
                                         list_input_handled = true;
@@ -1412,8 +749,8 @@ void Game::update() {
                     // Only activate widget with Enter/Space if no list
                     // navigation happened This prevents immediate activation
                     // when transitioning screens
-                    if (!list_input_handled &&
-                        (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE))) {
+
+                    if (!list_input_handled && (pressed_A)) {
                         IWidget *focused_widget =
                             widgets[m_selected_widget_index];
 
@@ -1448,6 +785,10 @@ void Game::update() {
             m_actors.push_back(std::move(pending_actor));
         }
         m_pending_actors.clear();
+
+        // Process all queued notifications AFTER all updates complete
+        // but BEFORE removing dead actors
+        process_pending_notifications();
     } else if (m_state == GameState::TITLE || m_state == GameState::WIN ||
                m_state == GameState::GAMEOVER) {
         // Update widgets for animations (e.g., ScrollableListWidget scroll
@@ -1515,12 +856,17 @@ void Game::update() {
             if (cur_update_time - last_update_time > kUpdateInterval) {
                 // Only scroll if finish line hasn't reached middle of screen
                 if (should_continue_scrolling_()) {
-                    m_rect.y += 1;
+                    // Use scroll speed from current scene, default to 1.0 if no
+                    // scene
+                    float scroll_speed =
+                        m_current_scene ? m_current_scene->get_scroll_speed()
+                                        : 1.0f;
+                    m_rect.y += scroll_speed;
                 }
                 for (auto &actor : m_actors) {
                     actor->update(delta);
                 }
-                m_player->update(delta);
+                if (m_player) m_player->update(delta);
                 last_update_time = cur_update_time;
 
                 // Check projectile-monster collisions
@@ -1554,26 +900,48 @@ void Game::update() {
 
                         if (CheckCollisionRecs(proj_rect, monster_rect)) {
                             // Hit! Monster takes damage from projectile
-                            std::cout << "Projectile hit monster! Damage: "
-                                      << projectile->get_damage()
-                                      << " Monster ptr: " << monster
-                                      << std::endl;
+                            udj::core::Logger::info(
+                                "Projectile hit monster! Damage: " +
+                                std::to_string(projectile->get_damage()) +
+                                " Monster ptr: " +
+                                std::to_string(
+                                    reinterpret_cast<uintptr_t>(monster)));
 
                             if (monster) {
-                                std::cout << "Calling monster->take_damage..."
-                                          << std::endl;
+                                udj::core::Logger::info(
+                                    "Calling monster->take_damage...");
                                 monster->take_damage(static_cast<float>(
                                     projectile->get_damage()));
-                                std::cout << "take_damage returned"
-                                          << std::endl;
+                                udj::core::Logger::info("take_damage returned");
                             } else {
-                                std::cout << "ERROR: Monster pointer is null!"
-                                          << std::endl;
+                                udj::core::Logger::error(
+                                    "ERROR: Monster pointer is null!");
+                            }
+
+                            // Create sparkle particle effect at hit location
+                            Vector2 hit_pos = {
+                                proj_rect.x + proj_rect.width / 2.0f,
+                                proj_rect.y + proj_rect.height / 2.0f};
+                            udj::core::Logger::info(
+                                "Creating impact burst at position: %, %",
+                                hit_pos.x,
+                                hit_pos.y);
+
+                            if (m_particle_manager.create_burst("sparkle",
+                                                                hit_pos)) {
+                                udj::core::Logger::info(
+                                    "Particle count: " +
+                                    std::to_string(
+                                        m_particle_manager
+                                            .get_total_particle_count()));
+                            } else {
+                                udj::core::Logger::error(
+                                    "ERROR: Could not find 'sparkle' preset!");
                             }
 
                             projectile->destroy();
-                            std::cout << "Projectile destroyed after hit"
-                                      << std::endl;
+                            udj::core::Logger::info(
+                                "Projectile destroyed after hit");
                             break;
                         }
                     }
@@ -1608,16 +976,19 @@ void Game::update() {
                     // Win if player reaches 98% of the level height (very close
                     // to actual bottom) This ensures player actually reaches
                     // the final platform area before winning
-                    if (player_bottom >= m_level_height * 0.98f) {
+                    if (player_bottom >= m_level_height * 1.00f) {
                         m_state = GameState::WIN;
+
+                        // Save final score for display on win screen
+                        m_final_score = m_score;
 
                         // Load win screen with widgets
                         std::string win_path =
                             udjourney::coreutils::get_assets_path(
                                 "levels/win_screen.json");
                         if (load_scene(win_path)) {
-                            // Clean up gameplay objects
-                            m_player.reset();
+                            // DON'T destroy player immediately - defer until
+                            // after current frame
                             m_hud_manager.clear_background_huds();
 
                             // Remove all actors except widgets
@@ -1632,26 +1003,42 @@ void Game::update() {
                                 m_actors.end());
 
                             // Load win screen widgets
-                            load_widgets_from_scene();
+                            create_huds_from_scene();
                             m_rect.y = 0;  // Reset camera
                         }
                     }
                 }
             }
 
-            // Only handle collisions if player exists (not in WIN/TITLE state)
-            if (m_player) {
+            // Only handle collisions if player exists and game is in PLAY state
+            if (m_player && m_state == GameState::PLAY) {
+                udj::core::Logger::debug(
+                    "Calling player handle_collision (state=PLAY)");
                 m_player->handle_collision(m_actors);
+            } else if (m_player) {
+                udj::core::Logger::debug(
+                    "Skipping player handle_collision (state != PLAY)");
             }
 
-            // Handle collision for all monsters
-            for (auto &actor : m_actors) {
-                if (actor->get_group_id() == 3) {  // Monster group ID
-                    Monster *monster = dynamic_cast<Monster *>(actor.get());
-                    if (monster) {
-                        monster->handle_collision(m_actors);
+            // Handle collision for all monsters (only during gameplay)
+            if (m_state == GameState::PLAY) {
+                for (auto &actor : m_actors) {
+                    if (actor->get_group_id() == 3) {  // Monster group ID
+                        Monster *monster = dynamic_cast<Monster *>(actor.get());
+                        if (monster) {
+                            monster->handle_collision(m_actors);
+                        }
                     }
                 }
+            }
+
+            // Clean up player after collisions are processed (deferred
+            // destruction)
+            if ((m_state == GameState::GAMEOVER || m_state == GameState::WIN) &&
+                m_player) {
+                udj::core::Logger::debug(
+                    "Cleaning up player after game over/win");
+                m_player.reset();
             }
         }
 
@@ -1719,6 +1106,19 @@ void process_bonus_(IGame &game, std::stringstream &token_stream) {
 }
 
 void Game::on_notify(const std::string &iEvent) {
+    // Queue the notification for processing at safe time
+    m_pending_notifications.push_back(iEvent);
+}
+
+void Game::process_pending_notifications() {
+    // Process all queued notifications
+    for (const auto &event : m_pending_notifications) {
+        process_notification_immediate(event);
+    }
+    m_pending_notifications.clear();
+}
+
+void Game::process_notification_immediate(const std::string &iEvent) {
     std::stringstream str_stream(iEvent);
     std::string token;
     int mode = 0;
@@ -1747,19 +1147,18 @@ void Game::on_notify(const std::string &iEvent) {
                 return;
             }
             m_state = GameState::GAMEOVER;
-            auto *comp = m_hud_manager.get_component_by_type("ScoreHUD");
-            if (comp != nullptr) {
-                auto *score_hud = static_cast<ScoreHUD *>(comp);
-                m_score_history.add_score(score_hud->get_score());
-                score_hud->set_score(0);  // Reset HUD
-            }
+            // Save current score to history and final score for display
+            m_score_history.add_score(m_score);
+            m_final_score = m_score;
 
             // Load game over screen with widgets
             std::string gameover_path = udjourney::coreutils::get_assets_path(
                 "levels/game_over_screen.json");
             if (load_scene(gameover_path)) {
-                // Clean up gameplay objects
-                m_player.reset();
+                // DON'T destroy player immediately - defer until after current
+                // frame This prevents destroying the player while it's still
+                // executing The player will be cleaned up at the end of update
+                // loop
                 m_hud_manager.clear_background_huds();
 
                 // Remove all actors except widgets
@@ -1773,8 +1172,9 @@ void Game::on_notify(const std::string &iEvent) {
                     m_actors.end());
 
                 // Load game over screen widgets
-                load_widgets_from_scene();
+                create_huds_from_scene();
                 m_rect.y = 0;  // Reset camera
+                m_score = 0;   // Reset score for next game
             }
         } break;
         case kModeScoring:
@@ -1783,8 +1183,9 @@ void Game::on_notify(const std::string &iEvent) {
             if (std::optional<int16_t> score_inc_opt = extract_number_(token);
                 score_inc_opt.has_value()) {
                 m_score += score_inc_opt.value();
-                std::cout << "Score updated: +" << score_inc_opt.value()
-                          << " (Total: " << m_score << ")" << std::endl;
+                udj::core::Logger::info("Score updated: +% (Total: %)",
+                                        score_inc_opt.value(),
+                                        m_score);
             }
             break;
         case kModeBonus:
@@ -1798,7 +1199,7 @@ void Game::on_notify(const std::string &iEvent) {
             udjourney::Logger::debug(" dash event : %", token);
             if (std::optional<int16_t> dash_opt = extract_number_(token);
                 dash_opt.has_value()) {
-                dash_fud.dashable = dash_opt.value();
+                dash_hud.dashable = dash_opt.value();
             }
             break;
         case kModeAttack:
@@ -1822,13 +1223,41 @@ void Game::on_checkpoint_reached(float x, float y) const {
 
 Player *Game::get_player() const { return m_player.get(); }
 
+const DashHud &Game::get_dash_hud() const { return dash_hud; }
+
+void Game::init_state_renderers_() {
+    m_state_renderers[GameState::TITLE] = std::make_unique<UiScreenRenderer>();
+    m_state_renderers[GameState::PLAY] = std::make_unique<PlayStateRenderer>();
+    m_state_renderers[GameState::PAUSE] =
+        std::make_unique<PauseStateRenderer>();
+    m_state_renderers[GameState::GAMEOVER] =
+        std::make_unique<UiScreenRenderer>();
+    m_state_renderers[GameState::WIN] = std::make_unique<UiScreenRenderer>();
+}
+
 // Scene system implementations
 bool Game::load_scene(const std::string &filename) {
+    // Clear background manager before destroying old scene to avoid dangling
+    // pointers
+    m_background_manager.clear();
+
     m_current_scene = std::make_unique<udjourney::scene::Scene>();
     if (!m_current_scene->load_from_file(filename)) {
         m_current_scene.reset();
+        m_background_manager.clear();
         return false;
     }
+
+    // Track the current scene filename for restart functionality
+    m_current_scene_filename = filename;
+
+    // Track gameplay levels separately so we can restart from game over screen
+    if (m_current_scene->get_type() == udjourney::scene::SceneType::Level) {
+        m_last_gameplay_level_filename = filename;
+    }
+
+    // Bind background system to the new scene (sort layers + preload textures)
+    m_background_manager.set_scene(*m_current_scene);
 
     // Update world bounds based on scene content
     // Calculate scene bounds by finding the rightmost and bottommost platforms
@@ -1849,8 +1278,40 @@ bool Game::load_scene(const std::string &filename) {
 
     // Update world bounds with calculated max values
     m_world_bounds.set_bounds(0.0f, max_x, 0.0f, max_y);
-
     return true;
+}
+
+void Game::create_huds_from_scene() {
+    // Important: Clear scene HUDs FIRST to destroy objects while scene is still
+    // valid
+    m_scene_huds.clear();
+
+    // Then clear event handlers to prevent dangling callbacks
+    m_event_dispatcher.clear_handlers(
+        udjourney::core::events::WeaponSelectedEvent::TYPE);
+
+    if (!m_current_scene) {
+        return;
+    }
+
+    // Remove previously-created scene widgets to avoid duplicates when
+    // reloading UI scenes
+    m_actors.erase(std::remove_if(m_actors.begin(),
+                                  m_actors.end(),
+                                  [](const std::unique_ptr<IActor> &actor) {
+                                      return actor && actor->get_group_id() ==
+                                                          4;  // Widget group
+                                  }),
+                   m_actors.end());
+
+    auto built = UiFactory::create(*m_current_scene, *this, m_event_dispatcher);
+
+    m_scene_huds = std::move(built.scene_huds);
+    for (auto &widget_actor : built.widget_actors) {
+        m_actors.push_back(std::move(widget_actor));
+    }
+
+    m_selected_widget_index = 0;
 }
 
 void Game::create_platforms_from_scene() {
@@ -1872,149 +1333,19 @@ void Game::create_platforms_from_scene() {
             platform_data.width_tiles,
             platform_data.height_tiles);
 
-        // Track the lowest platform for win condition
+        // Update level height based on platform bottom
+        // It will determine ther end of the level for win condition
+        // If this line is removed, the level height will remain 0,
+        // winning without playing through the level
         float platform_bottom = world_rect.y + world_rect.height;
         if (platform_bottom > m_level_height) {
             m_level_height = platform_bottom;
         }
 
-        // Create platform with appropriate color based on behavior
-        Color platform_color = BLUE;  // Default color
-        switch (platform_data.behavior_type) {
-            case udjourney::scene::PlatformBehaviorType::Horizontal:
-                platform_color = GREEN;
-                break;
-            case udjourney::scene::PlatformBehaviorType::EightTurnHorizontal:
-                platform_color = ORANGE;
-                break;
-            case udjourney::scene::PlatformBehaviorType::OscillatingSize:
-                platform_color = PURPLE;
-                break;
-            case udjourney::scene::PlatformBehaviorType::Static:
-            default:
-                platform_color = BLUE;
-                break;
-        }
-
-        // Add spikes color indication
-        bool has_spikes = false;
-        for (auto feature : platform_data.features) {
-            if (feature == udjourney::scene::PlatformFeatureType::Spikes) {
-                platform_color = RED;
-                has_spikes = true;
-                break;
-            }
-        }
-
-        // Scene-based platforms should not be reused to avoid cluttering the
-        // screen Default constructor uses nullptr reuse strategy (no reuse)
-        auto platform = std::make_unique<Platform>(*this,
-                                                   world_rect,
-                                                   platform_color,
-                                                   false);  // not Y-repeated
-
-        // Set behavior based on platform data
-        switch (platform_data.behavior_type) {
-            case udjourney::scene::PlatformBehaviorType::Horizontal: {
-                float speed = 50.0f;          // Default speed
-                float range = 100.0f;         // Default range
-                float initial_offset = 0.0f;  // Default starting offset
-
-                if (platform_data.behavior_params.count("speed")) {
-                    speed = platform_data.behavior_params.at("speed") *
-                            10.0f;  // Scale for pixels
-                }
-                if (platform_data.behavior_params.count("range")) {
-                    range = platform_data.behavior_params.at("range") *
-                            32.0f;  // Convert tiles to pixels
-                }
-                if (platform_data.behavior_params.count("initial_offset")) {
-                    initial_offset =
-                        platform_data.behavior_params.at("initial_offset") *
-                        32.0f;  // Convert tiles to pixels
-                }
-
-                platform->set_behavior(
-                    std::make_unique<HorizontalBehaviorStrategy>(
-                        speed, range, initial_offset));
-                break;
-            }
-            case udjourney::scene::PlatformBehaviorType::EightTurnHorizontal: {
-                float speed = 1.0f;        // Default speed
-                float amplitude = 100.0f;  // Default amplitude
-
-                if (platform_data.behavior_params.count("speed")) {
-                    speed = platform_data.behavior_params.at("speed");
-                }
-                if (platform_data.behavior_params.count("amplitude")) {
-                    amplitude = platform_data.behavior_params.at("amplitude") *
-                                32.0f;  // Convert tiles to pixels
-                }
-
-                platform->set_behavior(
-                    std::make_unique<EightTurnHorizontalBehaviorStrategy>(
-                        speed, amplitude));
-                break;
-            }
-            case udjourney::scene::PlatformBehaviorType::OscillatingSize: {
-                float speed = 2.0f;        // Default speed
-                float min_scale = -50.0f;  // Default min scale
-                float max_scale = 50.0f;   // Default max scale
-
-                if (platform_data.behavior_params.count("speed")) {
-                    speed = platform_data.behavior_params.at("speed");
-                }
-                if (platform_data.behavior_params.count("min_scale")) {
-                    min_scale =
-                        (platform_data.behavior_params.at("min_scale") - 1.0f) *
-                        world_rect.width;
-                }
-                if (platform_data.behavior_params.count("max_scale")) {
-                    max_scale =
-                        (platform_data.behavior_params.at("max_scale") - 1.0f) *
-                        world_rect.width;
-                }
-
-                platform->set_behavior(
-                    std::make_unique<OscillatingSizeBehaviorStrategy>(
-                        speed, min_scale, max_scale));
-                break;
-            }
-            case udjourney::scene::PlatformBehaviorType::Static:
-            default:
-                // No behavior needed for static platforms
-                break;
-        }
-
-        // Add features
-        udjourney::Logger::info("Processing platform at (%, %) with % features",
-                                platform_data.tile_x,
-                                platform_data.tile_y,
-                                platform_data.features.size());
-        for (auto feature : platform_data.features) {
-            if (feature == udjourney::scene::PlatformFeatureType::Spikes) {
-                platform->add_feature(std::make_unique<SpikeFeature>());
-                udjourney::Logger::info(
-                    "Added spikes feature to platform at (%, %)",
-                    platform_data.tile_x,
-                    platform_data.tile_y);
-            } else if (feature ==
-                       udjourney::scene::PlatformFeatureType::Checkpoint) {
-                udjourney::Logger::info(
-                    "Creating checkpoint platform at tile_x=%, tile_y=%",
-                    platform_data.tile_x,
-                    platform_data.tile_y);
-                platform->add_feature(std::make_unique<CheckpointFeature>());
-                // Set checkpoint platform color to distinguish it
-                platform_color = ORANGE;
-            }
-        }
-
+        auto platform =
+            PlatformFactory::create(*this, world_rect, platform_data);
         m_actors.emplace_back(std::move(platform));
     }
-
-    // Note: Border collision is now handled by WorldBounds system
-    // No need to create physical border platforms
 }
 
 void Game::create_monsters_from_scene() {
@@ -2022,102 +1353,46 @@ void Game::create_monsters_from_scene() {
         return;  // No scene loaded, no monsters to spawn
     }
 
-    const auto &monster_spawns = m_current_scene->get_monster_spawns();
+    const auto &monster_spawn_data = m_current_scene->get_monster_spawns();
+    MonsterFactory factory(*this, m_event_dispatcher);
 
-    for (const auto &monster_data : monster_spawns) {
+    // Set physics config from scene
+    factory.set_physics_config(m_current_scene->get_physics_config());
+
+    for (const auto &monster_data : monster_spawn_data) {
         try {
-            std::cout << "DEBUG: Creating monster with preset: "
-                      << monster_data.preset_name << std::endl;
+            // Use MonsterFactory to create the monster
+            auto monster = factory.create_actor_from_monster_data(monster_data);
 
-            // Convert tile coordinates to world coordinates
-            Vector2 world_pos = udjourney::scene::Scene::tile_to_world_pos(
-                monster_data.tile_x, monster_data.tile_y);
-
-            Rectangle monster_rect = {
-                world_pos.x,
-                world_pos.y,
-                64.0f,  // Monster width
-                64.0f   // Monster height
-            };
-
-            // First load the monster preset to get animation configuration
-            std::unique_ptr<udjourney::MonsterPreset> preset;
-            if (!monster_data.preset_name.empty()) {
-                preset = udjourney::MonsterPresetLoader::load_preset(
-                    monster_data.preset_name + ".json");
+            // Register the monster as an observable with the game
+            if (auto *monster_ptr = dynamic_cast<Monster *>(monster.get())) {
+                monster_ptr->add_observer(static_cast<IObserver *>(this));
             }
-
-            // Get animation preset file from the monster preset
-            std::string animation_file =
-                "monster_animations.json";  // Default fallback
-            if (preset && !preset->animation_preset_file.empty()) {
-                animation_file = preset->animation_preset_file;
-            }
-
-            // Load monster animation configuration from the preset
-            std::string anim_preset_path =
-                std::string(ASSETS_BASE_PATH) + "animations/" + animation_file;
-            if (!udjourney::coreutils::file_exists(anim_preset_path)) {
-                throw std::runtime_error(
-                    "Monster animation config file not found: " +
-                    anim_preset_path);
-            }
-
-            AnimSpriteController monster_anim_controller =
-                udjourney::loaders::AnimationConfigLoader::load_and_create(
-                    anim_preset_path);
-
-            std::cout << "DEBUG: Creating monster..." << std::endl;
-
-            // Create monster with EventDispatcher
-            auto monster =
-                std::make_unique<Monster>(*this,
-                                          monster_rect,
-                                          std::move(monster_anim_controller),
-                                          m_event_dispatcher);
-
-            std::cout << "DEBUG: Monster created successfully!" << std::endl;
-
-            // Load preset if specified (this will apply all preset data)
-            if (!monster_data.preset_name.empty()) {
-                monster->load_preset(monster_data.preset_name);
-            }
-
-            // Configure monster behavior ranges
-            float patrol_min = world_pos.x - (monster_data.patrol_range / 2.0f);
-            float patrol_max = world_pos.x + (monster_data.patrol_range / 2.0f);
-            monster->set_patrol_range(patrol_min, patrol_max);
-            monster->set_chase_range(monster_data.chase_range);
-            monster->set_attack_range(monster_data.attack_range);
-
-            udjourney::Logger::info(
-                "Spawned monster at tile (%, %), world pos (%, %)",
-                monster_data.tile_x,
-                monster_data.tile_y,
-                world_pos.x,
-                world_pos.y);
-
-            // Register the monster as an observable with the game (like Player
-            // and BonusManager)
-            monster->add_observer(static_cast<IObserver *>(this));
 
             m_actors.emplace_back(std::move(monster));
         } catch (const std::exception &e) {
-            std::cerr << "ERROR: Failed to create monster: " << e.what()
-                      << std::endl;
+            Logger::error("Failed to create monster: " + std::string(e.what()));
             continue;
         } catch (...) {
-            std::cerr << "ERROR: Unknown exception while creating monster"
-                      << std::endl;
+            Logger::error("Unknown exception while creating monster");
             continue;
         }
     }
 
     udjourney::Logger::info("Spawned % monsters from scene",
-                            monster_spawns.size());
+                            monster_spawn_data.size());
 }
 
 void Game::restart_level() {
+    // Reload the current scene from file to ensure we have fresh data
+    if (!m_current_scene_filename.empty() && m_current_scene) {
+        if (!m_current_scene->load_from_file(m_current_scene_filename)) {
+            Logger::error("Failed to reload scene for restart: %",
+                          m_current_scene_filename);
+            return;
+        }
+    }
+
     // Reset game state
     m_state = GameState::PLAY;
 
@@ -2127,25 +1402,13 @@ void Game::restart_level() {
     // Respawn monsters from scene
     create_monsters_from_scene();
 
-    // Reset player position
-
-    // Set initial checkpoint if starting fresh
+    // Recreate player with updated physics config from reloaded scene
     if (m_current_scene) {
-        auto spawn_data = m_current_scene->get_player_spawn();
-        m_last_checkpoint = udjourney::scene::Scene::tile_to_world_pos(
-            spawn_data.tile_x, spawn_data.tile_y);
-    }
-
-    // Reset player at last checkpoint
-    if (m_player) {
-        m_player->set_rectangle(
-            Rectangle{m_last_checkpoint.x, m_last_checkpoint.y, 20, 20});
+        create_player();
         m_player->set_invicibility(1.8f);  // Brief invincibility after restart
 
-        // Reset player health to full
-        if (auto *health = m_player->get_component<HealthComponent>()) {
-            health->heal(health->get_max_health());  // Restore to max health
-        }
+        // Create HUD objects from scene
+        create_huds_from_scene();
     }
 
     // Reset game rect position
@@ -2153,49 +1416,26 @@ void Game::restart_level() {
 }
 
 void Game::show_level_select_menu() {
-    m_showing_level_select = true;
-
-    // Create level select HUD
-    Rectangle menu_rect = {
-        m_rect.width * 0.2f,    // 20% from left
-        m_rect.height * 0.15f,  // 15% from top
-        m_rect.width * 0.6f,    // 60% width
-        m_rect.height * 0.7f    // 70% height
-    };
-
-    std::string levels_dir = udjourney::coreutils::get_assets_path("levels");
-    auto level_select_hud =
-        std::make_unique<LevelSelectHUD>(menu_rect, levels_dir);
-
-    // Set callbacks
-    level_select_hud->set_on_level_selected_callback(
+    m_level_select_manager.show(
         [this](const std::string &level_path) {
             on_level_selected(level_path);
-        });
-
-    level_select_hud->set_on_cancelled_callback(
+        },
         [this]() { on_level_select_cancelled(); });
-
-    // Add to HUD manager
-    m_hud_manager.push_foreground_hud(std::move(level_select_hud));
-}
-
-void Game::hide_level_select_menu() {
-    m_showing_level_select = false;
-    m_hud_manager.pop_foreground_hud();
 }
 
 void Game::on_level_selected(const std::string &level_path) {
-    // Hide the level select menu
-    hide_level_select_menu();
+    // Hide the level select menu first
+    m_level_select_manager.hide();
 
     // Load the selected level
     if (load_scene(level_path)) {
         // Successfully loaded new level - restart with new level
+        hide_game_menu();
         restart_level();
-        std::cout << "Loaded level: " << level_path << std::endl;
+
+        udj::core::Logger::info("Level selected: %", level_path);
     } else {
-        std::cerr << "Failed to load level: " << level_path << std::endl;
+        udj::core::Logger::error("Failed to load level: %", level_path);
         // Still return to game even if level failed to load
         m_state = GameState::PLAY;
     }
@@ -2203,7 +1443,29 @@ void Game::on_level_selected(const std::string &level_path) {
 
 void Game::on_level_select_cancelled() {
     // Hide the level select menu and return to pause menu
-    hide_level_select_menu();
+    m_level_select_manager.hide();
+}
+
+void Game::show_game_menu() {
+    if (m_menu_manager.is_showing()) return;
+
+    m_state = GameState::PAUSE;
+
+    m_menu_manager.show_game_menu(m_current_scene.get(),
+                                  [this]() { hide_game_menu(); });
+}
+
+void Game::hide_game_menu() {
+    if (!m_menu_manager.is_showing()) return;
+
+    m_menu_manager.hide_game_menu();
+
+    // Only resume gameplay if we're still paused.
+    // Menu actions may have transitioned the game to a different UI state
+    // (e.g., TITLE/LEVEL_SELECT), and we must not overwrite that here.
+    if (m_state == GameState::PAUSE) {
+        m_state = GameState::PLAY;
+    }
 }
 
 void Game::attack_nearby_monsters() {
@@ -2215,9 +1477,8 @@ void Game::attack_nearby_monsters() {
     Rectangle player_rect = m_player->get_rectangle();
     Vector2 player_center = {player_rect.x + player_rect.width / 2.0f,
                              player_rect.y + player_rect.height / 2.0f};
-
-    std::cout << "Player attack! Looking for monsters within " << ATTACK_RANGE
-              << " pixels..." << std::endl;
+    udj::core::Logger::info(
+        "Player at position: %, %", player_center.x, player_center.y);
 
     int monsters_hit = 0;
 
@@ -2237,8 +1498,8 @@ void Game::attack_nearby_monsters() {
                 float distance = sqrt(dx * dx + dy * dy);
 
                 if (distance <= ATTACK_RANGE) {
-                    std::cout << "Attacking monster at distance " << distance
-                              << std::endl;
+                    udj::core::Logger::info("Attacking monster at distance %",
+                                            distance);
                     monster->take_damage(ATTACK_DAMAGE);
                     monsters_hit++;
                 }
@@ -2247,44 +1508,30 @@ void Game::attack_nearby_monsters() {
     }
 
     if (monsters_hit == 0) {
-        std::cout << "No monsters in range to attack." << std::endl;
+        udj::core::Logger::info("No monsters in range to attack.");
     } else {
-        std::cout << "Hit " << monsters_hit << " monsters!" << std::endl;
+        udj::core::Logger::info("Hit % monsters!", monsters_hit);
     }
-}
-
-void Game::load_widgets_from_scene() {
-    if (!m_current_scene) {
-        return;
-    }
-
-    // Extract ALL widget FUD elements
-    const auto &fuds = m_current_scene->get_fuds();
-    for (const auto &fud : fuds) {
-        // Try to create widget using factory (supports all widget types)
-        auto widget = WidgetFactory::create_from_fud(fud, *this);
-        if (widget) {
-            m_actors.push_back(std::move(widget));
-        }
-    }
-
-    m_selected_widget_index = 0;
 }
 
 void Game::register_menu_actions() {
-    // Start Game action
+    // Start Game action (restart last gameplay level or load level1 if no level
+    // was played)
     ActionDispatcher::register_action(
         "start_game", [](IGame *game, const std::vector<std::string> &params) {
-            std::cout << "[ACTION] Start Game triggered" << std::endl;
-            auto *g = dynamic_cast<Game *>(game);
-            if (g) {
-                // Load level1 scene first
+            udj::core::Logger::info("[ACTION] Start Game triggered");
+            auto &g = static_cast<Game &>(*game);
+
+            // If we have a last gameplay level, load and restart it
+            if (!g.m_last_gameplay_level_filename.empty()) {
+                g.m_state = GameState::PLAY;
+                g.load_and_apply_scene(g.m_last_gameplay_level_filename);
+            } else {
+                // Load level1 scene (for initial game start)
                 std::string level_path =
                     udjourney::coreutils::get_assets_path("levels/level1.json");
-                if (g->load_scene(level_path)) {
-                    g->m_state = GameState::PLAY;
-                    g->initialize_gameplay();
-                }
+                g.m_state = GameState::PLAY;
+                g.load_and_apply_scene(level_path);
             }
         });
 
@@ -2295,82 +1542,78 @@ void Game::register_menu_actions() {
 
             // params[0] is the filename (e.g., "level1.json")
             std::string filename = params[0];
-            std::cout << "[ACTION] Load Level: " << filename << std::endl;
+            Logger::info("[ACTION] Load Level: " + filename);
 
-            auto *g = dynamic_cast<Game *>(game);
-            if (g) {
-                std::string level_path =
-                    udjourney::coreutils::get_assets_path("levels/" + filename);
-                if (g->load_scene(level_path)) {
-                    g->m_state = GameState::PLAY;
-                    g->initialize_gameplay();
-                }
-            }
+            auto &g = static_cast<Game &>(*game);
+
+            std::string level_path =
+                udjourney::coreutils::get_assets_path("levels/" + filename);
+            g.m_state = GameState::PLAY;
+            g.load_and_apply_scene(level_path);
         });
 
     // Show Level Select action
     ActionDispatcher::register_action(
         "show_level_select",
         [](IGame *game, const std::vector<std::string> &params) {
-            std::cout << "[ACTION] ===== Show Level Select triggered ====="
-                      << std::endl;
-            auto *g = dynamic_cast<Game *>(game);
-            if (g) {
-                std::string level_select_path =
-                    udjourney::coreutils::get_assets_path(
-                        "levels/level_select_screen.json");
+            Logger::info("[ACTION] ===== Show Level Select triggered =====");
+            auto &captured_game = static_cast<Game &>(*game);
+            std::string level_select_path =
+                udjourney::coreutils::get_assets_path(
+                    "levels/level_select_screen.json");
+            // Now load the new scene
+            if (captured_game.load_scene(level_select_path)) {
+                captured_game.m_state = GameState::TITLE;
 
-                // Clean up ALL actors first (including old widgets)
-                g->m_player.reset();
-                g->m_hud_manager.clear_background_huds();
-                g->m_actors.clear();
+                // Load level select screen widgets
+                // captured_game->load_widgets_from_scene();
 
-                // Now load the new scene
-                if (g->load_scene(level_select_path)) {
-                    g->m_state = GameState::TITLE;
-
-                    // Load level select screen widgets
-                    g->load_widgets_from_scene();
-
-                    // Set focus to the ScrollableListWidget (should be the
-                    // first selectable widget) Find the index of the
-                    // ScrollableListWidget in the selectable widgets
-                    std::vector<IWidget *> selectable_widgets;
-                    int list_index = -1;
-                    for (const auto &actor : g->m_actors) {
-                        if (actor && actor->get_group_id() == 4) {
-                            IWidget *widget =
-                                static_cast<IWidget *>(actor.get());
-                            if (widget && widget->is_selectable()) {
-                                if (dynamic_cast<ScrollableListWidget *>(
-                                        widget)) {
-                                    list_index = static_cast<int>(
-                                        selectable_widgets.size());
-                                }
-                                selectable_widgets.push_back(widget);
+                // Set focus to the ScrollableListWidget (should be the
+                // first selectable widget) Find the index of the
+                // ScrollableListWidget in the selectable widgets
+                std::vector<IWidget *> selectable_widgets;
+                int list_index = -1;
+                for (const auto &actor : captured_game.m_actors) {
+                    if (actor && actor->get_group_id() == 4) {
+                        IWidget *widget = static_cast<IWidget *>(actor.get());
+                        if (widget && widget->is_selectable()) {
+                            if (dynamic_cast<ScrollableListWidget *>(widget)) {
+                                list_index =
+                                    static_cast<int>(selectable_widgets.size());
                             }
+                            selectable_widgets.push_back(widget);
                         }
                     }
-
-                    // Focus the list widget (or default to 0 if not found)
-                    g->m_selected_widget_index =
-                        (list_index >= 0) ? list_index : 0;
-
-                    // Reset frame counter to prevent immediate input
-                    g->m_frames_since_scene_load = 0;
-
-                    std::cout << "[ACTION] Level select screen loaded with "
-                              << g->m_actors.size()
-                              << " actors, focus on widget "
-                              << g->m_selected_widget_index << std::endl;
                 }
+
+                // Focus the list widget (or default to 0 if not found)
+                captured_game.m_selected_widget_index =
+                    (list_index >= 0) ? list_index : 0;
+
+                // Reset frame counter to prevent immediate input
+                captured_game.m_frames_since_scene_load = 0;
+                captured_game.apply_current_scene();
+                Logger::info(
+                    "[ACTION] Level select screen loaded with " +
+                    std::to_string(captured_game.m_actors.size()) +
+                    " actors, focus on widget " +
+                    std::to_string(captured_game.m_selected_widget_index));
             }
+        });
+
+    // Show Level Select action
+    ActionDispatcher::register_action(
+        "show_level_select2",
+        [](IGame *game, const std::vector<std::string> &params) {
+            auto &captured_game = static_cast<Game &>(*game);
+            // Don't hide the game menu, just show level select on top
+            captured_game.show_level_select_menu();
         });
 
     // Quit Game action
     ActionDispatcher::register_action(
         "quit_game", [](IGame *game, const std::vector<std::string> &params) {
-            std::cout << "[ACTION] Quit Game triggered" << std::endl;
+            Logger::info("[ACTION] Quit Game triggered");
 #ifndef PLATFORM_DREAMCAST
             CloseWindow();
 #endif
@@ -2380,40 +1623,42 @@ void Game::register_menu_actions() {
     ActionDispatcher::register_action(
         "show_options",
         [](IGame *game, const std::vector<std::string> &params) {
-            std::cout << "[ACTION] Show Options triggered (not implemented)"
-                      << std::endl;
+            Logger::info("[ACTION] Show Options triggered (not implemented)");
         });
 
     // Return to Title action
     ActionDispatcher::register_action(
         "return_to_title",
         [](IGame *game, const std::vector<std::string> &params) {
-            std::cout << "[ACTION] Return to Title triggered" << std::endl;
-            auto *g = dynamic_cast<Game *>(game);
-            if (g) {
-                std::string title_path = udjourney::coreutils::get_assets_path(
-                    "levels/title_screen.json");
-                if (g->load_scene(title_path)) {
-                    g->m_state = GameState::TITLE;
+            Logger::info("[ACTION] Return to Title triggered");
+            auto &g = static_cast<Game &>(*game);
+            std::string title_path = udjourney::coreutils::get_assets_path(
+                "levels/title_screen.json");
+            g.m_state = GameState::TITLE;
+            g.load_and_apply_scene(title_path);
+        });
 
-                    // Clean up gameplay objects
-                    g->m_player.reset();
-                    g->m_hud_manager.clear_background_huds();
+    // Resume Game action
+    ActionDispatcher::register_action(
+        "resume_game", [](IGame *game, const std::vector<std::string> &params) {
+            Logger::info("[ACTION] Resume Game");
+            auto &g = static_cast<Game &>(*game);
+            g.hide_game_menu();
+        });
 
-                    // Remove ALL actors (including old widgets)
-                    g->m_actors.clear();
-
-                    // Load title screen widgets
-                    g->load_widgets_from_scene();
-                    g->m_rect.y = 0;                   // Reset camera
-                    g->m_selected_widget_index = 0;    // Reset widget selection
-                    g->m_frames_since_scene_load = 0;  // Reset frame counter
-                }
-            }
+    // Restart Level action
+    ActionDispatcher::register_action(
+        "restart_level",
+        [](IGame *game, const std::vector<std::string> &params) {
+            Logger::info("[ACTION] Restart Level");
+            auto &g = static_cast<Game &>(*game);
+            g.hide_game_menu();
+            g.restart_level();
         });
 }
 
 void Game::initialize_gameplay() {
+    hide_game_menu();
     // Remove all widgets from m_actors
     m_actors.erase(std::remove_if(m_actors.begin(),
                                   m_actors.end(),
@@ -2432,24 +1677,10 @@ void Game::initialize_gameplay() {
     // Spawn monsters from scene
     create_monsters_from_scene();
 
-    // Spawn player at scene-defined location or default position
-    Vector2 player_spawn_pos{320, 240};  // Default position
-    if (m_current_scene) {
-        auto spawn_data = m_current_scene->get_player_spawn();
-        player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
-            spawn_data.tile_x, spawn_data.tile_y);
-    }
+    create_player();
 
-    m_player = std::make_unique<Player>(
-        *this,
-        Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
-        m_event_dispatcher,
-        create_player_animation_controller());
-    m_player->add_observer(static_cast<IObserver *>(this));
-
-    // Load projectile presets
-    m_player->load_projectile_presets("projectiles.json");
-    m_player->set_current_projectile("bullet");
+    // Create HUD objects from scene
+    create_huds_from_scene();
 
     // Add bonus item
     m_actors.emplace_back(
@@ -2459,9 +1690,52 @@ void Game::initialize_gameplay() {
     m_score = 0;
     m_rect.y = 0;
     m_last_checkpoint = Vector2{320, 240};
-
-    // Add score HUD
-    auto score_hud =
-        std::make_unique<ScoreHUD>(Vector2{10, 50}, m_event_dispatcher);
-    m_hud_manager.add_background_hud(std::move(score_hud));
 }
+
+void Game::create_player() {
+    // Spawn player at scene-defined location or default position
+    Vector2 player_spawn_pos{320, 240};  // Default position
+    if (m_current_scene) {
+        auto spawn_data = m_current_scene->get_player_spawn();
+        player_spawn_pos = udjourney::scene::Scene::tile_to_world_pos(
+            spawn_data.tile_x, spawn_data.tile_y);
+    }
+
+    // Get physics config from scene
+    const auto &physics_config = m_current_scene
+                                     ? m_current_scene->get_physics_config()
+                                     : scene::LevelPhysicsConfig{};
+
+    m_player = std::make_unique<Player>(
+        *this,
+        Rectangle{player_spawn_pos.x, player_spawn_pos.y, 20, 20},
+        m_event_dispatcher,
+        create_player_animation_controller(),
+        physics_config);
+    m_player->add_observer(static_cast<IObserver *>(this));
+    auto shoot_command =
+        std::make_unique<udjourney::commands::CallbackCommand>([this]() {
+            if (m_player) {
+                const udjourney::ProjectilePreset *preset =
+                    m_player->get_current_projectile_preset();
+                if (preset) {
+                    auto projectile = std::make_unique<udjourney::Projectile>(
+                        *this,
+                        *preset,
+                        m_player->get_shoot_position(),
+                        m_player->get_shoot_direction());
+                    add_actor(std::move(projectile));
+                    m_player->reset_shoot_cooldown();
+                    udj::core::Logger::info("Projectile spawned!");
+                } else {
+                    udj::core::Logger::warning("No projectile preset found!");
+                }
+            }
+        });
+    m_player->add_command("shoot_projectile", std::move(shoot_command));
+
+    // Load projectile presets
+    m_player->load_projectile_presets("projectiles.json");
+    m_player->set_current_projectile("bullet");
+}
+}  // namespace udjourney

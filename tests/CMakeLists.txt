@@ -34,6 +34,7 @@ target_sources(updown_journey_tests
         ${CMAKE_SOURCE_DIR}/src/udjourney/src/platform/reuse_strategies/RandomizePositionStrategy.cpp
         ${CMAKE_SOURCE_DIR}/src/udjourney/src/platform/reuse_strategies/NoReuseStrategy.cpp
         ${CMAKE_SOURCE_DIR}/src/udjourney/src/platform/behavior_strategies/PlatformBehaviorStrategy.cpp
+        ${CMAKE_SOURCE_DIR}/src/udjourney/src/managers/TextureManager.cpp
 )
 
 # Set C++ standard

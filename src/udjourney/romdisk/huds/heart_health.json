@@ -1,0 +1,63 @@
+{
+  "type_id": "heart_health",
+  "display_name": "Heart Health",
+  "category": "StatusDisplay",
+  "description": "Health displayed as individual hearts (e.g., Zelda-style)",
+  "default_size": {
+    "x": 96.0,
+    "y": 32.0
+  },
+  "default_anchor": "TopLeft",
+  "properties_schema": {
+    "max_hearts": {
+      "type": "integer",
+      "default": 3,
+      "description": "Maximum number of hearts to display"
+    },
+    "current_hearts": {
+      "type": "integer",
+      "default": 3,
+      "description": "Current number of hearts (can be fractional in game)"
+    },
+    "heart_spacing": {
+      "type": "integer",
+      "default": 32,
+      "description": "Pixels between each heart"
+    },
+    "show_empty_hearts": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show empty heart outlines when damaged"
+    },
+    "heart_full_sprite": {
+      "type": "object",
+      "default": {
+        "sheet": "ui/ui_elements.png",
+        "tile_size": 64,
+        "tile_row": 1,
+        "tile_col": 0
+      },
+      "description": "Sprite for full heart"
+    },
+    "heart_half_sprite": {
+      "type": "object",
+      "default": {
+        "sheet": "ui/ui_elements.png",
+        "tile_size": 64,
+        "tile_row": 1,
+        "tile_col": 2
+      },
+      "description": "Sprite for half heart"
+    },
+    "heart_empty_sprite": {
+      "type": "object",
+      "default": {
+        "sheet": "ui/ui_elements.png",
+        "tile_size": 64,
+        "tile_row": 1,
+        "tile_col": 1
+      },
+      "description": "Sprite for empty heart"
+    }
+  }
+}

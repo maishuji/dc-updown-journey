@@ -29,7 +29,14 @@
   },
   "state_config": {
     "initial_state": "idle",
-    "available_states": ["idle", "patrol", "chase", "attack", "hurt", "death"],
+    "available_states": [
+      "idle",
+      "patrol",
+      "chase",
+      "attack",
+      "hurt",
+      "death"
+    ],
     "transitions": [
       {
         "from_state": "idle",

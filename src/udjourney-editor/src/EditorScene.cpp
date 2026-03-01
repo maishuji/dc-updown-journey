@@ -16,15 +16,19 @@
 
 #include <nlohmann/json.hpp>
 #include "udj-core/CoreUtils.hpp"
+#include "udj-core/Logger.hpp"
+#include "udjourney-editor/EditorSettings.hpp"
+#include "udjourney-editor/PlatformPresetManager.hpp"
 
-// FUD Renderer includes
-#include "udjourney-editor/fud/IFUDRenderer.hpp"
-#include "udjourney-editor/fud/ButtonFUDRenderer.hpp"
-#include "udjourney-editor/fud/HealthBarFUDRenderer.hpp"
-#include "udjourney-editor/fud/HeartHealthFUDRenderer.hpp"
-#include "udjourney-editor/fud/ScoreDisplayFUDRenderer.hpp"
-#include "udjourney-editor/fud/ScrollableListFUDRenderer.hpp"
-#include "udjourney-editor/fud/TimerFUDRenderer.hpp"
+// HUD Renderer includes
+#include "udjourney-editor/hud/IHUDRenderer.hpp"
+#include "udjourney-editor/hud/ButtonHUDRenderer.hpp"
+#include "udjourney-editor/hud/HealthBarHUDRenderer.hpp"
+#include "udjourney-editor/hud/HeartHealthHUDRenderer.hpp"
+#include "udjourney-editor/hud/ScoreDisplayHUDRenderer.hpp"
+#include "udjourney-editor/hud/ScrollableListHUDRenderer.hpp"
+#include "udjourney-editor/hud/TimerHUDRenderer.hpp"
+#include "udjourney-editor/hud/WeaponHUDRenderer.hpp"
 
 // Simple texture cache for editor
 static std::unordered_map<std::string, Texture2D> texture_cache;
@@ -59,6 +63,31 @@ static void draw_dashed_line(ImDrawList* draw_list, const ImVec2& p1,
         draw_dash = !draw_dash;
     }
 }
+namespace {
+
+void render_every_5_tiles_hints(ImDrawList* draw_list, const ImVec2& origin,
+                                const Level& level, float tile_size_) {
+    constexpr float SCREEN_WIDTH = 640.0f;
+    constexpr float SCREEN_HEIGHT = 480.0f;
+    float level_height = level.row_cnt * tile_size_;
+    float max_scroll = std::max(0.0f, level_height - SCREEN_HEIGHT);
+
+    // Draw guide lines every 5 tiles
+    for (int row = 0; row <= level.row_cnt; row += 5) {
+        float scene_y = row * 32.0f;
+
+        // Draw horizontal line across the scene at scene_y
+        ImVec2 line_start(origin.x, origin.y + scene_y);
+        ImVec2 line_end(origin.x + SCREEN_WIDTH, origin.y + scene_y);
+
+        draw_list->AddLine(line_start,
+                           line_end,
+                           IM_COL32(0, 0, 255, 100),
+                           1.0f);  // Semi-transparent blue line
+    }
+}
+
+}  // namespace
 
 Texture2D load_texture_cached(const std::string& filename) {
     auto iter = texture_cache.find(filename);
@@ -90,39 +119,41 @@ struct EditorScene::PImpl {
     // Implementation details can be added here in the future
 };
 
-// Initialize FUD renderers on first use
+// Initialize HUD renderers on first use
 static void initialize_fud_renderers() {
     static bool initialized = false;
     if (initialized) return;
 
-    auto& factory = FUDRendererFactory::instance();
+    auto& factory = HUDRendererFactory::instance();
 
     // Register button renderers
     factory.register_renderer("menu_button",
-                              std::make_unique<ButtonFUDRenderer>());
+                              std::make_unique<ButtonHUDRenderer>());
     factory.register_renderer("small_button",
-                              std::make_unique<ButtonFUDRenderer>());
+                              std::make_unique<ButtonHUDRenderer>());
     factory.register_renderer("large_button",
-                              std::make_unique<ButtonFUDRenderer>());
+                              std::make_unique<ButtonHUDRenderer>());
     factory.register_renderer("icon_button",
-                              std::make_unique<ButtonFUDRenderer>());
+                              std::make_unique<ButtonHUDRenderer>());
     factory.register_renderer("textured_button",
-                              std::make_unique<ButtonFUDRenderer>());
+                              std::make_unique<ButtonHUDRenderer>());
 
     // Register health/display renderers
     factory.register_renderer("heart_health",
-                              std::make_unique<HeartHealthFUDRenderer>());
+                              std::make_unique<HeartHealthHUDRenderer>());
     factory.register_renderer("healthbar",
-                              std::make_unique<HealthBarFUDRenderer>());
+                              std::make_unique<HealthBarHUDRenderer>());
     factory.register_renderer("mana_bar",
-                              std::make_unique<HealthBarFUDRenderer>());
+                              std::make_unique<HealthBarHUDRenderer>());
     factory.register_renderer("score_display",
-                              std::make_unique<ScoreDisplayFUDRenderer>());
-    factory.register_renderer("timer", std::make_unique<TimerFUDRenderer>());
+                              std::make_unique<ScoreDisplayHUDRenderer>());
+    factory.register_renderer("weapon_display",
+                              std::make_unique<WeaponHUDRenderer>());
+    factory.register_renderer("timer", std::make_unique<TimerHUDRenderer>());
 
     // Register list renderer
     factory.register_renderer("scrollable_list",
-                              std::make_unique<ScrollableListFUDRenderer>());
+                              std::make_unique<ScrollableListHUDRenderer>());
 
     initialized = true;
 }
@@ -134,7 +165,8 @@ EditorScene::EditorScene() : pimpl_(std::make_unique<PImpl>()) {
 EditorScene::~EditorScene() = default;
 
 void render_cursor_(Level& level, EditorPanel& editor_panel,
-                    ImDrawList* draw_list, const ImVec2& origin) {
+                    ImDrawList* draw_list, const ImVec2& origin,
+                    bool dragging_platform) {
     auto pos = ImGui::GetMousePos();
     ImVec2 cursor_pos = origin;
 
@@ -150,12 +182,99 @@ void render_cursor_(Level& level, EditorPanel& editor_panel,
             break;
         }
         case EditMode::Platforms: {
-            // Show platform preview
+            // Show platform preview (centered on tile, matching game behavior)
+            // Calculate which tile the mouse is over
+            ImVec2 tile_pos =
+                ImVec2((pos.x - origin.x) / 32.0f, (pos.y - origin.y) / 32.0f);
+            float tile_x = tile_pos.x;
+            float tile_y = tile_pos.y;
+
+            // Apply snapping to preview (matching placement behavior, in
+            // pixels)
+            int snap_pixels = EditorSettings::instance().platform_snap;
+            if (snap_pixels > 1) {
+                // Convert to world pixels, snap, then back to tiles
+                float world_x = tile_x * 32.0f;
+                float world_y = tile_y * 32.0f;
+                world_x = std::round(world_x / snap_pixels) * snap_pixels;
+                world_y = std::round(world_y / snap_pixels) * snap_pixels;
+                tile_x = world_x / 32.0f;
+                tile_y = world_y / 32.0f;
+            }
+
+            // Calculate the center of that tile (where platform will be placed)
+            float center_x = origin.x + tile_x * 32.0f + 16.0f;
+            float center_y = origin.y + tile_y * 32.0f + 16.0f;
+
+            float width = editor_panel.get_platform_size().x * 32.0f;
+            float height = editor_panel.get_platform_size().y * 32.0f;
+
+            // Use different color when dragging vs placing new platform
+            ImU32 preview_color =
+                dragging_platform
+                    ? IM_COL32(0, 255, 0, 128)    // Green when dragging
+                    : IM_COL32(255, 45, 0, 128);  // Yellow when placing
+
             draw_list->AddRectFilled(
-                ImVec2(pos.x, pos.y),
-                ImVec2(pos.x + editor_panel.get_platform_size().x * 50,
-                       pos.y + editor_panel.get_platform_size().y * 50),
-                IM_COL32(255, 255, 0, 128));  // Semi-transparent yellow
+                ImVec2(center_x - width / 2, center_y - height / 2),
+                ImVec2(center_x + width / 2, center_y + height / 2),
+                preview_color);
+
+            // Show range preview for horizontal platforms
+            if (editor_panel.get_platform_behavior() ==
+                PlatformBehaviorType::Horizontal) {
+                auto behavior_params = editor_panel.get_behavior_params();
+                float range = 5.0f;  // Default
+                float initial_offset = 0.0f;
+
+                if (behavior_params.count("range")) {
+                    range = behavior_params.at("range");
+                }
+                if (behavior_params.count("initial_offset")) {
+                    initial_offset = behavior_params.at("initial_offset");
+                }
+
+                float range_pixels = range * 32.0f;
+                float offset_pixels = initial_offset * 32.0f;
+
+                // Calculate pivot point using center of platform (matching new
+                // game behavior)
+                float pivot_x = center_x - offset_pixels;
+
+                // In the game, the CENTER moves between pivot_x ± range
+                float center_min_x = pivot_x - range_pixels;
+                float center_max_x = pivot_x + range_pixels;
+
+                // Calculate where the edges will be at extreme positions
+                float half_width = width / 2.0f;
+                float left_edge_min = center_min_x - half_width;
+                float right_edge_max = center_max_x + half_width;
+
+                // Draw range area (full extent the platform occupies)
+                draw_list->AddRectFilled(
+                    ImVec2(left_edge_min, center_y - height / 2),
+                    ImVec2(right_edge_max, center_y + height / 2),
+                    IM_COL32(0, 255, 0, 40));
+
+                // Draw range boundaries at the extreme positions
+                draw_list->AddLine(
+                    ImVec2(left_edge_min, center_y - height / 2 - 5),
+                    ImVec2(left_edge_min, center_y + height / 2 + 5),
+                    IM_COL32(0, 200, 0, 150),
+                    2.0f);
+                draw_list->AddLine(
+                    ImVec2(right_edge_max, center_y - height / 2 - 5),
+                    ImVec2(right_edge_max, center_y + height / 2 + 5),
+                    IM_COL32(0, 200, 0, 150),
+                    2.0f);
+
+                // Draw pivot marker
+                draw_list->AddCircle(ImVec2(pivot_x, center_y),
+                                     4.0f,
+                                     IM_COL32(255, 165, 0, 180),
+                                     0,
+                                     2.0f);
+            }
             break;
         }
         default:
@@ -179,11 +298,17 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
     ImVec2 origin = ImGui::GetCursorScreenPos();
 
-    // Render the grid (background) - skip when placing background objects
-    bool is_placing_bg = editor_panel.get_edit_mode() == EditMode::Background &&
-                         editor_panel.is_background_placing_mode();
-    if (!is_placing_bg) {
+    // Render the grid (background) - skip when placing background objects or
+    // when disabled
+    bool is_placing_bg = editor_panel.get_edit_mode() == EditMode::Background;
+
+    bool show_grid = EditorSettings::instance().show_grid;
+    if (show_grid) {
         render_grid(level, draw_list, origin);
+    }
+    bool show_tiles_hints = EditorSettings::instance().show_tiles_hints;
+    if (EditorSettings::instance().show_tiles_hints) {
+        render_every_5_tiles_hints(draw_list, origin, level, tile_size_);
     }
 
     // Render background objects first (behind everything)
@@ -200,11 +325,11 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
     // Render player spawn position
     render_player_spawn(level, draw_list, origin);
 
-    // Render FUD elements
+    // Render HUD elements
     ImVec2 viewport_size = ImGui::GetContentRegionAvail();
 
-    // Draw screen boundaries when in FUD mode (Dreamcast resolution: 640x480)
-    if (editor_panel.get_edit_mode() == EditMode::FUD) {
+    // Draw screen boundaries when in HUD mode (Dreamcast resolution: 640x480)
+    if (editor_panel.get_edit_mode() == EditMode::HUD) {
         const float screen_width = 640.0f;
         const float screen_height = 480.0f;
 
@@ -214,37 +339,33 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
         ImVec2 screen_end(screen_origin.x + screen_width,
                           screen_origin.y + screen_height);
 
-        // Draw outer boundary (bright yellow)
-        draw_list->AddRect(screen_origin,
-                           screen_end,
-                           IM_COL32(255, 255, 0, 255),
-                           0.0f,
-                           0,
-                           4.0f);
+        // Draw outer boundary
+        draw_list->AddRect(
+            screen_origin, screen_end, IM_COL32(0, 255, 0, 255), 0.0f, 0, 4.0f);
 
         // Draw inner safe area guide (dimmer yellow, 10px inset)
         ImVec2 safe_origin(screen_origin.x + 10, screen_origin.y + 10);
         ImVec2 safe_end(screen_end.x - 10, screen_end.y - 10);
         draw_list->AddRect(
-            safe_origin, safe_end, IM_COL32(255, 255, 0, 100), 0.0f, 0, 1.0f);
+            safe_origin, safe_end, IM_COL32(255, 50, 0, 100), 0.0f, 0, 4.0f);
 
         // Draw center crosshair
         float center_x = screen_origin.x + screen_width * 0.5f;
         float center_y = screen_origin.y + screen_height * 0.5f;
         draw_list->AddLine(ImVec2(center_x - 10, center_y),
                            ImVec2(center_x + 10, center_y),
-                           IM_COL32(255, 255, 0, 150),
+                           IM_COL32(255, 0, 0, 150),
                            1.0f);
         draw_list->AddLine(ImVec2(center_x, center_y - 10),
                            ImVec2(center_x, center_y + 10),
-                           IM_COL32(255, 255, 0, 150),
+                           IM_COL32(255, 0, 0, 150),
                            1.0f);
 
         // Label the resolution
         char res_label[32];
         snprintf(res_label, sizeof(res_label), "640x480");
         draw_list->AddText(ImVec2(screen_origin.x + 5, screen_origin.y + 5),
-                           IM_COL32(255, 255, 0, 200),
+                           IM_COL32(255, 0, 0, 200),
                            res_label);
     }
 
@@ -327,7 +448,7 @@ void EditorScene::render(Level& level, EditorPanel& editor_panel,
         }
     }
 
-    render_cursor_(level, editor_panel, draw_list, origin);
+    render_cursor_(level, editor_panel, draw_list, origin, dragging_platform_);
 
     // Reserve space for ImGui layout
     ImGui::Dummy(
@@ -444,10 +565,67 @@ void EditorScene::setup_scene_window(const ImGuiIO& io) {
         ImGuiCond_Always);
 }
 
+void render_background_to_scene_center_hints(ImDrawList* draw_list,
+                                             const ImVec2& origin,
+                                             const Level& level,
+                                             const BackgroundLayer& layer,
+                                             float tile_size_) {
+    constexpr float SCREEN_WIDTH = 640.0f;
+    constexpr float SCREEN_HEIGHT = 480.0f;
+    float level_height = level.row_cnt * tile_size_;
+    float max_scroll = std::max(0.0f, level_height - SCREEN_HEIGHT);
+    float parallax_factor = layer.get_parallax_factor();
+    float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
+
+    const auto& selected_layer = layer;
+
+    float base_spannable_height =
+        max_scroll * (1.0f - parallax_factor) + SCREEN_HEIGHT;
+    float spannable_height = base_spannable_height + SCREEN_HEIGHT * 0.1f;
+
+    // Scene center: middle of the red-bordered platform area
+    float scene_center_x = origin.x + SCREEN_WIDTH / 2.0f;
+    float scene_center_y = origin.y + level_height / 2.0f;
+
+    // Background layer center: middle of the blue spannable area
+    // Horizontally: center of spannable width
+    float bg_center_x = origin.x + bg_horizontal_offset;
+    float bg_center_y = origin.y + spannable_height / 2.0f;
+
+    // Draw pink diagonal line connecting the two centers
+    draw_list->AddLine(ImVec2(scene_center_x, scene_center_y),
+                       ImVec2(bg_center_x, bg_center_y),
+                       IM_COL32(255, 100, 200, 220),
+                       3.0f);
+
+    // Add "C" label in the middle of the line
+    draw_list->AddText(ImVec2((scene_center_x + bg_center_x) / 2.0f - 5,
+                              (scene_center_y + bg_center_y) / 2.0f - 10),
+                       IM_COL32(255, 100, 200, 255),
+                       "C");
+
+    // Add "Sc" label at scene center endpoint
+    draw_list->AddText(ImVec2(scene_center_x + 5, scene_center_y - 10),
+                       IM_COL32(255, 100, 200, 255),
+                       "Sc");
+
+    // Add "Bg" label at background center endpoint
+    draw_list->AddText(ImVec2(bg_center_x + 5, bg_center_y - 10),
+                       IM_COL32(255, 100, 200, 255),
+                       "Bg");
+}
+
 void EditorScene::render_background(BackgroundManager* bg_manager,
                                     ImDrawList* draw_list, const ImVec2& origin,
                                     const Level& level) {
     if (!bg_manager) return;
+
+    bool show_background_placeable_rect =
+        EditorSettings::instance().show_background_placeable_rect;
+    bool show_background_visible_rect =
+        EditorSettings::instance().show_background_visible_rect;
+    bool show_background_to_scene_center_hints =
+        EditorSettings::instance().show_background_to_scene_center_hints;
 
     const auto& layers = bg_manager->get_layers();
     auto selected = bg_manager->get_selected_layer();
@@ -497,23 +675,28 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
         float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
         float extended_left_offset = SCREEN_WIDTH * 1.5f;  // Extended boundary
 
+        // Draw bounds rectqngle for placable area
+        // It corresponds to the spqannable area where background objects can be
+        // placed + margin to facilitate placement of objects not fully visible
         // Draw spannable bounds rectangle (centered, with extended left side)
         ImVec2 bounds_min = ImVec2(origin.x - extended_left_offset, origin.y);
         ImVec2 bounds_max =
             ImVec2(origin.x + SCREEN_WIDTH + bg_horizontal_offset,
                    origin.y + spannable_height);
 
-        // Draw semi-transparent fill
-        draw_list->AddRectFilled(
-            bounds_min, bounds_max, IM_COL32(100, 150, 255, 30));
+        if (show_background_placeable_rect) {
+            // Draw semi-transparent fill
+            draw_list->AddRectFilled(
+                bounds_min, bounds_max, IM_COL32(100, 150, 255, 30));
 
-        // Draw border
-        draw_list->AddRect(bounds_min,
-                           bounds_max,
-                           IM_COL32(100, 150, 255, 200),
-                           0.0f,
-                           0,
-                           2.0f);
+            // Draw border
+            draw_list->AddRect(bounds_min,
+                               bounds_max,
+                               IM_COL32(100, 150, 255, 200),
+                               0.0f,
+                               0,
+                               5.0f);
+        }
 
         // Draw exact mapping bounds (without margin) as a dashed line
         ImVec2 exact_bounds_min =
@@ -579,7 +762,8 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
             draw_dashed_line(
                 draw_list, scene_left, scene_right, line_color, 2.0f, 10.0f);
 
-            // Draw dashed horizontal line on background (blue spannable area)
+            // Draw dashed horizontal line on background (blue spannable
+            // area)
             draw_dashed_line(
                 draw_list, bg_left, bg_right, line_color, 2.0f, 10.0f);
 
@@ -624,8 +808,8 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
                 static_cast<float>(obj.tile_size)};
 
             // Calculate destination position and size
-            // Center background horizontally by offsetting left by half screen
-            // width
+            // Center background horizontally by offsetting left by half
+            // screen width
             constexpr float SCREEN_WIDTH = 640.0f;
             float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
             float scaled_size = obj.tile_size * obj.scale;
@@ -694,49 +878,10 @@ void EditorScene::render_background(BackgroundManager* bg_manager,
     }
 
     // DRAW CENTER LINE LAST (so it appears on top of everything)
-    if (selected.has_value() && selected.value() < layers.size()) {
-        const auto& selected_layer = layers[selected.value()];
-        float parallax_factor = selected_layer.get_parallax_factor();
-
-        constexpr float SCREEN_WIDTH = 640.0f;
-        constexpr float SCREEN_HEIGHT = 480.0f;
-        float level_height = level.row_cnt * tile_size_;
-        float max_scroll = std::max(0.0f, level_height - SCREEN_HEIGHT);
-        float base_spannable_height =
-            max_scroll * (1.0f - parallax_factor) + SCREEN_HEIGHT;
-        float spannable_height = base_spannable_height + SCREEN_HEIGHT * 0.1f;
-        float bg_horizontal_offset = SCREEN_WIDTH / 2.0f;
-
-        // Scene center: middle of the red-bordered platform area
-        float scene_center_x = origin.x + SCREEN_WIDTH / 2.0f;
-        float scene_center_y = origin.y + level_height / 2.0f;
-
-        // Background layer center: middle of the blue spannable area
-        // Horizontally: center of spannable width
-        float bg_center_x = origin.x + bg_horizontal_offset;
-        float bg_center_y = origin.y + spannable_height / 2.0f;
-
-        // Draw pink diagonal line connecting the two centers
-        draw_list->AddLine(ImVec2(scene_center_x, scene_center_y),
-                           ImVec2(bg_center_x, bg_center_y),
-                           IM_COL32(255, 100, 200, 220),
-                           3.0f);
-
-        // Add "C" label in the middle of the line
-        draw_list->AddText(ImVec2((scene_center_x + bg_center_x) / 2.0f - 5,
-                                  (scene_center_y + bg_center_y) / 2.0f - 10),
-                           IM_COL32(255, 100, 200, 255),
-                           "C");
-
-        // Add "Sc" label at scene center endpoint
-        draw_list->AddText(ImVec2(scene_center_x + 5, scene_center_y - 10),
-                           IM_COL32(255, 100, 200, 255),
-                           "Sc");
-
-        // Add "Bg" label at background center endpoint
-        draw_list->AddText(ImVec2(bg_center_x + 5, bg_center_y - 10),
-                           IM_COL32(255, 100, 200, 255),
-                           "Bg");
+    if (show_background_to_scene_center_hints && selected.has_value() &&
+        selected.value() < layers.size()) {
+        render_background_to_scene_center_hints(
+            draw_list, origin, level, layers[selected.value()], tile_size_);
     }
 }
 
@@ -769,10 +914,10 @@ void EditorScene::handle_mouse_input(Level& level, EditorPanel& editor_panel,
     bool left_clicked = ImGui::IsMouseClicked(0);
     bool right_clicked = ImGui::IsMouseClicked(1);
 
-    // FUD mode needs to handle dragging even when not clicking, but only when
-    // hovered
+    // HUD mode needs to handle dragging even when not clicking, but only
+    // when hovered
     EditMode mode = editor_panel.get_edit_mode();
-    if (mode == EditMode::FUD && hovered) {
+    if (mode == EditMode::HUD && hovered) {
         handle_fud_mode_input(level,
                               editor_panel,
                               mouse_pos,
@@ -872,21 +1017,89 @@ void EditorScene::handle_platform_mode_input(Level& level,
                                              EditorPanel& editor_panel,
                                              const ImVec2& mouse_pos,
                                              const ImVec2& origin) {
-    ImVec2 tile_pos = screen_to_tile_pos(mouse_pos, origin);
-    int tile_x = static_cast<int>(tile_pos.x);
-    int tile_y = static_cast<int>(tile_pos.y);
+    EditorPlatform* selected = editor_panel.get_selected_platform();
 
-    // Check bounds
-    if (tile_x < 0 || tile_x >= static_cast<int>(level.col_cnt) || tile_y < 0 ||
-        tile_y >= static_cast<int>(level.row_cnt)) {
+    // Handle mouse release - stop dragging
+    if (!ImGui::IsMouseDown(0)) {
+        dragging_platform_ = false;
+    }
+
+    // Handle ongoing drag
+    if (dragging_platform_ && selected && ImGui::IsMouseDown(0)) {
+        // Calculate mouse movement in tile space
+        ImVec2 mouse_delta = ImVec2(mouse_pos.x - platform_drag_start_mouse_.x,
+                                    mouse_pos.y - platform_drag_start_mouse_.y);
+        float delta_tiles_x = mouse_delta.x / tile_size_;
+        float delta_tiles_y = mouse_delta.y / tile_size_;
+
+        float new_tile_x = platform_drag_start_tile_x_ + delta_tiles_x;
+        float new_tile_y = platform_drag_start_tile_y_ + delta_tiles_y;
+
+        // Apply snapping based on the current platform snap setting (in pixels)
+        int snap_pixels = EditorSettings::instance().platform_snap;
+        if (snap_pixels > 1) {
+            // Convert to world pixels, snap, then back to tiles
+            float world_x = new_tile_x * tile_size_;
+            float world_y = new_tile_y * tile_size_;
+            world_x = std::round(world_x / snap_pixels) * snap_pixels;
+            world_y = std::round(world_y / snap_pixels) * snap_pixels;
+            new_tile_x = world_x / tile_size_;
+            new_tile_y = world_y / tile_size_;
+        }
+
+        selected->tile_x = new_tile_x;
+        selected->tile_y = new_tile_y;
         return;
     }
 
-    // Find existing platform at this position
-    // If any do not allow left click to add/replace
+    ImVec2 tile_pos = screen_to_tile_pos(mouse_pos, origin);
+    float tile_x = tile_pos.x;
+    float tile_y = tile_pos.y;
+
+    // Apply snapping based on the current platform snap setting (in pixels)
+    int snap_pixels = EditorSettings::instance().platform_snap;
+    if (snap_pixels > 1) {
+        // Convert to world pixels, snap, then back to tiles
+        float world_x = tile_x * tile_size_;
+        float world_y = tile_y * tile_size_;
+        world_x = std::round(world_x / snap_pixels) * snap_pixels;
+        world_y = std::round(world_y / snap_pixels) * snap_pixels;
+        tile_x = world_x / tile_size_;
+        tile_y = world_y / tile_size_;
+    }
+
+    int tile_x_int = static_cast<int>(tile_x);
+    int tile_y_int = static_cast<int>(tile_y);
+
+    // Check bounds
+    if (tile_x_int < 0 || tile_x_int >= static_cast<int>(level.col_cnt) ||
+        tile_y_int < 0 || tile_y_int >= static_cast<int>(level.row_cnt)) {
+        return;
+    }
+
+    // Find existing platform at mouse position (check if mouse is within
+    // platform bounds)
     EditorPlatform* existing_platform = nullptr;
     for (auto& platform : level.platforms) {
-        if (platform.tile_x == tile_x && platform.tile_y == tile_y) {
+        // Calculate platform bounds (centered on tile_x, tile_y)
+        float center_x = platform.tile_x * tile_size_;
+        float center_y = platform.tile_y * tile_size_;
+        float width = platform.width_tiles * tile_size_;
+        float height = platform.height_tiles * tile_size_;
+
+        float left = center_x - width / 2;
+        float right = center_x + width / 2;
+        float top = center_y - height / 2;
+        float bottom = center_y + height / 2;
+
+        // Check if mouse is within platform bounds
+        float mouse_tile_x = (mouse_pos.x - origin.x) / tile_size_;
+        float mouse_tile_y = (mouse_pos.y - origin.y) / tile_size_;
+        float mouse_world_x = mouse_tile_x * tile_size_;
+        float mouse_world_y = mouse_tile_y * tile_size_;
+
+        if (mouse_world_x >= left && mouse_world_x <= right &&
+            mouse_world_y >= top && mouse_world_y <= bottom) {
             existing_platform = &platform;
             break;
         }
@@ -900,9 +1113,14 @@ void EditorScene::handle_platform_mode_input(Level& level,
         return;
     }
 
-    // Left click edits existing platform
+    // Left click on existing platform - select and start drag immediately
     if (ImGui::IsMouseClicked(0) && existing_platform) {
         editor_panel.set_selected_platform(existing_platform);
+        // Start drag immediately
+        dragging_platform_ = true;
+        platform_drag_start_mouse_ = mouse_pos;
+        platform_drag_start_tile_x_ = existing_platform->tile_x;
+        platform_drag_start_tile_y_ = existing_platform->tile_y;
         return;
     }
 
@@ -921,6 +1139,24 @@ void EditorScene::handle_platform_mode_input(Level& level,
         // Get selected features from tile panel
         platform.features = editor_panel.get_selected_features();
 
+        // Get behavior parameters from editor panel
+        platform.behavior_params = editor_panel.get_behavior_params();
+
+        // Get platform preset information
+        const udjourney::editor::PlatformPresetInfo* preset_info =
+            editor_panel.get_selected_platform_preset_info();
+        if (preset_info && preset_info->is_valid) {
+            // Use atlas-based rendering with preset info
+            platform.texture_file = preset_info->sprite_sheet;
+            platform.texture_tiled = editor_panel.get_tile_render_tiled();
+            platform.use_atlas = true;
+            platform.source_rect = preset_info->get_source_rect();
+        } else {
+            // Fallback to no texture (solid color)
+            platform.texture_file.clear();
+            platform.texture_tiled = false;
+        }
+
         // Calculate color based on behavior and features
         PlatformFeatureType primary_feature = platform.features.empty()
                                                   ? PlatformFeatureType::None
@@ -930,7 +1166,8 @@ void EditorScene::handle_platform_mode_input(Level& level,
 
         // Remove existing platform at this position first
         if (existing_platform) {
-            level.remove_platform_at(tile_x, tile_y);
+            level.remove_platform_at(static_cast<float>(tile_x_int),
+                                     static_cast<float>(tile_y_int));
             // Clear selection if we replaced the selected platform
             if (editor_panel.get_selected_platform() == existing_platform) {
                 editor_panel.set_selected_platform(nullptr);
@@ -1028,6 +1265,24 @@ void render_spikes_(const ImVec2& top_left, const ImVec2& bottom_right,
     }
 }
 
+void render_downward_spikes_(const ImVec2& top_left, const ImVec2& bottom_right,
+                             ImDrawList& draw_list) {
+    // Render spikes pointing downward from the bottom of the platform
+    auto spike_count = 3;
+    auto spike_height = bottom_right.y - top_left.y;
+    auto indicator_offset_x = (bottom_right.x - top_left.x) / spike_count;
+
+    for (int i = 0; i < spike_count; ++i) {
+        draw_list.AddTriangleFilled(
+            ImVec2(top_left.x + i * indicator_offset_x, bottom_right.y),
+            ImVec2(top_left.x + (i + 1) * indicator_offset_x, bottom_right.y),
+            ImVec2(top_left.x + i * indicator_offset_x + indicator_offset_x / 2,
+                   bottom_right.y + spike_height),
+            IM_COL32(128, 0, 128, 255) &
+                IM_COL32(255, 255, 255, 150));  // Semi-transparent purple
+    }
+}
+
 void render_checkpoint_(const ImVec2& top_left, const ImVec2& bottom_right,
                         ImDrawList& draw_list) {
     auto center_x = (top_left.x + bottom_right.x) / 2;
@@ -1050,34 +1305,73 @@ void EditorScene::render_platforms(Level& level, EditorPanel& editor_panel,
                                    ImDrawList* draw_list,
                                    const ImVec2& origin) {
     for (const auto& platform : level.platforms) {
-        // Calculate platform position (top-left corner at tile position,
-        // matching game behavior)
-        ImVec2 top_left = ImVec2(origin.x + platform.tile_x * tile_size_,
-                                 origin.y + platform.tile_y * tile_size_);
-        ImVec2 bottom_right =
-            ImVec2(top_left.x + platform.width_tiles * tile_size_,
-                   top_left.y + platform.height_tiles * tile_size_);
+        // Calculate platform center (matching game behavior)
+        // tile_x, tile_y represent the CENTER of the platform in tiles
+        float center_x = platform.tile_x * tile_size_;
+        float center_y = platform.tile_y * tile_size_;
+        float width = platform.width_tiles * tile_size_;
+        float height = platform.height_tiles * tile_size_;
+
+        // Calculate top-left from center
+        ImVec2 top_left = ImVec2(origin.x + center_x - width / 2,
+                                 origin.y + center_y - height / 2);
+        ImVec2 bottom_right = ImVec2(top_left.x + width, top_left.y + height);
 
         // Calculate center for reference tile marker
-        ImVec2 center =
-            ImVec2(origin.x + platform.tile_x * tile_size_ + tile_size_ / 2,
-                   origin.y + platform.tile_y * tile_size_ + tile_size_ / 2);
+        ImVec2 center = ImVec2(origin.x + center_x, origin.y + center_y);
 
         // used to draw the center tile (for reference)
         ImVec2 unit_top_left =
             ImVec2(center.x - tile_size_ / 2, center.y - tile_size_ / 2);
         ImVec2 unit_bottom_right =
-            ImVec2(origin.x + (platform.tile_x + 1) * tile_size_,
-                   origin.y + (platform.tile_y + 1) * tile_size_);
+            ImVec2(center.x + tile_size_ / 2, center.y + tile_size_ / 2);
 
-        // Draw platform with its color
-        auto preview_color = platform.color;
-        preview_color &= IM_COL32(255, 255, 255, 100);
-        draw_list->AddRectFilled(top_left, bottom_right, preview_color);
+        // Try to draw platform with texture if available
+        bool drew_texture = false;
+        if (platform.use_atlas && !platform.texture_file.empty()) {
+            Texture2D texture = load_texture_cached(platform.texture_file);
+            if (texture.id != 0) {
+                void* tex_id =
+                    reinterpret_cast<void*>(static_cast<uintptr_t>(texture.id));
 
-        // Draw unit tile (for reference)
-        draw_list->AddRectFilled(
-            unit_top_left, unit_bottom_right, platform.color);
+                // Calculate UV coordinates from source rect
+                ImVec2 uv0(platform.source_rect.x / texture.width,
+                           platform.source_rect.y / texture.height);
+                ImVec2 uv1(
+                    (platform.source_rect.x + platform.source_rect.width) /
+                        texture.width,
+                    (platform.source_rect.y + platform.source_rect.height) /
+                        texture.height);
+
+                // Draw textured platform (semi-transparent)
+                draw_list->AddImage(tex_id,
+                                    top_left,
+                                    bottom_right,
+                                    uv0,
+                                    uv1,
+                                    IM_COL32(255, 255, 255, 180));
+
+                // Draw center tile with texture at full opacity
+                draw_list->AddImage(tex_id,
+                                    unit_top_left,
+                                    unit_bottom_right,
+                                    uv0,
+                                    uv1,
+                                    IM_COL32(255, 255, 255, 255));
+                drew_texture = true;
+            }
+        }
+
+        if (!drew_texture) {
+            // Fallback to colored rectangles
+            auto preview_color = platform.color;
+            preview_color &= IM_COL32(255, 255, 255, 100);
+            draw_list->AddRectFilled(top_left, bottom_right, preview_color);
+
+            // Draw unit tile (for reference)
+            draw_list->AddRectFilled(
+                unit_top_left, unit_bottom_right, platform.color);
+        }
 
         // Draw platform border (highlighted if selected)
         bool is_selected = (editor_panel.get_selected_platform() == &platform);
@@ -1095,6 +1389,11 @@ void EditorScene::render_platforms(Level& level, EditorPanel& editor_panel,
                         // Draw red triangles for spikes
                         render_spikes_(top_left, bottom_right, *draw_list);
                         break;
+                    case PlatformFeatureType::DownwardSpikes:
+                        // Draw purple triangles for downward spikes
+                        render_downward_spikes_(
+                            top_left, bottom_right, *draw_list);
+                        break;
                     case PlatformFeatureType::Checkpoint:
                         // Draw green flag for checkpoint
                         render_checkpoint_(top_left, bottom_right, *draw_list);
@@ -1102,6 +1401,110 @@ void EditorScene::render_platforms(Level& level, EditorPanel& editor_panel,
                     default:
                         break;
                 }
+            }
+        }
+
+        // Draw movement range for horizontal platforms
+        if (platform.behavior_type == PlatformBehaviorType::Horizontal) {
+            float range = 5.0f;           // Default range in tiles
+            float initial_offset = 0.0f;  // Default initial offset in tiles
+
+            // Get range from behavior_params if available
+            if (platform.behavior_params.count("range")) {
+                range = platform.behavior_params.at("range");
+            }
+            if (platform.behavior_params.count("initial_offset")) {
+                initial_offset = platform.behavior_params.at("initial_offset");
+            }
+
+            // Convert to pixels
+            float range_pixels = range * tile_size_;
+            float offset_pixels = initial_offset * tile_size_;
+
+            // Calculate pivot point using center of platform (matching new game
+            // behavior) In the game: pivot_x = center - initial_offset
+            // Note: platform.tile_x already represents the center in tile
+            // coords So platform.tile_x * tile_size_ is the center in world
+            // coords
+            float pivot_x =
+                origin.x + platform.tile_x * tile_size_ - offset_pixels;
+
+            // In the game, the CENTER of the platform moves between:
+            // center_x >= pivot_x - max_offset  and  center_x <= pivot_x +
+            // max_offset
+            float center_min_x = pivot_x - range_pixels;
+            float center_max_x = pivot_x + range_pixels;
+
+            // Calculate where the edges will be at extreme positions
+            float half_width = width / 2.0f;
+            float left_edge_min = center_min_x - half_width;
+            float right_edge_max = center_max_x + half_width;
+
+            // Draw semi-transparent range area (full extent the platform
+            // occupies)
+            ImVec2 range_top_left = ImVec2(left_edge_min, top_left.y);
+            ImVec2 range_bottom_right = ImVec2(right_edge_max, bottom_right.y);
+            draw_list->AddRectFilled(
+                range_top_left,
+                range_bottom_right,
+                IM_COL32(0, 255, 0, 30));  // Light green overlay
+
+            // Draw range boundary lines at the extreme positions
+            ImVec2 left_line_top = ImVec2(left_edge_min, top_left.y - 5);
+            ImVec2 left_line_bottom = ImVec2(left_edge_min, bottom_right.y + 5);
+            ImVec2 right_line_top = ImVec2(right_edge_max, top_left.y - 5);
+            ImVec2 right_line_bottom =
+                ImVec2(right_edge_max, bottom_right.y + 5);
+
+            draw_list->AddLine(left_line_top,
+                               left_line_bottom,
+                               IM_COL32(0, 200, 0, 200),
+                               2.0f);
+            draw_list->AddLine(right_line_top,
+                               right_line_bottom,
+                               IM_COL32(0, 200, 0, 200),
+                               2.0f);
+
+            // Draw pivot point marker
+            draw_list->AddCircleFilled(
+                ImVec2(pivot_x, center.y), 4.0f, IM_COL32(255, 165, 0, 200));
+
+            // Draw arrows showing movement direction
+            float arrow_y = center.y;
+            float arrow_size = 8.0f;
+
+            // Left arrow
+            ImVec2 left_arrow_tip = ImVec2(left_edge_min - 10, arrow_y);
+            ImVec2 left_arrow_p1 =
+                ImVec2(left_edge_min - 2, arrow_y - arrow_size);
+            ImVec2 left_arrow_p2 =
+                ImVec2(left_edge_min - 2, arrow_y + arrow_size);
+            draw_list->AddTriangleFilled(left_arrow_tip,
+                                         left_arrow_p1,
+                                         left_arrow_p2,
+                                         IM_COL32(0, 200, 0, 200));
+
+            // Right arrow
+            ImVec2 right_arrow_tip = ImVec2(right_edge_max + 10, arrow_y);
+            ImVec2 right_arrow_p1 =
+                ImVec2(right_edge_max + 2, arrow_y - arrow_size);
+            ImVec2 right_arrow_p2 =
+                ImVec2(right_edge_max + 2, arrow_y + arrow_size);
+            draw_list->AddTriangleFilled(right_arrow_tip,
+                                         right_arrow_p1,
+                                         right_arrow_p2,
+                                         IM_COL32(0, 200, 0, 200));
+
+            // Draw range label (only if selected)
+            if (is_selected) {
+                char range_label[64];
+                snprintf(range_label,
+                         sizeof(range_label),
+                         "Range: %.1f tiles",
+                         range);
+                ImVec2 label_pos = ImVec2(pivot_x - 30, top_left.y - 20);
+                draw_list->AddText(
+                    label_pos, IM_COL32(255, 255, 255, 255), range_label);
             }
         }
     }
@@ -1135,6 +1538,8 @@ ImU32 EditorScene::get_platform_color(PlatformBehaviorType behavior,
     switch (feature) {
         case PlatformFeatureType::Spikes:
             return IM_COL32(255, 0, 0, 255);  // Red for spikes
+        case PlatformFeatureType::DownwardSpikes:
+            return IM_COL32(128, 0, 128, 255);  // Purple for downward spikes
         case PlatformFeatureType::Checkpoint:
             return IM_COL32(255, 165, 0, 255);  // Orange for checkpoint
         default:
@@ -1149,6 +1554,8 @@ ImU32 EditorScene::get_platform_color(PlatformBehaviorType behavior,
             return IM_COL32(255, 165, 0, 255);  // Orange
         case PlatformBehaviorType::OscillatingSize:
             return IM_COL32(128, 0, 128, 255);  // Purple
+        case PlatformBehaviorType::CameraFollowVertical:
+            return IM_COL32(255, 255, 0, 255);  // Yellow
         case PlatformBehaviorType::Static:
         default:
             return IM_COL32(0, 0, 255, 255);  // Blue
@@ -1507,9 +1914,9 @@ void EditorScene::render_background_placement_preview(
     // coverage
     float min_overlap = preview_size * 0.25f;
 
-    // Background is centered, so spannable width extends further left to allow
-    // objects with negative x coordinates (extends from -960 to 960, total
-    // 1920)
+    // Background is centered, so spannable width extends further left to
+    // allow objects with negative x coordinates (extends from -960 to 960,
+    // total 1920)
     float spannable_width_left = -SCREEN_WIDTH * 1.5f;                 // -960
     float spannable_width_right = SCREEN_WIDTH + SCREEN_WIDTH / 2.0f;  // 960
 
@@ -1609,37 +2016,37 @@ void EditorScene::render_background_placement_preview(
     }
 }
 
-// Helper to calculate FUD anchor position based on viewport
+// Helper to calculate HUD anchor position based on viewport
 ImVec2 EditorScene::calculate_fud_anchor_position(
-    FUDAnchor anchor, const ImVec2& viewport_size) const {
+    HUDAnchor anchor, const ImVec2& viewport_size) const {
     ImVec2 pos(0, 0);
 
     switch (anchor) {
-        case FUDAnchor::TopLeft:
+        case HUDAnchor::TopLeft:
             pos = ImVec2(0, 0);
             break;
-        case FUDAnchor::TopCenter:
+        case HUDAnchor::TopCenter:
             pos = ImVec2(viewport_size.x / 2, 0);
             break;
-        case FUDAnchor::TopRight:
+        case HUDAnchor::TopRight:
             pos = ImVec2(viewport_size.x, 0);
             break;
-        case FUDAnchor::MiddleLeft:
+        case HUDAnchor::MiddleLeft:
             pos = ImVec2(0, viewport_size.y / 2);
             break;
-        case FUDAnchor::MiddleCenter:
+        case HUDAnchor::MiddleCenter:
             pos = ImVec2(viewport_size.x / 2, viewport_size.y / 2);
             break;
-        case FUDAnchor::MiddleRight:
+        case HUDAnchor::MiddleRight:
             pos = ImVec2(viewport_size.x, viewport_size.y / 2);
             break;
-        case FUDAnchor::BottomLeft:
+        case HUDAnchor::BottomLeft:
             pos = ImVec2(0, viewport_size.y);
             break;
-        case FUDAnchor::BottomCenter:
+        case HUDAnchor::BottomCenter:
             pos = ImVec2(viewport_size.x / 2, viewport_size.y);
             break;
-        case FUDAnchor::BottomRight:
+        case HUDAnchor::BottomRight:
             pos = ImVec2(viewport_size.x, viewport_size.y);
             break;
     }
@@ -1650,11 +2057,11 @@ ImVec2 EditorScene::calculate_fud_anchor_position(
 void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
                               ImDrawList* draw_list, const ImVec2& origin,
                               const ImVec2& viewport_size) {
-    if (level.fuds.empty()) {
+    if (level.huds.empty()) {
         return;
     }
 
-    // Use Dreamcast screen dimensions for FUD positioning
+    // Use Dreamcast screen dimensions for HUD positioning
     const float screen_width = 640.0f;
     const float screen_height = 480.0f;
     ImVec2 screen_size(screen_width, screen_height);
@@ -1662,36 +2069,36 @@ void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
     // Screen origin is at world origin (same as the scene grid)
     ImVec2 screen_origin = origin;
 
-    for (size_t i = 0; i < level.fuds.size(); ++i) {
-        const auto& fud = level.fuds[i];
+    for (size_t i = 0; i < level.huds.size(); ++i) {
+        const auto& hud = level.huds[i];
 
-        if (!fud.visible) {
+        if (!hud.visible) {
             continue;
         }
 
         // Calculate anchor position relative to screen dimensions
         ImVec2 anchor_pos =
-            calculate_fud_anchor_position(fud.anchor, screen_size);
+            calculate_fud_anchor_position(hud.anchor, screen_size);
 
         // Add screen origin and offset
-        ImVec2 fud_pos = ImVec2(screen_origin.x + anchor_pos.x + fud.offset.x,
-                                screen_origin.y + anchor_pos.y + fud.offset.y);
+        ImVec2 fud_pos = ImVec2(screen_origin.x + anchor_pos.x + hud.offset.x,
+                                screen_origin.y + anchor_pos.y + hud.offset.y);
 
-        ImVec2 fud_end = ImVec2(fud_pos.x + fud.size.x, fud_pos.y + fud.size.y);
+        ImVec2 fud_end = ImVec2(fud_pos.x + hud.size.x, fud_pos.y + hud.size.y);
 
-        // Determine if this FUD is selected
-        FUDElement* selected = editor_panel.get_selected_fud();
-        bool is_selected = (selected == &level.fuds[i]);
+        // Determine if this HUD is selected
+        HUDElement* selected = editor_panel.get_selected_fud();
+        bool is_selected = (selected == &level.huds[i]);
 
-        // Use strategy pattern to render FUD content
+        // Use strategy pattern to render HUD content
         // Renderers handle background, content, and foreground sprites
-        auto& factory = FUDRendererFactory::instance();
-        IFUDRenderer* renderer = factory.get_renderer(fud.type_id);
+        auto& factory = HUDRendererFactory::instance();
+        IHUDRenderer* renderer = factory.get_renderer(hud.type_id);
         if (renderer) {
-            renderer->render(fud, draw_list, fud_pos, fud_end, is_selected);
+            renderer->render(hud, draw_list, fud_pos, fud_end, is_selected);
         }
 
-        // Draw FUD border
+        // Draw HUD border
         ImU32 border_color =
             is_selected ? IM_COL32(0, 255, 0, 255)     // Green for selected
                         : IM_COL32(255, 255, 0, 200);  // Yellow for normal
@@ -1704,23 +2111,23 @@ void EditorScene::render_fuds(Level& level, EditorPanel& editor_panel,
         draw_list->AddCircleFilled(
             anchor_screen_pos, 4.0f, IM_COL32(255, 0, 0, 200));
 
-        // Show FUD info as tooltip on hover
+        // Show HUD info as tooltip on hover
         ImVec2 mouse_pos = ImGui::GetMousePos();
         if (mouse_pos.x >= fud_pos.x && mouse_pos.x <= fud_end.x &&
             mouse_pos.y >= fud_pos.y && mouse_pos.y <= fud_end.y) {
             ImGui::BeginTooltip();
-            ImGui::Text("Name: %s", fud.name.c_str());
-            ImGui::Text("Type: %s", fud.type_id.c_str());
-            ImGui::Text("Size: %.0fx%.0f", fud.size.x, fud.size.y);
+            ImGui::Text("Name: %s", hud.name.c_str());
+            ImGui::Text("Type: %s", hud.type_id.c_str());
+            ImGui::Text("Size: %.0fx%.0f", hud.size.x, hud.size.y);
             ImGui::Text("Anchor: %s",
-                        fud.anchor == FUDAnchor::TopLeft        ? "TopLeft"
-                        : fud.anchor == FUDAnchor::TopCenter    ? "TopCenter"
-                        : fud.anchor == FUDAnchor::TopRight     ? "TopRight"
-                        : fud.anchor == FUDAnchor::MiddleLeft   ? "MiddleLeft"
-                        : fud.anchor == FUDAnchor::MiddleCenter ? "MiddleCenter"
-                        : fud.anchor == FUDAnchor::MiddleRight  ? "MiddleRight"
-                        : fud.anchor == FUDAnchor::BottomLeft   ? "BottomLeft"
-                        : fud.anchor == FUDAnchor::BottomCenter
+                        hud.anchor == HUDAnchor::TopLeft        ? "TopLeft"
+                        : hud.anchor == HUDAnchor::TopCenter    ? "TopCenter"
+                        : hud.anchor == HUDAnchor::TopRight     ? "TopRight"
+                        : hud.anchor == HUDAnchor::MiddleLeft   ? "MiddleLeft"
+                        : hud.anchor == HUDAnchor::MiddleCenter ? "MiddleCenter"
+                        : hud.anchor == HUDAnchor::MiddleRight  ? "MiddleRight"
+                        : hud.anchor == HUDAnchor::BottomLeft   ? "BottomLeft"
+                        : hud.anchor == HUDAnchor::BottomCenter
                             ? "BottomCenter"
                             : "BottomRight");
             ImGui::EndTooltip();
@@ -1734,25 +2141,25 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
                                         bool right_clicked) {
     // Handle "Add FUD" button click from panel
     if (editor_panel.should_add_fud()) {
-        FUDElement new_fud = editor_panel.create_fud_from_preset();
+        HUDElement new_fud = editor_panel.create_fud_from_preset();
         level.add_fud(new_fud);
         editor_panel.clear_fud_add_flag();
 
         // Select the newly added FUD
-        if (!level.fuds.empty()) {
-            editor_panel.set_selected_fud(&level.fuds.back());
+        if (!level.huds.empty()) {
+            editor_panel.set_selected_fud(&level.huds.back());
         }
         return;
     }
 
-    // Handle FUD deletion
+    // Handle HUD deletion
     if (editor_panel.should_delete_selected_fud()) {
-        FUDElement* selected = editor_panel.get_selected_fud();
+        HUDElement* selected = editor_panel.get_selected_fud();
 
         if (selected) {
             // Find and remove the selected FUD
-            for (size_t i = 0; i < level.fuds.size(); ++i) {
-                if (&level.fuds[i] == selected) {
+            for (size_t i = 0; i < level.huds.size(); ++i) {
+                if (&level.huds[i] == selected) {
                     level.remove_fud(i);
                     break;
                 }
@@ -1769,7 +2176,7 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
     ImVec2 screen_size(screen_width, screen_height);
     ImVec2 screen_origin = origin;
 
-    FUDElement* selected = editor_panel.get_selected_fud();
+    HUDElement* selected = editor_panel.get_selected_fud();
 
     // Handle mouse release - stop dragging
     if (!ImGui::IsMouseDown(0)) {
@@ -1787,44 +2194,54 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
 
         printf("Dragging: delta=(%.1f, %.1f)\n", mouse_delta.x, mouse_delta.y);
 
-        selected->offset.x = fud_drag_start_offset_.x + mouse_delta.x;
-        selected->offset.y = fud_drag_start_offset_.y + mouse_delta.y;
+        float new_x = fud_drag_start_offset_.x + mouse_delta.x;
+        float new_y = fud_drag_start_offset_.y + mouse_delta.y;
+
+        // Apply snapping based on the current snap grid setting
+        int snap_grid = EditorSettings::instance().hud_snap_grid;
+        if (snap_grid > 1) {
+            new_x = std::round(new_x / snap_grid) * snap_grid;
+            new_y = std::round(new_y / snap_grid) * snap_grid;
+        }
+
+        selected->offset.x = new_x;
+        selected->offset.y = new_y;
         return;
     }
 
     // Handle click to select or prepare to drag
     if (left_clicked) {
         // Check if mouse clicked on any FUD
-        for (size_t i = 0; i < level.fuds.size(); ++i) {
-            auto& fud = level.fuds[i];
+        for (size_t i = 0; i < level.huds.size(); ++i) {
+            auto& hud = level.huds[i];
 
-            if (!fud.visible) {
+            if (!hud.visible) {
                 continue;
             }
 
-            // Calculate FUD position relative to screen dimensions
+            // Calculate HUD position relative to screen dimensions
             ImVec2 anchor_pos =
-                calculate_fud_anchor_position(fud.anchor, screen_size);
+                calculate_fud_anchor_position(hud.anchor, screen_size);
             ImVec2 fud_pos =
-                ImVec2(screen_origin.x + anchor_pos.x + fud.offset.x,
-                       screen_origin.y + anchor_pos.y + fud.offset.y);
+                ImVec2(screen_origin.x + anchor_pos.x + hud.offset.x,
+                       screen_origin.y + anchor_pos.y + hud.offset.y);
             ImVec2 fud_end =
-                ImVec2(fud_pos.x + fud.size.x, fud_pos.y + fud.size.y);
+                ImVec2(fud_pos.x + hud.size.x, fud_pos.y + hud.size.y);
 
-            // Check if mouse is inside FUD bounds
+            // Check if mouse is inside HUD bounds
             if (mouse_pos.x >= fud_pos.x && mouse_pos.x <= fud_end.x &&
                 mouse_pos.y >= fud_pos.y && mouse_pos.y <= fud_end.y) {
-                editor_panel.set_selected_fud(&fud);
+                editor_panel.set_selected_fud(&hud);
 
                 // Always prepare for potential drag when clicking on a FUD
                 fud_drag_start_mouse_ = mouse_pos;
-                fud_drag_start_offset_ = fud.offset;
+                fud_drag_start_offset_ = hud.offset;
                 dragging_fud_ = false;  // Reset drag state
-                printf("Clicked FUD at (%.1f, %.1f), offset=(%.1f, %.1f)\n",
+                printf("Clicked HUD at (%.1f, %.1f), offset=(%.1f, %.1f)\n",
                        mouse_pos.x,
                        mouse_pos.y,
-                       fud.offset.x,
-                       fud.offset.y);
+                       hud.offset.x,
+                       hud.offset.y);
                 return;
             }
         }
@@ -1843,18 +2260,16 @@ void EditorScene::handle_fud_mode_input(Level& level, EditorPanel& editor_panel,
         float dist_sq =
             mouse_delta.x * mouse_delta.x + mouse_delta.y * mouse_delta.y;
 
-        printf(
-            "Check drag: dist_sq=%.2f, delta=(%.1f, %.1f), start=(%.1f, "
-            "%.1f)\n",
-            dist_sq,
-            mouse_delta.x,
-            mouse_delta.y,
-            fud_drag_start_mouse_.x,
-            fud_drag_start_mouse_.y);
+        udj::core::Logger::info("Check drag: dist_sq=%, delta=%, %, start=%, %",
+                                dist_sq,
+                                mouse_delta.x,
+                                mouse_delta.y,
+                                fud_drag_start_mouse_.x,
+                                fud_drag_start_mouse_.y);
 
         // Start dragging if moved more than 2 pixels
         if (dist_sq > 4.0f) {
-            printf("Started dragging!\n");
+            udj::core::Logger::info("Started dragging!\n");
             dragging_fud_ = true;
         }
     }

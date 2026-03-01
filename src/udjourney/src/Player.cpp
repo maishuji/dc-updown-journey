@@ -19,11 +19,14 @@
 #include "udjourney/Projectile.hpp"
 #include "udjourney/ProjectilePresetLoader.hpp"
 #include "udjourney/WorldBounds.hpp"
+#include "udjourney/managers/ParticleManager.hpp"
 #include "udjourney/components/HealthComponent.hpp"
 #include "udjourney/core/events/ScoreEvent.hpp"
 #include "udjourney/managers/TextureManager.hpp"
 #include "udjourney/platform/Platform.hpp"
 
+#include "udjourney/core/events/WeaponSelectedEvent.hpp"
+namespace udjourney {
 Player::~Player() = default;
 
 namespace {
@@ -34,6 +37,7 @@ const float kMoveSpeedYDefault = 5.0F;
 const float kMoveSpeedXDefault = 3.0F;
 const float kDashSpeed = 15.0F;
 const float kJumpExhaustion = 0.1F;
+const float kJumpStrength = -8.0F;  // Initial jump velocity (negative = up)
 
 struct InputMapping {
     std::function<bool()> left_pressed;
@@ -43,6 +47,7 @@ struct InputMapping {
     std::function<bool()> jump_pressed;
     std::function<bool()> dash_pressed;
     std::function<bool()> shoot_pressed;
+    std::function<bool()> cycle_weapon_pressed;
 
     InputMapping() {
 #ifdef PLATFORM_DREAMCAST
@@ -62,7 +67,12 @@ struct InputMapping {
         dash_pressed = []() {
             return IsGamepadButtonDown(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT);
         };
-        shoot_pressed = []() { return IsMouseButtonDown(MOUSE_LEFT_BUTTON); };
+        shoot_pressed = []() {
+            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_UP);
+        };
+        cycle_weapon_pressed = []() {
+            return IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+        };
 #else
         left_pressed = []() { return IsKeyDown(KEY_A); };
         right_pressed = []() { return IsKeyDown(KEY_D); };
@@ -71,9 +81,10 @@ struct InputMapping {
         jump_pressed = []() { return IsKeyDown(KEY_SPACE); };
         dash_pressed = []() { return IsKeyDown(KEY_LEFT_SHIFT); };
         shoot_pressed = []() {
-            return IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
+            return IsKeyPressed(KEY_E) ||
+                   IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
         };
-
+        cycle_weapon_pressed = []() { return IsKeyPressed(KEY_C); };
 #endif
     }
 } input_mapping;
@@ -85,27 +96,32 @@ struct Player::PImpl {
     bool jumping = false;
     bool dashing = false;
     bool dashable = true;
-    float vy = 0.0F;
+    float velocity_y = 0.0F;  // Vertical velocity
+    float velocity_x = 0.0F;  // Horizontal velocity (for knockback)
     float dash_timer = 0.0F;
     float dash_cooldown = 0.0F;
     Platform *grounded_src = nullptr;
+    int max_jumps = 2;      // Allow double jump
+    int current_jumps = 0;  // Track how many jumps have been used
 };
 
 Player::Player(const IGame &iGame, Rectangle iRect,
                udjourney::core::events::EventDispatcher &ioDispatcher,
-               AnimSpriteController anim_controller) :
+               AnimSpriteController anim_controller,
+               const scene::LevelPhysicsConfig &physics_config) :
     IActor(iGame),
     r(iRect),
     m_pimpl(std::make_unique<Player::PImpl>()),
     anim_controller_(std::move(anim_controller)),
-    m_dispatcher(ioDispatcher) {
+    m_dispatcher(ioDispatcher),
+    m_physics_config(physics_config) {
     if (m_texture.id == 0) {
         auto &texture_manager = TextureManager::get_instance();
         m_texture = texture_manager.get_texture("placeholder.png");
     }
 
     // Add health component - 3 hearts = 6 half-hearts
-    add_component(std::make_unique<HealthComponent>(6, 6));
+    add_component(std::make_unique<HealthComponent>(6, 6, &m_dispatcher));
 }
 
 void Player::draw() const {
@@ -125,8 +141,23 @@ void Player::draw() const {
 }
 
 void Player::update(float iDelta) {
+    if (!m_pimpl) {
+        udj::core::Logger::error("Player::update - m_pimpl is null!");
+        return;
+    }
+
     // Update all components
     update_components(iDelta);
+
+    // Check if player died - stop all further updates
+    if (auto *health = get_component<HealthComponent>()) {
+        if (!health->is_alive()) {
+            udj::core::Logger::debug("Player is dead - stopping update");
+            // Don't notify here - let it happen naturally in collision or
+            // elsewhere Just stop updating
+            return;
+        }
+    }
 
     if (m_invincibility_timer > 0.0F) {
         m_invincibility_timer -= iDelta;
@@ -143,20 +174,27 @@ void Player::update(float iDelta) {
     update_animation_state();
     anim_controller_.update(iDelta);
 
-    // Gravity
-    r.y += 1;
+    // Apply gravity
+    m_pimpl->velocity_y += m_physics_config.gravity;
+    // Clamp to terminal velocity
+    if (m_pimpl->velocity_y > m_physics_config.terminal_velocity) {
+        m_pimpl->velocity_y = m_physics_config.terminal_velocity;
+    }
+
+    // Apply vertical velocity to position
+    r.y += m_pimpl->velocity_y;
+
+    // Apply horizontal velocity (knockback)
+    r.x += m_pimpl->velocity_x;
+    // Apply friction to horizontal velocity
+    m_pimpl->velocity_x *= 0.85f;  // Damping factor
+    if (std::abs(m_pimpl->velocity_x) < 0.1f) {
+        m_pimpl->velocity_x = 0.0f;  // Stop when very slow
+    }
+
+    // Follow platform movement when grounded
     if (m_pimpl->grounded && m_pimpl->grounded_src != nullptr) {
         r.x += m_pimpl->grounded_src->get_dx();
-    }
-    if (m_pimpl->jumping) {
-        using udjourney::coreutils::math::is_near_zero;
-        using udjourney::coreutils::math::is_same_sign;
-        r.y += m_pimpl->vy;
-        float old_vy = m_pimpl->vy;
-        m_pimpl->vy += kJumpExhaustion;  // exhaustion
-        if (!is_same_sign(old_vy, m_pimpl->vy) || is_near_zero(m_pimpl->vy)) {
-            _reset_jump();
-        }
     }
 
     // Dash timers
@@ -194,6 +232,11 @@ void Player::update(float iDelta) {
 }
 
 void Player::process_input() {
+    if (!m_pimpl) {
+        udj::core::Logger::error("Player::process_input - m_pimpl is null!");
+        return;
+    }
+
     if (input_mapping.left_pressed()) {
         r.x -= m_pimpl->dashing ? kDashSpeed : kMoveSpeedXDefault;
         m_facing_right = false;  // Update facing direction
@@ -205,12 +248,14 @@ void Player::process_input() {
         m_facing_right = true;  // Update facing direction
     }
 
-    // A to Jump
+    // A to Jump (with double jump support)
     if (input_mapping.jump_pressed()) {
-        if (!m_pimpl->jumping && m_pimpl->grounded) {
+        // Allow jump if: grounded OR still have jumps remaining
+        if (!m_pimpl->jumping && m_pimpl->current_jumps < m_pimpl->max_jumps) {
             m_pimpl->jumping = true;
-            r.y -= kMoveSpeedYDefault;
-            m_pimpl->vy = -kMoveSpeedYDefault;
+            m_pimpl->velocity_y = kJumpStrength;  // Apply initial jump velocity
+            m_pimpl->grounded = false;            // Player is now airborne
+            m_pimpl->current_jumps++;             // Increment jump counter
         }
     } else {
         m_pimpl->jumping = false;
@@ -232,9 +277,14 @@ void Player::process_input() {
         notify("4;0");
     }
 
-    // Test attack input (X key) - damage nearby monsters
-    if (IsKeyPressed(KEY_X)) {
-        attack_nearby_monsters();
+    // Handle shooting input (X button / E key)
+    if (input_mapping.shoot_pressed() && can_shoot()) {
+        execute_command("shoot_projectile");
+    }
+
+    // Handle projectile type cycling (C key / Y button)
+    if (input_mapping.cycle_weapon_pressed()) {
+        cycle_projectile_type();
     }
 }
 
@@ -273,6 +323,14 @@ void Player::handle_collision(
     const std::vector<std::unique_ptr<IActor>> &platforms) noexcept {
     udj::core::Logger::debug("Player::handle_collision called");
 
+    // Defensive check: ensure m_pimpl is valid
+    if (!m_pimpl) {
+        udj::core::Logger::error(
+            "Player::handle_collision - m_pimpl is null! Player object may "
+            "have been moved or corrupted.");
+        return;
+    }
+
     const auto &gameRect = get_game().get_rectangle();
 
     // Dont check collision if the player is out of the screen at the top
@@ -297,8 +355,9 @@ void Player::handle_collision(
                 platform->set_state(ActorState::CONSUMED);
             } else if (platform->get_group_id() == MONSTER_TYPE_ID) {
                 // Monster collision - damage player (monster attacks)
+                using udjourney::Monster;
                 Monster *monster = dynamic_cast<Monster *>(platform.get());
-                if (monster && !is_invincible()) {
+                if (monster && !is_invincible() && !monster->is_dying()) {
                     // Monster should be in attack state
                     if (monster->is_alive()) {
                         monster->change_state("attack");
@@ -310,33 +369,84 @@ void Player::handle_collision(
 
                         // Check if player died
                         if (!health->is_alive()) {
-                            std::cout << "Player died! Health: "
-                                      << health->get_health() << std::endl;
+                            udj::core::Logger::debug(
+                                "Player died! Health: " +
+                                std::to_string(health->get_health()));
                             notify("12");  // Game over event
                             return;  // Stop processing - actors vector is being
                                      // modified
                         } else {
-                            std::cout
-                                << "Player took damage from monster! Health: "
-                                << health->get_health() << "/"
-                                << health->get_max_health() << std::endl;
+                            udj::core::Logger::debug(
+                                "Player took damage from monster! Health: " +
+                                std::to_string(health->get_health()) + "/" +
+                                std::to_string(health->get_max_health()));
                         }
                     }
 
+                    // Create particle effect at collision point
+                    const IGame &game = get_game();
+                    ParticleManager &particle_manager =
+                        const_cast<IGame &>(game).get_particle_manager();
+
+                    // Calculate collision point between player and monster
+                    Vector2 collision_pos = {r.x + r.width / 2.0f,
+                                             r.y + r.height / 2.0f};
+
+                    particle_manager.create_burst("impact", collision_pos);
+
+                    // Apply knockback - push player away from monster
+                    Rectangle monsterRect = monster->get_rectangle();
+                    float knockbackForce = 8.0f;
+                    float monsterCenterX =
+                        monsterRect.x + monsterRect.width / 2.0f;
+                    float playerCenterX = r.x + r.width / 2.0f;
+
+                    // Determine knockback direction based on relative positions
+                    if (playerCenterX < monsterCenterX) {
+                        // Player is on the left, push left
+                        m_pimpl->velocity_x = -knockbackForce;
+                    } else {
+                        // Player is on the right, push right
+                        m_pimpl->velocity_x = knockbackForce;
+                    }
+
+                    // Small upward knockback
+                    m_pimpl->velocity_y = -3.0f;
+
                     // Grant invincibility after taking damage
-                    set_invicibility(2.0f);
+                    set_invicibility(1.0f);
                 }
                 // Skip further processing of this monster
                 continue;
             } else if (platform->get_group_id() == PLATFORM_TYPE_ID) {
-                // Check grounded
-                if (r.y < platform->get_rectangle().y) {
-                    tmp_grounded_src = static_cast<Platform *>(platform.get());
-                    tmp_grounded = true;
+                Rectangle platformRect = platform->get_rectangle();
+
+                // Use raylib's collision detection
+                if (CheckCollisionRecs(r, platformRect)) {
+                    Rectangle intersect = GetCollisionRec(r, platformRect);
+
+                    // Determine collision type
+                    bool is_vertical = intersect.width > intersect.height;
+                    bool from_above = r.y + r.height - intersect.height <
+                                      platformRect.y + 1.0f;
+
+                    if (is_vertical && from_above && m_pimpl->velocity_y >= 0) {
+                        // Landing on top of platform - snap and ground
+                        r.y = platformRect.y - r.height;
+                        m_pimpl->velocity_y = 0.0f;
+                        tmp_grounded_src =
+                            static_cast<Platform *>(platform.get());
+                        tmp_grounded = true;
+                    } else {
+                        // Side or bottom collision - use standard resolution
+                        resolve_collision(*platform);
+                    }
+                    tmp_colliding = true;
                 }
+            } else {
+                resolve_collision(*platform);
+                tmp_colliding = true;
             }
-            resolve_collision(*platform);
-            tmp_colliding = true;
         }
 
         Platform *plat = dynamic_cast<Platform *>(platform.get());
@@ -349,10 +459,19 @@ void Player::handle_collision(
             }
         }
     }
-    if (tmp_colliding) {
-        // Jump is reset as soon as the player collides with a platform
+    if (tmp_grounded) {
+        // Jump is reset only when the player lands on top of a platform
         _reset_jump();
     }
+
+    // Double-check m_pimpl before accessing (should never be null here)
+    if (!m_pimpl) {
+        udj::core::Logger::error(
+            "Player::handle_collision - m_pimpl became null during collision "
+            "processing!");
+        return;
+    }
+
     m_pimpl->colliding = tmp_colliding;
     m_pimpl->grounded = tmp_grounded;
     m_pimpl->grounded_src = tmp_grounded_src;
@@ -373,14 +492,28 @@ void Player::notify(const std::string &event) {
 }
 
 void Player::_reset_jump() noexcept {
+    if (!m_pimpl) {
+        udj::core::Logger::error("Player::_reset_jump - m_pimpl is null!");
+        return;
+    }
     m_pimpl->jumping = false;
-    m_pimpl->vy = 0.0F;
+    m_pimpl->current_jumps = 0;  // Reset jump counter on landing
+    // Velocity is now managed by gravity system, no manual reset needed
 }
 
 void Player::update_animation_state() {
+    if (!m_pimpl) {
+        udj::core::Logger::error(
+            "Player::update_animation_state - m_pimpl is null!");
+        return;
+    }
+
     // Check if player is currently moving
     bool is_moving =
         input_mapping.left_pressed() || input_mapping.right_pressed();
+
+    // Get current state before changing
+    static PlayerState prev_state = PlayerState::IDLE;
 
     // Determine player state for animation controller
     PlayerState new_player_state;
@@ -402,26 +535,33 @@ void Player::update_animation_state() {
 }
 
 void Player::attack_nearby_monsters() {
-    std::cout << "Player attacking nearby monsters!" << std::endl;
+    udj::core::Logger::info("Player attacking nearby monsters!");
     // Use the event system to notify the game of an attack
     notify("99;attack");  // Custom attack event with mode 99
 }
 
 void Player::load_projectile_presets(const std::string &config_file) {
-    std::cout << "Loading projectile presets from: " << config_file
-              << std::endl;
+    udj::core::Logger::debug("Loading projectile presets from: " + config_file);
     if (!projectile_loader_) {
         projectile_loader_ =
             std::make_unique<udjourney::ProjectilePresetLoader>();
     }
     bool success = projectile_loader_->load_from_file(config_file);
-    std::cout << "Projectile presets loaded: "
-              << (success ? "SUCCESS" : "FAILED") << std::endl;
+    udj::core::Logger::debug("Projectile presets loaded: " +
+                             std::string(success ? "SUCCESS" : "FAILED"));
 }
 
 void Player::set_current_projectile(const std::string &preset_name) {
     if (projectile_loader_ && projectile_loader_->has_preset(preset_name)) {
+        if (current_projectile_preset_ == preset_name) {
+            return;
+        }
+
         current_projectile_preset_ = preset_name;
+
+        udjourney::core::events::WeaponSelectedEvent weapon_event{
+            current_projectile_preset_};
+        m_dispatcher.dispatch(weapon_event);
     }
 }
 
@@ -446,8 +586,12 @@ void Player::cycle_projectile_type() {
     }
 
     current_projectile_preset_ = *it;
-    std::cout << "Switched to projectile: " << current_projectile_preset_
-              << std::endl;
+    udj::core::Logger::debug("Switched to projectile: " +
+                             current_projectile_preset_);
+
+    udjourney::core::events::WeaponSelectedEvent weapon_event{
+        current_projectile_preset_};
+    m_dispatcher.dispatch(weapon_event);
 }
 
 const udjourney::ProjectilePreset *Player::get_current_projectile_preset()
@@ -457,15 +601,18 @@ const udjourney::ProjectilePreset *Player::get_current_projectile_preset()
 }
 
 void Player::reset_shoot_cooldown() {
-    shoot_cooldown_ = SHOOT_COOLDOWN_DURATION;
+    shoot_cooldown_ = kShootCooldownDuration;
 }
 
 Vector2 Player::get_shoot_position() const {
-    // Shoot from center-right or center-left of player
-    float offset_x = m_facing_right ? r.width : 0;
+    // Shoot from outside the player bounds to avoid any collision
+    // Use a larger offset to ensure clear separation
+    float offset_x = m_facing_right ? r.width + 5.0f : -5.0f;
     return Vector2{r.x + offset_x, r.y + r.height / 2.0f};
 }
 
 Vector2 Player::get_shoot_direction() const {
     return Vector2{m_facing_right ? 1.0f : -1.0f, 0.0f};
 }
+
+}  // namespace udjourney

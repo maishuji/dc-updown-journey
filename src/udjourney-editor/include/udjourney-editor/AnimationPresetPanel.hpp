@@ -73,7 +73,7 @@ class AnimationPresetPanel {
     // Duplicate the selected animation state
     void duplicate_selected_animation();
 
-    bool is_open_ = true;
+    bool is_open_ = false;
     udjourney::animation::AnimationPresetConfig current_preset_;
     int selected_animation_index_ = -1;
     std::string current_filepath_;

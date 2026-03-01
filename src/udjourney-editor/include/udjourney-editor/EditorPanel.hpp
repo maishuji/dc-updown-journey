@@ -13,6 +13,13 @@
 #include "udjourney-editor/background/BackgroundManager.hpp"
 #include "udjourney-editor/background/BackgroundObjectPresetManager.hpp"
 
+// Forward declarations
+namespace udjourney {
+namespace editor {
+struct PlatformPresetInfo;
+}
+}  // namespace udjourney
+
 // Forward declare mode handlers
 class IModeHandler;
 class TileModeHandler;
@@ -20,7 +27,7 @@ class PlatformModeHandler;
 class SpawnModeHandler;
 class MonsterModeHandler;
 class BackgroundModeHandler;
-class FUDModeHandler;
+class HUDModeHandler;
 
 namespace color {
 extern const ImU32 kColorRed;
@@ -38,7 +45,7 @@ enum class EditMode {
     Monsters,
     Npc,
     Background,
-    FUD
+    HUD
 };
 
 class EditorPanel {
@@ -53,6 +60,9 @@ class EditorPanel {
     EditorPanel& operator=(EditorPanel&&) = delete;
     void draw();
 
+    // Render dialogs that must be displayed outside windows
+    void render_file_dialogs();
+
     // Set the current level for scene type awareness
     void set_current_level(Level* level) { current_level_ = level; }
 
@@ -66,10 +76,21 @@ class EditorPanel {
         return platform_behavior;
     }
 
-    // Get selected features for new platforms
-    std::vector<PlatformFeatureType> get_selected_features() const;
+    [[nodiscard]] const std::string& get_new_platform_texture_file() const;
+    [[nodiscard]] bool get_new_platform_texture_tiled() const noexcept;
+    [[nodiscard]] const std::string& get_selected_platform_preset() const;
+    [[nodiscard]] const udjourney::editor::PlatformPresetInfo*
+    get_selected_platform_preset_info() const;
+    [[nodiscard]] bool get_tile_render_tiled() const noexcept;
 
-    ImVec2 get_platform_size() const noexcept;
+    // Get selected features for new platforms
+    [[nodiscard]] std::vector<PlatformFeatureType> get_selected_features()
+        const;
+
+    [[nodiscard]] ImVec2 get_platform_size() const noexcept;
+
+    // Get behavior parameters for new platforms
+    [[nodiscard]] std::map<std::string, float> get_behavior_params() const;
 
     void set_button(const std::string& iId, ImU32 color);
     void set_scale(float scale) noexcept;
@@ -102,15 +123,15 @@ class EditorPanel {
     // Background control
     void clear_background_placing_mode();
 
-    // FUD editing
-    void set_selected_fud(FUDElement* fud);
-    FUDElement* get_selected_fud() const;
+    // HUD editing
+    void set_selected_fud(HUDElement* hud);
+    HUDElement* get_selected_fud() const;
     const std::string& get_selected_fud_preset() const;
     bool should_delete_selected_fud() const;
     void clear_fud_delete_flag();
     bool should_add_fud() const;
     void clear_fud_add_flag();
-    FUDElement create_fud_from_preset() const;
+    HUDElement create_fud_from_preset() const;
 
  private:
     float scale = 1.0f;  // Default scale
@@ -123,7 +144,7 @@ class EditorPanel {
     std::unique_ptr<SpawnModeHandler> spawn_handler_;
     std::unique_ptr<MonsterModeHandler> monster_handler_;
     std::unique_ptr<BackgroundModeHandler> background_handler_;
-    std::unique_ptr<FUDModeHandler> fud_handler_;
+    std::unique_ptr<HUDModeHandler> fud_handler_;
 
     // Legacy members kept for compatibility (TODO: fully migrate to handlers)
     ImU32 cur_color = IM_COL32(255, 255, 255, 255);
@@ -156,13 +177,4 @@ class EditorPanel {
 
     // Focus management
     bool should_focus_ = false;
-
-    void draw_tile_mode();
-    void draw_platform_mode();
-    void draw_spawn_mode();
-    void draw_platform_editor();
-    void draw_monsters_mode();
-    void draw_monster_editor();
-    void draw_background_mode();
-    void draw_fud_mode();
 };

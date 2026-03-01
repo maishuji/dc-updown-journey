@@ -5,10 +5,11 @@
 
 #include <udj-core/Logger.hpp>
 #include "udjourney/interfaces/IActor.hpp"
+#include "udjourney/Player.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/platform/features/PlatformFeatureBase.hpp"
-
+namespace udjourney {
 struct SpikeFeature : public PlatformFeatureBase {
     float height = 20.0f;  // Default spike height
     int damage = 1;        // Default damage
@@ -53,3 +54,4 @@ struct SpikeFeature : public PlatformFeatureBase {
         }
     }
 };
+}  // namespace udjourney

@@ -1,12 +1,15 @@
 // Copyright 2025 Quentin Cartier
 #include "udjourney/ActionDispatcher.hpp"
-#include <sstream>
+
 #include <iostream>
-#include <vector>
-#include <unordered_map>
+#include <sstream>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 #include <udj-core/Logger.hpp>
+
+namespace udjourney {
 
 std::unordered_map<std::string, ActionDispatcher::ActionCallback>
     ActionDispatcher::actions_;
@@ -17,7 +20,8 @@ void ActionDispatcher::register_action(const std::string& action_name,
     udjourney::Logger::debug("Registered action: %", action_name);
 }
 
-void ActionDispatcher::execute(const std::string& action_string, IGame* game) {
+void ActionDispatcher::execute(const ::std::string& action_string,
+                               udjourney::IGame* game) {
     if (action_string.empty()) {
         udjourney::Logger::error("Empty action string!");
         return;
@@ -52,3 +56,5 @@ std::vector<std::string> ActionDispatcher::split_action(
 
     return parts;
 }
+
+}  // namespace udjourney

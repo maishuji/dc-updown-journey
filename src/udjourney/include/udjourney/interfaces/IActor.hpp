@@ -1,15 +1,16 @@
 // Copyright 2025 Quentin Cartier
-
-#ifndef SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IACTOR_HPP_
-#define SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IACTOR_HPP_
+#pragma once
 
 #include <concepts>
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
+#include <udj-core/ICommand.hpp>
 #include "udjourney/interfaces/IComponent.hpp"
-
+namespace udjourney {
 // Forward declarations
 class IGame;
 
@@ -43,6 +44,26 @@ class IActor {
 
     const std::vector<std::unique_ptr<IComponent>>& get_components() const {
         return m_components;
+    }
+
+    // Register a command with a name
+    void add_command(const std::string& command_name,
+                     std::unique_ptr<udj::core::ICommand> command) {
+        m_commands[command_name] = std::move(command);
+    }
+
+    // Execute a command by name
+    void execute_command(const std::string& command_name) {
+        if (auto it = m_commands.find(command_name); it != m_commands.end()) {
+            if (it->second) {
+                it->second->execute();
+            }
+        }
+    }
+
+    // Remove a command
+    void remove_command(const std::string& command_name) {
+        m_commands.erase(command_name);
     }
 
     /**
@@ -86,6 +107,8 @@ class IActor {
     const IGame* m_game = nullptr;
     ActorState state = ActorState::ONGOING;
     std::vector<std::unique_ptr<IComponent>> m_components;
+    std::unordered_map<std::string, std::unique_ptr<udj::core::ICommand>>
+        m_commands;
 };
 
-#endif  // SRC_UDJOURNEY_INCLUDE_UDJOURNEY_IACTOR_HPP_
+}  // namespace udjourney

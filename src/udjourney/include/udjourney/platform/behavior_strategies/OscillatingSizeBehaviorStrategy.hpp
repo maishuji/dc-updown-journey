@@ -1,11 +1,11 @@
 // Copyright 2025 Quentin Cartier
-#ifndef PLATFORM_SHRINKINGBEHAVIORSTREATEGY_HPP
-#define PLATFORM_SHRINKINGBEHAVIORSTREATEGY_HPP
+#pragma once
 
 #include <memory>
 
 #include "udjourney/platform/behavior_strategies/PlatformBehaviorStrategy.hpp"
 
+namespace udjourney {
 class Platform;
 
 class OscillatingSizeBehaviorStrategy : public PlatformBehaviorStrategy {
@@ -14,10 +14,13 @@ class OscillatingSizeBehaviorStrategy : public PlatformBehaviorStrategy {
                                     float iMaxOffset);
     ~OscillatingSizeBehaviorStrategy() override;
     void update(Platform& ioPlatform, float iDelta) override;
+    PlatformBehaviorType get_type() const override {
+        return PlatformBehaviorType::OscillatingSize;
+    }
 
  private:
     struct PImpl;
     std::unique_ptr<PImpl> m_pimpl;
 };
 
-#endif  //  PLATFORM_SHRINKINGBEHAVIORSTREATEGY_HPP
+}  // namespace udjourney

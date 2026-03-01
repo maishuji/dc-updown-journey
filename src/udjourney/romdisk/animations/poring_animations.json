@@ -103,7 +103,7 @@
       },
       "name": "chase",
       "sprite_config": {
-        "filename": "poring1-Sheet.png",
+        "filename": "poring1-angry-Sheet.png",
         "frame_duration": 0.03750000149011612,
         "frames": [
           {
@@ -150,7 +150,7 @@
       },
       "name": "attack",
       "sprite_config": {
-        "filename": "poring1-Sheet.png",
+        "filename": "poring1-attack-Sheet.png",
         "frame_duration": 0.07500000298023224,
         "frames": [
           {

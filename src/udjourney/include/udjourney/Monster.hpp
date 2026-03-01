@@ -14,6 +14,7 @@
 #include "udjourney/interfaces/IObservable.hpp"
 #include "udjourney/MonsterPreset.hpp"
 #include "udjourney/loaders/MonsterPresetLoader.hpp"
+#include "udjourney/scene/LevelPhysicsConfig.hpp"
 
 // Forward declarations
 class Player;
@@ -21,11 +22,13 @@ namespace udjourney::core::events {
 class EventDispatcher;
 }
 
+namespace udjourney {
 class Monster : public IActor, public IObservable {
  public:
     Monster(const IGame &game, Rectangle rect,
             AnimSpriteController anim_controller,
-            udjourney::core::events::EventDispatcher &dispatcher);
+            udjourney::core::events::EventDispatcher &dispatcher,
+            const scene::LevelPhysicsConfig &physics_config);
     ~Monster() override = default;
 
     void draw() const override;
@@ -53,6 +56,7 @@ class Monster : public IActor, public IObservable {
 
     [[nodiscard]] bool is_alive() const { return health_ > 0.0f; }
     [[nodiscard]] bool is_attacking() const;
+    [[nodiscard]] bool is_dying() const;
 
     // State management
     void change_state(const std::string &new_state);
@@ -119,9 +123,8 @@ class Monster : public IActor, public IObservable {
     bool facing_right_ = true;
     bool grounded_ = false;
 
-    // Physics
-    static constexpr float GRAVITY = 1.0f;
-    static constexpr float MAX_FALL_SPEED = 10.0f;
+    // Physics configuration
+    scene::LevelPhysicsConfig physics_config_;
 
     // Patrol behavior
     float patrol_min_x_ = 0.0f;
@@ -158,3 +161,4 @@ class Monster : public IActor, public IObservable {
     // Observer pattern
     std::vector<IObserver *> observers;
 };
+}  // namespace udjourney

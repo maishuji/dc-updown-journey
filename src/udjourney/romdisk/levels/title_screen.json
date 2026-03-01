@@ -338,10 +338,10 @@
           }
         ],
         "parallax_factor": 0.5,
+        "repeat": true,
         "scroll_speed_x": 0.0,
         "scroll_speed_y": 100.0,
-        "texture_file": "placeholder.png",
-        "repeat": true
+        "texture_file": "placeholder.png"
       },
       {
         "auto_scroll_enabled": true,
@@ -592,10 +592,10 @@
           }
         ],
         "parallax_factor": 0.2549999952316284,
+        "repeat": false,
         "scroll_speed_x": 0.0,
         "scroll_speed_y": 80.0,
-        "texture_file": "",
-        "repeat": false
+        "texture_file": ""
       },
       {
         "auto_scroll_enabled": true,
@@ -603,14 +603,14 @@
         "name": "Scrolling Clouds",
         "objects": [],
         "parallax_factor": 0.800000011920929,
+        "repeat": true,
         "scroll_speed_x": 0.0,
         "scroll_speed_y": 80.0,
-        "texture_file": "background/trees.png",
-        "repeat": true
+        "texture_file": "background/trees.png"
       }
     ]
   },
-  "fuds": [
+  "huds": [
     {
       "anchor": "TopCenter",
       "background_render_mode": "Stretch",
@@ -804,6 +804,7 @@
           255,
           255
         ],
+        "selectable": false,
         "text": "X"
       },
       "size": {
@@ -841,6 +842,7 @@
           255,
           255
         ],
+        "selectable": false,
         "text": "X"
       },
       "size": {
@@ -852,5 +854,6 @@
     }
   ],
   "name": "Untitled Level",
-  "scene_type": "ui_screen"
+  "scene_type": "ui_screen",
+  "scroll_speed": 1.0
 }

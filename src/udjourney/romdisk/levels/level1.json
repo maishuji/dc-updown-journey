@@ -2,6 +2,7 @@
   "backgrounds": {
     "layers": [
       {
+        "auto_scroll_enabled": true,
         "depth": 0,
         "name": "New Layer",
         "objects": [
@@ -271,9 +272,13 @@
           }
         ],
         "parallax_factor": 0.5,
+        "repeat": false,
+        "scroll_speed_x": 0.0,
+        "scroll_speed_y": 0.0,
         "texture_file": ""
       },
       {
+        "auto_scroll_enabled": true,
         "depth": 0,
         "name": "back",
         "objects": [
@@ -367,60 +372,21 @@
           }
         ],
         "parallax_factor": 0.8140000104904175,
+        "repeat": false,
+        "scroll_speed_x": 0.0,
+        "scroll_speed_y": 0.0,
         "texture_file": ""
       }
     ]
   },
-  "fuds": [
-    {
-      "anchor": "TopLeft",
-      "background_render_mode": "Tile",
-      "background_sheet": "ui/ui_elements.png",
-      "background_tile_col": 0,
-      "background_tile_height": 1,
-      "background_tile_row": 7,
-      "background_tile_size": 32,
-      "background_tile_width": 1,
-      "foreground_render_mode": "Center",
-      "foreground_sheet": "ui/ui_elements.png",
-      "foreground_tile_col": 0,
-      "foreground_tile_height": 1,
-      "foreground_tile_row": 2,
-      "foreground_tile_size": 64,
-      "foreground_tile_width": 1,
-      "name": "Player Health",
-      "offset": {
-        "x": 360.0,
-        "y": 77.0
-      },
-      "properties": {
-        "background_color": [
-          64,
-          64,
-          64
-        ],
-        "bar_color": [
-          255,
-          0,
-          0
-        ],
-        "border_thickness": 2,
-        "max_value": 100,
-        "show_numbers": true
-      },
-      "size": {
-        "x": 187.0,
-        "y": 30.0
-      },
-      "type_id": "healthbar",
-      "visible": true
-    },
+  "gravity": 0.20000000298023224,
+  "huds": [
     {
       "anchor": "TopRight",
       "name": "Score Display",
       "offset": {
         "x": -160.0,
-        "y": 10.0
+        "y": 14.0
       },
       "properties": {
         "font_size": 24,
@@ -444,8 +410,8 @@
       "background_tile_width": 1,
       "name": "Heart Health",
       "offset": {
-        "x": 29.0,
-        "y": 25.0
+        "x": 209.0,
+        "y": 65.0
       },
       "properties": {
         "current_hearts": 3,
@@ -463,9 +429,9 @@
         },
         "heart_half_sprite": {
           "sheet": "ui/ui_elements.png",
-          "tile_col": 3,
-          "tile_row": 3,
-          "tile_size": 32
+          "tile_col": 2,
+          "tile_row": 1,
+          "tile_size": 64
         },
         "heart_spacing": 32,
         "max_hearts": 3,
@@ -476,6 +442,25 @@
         "y": 32.0
       },
       "type_id": "heart_health",
+      "visible": true
+    },
+    {
+      "anchor": "TopLeft",
+      "name": "Weapon Display",
+      "offset": {
+        "x": 202.0,
+        "y": 5.0
+      },
+      "properties": {
+        "font_size": 20,
+        "icon_size": 32,
+        "show_icon": true
+      },
+      "size": {
+        "x": 250.0,
+        "y": 40.0
+      },
+      "type_id": "weapon_display",
       "visible": true
     }
   ],
@@ -571,241 +556,265 @@
       "y": 3
     }
   ],
-  "name": "Winter Forest",
-  "metadata": {
-    "display_name": "Winter Forest",
-    "difficulty": 2,
-    "thumbnail": ""
-  },
+  "name": "Untitled Level",
   "platforms": [
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 5.0,
-      "x": 0,
-      "y": 10
+      "x": 0.0,
+      "y": 10.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 5.0,
-      "x": 4,
-      "y": 13
+      "x": 4.0,
+      "y": 13.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 5.0,
-      "x": 5,
-      "y": 18
+      "x": 5.0,
+      "y": 18.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 5.0,
-      "x": 8,
-      "y": 22
+      "x": 8.0,
+      "y": 22.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 5.0,
-      "x": 10,
-      "y": 25
+      "x": 10.0,
+      "y": 25.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 5.0,
-      "x": 16,
-      "y": 29
+      "x": 16.0,
+      "y": 29.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 5.0,
-      "x": 17,
-      "y": 33
+      "x": 17.0,
+      "y": 33.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 5.0,
-      "x": 13,
-      "y": 34
+      "x": 13.0,
+      "y": 34.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 5.0,
-      "x": 9,
-      "y": 37
+      "x": 9.0,
+      "y": 37.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 5.0,
-      "x": 5,
-      "y": 42
+      "x": 5.0,
+      "y": 42.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 5.0,
-      "x": 4,
-      "y": 46
+      "x": 4.0,
+      "y": 46.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 10,
-      "y": 15
+      "x": 10.0,
+      "y": 15.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 13,
-      "y": 19
+      "x": 13.0,
+      "y": 19.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 2,
-      "y": 27
+      "x": 2.0,
+      "y": 27.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 10,
-      "y": 49
+      "x": 10.0,
+      "y": 49.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 13,
-      "y": 52
+      "x": 13.0,
+      "y": 52.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 7,
-      "y": 54
+      "x": 7.0,
+      "y": 54.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 3,
-      "y": 56
+      "x": 3.0,
+      "y": 56.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 14,
-      "y": 58
+      "x": 14.0,
+      "y": 58.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 4.599999904632568,
-      "x": 0,
-      "y": 15
+      "x": 0.0,
+      "y": 15.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 3.5,
-      "x": 0,
-      "y": 16
+      "x": 0.0,
+      "y": 16.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 3.5,
-      "x": 0,
-      "y": 19
+      "x": 0.0,
+      "y": 19.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 3.5,
-      "x": 0,
-      "y": 18
+      "x": 0.0,
+      "y": 18.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 3.5,
-      "x": 0,
-      "y": 17
+      "x": 0.0,
+      "y": 17.0
     },
     {
       "behavior": "horizontal",
       "height": 1.0,
       "width": 3.5,
-      "x": 0,
-      "y": 14
+      "x": 0.0,
+      "y": 14.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 1.0,
-      "x": 1,
-      "y": 14
+      "x": 1.0,
+      "y": 14.0
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "range": 1.0,
+        "speed": 5.0
+      },
+      "height": 1.0,
+      "width": 5.0,
+      "x": 12.0,
+      "y": 6.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 12,
-      "y": 6
+      "x": 19.0,
+      "y": 7.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 19,
-      "y": 7
+      "x": 13.0,
+      "y": 8.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 13,
-      "y": 8
+      "x": 16.0,
+      "y": 9.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 16,
-      "y": 9
+      "x": 0.0,
+      "y": 20.0
     },
     {
       "behavior": "static",
       "height": 1.0,
       "width": 5.0,
-      "x": 0,
-      "y": 20
+      "x": 15.0,
+      "y": 22.0
     },
     {
       "behavior": "static",
       "height": 1.0,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
       "width": 5.0,
-      "x": 15,
-      "y": 22
+      "x": 3.0,
+      "y": 5.0
+    },
+    {
+      "behavior": "horizontal",
+      "behavior_params": {
+        "initial_offset": 0.0,
+        "range": 3.0,
+        "speed": 10.0
+      },
+      "height": 2.200000047683716,
+      "texture": "platform_placeholder.png",
+      "texture_tiled": true,
+      "width": 2.5,
+      "x": 6.0,
+      "y": 7.0
     }
   ],
   "player_spawn": {
     "x": 2,
-    "y": 8
+    "y": 4
   },
-  "scene_type": "level"
+  "scene_type": "level",
+  "scroll_speed": 0.5,
+  "terminal_velocity": 10.0
 }

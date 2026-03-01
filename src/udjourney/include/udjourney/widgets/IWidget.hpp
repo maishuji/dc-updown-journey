@@ -3,7 +3,7 @@
 #include <raylib/raylib.h>
 #include <string>
 #include "udjourney/interfaces/IActor.hpp"
-
+namespace udjourney {
 class IGame;
 
 /**
@@ -11,7 +11,7 @@ class IGame;
  *
  * Widgets are special actors that handle user input and can trigger
  * actions through the ActionDispatcher. They can be placed in scenes
- * like any other actor and loaded from JSON/FUD data.
+ * like any other actor and loaded from JSON/HUD data.
  */
 class IWidget : public IActor {
  public:
@@ -88,3 +88,4 @@ class IWidget : public IActor {
     bool is_focused_ = false;
     bool is_selectable_ = true;  // By default, widgets are selectable
 };
+}  // namespace udjourney

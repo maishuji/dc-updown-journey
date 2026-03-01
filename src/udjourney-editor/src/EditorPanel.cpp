@@ -4,18 +4,20 @@
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 #include <cstring>
 
 #include "udjourney-editor/Level.hpp"
+#include "udjourney-editor/PlatformPresetManager.hpp"
 #include "udjourney-editor/mode_handlers/TileModeHandler.hpp"
 #include "udjourney-editor/mode_handlers/PlatformModeHandler.hpp"
 #include "udjourney-editor/mode_handlers/SpawnModeHandler.hpp"
 #include "udjourney-editor/mode_handlers/MonsterModeHandler.hpp"
 #include "udjourney-editor/mode_handlers/BackgroundModeHandler.hpp"
-#include "udjourney-editor/mode_handlers/FUDModeHandler.hpp"
+#include "udjourney-editor/mode_handlers/HUDModeHandler.hpp"
 
 namespace color {
 const ImU32 kColorRed = IM_COL32(255, 0, 0, 255);
@@ -32,12 +34,54 @@ EditorPanel::EditorPanel() {
     platform_handler_ = std::make_unique<PlatformModeHandler>();
     spawn_handler_ = std::make_unique<SpawnModeHandler>();
     monster_handler_ = std::make_unique<MonsterModeHandler>();
-    fud_handler_ = std::make_unique<FUDModeHandler>();
+    fud_handler_ = std::make_unique<HUDModeHandler>();
     // Background handler will be created when managers are set
 }
 
 // Destructor must be defined in .cpp where handler types are complete
 EditorPanel::~EditorPanel() = default;
+
+void EditorPanel::render_file_dialogs() {
+    if (platform_handler_) {
+        platform_handler_->render_file_dialogs();
+    }
+}
+
+const std::string& EditorPanel::get_new_platform_texture_file() const {
+    static const std::string kEmpty;
+    // Platform presets replace direct texture file specification
+    // This method is kept for backward compatibility
+    return kEmpty;
+}
+
+bool EditorPanel::get_new_platform_texture_tiled() const noexcept {
+    // Platform presets replace direct texture file specification
+    // This method is kept for backward compatibility
+    return false;
+}
+
+const std::string& EditorPanel::get_selected_platform_preset() const {
+    static const std::string kEmpty;
+    if (platform_handler_) {
+        return platform_handler_->get_selected_platform_preset();
+    }
+    return kEmpty;
+}
+
+const udjourney::editor::PlatformPresetInfo*
+EditorPanel::get_selected_platform_preset_info() const {
+    if (platform_handler_) {
+        return platform_handler_->get_selected_preset_info();
+    }
+    return nullptr;
+}
+
+bool EditorPanel::get_tile_render_tiled() const noexcept {
+    if (platform_handler_) {
+        return platform_handler_->get_tile_render_tiled();
+    }
+    return false;
+}
 
 void EditorPanel::set_background_managers(
     BackgroundManager* bg_manager,
@@ -224,8 +268,8 @@ void EditorPanel::draw() {
     }
 
     ImGui::SameLine();
-    if (ImGui::RadioButton("FUD", edit_mode == EditMode::FUD)) {
-        edit_mode = EditMode::FUD;
+    if (ImGui::RadioButton("HUD", edit_mode == EditMode::HUD)) {
+        edit_mode = EditMode::HUD;
     }
 
     ImGui::Separator();
@@ -262,8 +306,6 @@ void EditorPanel::draw() {
                 selected_monster_ = monster_handler_->get_selected_monster();
                 delete_selected_monster_ =
                     monster_handler_->should_delete_selected_monster();
-            } else {
-                draw_monsters_mode();  // Fallback to legacy code
             }
             break;
         case EditMode::Background:
@@ -276,7 +318,7 @@ void EditorPanel::draw() {
                 new_bg_object_scale_ = background_handler_->get_object_scale();
             }
             break;
-        case EditMode::FUD:
+        case EditMode::HUD:
             if (fud_handler_) {
                 fud_handler_->render();
             }
@@ -288,339 +330,11 @@ void EditorPanel::draw() {
 
 ImVec2 EditorPanel::get_platform_size() const noexcept { return platform_size; }
 
-void EditorPanel::draw_tile_mode() {
-    ImGui::Text("Tile Picker");
-    ImGui::Separator();
-
-    std::vector<TileInfp> tiles = {{color::kColorRed, "Brick"},
-                                   {color::kColorGreen, "Grass"},
-                                   {color::kColorBlue, "Water"},
-                                   {color::kColorOrange, "Sand"},
-                                   {color::kColorLightGreen, "Lava"},
-                                   {color::kColorPurple, "Stone"}};
-    int idx = 1;
-    for (const auto& tile : tiles) {
-        set_button(tile.name, tile.color);
-        if (idx % 3 != 0) {
-            ImGui::SameLine();
-        }
-        ++idx;
+std::map<std::string, float> EditorPanel::get_behavior_params() const {
+    if (platform_handler_) {
+        return platform_handler_->get_behavior_params();
     }
-}
-
-/*
- * Draw the platform creation UI when no platform is selected
- */
-void EditorPanel::draw_platform_mode() {
-    if (selected_platform_) {
-        draw_platform_editor();
-    } else {
-        ImGui::Text("Platform Creator");
-        ImGui::Separator();
-
-        // Platform behavior selection for new platforms
-        ImGui::TextWrapped("Behavior for new platforms:");
-        if (ImGui::RadioButton(
-                "Static", platform_behavior == PlatformBehaviorType::Static)) {
-            platform_behavior = PlatformBehaviorType::Static;
-        }
-        if (ImGui::RadioButton(
-                "Horizontal",
-                platform_behavior == PlatformBehaviorType::Horizontal)) {
-            platform_behavior = PlatformBehaviorType::Horizontal;
-        }
-        if (ImGui::RadioButton("Eight Turn",
-                               platform_behavior ==
-                                   PlatformBehaviorType::EightTurnHorizontal)) {
-            platform_behavior = PlatformBehaviorType::EightTurnHorizontal;
-        }
-        if (ImGui::RadioButton(
-                "Oscillating Size",
-                platform_behavior == PlatformBehaviorType::OscillatingSize)) {
-            platform_behavior = PlatformBehaviorType::OscillatingSize;
-        }
-
-        if (ImGui::CollapsingHeader("Size", ImGuiTreeNodeFlags_DefaultOpen)) {
-            ImGui::SliderFloat(
-                "Width", &platform_size.x, 0.5f, 5.0f, "%.1f tiles");
-            ImGui::SliderFloat(
-                "Height", &platform_size.y, 0.5f, 3.0f, "%.1f tiles");
-        }
-
-        ImGui::Separator();
-        ImGui::TextWrapped("Features for new platforms:");
-        ImGui::Checkbox("Spikes", &feature_spikes);
-        ImGui::Checkbox("Checkpoint", &feature_checkpoint);
-
-        ImGui::Separator();
-        ImGui::TextWrapped("Controls:");
-        ImGui::BulletText("Left click: Create platform");
-        ImGui::BulletText("Right click: Delete platform");
-        ImGui::BulletText("Ctrl+Left click: Edit platform");
-    }
-}
-
-/**
- * Draw the platform editor UI when a platform is selected
- */
-void EditorPanel::draw_platform_editor() {
-    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Platform Editor");
-    ImGui::Separator();
-
-    if (!selected_platform_) return;
-
-    // Show platform position
-    ImGui::Text("Position: (%d, %d)",
-                selected_platform_->tile_x,
-                selected_platform_->tile_y);
-
-    // Edit platform behavior in a collapsible section
-    if (ImGui::CollapsingHeader("Behavior", ImGuiTreeNodeFlags_DefaultOpen)) {
-        if (ImGui::RadioButton("Static##edit",
-                               selected_platform_->behavior_type ==
-                                   PlatformBehaviorType::Static)) {
-            selected_platform_->behavior_type = PlatformBehaviorType::Static;
-        }
-        if (ImGui::RadioButton("Horizontal##edit",
-                               selected_platform_->behavior_type ==
-                                   PlatformBehaviorType::Horizontal)) {
-            selected_platform_->behavior_type =
-                PlatformBehaviorType::Horizontal;
-        }
-        if (ImGui::RadioButton("Eight Turn##edit",
-                               selected_platform_->behavior_type ==
-                                   PlatformBehaviorType::EightTurnHorizontal)) {
-            selected_platform_->behavior_type =
-                PlatformBehaviorType::EightTurnHorizontal;
-        }
-        if (ImGui::RadioButton("Oscillating Size##edit",
-                               selected_platform_->behavior_type ==
-                                   PlatformBehaviorType::OscillatingSize)) {
-            selected_platform_->behavior_type =
-                PlatformBehaviorType::OscillatingSize;
-        }
-    }
-
-    if (ImGui::CollapsingHeader("Size", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::SliderFloat("Width",
-                           &selected_platform_->width_tiles,
-                           0.5f,
-                           5.0f,
-                           "%.1f tiles");
-        ImGui::SliderFloat("Height",
-                           &selected_platform_->height_tiles,
-                           0.5f,
-                           3.0f,
-                           "%.1f tiles");
-    }
-
-    if (ImGui::CollapsingHeader("Features", ImGuiTreeNodeFlags_DefaultOpen)) {
-        // Check current features
-        bool has_spikes = std::find(selected_platform_->features.begin(),
-                                    selected_platform_->features.end(),
-                                    PlatformFeatureType::Spikes) !=
-                          selected_platform_->features.end();
-        bool has_checkpoint = std::find(selected_platform_->features.begin(),
-                                        selected_platform_->features.end(),
-                                        PlatformFeatureType::Checkpoint) !=
-                              selected_platform_->features.end();
-
-        // Feature checkboxes
-        if (ImGui::Checkbox("Spikes##edit", &has_spikes)) {
-            if (has_spikes) {
-                // Add spikes feature
-                if (std::find(selected_platform_->features.begin(),
-                              selected_platform_->features.end(),
-                              PlatformFeatureType::Spikes) ==
-                    selected_platform_->features.end()) {
-                    selected_platform_->features.push_back(
-                        PlatformFeatureType::Spikes);
-                }
-            } else {
-                // Remove spikes feature
-                selected_platform_->features.erase(
-                    std::remove(selected_platform_->features.begin(),
-                                selected_platform_->features.end(),
-                                PlatformFeatureType::Spikes),
-                    selected_platform_->features.end());
-            }
-        }
-
-        if (ImGui::Checkbox("Checkpoint##edit", &has_checkpoint)) {
-            if (has_checkpoint) {
-                // Add checkpoint feature
-                if (std::find(selected_platform_->features.begin(),
-                              selected_platform_->features.end(),
-                              PlatformFeatureType::Checkpoint) ==
-                    selected_platform_->features.end()) {
-                    selected_platform_->features.push_back(
-                        PlatformFeatureType::Checkpoint);
-                }
-            } else {
-                // Remove checkpoint feature
-                selected_platform_->features.erase(
-                    std::remove(selected_platform_->features.begin(),
-                                selected_platform_->features.end(),
-                                PlatformFeatureType::Checkpoint),
-                    selected_platform_->features.end());
-            }
-        }
-    }
-
-    ImGui::Separator();
-    if (ImGui::Button("Done Editing", ImVec2(-1, 0))) {  // Full width button
-        selected_platform_ = nullptr;
-    }
-}
-
-void EditorPanel::draw_spawn_mode() {
-    ImGui::Text("Player Spawn");
-    ImGui::Separator();
-    ImGui::Text("Click on the grid to set");
-    ImGui::Text("the player spawn position.");
-}
-
-void EditorPanel::draw_monsters_mode() {
-    // Ensure we have valid monster presets loaded and selected
-    initialize_monster_presets();
-
-    ImGui::Text("Monster Spawns");
-    ImGui::Separator();
-
-    // Check if we have any monster presets loaded
-    if (!monster_preset_manager_.has_presets()) {
-        ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.0f, 1.0f),
-                           "No monster presets found!");
-        ImGui::Text("Make sure assets/monsters/ contains");
-        ImGui::Text("valid monster preset JSON files.");
-
-        if (ImGui::Button("Reload Presets")) {
-            monster_preset_manager_.load_available_presets();
-        }
-        return;
-    }
-
-    // Dynamic monster preset selection
-    ImGui::Text("Select Monster Type:");
-
-    const auto& presets = monster_preset_manager_.get_presets();
-    for (const auto& preset : presets) {
-        if (ImGui::RadioButton(preset.display_name.c_str(),
-                               selected_monster_preset == preset.name)) {
-            selected_monster_preset = preset.name;
-        }
-
-        // Show preset information on hover
-        if (ImGui::IsItemHovered()) {
-            ImGui::BeginTooltip();
-            ImGui::Text("Name: %s", preset.display_name.c_str());
-            ImGui::Text("Health: %d", preset.health);
-            ImGui::Text("Speed: %d", preset.speed);
-            if (!preset.description.empty()) {
-                ImGui::Separator();
-                ImGui::TextWrapped("%s", preset.description.c_str());
-            }
-            ImGui::EndTooltip();
-        }
-    }
-
-    ImGui::Separator();
-    ImGui::Text("Left click: Place %s", selected_monster_preset.c_str());
-    ImGui::Text("Right click: Remove monster");
-    ImGui::Text("Click existing monster to edit");
-
-    // Show reload button for development
-    if (ImGui::Button("Reload Presets")) {
-        monster_preset_manager_.load_available_presets();
-        // Validate current selection still exists
-        if (monster_preset_manager_.get_preset(selected_monster_preset) ==
-            nullptr) {
-            auto preset_names = monster_preset_manager_.get_preset_names();
-            if (!preset_names.empty()) {
-                selected_monster_preset = preset_names[0];
-            }
-        }
-    }
-
-    // Monster editor for selected monster
-    if (selected_monster_) {
-        draw_monster_editor();
-    }
-}
-
-void EditorPanel::draw_monster_editor() {
-    if (!selected_monster_) return;
-
-    ImGui::Separator();
-    ImGui::Text("Editing Monster at (%d, %d)",
-                selected_monster_->tile_x,
-                selected_monster_->tile_y);
-
-    // Dynamic preset selection for existing monster
-    ImGui::Text("Monster Type:");
-    bool preset_changed = false;
-
-    const auto& presets = monster_preset_manager_.get_presets();
-    for (const auto& preset : presets) {
-        std::string radio_id = preset.display_name + "##edit";
-        if (ImGui::RadioButton(radio_id.c_str(),
-                               selected_monster_->preset_name == preset.name)) {
-            selected_monster_->preset_name = preset.name;
-            preset_changed = true;
-        }
-
-        // Show preset information on hover
-        if (ImGui::IsItemHovered()) {
-            ImGui::BeginTooltip();
-            ImGui::Text("Name: %s", preset.display_name.c_str());
-            ImGui::Text("Health: %d", preset.health);
-            ImGui::Text("Speed: %d", preset.speed);
-            if (!preset.description.empty()) {
-                ImGui::Separator();
-                ImGui::TextWrapped("%s", preset.description.c_str());
-            }
-            ImGui::EndTooltip();
-        }
-    }
-
-    // Update color based on preset (using a color mapping system)
-    if (preset_changed) {
-        // Generate a consistent color based on preset name hash
-        std::hash<std::string> hasher;
-        size_t hash = hasher(selected_monster_->preset_name);
-
-        // Use hash to generate RGB values with good contrast
-        ImU8 r = 128 + (hash & 0xFF) / 2;          // 128-255 range
-        ImU8 g = 128 + ((hash >> 8) & 0xFF) / 2;   // 128-255 range
-        ImU8 b = 128 + ((hash >> 16) & 0xFF) / 2;  // 128-255 range
-
-        selected_monster_->color = IM_COL32(r, g, b, 255);
-    }
-
-    // Show current preset info
-    const auto* current_preset =
-        monster_preset_manager_.get_preset(selected_monster_->preset_name);
-    if (current_preset) {
-        ImGui::Separator();
-        ImGui::Text("Preset Info:");
-        ImGui::Text("Health: %d", current_preset->health);
-        ImGui::Text("Speed: %d", current_preset->speed);
-        if (!current_preset->description.empty()) {
-            ImGui::TextWrapped("Description: %s",
-                               current_preset->description.c_str());
-        }
-    }
-
-    // Position info (read-only for now)
-    ImGui::Separator();
-    ImGui::Text("Position: Tile (%d, %d)",
-                selected_monster_->tile_x,
-                selected_monster_->tile_y);
-
-    // Option to delete monster
-    if (ImGui::Button("Delete Monster")) {
-        delete_selected_monster_ = true;  // Flag for deletion
-    }
+    return {};
 }
 
 std::vector<PlatformFeatureType> EditorPanel::get_selected_features() const {
@@ -655,241 +369,14 @@ void EditorPanel::initialize_monster_presets() {
     }
 }
 
-void EditorPanel::draw_background_mode() {
-    if (!background_manager_ || !background_preset_manager_) {
-        ImGui::TextColored(ImVec4(1, 0, 0, 1),
-                           "Background system not initialized");
-        return;
-    }
-
-    ImGui::Text("Background Layers");
-    ImGui::Text("Layers: %zu / %d",
-                background_manager_->get_layer_count(),
-                BackgroundManager::MAX_LAYERS);
-    ImGui::Separator();
-
-    // Add layer controls
-    if (background_manager_->can_add_layer()) {
-        ImGui::Text("Add New Layer:");
-        ImGui::InputText("Name", new_layer_name_, sizeof(new_layer_name_));
-        ImGui::SliderFloat("Parallax", &new_layer_parallax_, 0.0f, 1.0f);
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                           "(0.0 = static, 1.0 = moves with camera)");
-        ImGui::InputInt("Depth", &new_layer_depth_);
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                           "(Lower = rendered behind)");
-
-        if (ImGui::Button("Add Layer")) {
-            BackgroundLayer layer(
-                new_layer_name_, new_layer_parallax_, new_layer_depth_);
-            if (background_manager_->add_layer(layer)) {
-                std::snprintf(
-                    new_layer_name_, sizeof(new_layer_name_), "New Layer");
-                new_layer_parallax_ = 0.5f;
-                new_layer_depth_ = 0;
-            }
-        }
-        ImGui::Separator();
-    } else {
-        ImGui::TextColored(ImVec4(1, 0.5f, 0, 1),
-                           "Maximum layers reached (5/5)");
-        ImGui::Separator();
-    }
-
-    // Layer list
-    ImGui::Text("Layers:");
-    const auto& layers = background_manager_->get_layers();
-    auto selected = background_manager_->get_selected_layer();
-
-    for (size_t i = 0; i < layers.size(); ++i) {
-        bool is_selected = selected.has_value() && selected.value() == i;
-
-        ImGui::PushID(static_cast<int>(i));
-
-        // Layer name with selection
-        if (ImGui::Selectable(layers[i].get_name().c_str(), is_selected)) {
-            background_manager_->select_layer(i);
-        }
-
-        // Right-click context menu for layer
-        if (ImGui::BeginPopupContextItem()) {
-            ImGui::Text("Layer: %s", layers[i].get_name().c_str());
-            ImGui::Separator();
-
-            if (ImGui::MenuItem("Move Up", nullptr, false, i > 0)) {
-                background_manager_->move_layer_up(i);
-            }
-
-            if (ImGui::MenuItem(
-                    "Move Down", nullptr, false, i < layers.size() - 1)) {
-                background_manager_->move_layer_down(i);
-            }
-
-            ImGui::Separator();
-
-            if (ImGui::MenuItem("Delete Layer")) {
-                layer_to_delete_ = i;
-                layer_object_count_ = layers[i].get_objects().size();
-                show_delete_layer_confirmation_ = true;
-            }
-
-            ImGui::EndPopup();
-        }
-
-        // Layer info and controls on same line
-        ImGui::SameLine();
-        ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
-                           "(P:%.1f D:%d)",
-                           layers[i].get_parallax_factor(),
-                           layers[i].get_depth());
-
-        // Move and delete buttons
-        ImGui::SameLine();
-        if (ImGui::SmallButton("^") && i > 0) {
-            background_manager_->move_layer_up(i);
-        }
-        ImGui::SameLine();
-        if (ImGui::SmallButton("v") && i < layers.size() - 1) {
-            background_manager_->move_layer_down(i);
-        }
-        ImGui::SameLine();
-        if (ImGui::SmallButton("X")) {
-            layer_to_delete_ = i;
-            layer_object_count_ = layers[i].get_objects().size();
-            show_delete_layer_confirmation_ = true;
-        }
-
-        ImGui::PopID();
-    }
-
-    if (layers.empty()) {
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No layers yet");
-    }
-
-    // Layer deletion confirmation popup
-    if (show_delete_layer_confirmation_) {
-        ImGui::OpenPopup("Delete Layer?");
-        show_delete_layer_confirmation_ = false;
-    }
-
-    if (ImGui::BeginPopupModal(
-            "Delete Layer?", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("Are you sure you want to delete this background layer?");
-        ImGui::Text("(%zu object%s)",
-                    layer_object_count_,
-                    layer_object_count_ == 1 ? "" : "s");
-        ImGui::Separator();
-
-        if (ImGui::Button("Delete", ImVec2(120, 0))) {
-            background_manager_->remove_layer(layer_to_delete_);
-            if (selected.has_value() && selected.value() == layer_to_delete_) {
-                background_manager_->clear_selection();
-            }
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-            ImGui::CloseCurrentPopup();
-        }
-        ImGui::EndPopup();
-    }
-
-    ImGui::Separator();
-
-    // Add object controls - only if layer is selected
-    if (!selected.has_value()) {
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                           "Select a layer to add objects");
-        background_placing_mode_ = false;
-    } else {
-        ImGui::Text("Add Objects to: %s",
-                    layers[selected.value()].get_name().c_str());
-
-        // Show available presets as clickable list
-        if (background_preset_manager_->has_presets()) {
-            const auto& presets = background_preset_manager_->get_presets();
-
-            ImGui::Text("Available Objects:");
-            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                               "(Click to select, then click in scene)");
-
-            for (size_t i = 0; i < presets.size(); ++i) {
-                ImGui::PushID(static_cast<int>(i + 500));
-
-                bool is_selected =
-                    (selected_preset_idx_ == static_cast<int>(i)) &&
-                    background_placing_mode_;
-
-                // Highlight selected preset
-                if (is_selected) {
-                    ImGui::PushStyleColor(ImGuiCol_Button,
-                                          ImVec4(0.2f, 0.6f, 0.2f, 1.0f));
-                }
-
-                if (ImGui::Button(presets[i].name.c_str(), ImVec2(-1, 0))) {
-                    selected_preset_idx_ = static_cast<int>(i);
-                    new_bg_object_scale_ = presets[i].default_scale;
-                    background_placing_mode_ = true;
-                }
-
-                if (is_selected) {
-                    ImGui::PopStyleColor();
-                }
-
-                ImGui::PopID();
-            }
-
-            // Scale slider for current selection
-            if (background_placing_mode_) {
-                ImGui::Separator();
-                ImGui::Text("Placing: %s",
-                            presets[selected_preset_idx_].name.c_str());
-                ImGui::SliderFloat("Scale", &new_bg_object_scale_, 0.1f, 5.0f);
-                if (ImGui::Button("Cancel Placement")) {
-                    background_placing_mode_ = false;
-                }
-            }
-        } else {
-            ImGui::TextColored(ImVec4(1, 0.5f, 0, 1), "No presets loaded");
-            background_placing_mode_ = false;
-        }
-
-        ImGui::Separator();
-
-        // Show objects in selected layer
-        ImGui::Text("Objects in Layer:");
-        const auto& objects = layers[selected.value()].get_objects();
-        if (objects.empty()) {
-            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-                               "No objects yet");
-        } else {
-            for (size_t i = 0; i < objects.size(); ++i) {
-                ImGui::PushID(static_cast<int>(i + 1000));
-                ImGui::Text("%zu: %s", i, objects[i].sprite_name.c_str());
-                ImGui::SameLine();
-                ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
-                                   "(%.0f, %.0f) x%.1f",
-                                   objects[i].x,
-                                   objects[i].y,
-                                   objects[i].scale);
-                ImGui::SameLine();
-                if (ImGui::SmallButton("X")) {
-                    background_manager_->remove_object(selected.value(), i);
-                }
-                ImGui::PopID();
-            }
-        }
-    }
-}
-
-// FUD editing methods
-void EditorPanel::set_selected_fud(FUDElement* fud) {
+// HUD editing methods
+void EditorPanel::set_selected_fud(HUDElement* hud) {
     if (fud_handler_) {
-        fud_handler_->set_selected_fud(fud);
+        fud_handler_->set_selected_fud(hud);
     }
 }
 
-FUDElement* EditorPanel::get_selected_fud() const {
+HUDElement* EditorPanel::get_selected_fud() const {
     if (fud_handler_) {
         return fud_handler_->get_selected_fud();
     }
@@ -930,14 +417,14 @@ void EditorPanel::clear_fud_add_flag() {
     }
 }
 
-FUDElement EditorPanel::create_fud_from_preset() const {
+HUDElement EditorPanel::create_fud_from_preset() const {
     if (fud_handler_) {
         return fud_handler_->create_fud_from_preset();
     }
-    // Return default FUD if handler not available
-    return FUDElement("New FUD",
+    // Return default HUD if handler not available
+    return HUDElement("New FUD",
                       "unknown",
-                      FUDAnchor::TopLeft,
+                      HUDAnchor::TopLeft,
                       ImVec2(10, 10),
                       ImVec2(100, 30));
 }

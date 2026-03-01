@@ -5,7 +5,7 @@
 
 #include "udjourney/platform/features/PlatformFeatureBase.hpp"
 
-// Forward declaration
+namespace udjourney {
 class Platform;
 
 class CheckpointFeature : public PlatformFeatureBase {
@@ -18,3 +18,4 @@ class CheckpointFeature : public PlatformFeatureBase {
     void draw(const Platform& platform) const override;
     void handle_collision(Platform& platform, class IActor& actor) override;
 };
+}  // namespace udjourney

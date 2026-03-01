@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "udjourney/platform/Platform.hpp"
+namespace udjourney {
 
 struct EightTurnHorizontalBehaviorStrategy::PImpl {
     float t = 0.0F;
@@ -51,3 +52,4 @@ void EightTurnHorizontalBehaviorStrategy::update(Platform &platform,
         platform.set_state(ActorState::CONSUMED);
     }
 }
+}  // namespace udjourney

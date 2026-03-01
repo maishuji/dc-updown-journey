@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "udjourney/platform/Platform.hpp"
+namespace udjourney {
 
 void StaticBehaviorStrategy::update(Platform &platform, float delta) {
     // No movement
@@ -15,3 +16,4 @@ void StaticBehaviorStrategy::update(Platform &platform, float delta) {
         platform.set_state(ActorState::CONSUMED);
     }
 }
+}  // namespace udjourney

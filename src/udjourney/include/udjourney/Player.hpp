@@ -12,19 +12,30 @@
 #include "udjourney/interfaces/IObservable.hpp"
 #include "udjourney/interfaces/IObserver.hpp"
 #include "udjourney/AnimSpriteController.hpp"
+#include "udjourney/scene/LevelPhysicsConfig.hpp"
 
 // Forward declarations
 namespace udjourney {
 class ProjectilePresetLoader;
 struct ProjectilePreset;
-}  // namespace udjourney
 
 class Player : public IActor, public IObservable {
  public:
     Player(const IGame &iGame, Rectangle iRect,
            udjourney::core::events::EventDispatcher &ioDispatcher,
-           AnimSpriteController anim_controller);
+           AnimSpriteController anim_controller,
+           const scene::LevelPhysicsConfig &physics_config);
     ~Player() override;
+
+    // Explicitly delete copy constructor and copy assignment
+    // (unique_ptr is not copyable, so Player shouldn't be either)
+    Player(const Player &) = delete;
+    Player &operator=(const Player &) = delete;
+
+    // Default move operations are fine
+    Player(Player &&) = default;
+    Player &operator=(Player &&) = default;
+
     void draw() const override;
     void update(float iDelta) override;
     void process_input() override;
@@ -74,11 +85,14 @@ class Player : public IActor, public IObservable {
  private:
     float m_invincibility_timer = 0.0F;
 
+    // Physics configuration
+    scene::LevelPhysicsConfig m_physics_config;
+
     // Projectile system
     std::unique_ptr<udjourney::ProjectilePresetLoader> projectile_loader_;
     std::string current_projectile_preset_ = "bullet";
     float shoot_cooldown_ = 0.0f;
-    static constexpr float SHOOT_COOLDOWN_DURATION = 0.3f;
+    static constexpr float kShootCooldownDuration = 0.3f;
 
     void _reset_jump() noexcept;
     Rectangle r;
@@ -102,3 +116,4 @@ class Player : public IActor, public IObservable {
     // Animation helper methods
     void update_animation_state();
 };
+}  // namespace udjourney

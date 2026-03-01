@@ -1,0 +1,136 @@
+{
+  "type_id": "menu_button",
+  "display_name": "Menu Button",
+  "category": "UI",
+  "default_size": {
+    "x": 200,
+    "y": 50
+  },
+  "default_anchor": "MiddleCenter",
+  "description": "Interactive button for menus with text and action",
+  "properties_schema": {
+    "text": {
+      "type": "string",
+      "default": "Button",
+      "description": "Button text label"
+    },
+    "button_action": {
+      "type": "string",
+      "default": "none",
+      "description": "Action to execute (e.g., start_game, quit_game, load_level:1)"
+    },
+    "font_size": {
+      "type": "int",
+      "default": 24,
+      "description": "Font size for button text"
+    },
+    "normal_color": {
+      "type": "color",
+      "default": [
+        255,
+        255,
+        255
+      ],
+      "description": "Text color in normal state"
+    },
+    "hover_color": {
+      "type": "color",
+      "default": [
+        255,
+        255,
+        0
+      ],
+      "description": "Text color when hovered"
+    },
+    "focused_color": {
+      "type": "color",
+      "default": [
+        0,
+        191,
+        255
+      ],
+      "description": "Text color when focused with keyboard navigation"
+    },
+    "click_color": {
+      "type": "color",
+      "default": [
+        0,
+        255,
+        0
+      ],
+      "description": "Text color when clicked"
+    },
+    "border_thickness": {
+      "type": "int",
+      "default": 2,
+      "description": "Border width in pixels"
+    },
+    "selectable": {
+      "type": "bool",
+      "default": true,
+      "description": "Whether button can be selected with keyboard navigation"
+    }
+  },
+  "texture_support": {
+    "background_sheet": {
+      "type": "string",
+      "optional": true,
+      "description": "Path to sprite sheet containing button textures"
+    },
+    "background_tile_size": {
+      "type": "int",
+      "default": 64,
+      "description": "Size of each tile in the sprite sheet"
+    },
+    "background_tile_col": {
+      "type": "int",
+      "default": 0,
+      "description": "Column of idle state tile"
+    },
+    "background_tile_row": {
+      "type": "int",
+      "default": 0,
+      "description": "Row of idle state tile"
+    },
+    "background_tile_width": {
+      "type": "int",
+      "default": 1,
+      "description": "Width in tiles (for nine-slice)"
+    },
+    "background_tile_height": {
+      "type": "int",
+      "default": 1,
+      "description": "Height in tiles"
+    },
+    "hover_tile_col": {
+      "type": "int",
+      "optional": true,
+      "description": "Column of hover state tile (in properties)"
+    },
+    "hover_tile_row": {
+      "type": "int",
+      "optional": true,
+      "description": "Row of hover state tile (in properties)"
+    },
+    "focused_tile_col": {
+      "type": "int",
+      "optional": true,
+      "description": "Column of focused/selected state tile (in properties)"
+    },
+    "focused_tile_row": {
+      "type": "int",
+      "optional": true,
+      "description": "Row of focused/selected state tile (in properties)"
+    },
+    "pressed_tile_col": {
+      "type": "int",
+      "optional": true,
+      "description": "Column of pressed state tile (in properties)"
+    },
+    "pressed_tile_row": {
+      "type": "int",
+      "optional": true,
+      "description": "Row of pressed state tile (in properties)"
+    }
+  }
+}

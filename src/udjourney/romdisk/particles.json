@@ -1,0 +1,219 @@
+{
+  "particles": [
+    {
+      "acceleration": {
+        "x": 0.0,
+        "y": 300.0
+      },
+      "burst_count": 30,
+      "emission_rate": 0.0,
+      "emitter_lifetime": 0.0,
+      "end_color": [
+        100,
+        50,
+        0,
+        0
+      ],
+      "end_size": 2.0,
+      "lifetime_variance": 0.30000001192092896,
+      "name": "explosion",
+      "particle_lifetime": 0.800000011920929,
+      "rotation_speed": 180.0,
+      "source_rect": {
+        "height": 8,
+        "width": 8,
+        "x": 0,
+        "y": 0
+      },
+      "start_color": [
+        255,
+        200,
+        50,
+        255
+      ],
+      "start_size": 8.0,
+      "texture_file": "",
+      "use_atlas": false,
+      "velocity_max": {
+        "x": 150.0,
+        "y": -50.0
+      },
+      "velocity_min": {
+        "x": -150.0,
+        "y": -150.0
+      }
+    },
+    {
+      "acceleration": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "burst_count": 0,
+      "emission_rate": 30.0,
+      "emitter_lifetime": 0.0,
+      "end_color": [
+        255,
+        255,
+        255,
+        0
+      ],
+      "end_size": 1.0,
+      "lifetime_variance": 0.10000000149011612,
+      "name": "trail",
+      "particle_lifetime": 0.5,
+      "rotation_speed": 0.0,
+      "source_rect": {
+        "height": 4,
+        "width": 4,
+        "x": 0,
+        "y": 0
+      },
+      "start_color": [
+        255,
+        255,
+        255,
+        200
+      ],
+      "start_size": 6.0,
+      "texture_file": "",
+      "use_atlas": false,
+      "velocity_max": {
+        "x": 10.0,
+        "y": 10.0
+      },
+      "velocity_min": {
+        "x": -10.0,
+        "y": -10.0
+      }
+    },
+    {
+      "acceleration": {
+        "x": 0.0,
+        "y": 200.0
+      },
+      "burst_count": 15,
+      "emission_rate": 0.0,
+      "emitter_lifetime": 0.0,
+      "end_color": [
+        50,
+        50,
+        150,
+        0
+      ],
+      "end_size": 1.0,
+      "lifetime_variance": 0.15000000596046448,
+      "name": "impact",
+      "particle_lifetime": 0.4000000059604645,
+      "rotation_speed": 360.0,
+      "source_rect": {
+        "height": 6,
+        "width": 6,
+        "x": 0,
+        "y": 0
+      },
+      "start_color": [
+        200,
+        200,
+        255,
+        255
+      ],
+      "start_size": 5.0,
+      "texture_file": "",
+      "use_atlas": false,
+      "velocity_max": {
+        "x": 100.0,
+        "y": 100.0
+      },
+      "velocity_min": {
+        "x": -100.0,
+        "y": -100.0
+      }
+    },
+    {
+      "acceleration": {
+        "x": 0.0,
+        "y": 100.0
+      },
+      "burst_count": 0,
+      "emission_rate": 15.0,
+      "emitter_lifetime": 0.0,
+      "end_color": [
+        255,
+        255,
+        0,
+        0
+      ],
+      "end_size": 5.5,
+      "lifetime_variance": 0.30000001192092896,
+      "name": "sparkle",
+      "particle_lifetime": 1.0,
+      "rotation_speed": 720.0,
+      "source_rect": {
+        "height": 3,
+        "width": 3,
+        "x": 0,
+        "y": 0
+      },
+      "start_color": [
+        255,
+        255,
+        0,
+        255
+      ],
+      "start_size": 8.5,
+      "texture_file": "",
+      "use_atlas": false,
+      "velocity_max": {
+        "x": 30.0,
+        "y": -30.0
+      },
+      "velocity_min": {
+        "x": -30.0,
+        "y": -80.0
+      }
+    },
+    {
+      "acceleration": {
+        "x": 0.0,
+        "y": -20.0
+      },
+      "burst_count": 0,
+      "emission_rate": 20.0,
+      "emitter_lifetime": 0.0,
+      "end_color": [
+        50,
+        50,
+        50,
+        0
+      ],
+      "end_size": 16.0,
+      "lifetime_variance": 0.5,
+      "name": "smoke",
+      "particle_lifetime": 2.0,
+      "rotation_speed": 45.0,
+      "source_rect": {
+        "height": 10,
+        "width": 10,
+        "x": 0,
+        "y": 0
+      },
+      "start_color": [
+        100,
+        100,
+        100,
+        150
+      ],
+      "start_size": 8.0,
+      "texture_file": "",
+      "use_atlas": false,
+      "velocity_max": {
+        "x": 20.0,
+        "y": -30.0
+      },
+      "velocity_min": {
+        "x": -20.0,
+        "y": -60.0
+      }
+    }
+  ]
+}

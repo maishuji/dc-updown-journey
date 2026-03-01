@@ -4,6 +4,8 @@
 #include <string>
 #include <utility>
 
+namespace udjourney {
+
 AnimSpriteController::AnimSpriteController() = default;
 
 void AnimSpriteController::add_animation(PlayerState state,
@@ -21,7 +23,7 @@ void AnimSpriteController::add_animation(int state, const std::string& name,
 
 void AnimSpriteController::add_animation(
     int state, const std::string& name, SpriteAnim animation,
-    const udjourney::animation::CollisionBounds& bounds) {
+    const animation::CollisionBounds& bounds) {
     animations_int_[state] = std::move(animation);
     collision_bounds_[state] = bounds;
     using_player_state_ = false;
@@ -116,14 +118,15 @@ bool AnimSpriteController::has_collision_bounds() const {
     return it != collision_bounds_.end() && it->second.is_valid();
 }
 
-udjourney::animation::CollisionBounds
-AnimSpriteController::get_collision_bounds() const {
+animation::CollisionBounds AnimSpriteController::get_collision_bounds() const {
     if (using_player_state_) {
-        return udjourney::animation::CollisionBounds{};
+        return animation::CollisionBounds{};
     }
     auto it = collision_bounds_.find(current_state_int_);
     if (it != collision_bounds_.end()) {
         return it->second;
     }
-    return udjourney::animation::CollisionBounds{};
+    return animation::CollisionBounds{};
 }
+
+}  // namespace udjourney

@@ -1,0 +1,43 @@
+{
+  "type_id": "scrollable_list",
+  "display_name": "Scrollable List",
+  "category": "UI",
+  "default_size": {
+    "x": 400,
+    "y": 300
+  },
+  "default_anchor": "MiddleCenter",
+  "description": "Scrollable list widget for displaying levels, settings, scores, etc.",
+  "properties_schema": {
+    "data_source": {
+      "type": "string",
+      "default": "levels",
+      "description": "Type of data to display: 'levels', 'settings', 'scores', or 'custom'"
+    },
+    "item_action": {
+      "type": "string",
+      "default": "load_level:{filename}",
+      "description": "Action template with placeholders: {id}, {filename}, {index}"
+    },
+    "item_height": {
+      "type": "int",
+      "default": 80,
+      "description": "Height of each item in pixels"
+    },
+    "font_size": {
+      "type": "int",
+      "default": 24,
+      "description": "Font size for main text"
+    },
+    "subtitle_font_size": {
+      "type": "int",
+      "default": 16,
+      "description": "Font size for subtitle text"
+    },
+    "visible_items": {
+      "type": "int",
+      "default": 5,
+      "description": "Number of items visible at once (0 = auto-calculate)"
+    }
+  }
+}

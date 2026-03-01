@@ -7,6 +7,8 @@
 #include "udjourney/interfaces/IActor.hpp"
 #include "udjourney/interfaces/IGame.hpp"
 
+namespace udjourney {
+
 class Bonus : public IActor {
  public:
     Bonus(const IGame &iGame, Rectangle iRect);
@@ -25,3 +27,4 @@ class Bonus : public IActor {
  private:
     Rectangle m_rect;
 };
+}  // namespace udjourney

@@ -1,0 +1,345 @@
+{
+  "backgrounds": {
+    "layers": []
+  },
+  "huds": [],
+  "monsters": [],
+  "name": "Untitled Level",
+  "platforms": [
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 1.0,
+      "y": 9.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 6.0,
+      "y": 9.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 11.0,
+      "y": 9.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 17.0,
+      "y": 9.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 3.0,
+      "y": 12.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 8.0,
+      "y": 12.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 13.0,
+      "y": 12.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 17.0,
+      "y": 11.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 17.0,
+      "y": 15.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 1.0,
+      "y": 15.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 5.0,
+      "y": 17.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 15.0,
+      "y": 17.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 10.0,
+      "y": 18.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 4.5,
+      "x": 10.0,
+      "y": 15.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 3.5999999046325684,
+      "x": 1.0,
+      "y": 7.0
+    },
+    {
+      "behavior": "eight_turn",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 14.0,
+      "y": 4.0
+    },
+    {
+      "behavior": "eight_turn",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 17.0,
+      "y": 12.0
+    },
+    {
+      "behavior": "eight_turn",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 12.0,
+      "y": 10.0
+    },
+    {
+      "behavior": "eight_turn",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 7.0,
+      "y": 11.0
+    },
+    {
+      "behavior": "eight_turn",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 7.0,
+      "y": 10.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 2.9000000953674316,
+      "x": 18.0,
+      "y": 7.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 0.125,
+      "y": 22.4375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 19.125,
+      "y": 23.0625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 18.9375,
+      "y": 22.03125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 18.84375,
+      "y": 21.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 0.0625,
+      "y": 23.53125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 2.3125,
+      "y": 22.59375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 4.875,
+      "y": 22.8125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 8.4375,
+      "y": 23.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 10.96875,
+      "y": 22.96875
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 14.1875,
+      "y": 23.0
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 16.3125,
+      "y": 23.3125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 11.65625,
+      "y": 24.5
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 8.28125,
+      "y": 25.0625
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 6.5625,
+      "y": 25.25
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 3.90625,
+      "y": 25.6875
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 11.78125,
+      "y": 26.78125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 15.4375,
+      "y": 25.25
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 17.71875,
+      "y": 24.59375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 19.125,
+      "y": 25.28125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 15.84375,
+      "y": 26.125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 13.9375,
+      "y": 26.59375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 11.28125,
+      "y": 25.84375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 8.0,
+      "y": 26.25
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 3.75,
+      "y": 24.09375
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 2.96875,
+      "y": 24.8125
+    },
+    {
+      "behavior": "static",
+      "height": 1.0,
+      "width": 1.0,
+      "x": 1.0,
+      "y": 25.3125
+    }
+  ],
+  "player_spawn": {
+    "x": 2,
+    "y": 3
+  },
+  "scene_type": "level",
+  "scroll_speed": 1.0
+}

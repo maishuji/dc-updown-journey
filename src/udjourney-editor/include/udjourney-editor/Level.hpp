@@ -2,6 +2,7 @@
 #pragma once
 
 #include <imgui.h>
+#include <raylib/raylib.h>
 
 #include <algorithm>
 #include <iostream>
@@ -9,26 +10,42 @@
 #include <string>
 #include <vector>
 
-#include "udjourney-editor/fud/FUDElement.hpp"
+#include "udjourney-editor/hud/HUDElement.hpp"
+#include "udjourney/scene/LevelPhysicsConfig.hpp"
 
 // Forward declarations for udjourney types
 enum class PlatformBehaviorType {
     Static,
     Horizontal,
     EightTurnHorizontal,
-    OscillatingSize
+    OscillatingSize,
+    CameraFollowVertical
 };
 
-enum class PlatformFeatureType { None, Spikes, Checkpoint };
+enum class PlatformFeatureType { None, Spikes, DownwardSpikes, Checkpoint };
 
 struct EditorPlatform {
-    int tile_x;
-    int tile_y;
+    float tile_x;
+    float tile_y;
     float width_tiles = 1.0f;
     float height_tiles = 1.0f;
     PlatformBehaviorType behavior_type = PlatformBehaviorType::Static;
     std::vector<PlatformFeatureType> features;
     ImU32 color = IM_COL32(0, 0, 255, 255);  // Blue default
+
+    // Optional texture (asset-relative path, e.g. "tiles/platform.png")
+    std::string texture_file;
+
+    // If true, repeat/tile texture over platform rect; otherwise stretch
+    bool texture_tiled = false;
+
+    // Atlas-based rendering (for platform presets)
+    bool use_atlas = false;
+    Rectangle source_rect = {
+        0.0f, 0.0f, 0.0f, 0.0f};  // Source rectangle in atlas
+
+    // Behavior-specific parameters (e.g., speed, range, amplitude)
+    std::map<std::string, float> behavior_params;
 };
 
 struct EditorMonster {
@@ -57,18 +74,21 @@ struct Level {
     std::vector<Cell> tiles;
     std::vector<EditorPlatform> platforms;
     std::vector<EditorMonster> monsters;
-    std::vector<FUDElement> fuds;
+    std::vector<HUDElement> huds;
     size_t row_cnt = 0;
     size_t col_cnt = 0;
     int player_spawn_x = 2;
     int player_spawn_y = 8;
     SceneType scene_type = SceneType::LEVEL;  // Default to level
+    float scroll_speed = 1.0f;  // Camera scroll speed (pixels per frame)
+    udjourney::scene::LevelPhysicsConfig
+        physics_config;  // Physics configuration
 
     void clear() {
         tiles.clear();
         platforms.clear();
         monsters.clear();
-        fuds.clear();
+        huds.clear();
         row_cnt = 0;
         col_cnt = 0;
     }
@@ -92,7 +112,7 @@ struct Level {
         platforms.push_back(platform);
     }
 
-    void remove_platform_at(int tile_x, int tile_y) {
+    void remove_platform_at(float tile_x, float tile_y) {
         platforms.erase(
             std::remove_if(platforms.begin(),
                            platforms.end(),
@@ -125,11 +145,11 @@ struct Level {
         return nullptr;
     }
 
-    void add_fud(const FUDElement& fud) { fuds.push_back(fud); }
+    void add_fud(const HUDElement& hud) { huds.push_back(hud); }
 
     void remove_fud(size_t index) {
-        if (index < fuds.size()) {
-            fuds.erase(fuds.begin() + index);
+        if (index < huds.size()) {
+            huds.erase(huds.begin() + index);
         }
     }
 

@@ -65,6 +65,30 @@
       "default_scale": 1.0
     },
     {
+      "name": "Mountain Mid",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 2,
+      "tile_col": 1,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Wood 1",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 2,
+      "tile_col": 2,
+      "default_scale": 1.0
+    },
+    {
+      "name": "Wood 2",
+      "sprite_sheet": "background/background_128-Sheet.png",
+      "tile_size": 128,
+      "tile_row": 2,
+      "tile_col": 3,
+      "default_scale": 1.0
+    },
+    {
       "name": "Pattern 1",
       "sprite_sheet": "background/background_128-Sheet.png",
       "tile_size": 128,

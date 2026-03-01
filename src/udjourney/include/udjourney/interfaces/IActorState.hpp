@@ -1,6 +1,6 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
-
+namespace udjourney {
 class IActor;
 
 class IActorState {
@@ -12,3 +12,4 @@ class IActorState {
     virtual void handleInput(IActor& actor) = 0;
     virtual void update(IActor& actor, float delta) = 0;
 };
+}  // namespace udjourney

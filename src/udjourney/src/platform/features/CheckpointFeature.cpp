@@ -5,6 +5,7 @@
 
 #include "udjourney/platform/Platform.hpp"
 #include "udjourney/interfaces/IActor.hpp"
+namespace udjourney {
 
 void CheckpointFeature::draw(const Platform& platform) const {
     // Draw checkpoint visual indicator (flag-like effect)
@@ -16,18 +17,15 @@ void CheckpointFeature::draw(const Platform& platform) const {
     float pole_bottom = rect.y;
 
     // Draw pole
-    DrawLineEx(Vector2{pole_x, pole_top}, Vector2{pole_x, pole_bottom},
-               2.0f, DARKGRAY);
+    DrawLineEx(Vector2{pole_x, pole_top},
+               Vector2{pole_x, pole_bottom},
+               2.0f,
+               DARKGRAY);
 
     // Draw flag
     float flag_width = 16.0f;
     float flag_height = 10.0f;
-    Rectangle flag_rect = {
-        pole_x,
-        pole_top,
-        flag_width,
-        flag_height
-    };
+    Rectangle flag_rect = {pole_x, pole_top, flag_width, flag_height};
 
     DrawRectangleRec(flag_rect, GREEN);
     DrawRectangleLinesEx(flag_rect, 1.0f, DARKGREEN);
@@ -37,10 +35,10 @@ void CheckpointFeature::draw(const Platform& platform) const {
         const char* text = "CHECKPOINT";
         int text_width = MeasureText(text, 8);
         DrawText(text,
-                static_cast<int>(rect.x + (rect.width - text_width) / 2),
-                static_cast<int>(rect.y + rect.height + 2),
-                8,
-                GREEN);
+                 static_cast<int>(rect.x + (rect.width - text_width) / 2),
+                 static_cast<int>(rect.y + rect.height + 2),
+                 8,
+                 GREEN);
     }
 }
 
@@ -55,3 +53,4 @@ void CheckpointFeature::handle_collision(Platform& platform, IActor& actor) {
         game.on_checkpoint_reached(platform_rect.x, platform_rect.y);
     }
 }
+}  // namespace udjourney

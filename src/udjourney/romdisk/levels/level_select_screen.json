@@ -10,7 +10,7 @@
       }
     ]
   },
-  "fuds": [
+  "huds": [
     {
       "anchor": "TopCenter",
       "background_render_mode": "Stretch",

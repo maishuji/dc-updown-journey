@@ -117,6 +117,71 @@
             ],
             "dependsOn": "Configure CMake (Linux)",
             "detail": "Build debug version with Ninja"
+        },
+        {
+            "label": "Build Dreamcast (Debug)",
+            "type": "shell",
+            "command": "./build-dreamcast-debug.sh",
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "detail": "Build Dreamcast version with debug symbols for gdb"
+        },
+        {
+            "label": "Deploy to Dreamcast (Debug)",
+            "type": "shell",
+            "command": "dc-tool-ip",
+            "args": [
+                "-t",
+                "${input:dreamcastIP}",
+                "-x",
+                "build-dreamcast-debug/src/udjourney/updown-journey.elf"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated"
+            },
+            "dependsOn": "Build Dreamcast (Debug)",
+            "detail": "Build and deploy to Dreamcast for debugging"
+        },
+        {
+            "label": "Start GDB Debug Session",
+            "type": "shell",
+            "command": "sh-elf-gdb",
+            "args": [
+                "-ex",
+                "target remote ${input:dreamcastIP}:2159",
+                "build-dreamcast-debug/src/udjourney/updown-journey.elf"
+            ],
+            "group": "test",
+            "isBackground": false,
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated"
+            },
+            "detail": "Connect to Dreamcast with gdb for interactive debugging"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "dreamcastIP",
+            "type": "promptString",
+            "description": "Dreamcast IP address",
+            "default": "192.168.0.14"
         }
     ]
 }

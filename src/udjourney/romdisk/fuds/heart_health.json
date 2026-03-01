@@ -45,7 +45,7 @@
         "sheet": "ui/ui_elements.png",
         "tile_size": 32,
         "tile_row": 3,
-        "tile_col": 3
+        "tile_col": 2
       },
       "description": "Sprite for half heart"
     },
@@ -55,7 +55,7 @@
         "sheet": "ui/ui_elements.png",
         "tile_size": 32,
         "tile_row": 3,
-        "tile_col": 4
+        "tile_col": 1
       },
       "description": "Sprite for empty heart"
     }

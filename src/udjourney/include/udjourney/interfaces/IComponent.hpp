@@ -1,6 +1,6 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
-
+namespace udjourney {
 class IGame;
 class IActor;
 
@@ -11,3 +11,4 @@ class IComponent {
     virtual void on_attach(IActor& actor) = 0;
     virtual void on_detach(IActor& actor) = 0;
 };
+}  // namespace udjourney

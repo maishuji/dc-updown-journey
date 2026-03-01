@@ -1,0 +1,18 @@
+{
+  "heart_sprite_sheet": "ui/ui_elements.png",
+  "heart_tile_size": 32,
+  "heart_spacing": 32,
+  "show_empty_hearts": true,
+  "heart_full_sprite": {
+    "tile_col": 0,
+    "tile_row": 3
+  },
+  "heart_half_sprite": {
+    "tile_col": 2,
+    "tile_row": 3
+  },
+  "heart_empty_sprite": {
+    "tile_col": 1,
+    "tile_row": 3
+  }
+}

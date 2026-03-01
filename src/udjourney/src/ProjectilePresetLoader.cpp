@@ -8,6 +8,7 @@
 
 #include <nlohmann/json.hpp>
 #include <udj-core/CoreUtils.hpp>
+#include <udj-core/Logger.hpp>
 
 using json = nlohmann::json;
 
@@ -17,8 +18,8 @@ bool ProjectilePresetLoader::load_from_file(const std::string& filepath) {
     std::string full_path = udj::core::filesystem::get_assets_path(filepath);
 
     if (!udj::core::filesystem::file_exists(full_path)) {
-        std::cerr << "Projectile preset file not found: " << full_path
-                  << std::endl;
+        udj::core::Logger::error("Projectile preset file not found: %",
+                                 full_path);
         return false;
     }
 
@@ -27,7 +28,8 @@ bool ProjectilePresetLoader::load_from_file(const std::string& filepath) {
         json j = json::parse(file);
 
         if (!j.contains("projectiles") || !j["projectiles"].is_array()) {
-            std::cerr << "Invalid projectile preset file format" << std::endl;
+            udj::core::Logger::error("Invalid projectile preset file format: %",
+                                     full_path);
             return false;
         }
 
@@ -36,6 +38,23 @@ bool ProjectilePresetLoader::load_from_file(const std::string& filepath) {
 
             preset.name = proj_json.value("name", "unnamed");
             preset.texture_file = proj_json.value("texture_file", "");
+
+            // Optional atlas/tile config
+            preset.tile_width = proj_json.value("tile_width", 0);
+            preset.tile_height = proj_json.value("tile_height", 0);
+            preset.x_index = proj_json.value("x_index", 0);
+            preset.y_index = proj_json.value("y_index", 0);
+            preset.x_span = proj_json.value("x_span", 1);
+            preset.y_span = proj_json.value("y_span", 1);
+
+            preset.use_atlas = preset.tile_width > 0 && preset.tile_height > 0;
+            if (preset.use_atlas) {
+                preset.source_rect = Rectangle{
+                    static_cast<float>(preset.x_index * preset.tile_width),
+                    static_cast<float>(preset.y_index * preset.tile_height),
+                    static_cast<float>(preset.x_span * preset.tile_width),
+                    static_cast<float>(preset.y_span * preset.tile_height)};
+            }
             preset.speed = proj_json.value("speed", 200.0f);
             preset.lifetime = proj_json.value("lifetime", 5.0f);
             preset.damage = proj_json.value("damage", 1);
@@ -65,14 +84,13 @@ bool ProjectilePresetLoader::load_from_file(const std::string& filepath) {
             }
 
             presets_[preset.name] = preset;
-            std::cout << "Loaded projectile preset: " << preset.name
-                      << std::endl;
+            udj::core::Logger::info("Loaded projectile preset: %", preset.name);
         }
 
         return true;
     } catch (const std::exception& e) {
-        std::cerr << "Error loading projectile presets: " << e.what()
-                  << std::endl;
+        udj::core::Logger::error("Error loading projectile presets: %",
+                                 e.what());
         return false;
     }
 }

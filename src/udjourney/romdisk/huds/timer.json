@@ -1,0 +1,23 @@
+{
+  "type_id": "timer",
+  "display_name": "Timer",
+  "category": "display",
+  "default_size": {
+    "x": 120,
+    "y": 40
+  },
+  "default_anchor": "TopCenter",
+  "description": "Countdown or elapsed time timer",
+  "properties_schema": {
+    "font_size": {
+      "type": "integer",
+      "default": 24,
+      "description": "Font size for timer"
+    },
+    "color": {
+      "type": "string",
+      "default": "YELLOW",
+      "description": "Timer text color"
+    }
+  }
+}

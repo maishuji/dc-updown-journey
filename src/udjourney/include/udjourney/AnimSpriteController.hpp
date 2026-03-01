@@ -6,6 +6,8 @@
 #include "udjourney/SpriteAnim.hpp"
 #include "udjourney/AnimationConfig.hpp"
 
+namespace udjourney {
+
 enum class PlayerState { IDLE, RUNNING, JUMPING, DASHING, FALLING };
 
 class AnimSpriteController {
@@ -45,10 +47,12 @@ class AnimSpriteController {
     std::unordered_map<PlayerState, SpriteAnim> animations_;
     std::unordered_map<int, SpriteAnim>
         animations_int_;  // For generic state support
-    std::unordered_map<int, udjourney::animation::CollisionBounds>
+    std::unordered_map<int, animation::CollisionBounds>
         collision_bounds_;  // Collision bounds per state
     bool facing_right_ = true;
     bool using_player_state_ = true;  // Track which state system we're using
 
     void on_state_change(PlayerState old_state, PlayerState new_state);
 };
+
+}  // namespace udjourney

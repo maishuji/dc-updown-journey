@@ -1,7 +1,7 @@
 // Copyright 2025 Quentin Cartier
 #pragma once
 #include "udjourney/platform/reuse_strategies/PlatformReuseStrategy.hpp"
-
+namespace udjourney {
 /**
  * @brief A reuse strategy that doesn't reuse platforms - marks them for removal
  * instead
@@ -13,3 +13,4 @@ class NoReuseStrategy : public PlatformReuseStrategy {
  public:
     void reuse(class Platform& platform) override;
 };
+}  // namespace udjourney
