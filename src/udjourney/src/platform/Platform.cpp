@@ -225,7 +225,9 @@ void Platform::draw() const {
 
 void Platform::update(float iDelta) {
     auto original_rect = m_rect;
-    m_behavior->update(*this, iDelta);
+    if(m_behavior) {
+        //m_behavior->update(*this, iDelta);
+    }
     m_delta_x = m_rect.x - original_rect.x;
 }
 

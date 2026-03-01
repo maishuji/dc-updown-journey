@@ -110,7 +110,9 @@ void Monster::draw() const {
 void Monster::update(float delta) {
     // Update current state (handles AI logic via State pattern)
     if (current_state_) {
+        udj::core::Logger::debug("Updating monster state - handle input");
         current_state_->handleInput(*this);
+        udj::core::Logger::debug("Updating monster state - update logic");
         current_state_->update(*this, delta);
     }
 

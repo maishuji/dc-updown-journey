@@ -18,6 +18,7 @@ class HorizontalBehaviorStrategy : public PlatformBehaviorStrategy {
     ~HorizontalBehaviorStrategy() override;
     void update(Platform& platform, float delta) override;
     void reset() override;
+    PlatformBehaviorType get_type() const override { return PlatformBehaviorType::Horizontal; }
 
  private:
     struct PImpl;

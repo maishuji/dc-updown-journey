@@ -14,6 +14,7 @@ class OscillatingSizeBehaviorStrategy : public PlatformBehaviorStrategy {
                                     float iMaxOffset);
     ~OscillatingSizeBehaviorStrategy() override;
     void update(Platform& ioPlatform, float iDelta) override;
+    PlatformBehaviorType get_type() const override { return PlatformBehaviorType::OscillatingSize; }
 
  private:
     struct PImpl;

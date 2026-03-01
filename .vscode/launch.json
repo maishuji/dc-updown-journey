@@ -50,6 +50,45 @@
             ],
             "preLaunchTask": "Build Debug (Linux)",
             "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "Attach to Dreamcast (GDB)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/src/udjourney/updown-journey.elf",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "sh-elf-gdb",
+            "miDebuggerServerAddress": "127.0.0.1:2159",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set architecture to SH4",
+                    "text": "-gdb-set architecture sh4",
+                    "ignoreFailures": true
+                }
+            ],
+            "logging": {
+                "engineLogging": true,
+                "trace": true,
+                "traceResponse": true
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "dreamcastIP",
+            "type": "promptString",
+            "description": "Dreamcast IP address (e.g., 192.168.0.14)",
+            "default": "192.168.0.14"
         }
     ]
 }

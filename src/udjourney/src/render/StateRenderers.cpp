@@ -66,18 +66,20 @@ void PlayStateRenderer::render(const Game& game) const {
 
     for (const auto& actor : game.get_actors()) {
         // Check if this is a camera-following platform
+        // TEMPORARILY DISABLED FOR DEBUGGING
+        /*
         if (actor->get_group_id() == 1) {  // Platform group
-            auto* platform = dynamic_cast<const Platform*>(actor.get());
+            auto* platform = static_cast<const Platform*>(actor.get());
             if (platform && platform->get_behavior()) {
                 auto* behavior = platform->get_behavior();
                 // Check if it's a CameraFollowVerticalBehaviorStrategy
-                if (dynamic_cast<const CameraFollowVerticalBehaviorStrategy*>(
-                        behavior)) {
+                if (behavior->get_type() == PlatformBehaviorType::CameraFollowVertical) {
                     camera_follow_platforms.push_back(actor.get());
                     continue;  // Skip drawing for now
                 }
             }
         }
+        */
         actor->draw();
     }
 

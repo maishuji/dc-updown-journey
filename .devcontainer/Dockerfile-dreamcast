@@ -1,6 +1,6 @@
 # Wrapper Dockerfile for devcontainers
 # Provide a valid default to avoid the InvalidDefaultArgInFrom warning
-ARG BASE_IMAGE=maishuji/dc-kos-image:15.2.0-10nov25-kp10nov25
+ARG BASE_IMAGE=maishuji/dc-kos-image:15.2.1-dev-08feb26-gdb-kp08feb26
 
 FROM ${BASE_IMAGE}
 

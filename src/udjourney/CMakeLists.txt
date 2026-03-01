@@ -121,6 +121,25 @@ if (DEFINED PLATFORM_DREAMCAST AND PLATFORM_DREAMCAST)
         -include ${CMAKE_CURRENT_SOURCE_DIR}/include/udjourney/dreamcast_json_compat.h
     )
     
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        target_compile_options(${TARGET_NAME} PRIVATE -flto)
+        target_link_options(${TARGET_NAME} PRIVATE -flto -fuse-linker-plugin)
+        message(STATUS "LTO enabled for Release build")
+    else()
+        # Enable LTO for Debug too, but with debug-friendly settings
+        target_compile_options(${TARGET_NAME} PRIVATE 
+            -flto 
+            -fno-lto-odr-type-merging  # Better debug info
+            -g3                         # Maximum debug info
+        )
+        target_link_options(${TARGET_NAME} PRIVATE 
+            -flto 
+            -fuse-linker-plugin
+            -g3
+        )
+        message(STATUS "LTO enabled for Debug build (with debug optimizations)")
+    endif()
+    
     target_link_libraries(${TARGET_NAME} 
         PUBLIC 
             udj-core dcplib raylib GL nlohmann_json::nlohmann_json

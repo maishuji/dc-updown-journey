@@ -31,6 +31,15 @@ cd build && ./tests/updown_journey_tests --gtest_filter="SceneTest.*"
 
 See [`tests/README.md`](tests/README.md) for detailed testing documentation.
 
+## Documentation
+
+- **[Dreamcast Debugging Guide](docs/DREAMCAST_DEBUGGING.md)** - Complete guide to debugging on Dreamcast hardware with GDB
+- **[Dreamcast Connectivity](docs/dreamcast-connectivity.md)** - Network setup and connection troubleshooting
+- **[Background System](docs/BACKGROUND_SYSTEM.md)** - Background rendering implementation
+- **[Particle System](docs/PARTICLE_SYSTEM.md)** - Particle effects system
+- **[Widget System](docs/WIDGET_SYSTEM.md)** - UI widget framework
+- **[Testing Guide](tests/README.md)** - Unit testing documentation
+
 
 ## Project Structure Diagram
 

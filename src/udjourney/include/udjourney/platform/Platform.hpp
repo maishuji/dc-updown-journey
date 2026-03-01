@@ -24,6 +24,13 @@ class Platform : public IActor {
     Platform(const IGame &iGame, Rectangle iRect, Color iColor = BLUE,
              bool iIsRepeatedY = false,
              std::unique_ptr<PlatformReuseStrategy> reuseStrategy = nullptr);
+    
+    // Explicitly delete copy/move to avoid alignment issues
+    Platform(const Platform&) = delete;
+    Platform& operator=(const Platform&) = delete;
+    Platform(Platform&&) = delete;
+    Platform& operator=(Platform&&) = delete;
+    
     void draw() const override;
     void update(float delta) override;
     [[nodiscard]] Rectangle get_drawing_rect() const;
@@ -121,6 +128,7 @@ class Platform : public IActor {
     Rectangle m_source_rect = {0, 0, 0, 0};
     bool m_repeated_y = false;
     std::unique_ptr<PlatformBehaviorStrategy> m_behavior;
-    std::vector<std::unique_ptr<PlatformFeatureBase>> m_features;
+    // Align vector to 8 bytes for SH4 safety
+    alignas(8) std::vector<std::unique_ptr<PlatformFeatureBase>> m_features;
 };
 }  // namespace udjourney
