@@ -33,7 +33,9 @@ class CameraFollowVerticalBehaviorStrategy : public PlatformBehaviorStrategy {
 
     void update(Platform& platform, float delta) override;
     void reset() override;
-    PlatformBehaviorType get_type() const override { return PlatformBehaviorType::CameraFollowVertical; }
+    PlatformBehaviorType get_type() const override {
+        return PlatformBehaviorType::CameraFollowVertical;
+    }
 
  private:
     struct PImpl;

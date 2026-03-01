@@ -21,16 +21,16 @@ namespace udjourney {
 
 class Platform : public IActor {
  public:
-    Platform(const IGame &iGame, Rectangle iRect, Color iColor = BLUE,
+    Platform(const IGame& iGame, Rectangle iRect, Color iColor = BLUE,
              bool iIsRepeatedY = false,
              std::unique_ptr<PlatformReuseStrategy> reuseStrategy = nullptr);
-    
+
     // Explicitly delete copy/move to avoid alignment issues
     Platform(const Platform&) = delete;
     Platform& operator=(const Platform&) = delete;
     Platform(Platform&&) = delete;
     Platform& operator=(Platform&&) = delete;
-    
+
     void draw() const override;
     void update(float delta) override;
     [[nodiscard]] Rectangle get_drawing_rect() const;
@@ -40,7 +40,7 @@ class Platform : public IActor {
     void set_rectangle(Rectangle iRect) override { this->m_rect = iRect; }
     [[nodiscard]] Rectangle get_rectangle() const override { return m_rect; }
     [[nodiscard]] bool check_collision(
-        const IActor &iOtherActor) const override {
+        const IActor& iOtherActor) const override {
         return CheckCollisionRecs(m_rect, iOtherActor.get_rectangle());
     }
     [[nodiscard]] inline constexpr uint8_t get_group_id() const override {
@@ -71,7 +71,7 @@ class Platform : public IActor {
     }
 
     [[nodiscard]] inline auto get_behavior() const
-        -> const PlatformBehaviorStrategy * {
+        -> const PlatformBehaviorStrategy* {
         return m_behavior.get();
     }
 
@@ -105,7 +105,7 @@ class Platform : public IActor {
     }
 
     [[nodiscard]] auto get_features() const
-        -> const std::vector<std::unique_ptr<PlatformFeatureBase>> & {
+        -> const std::vector<std::unique_ptr<PlatformFeatureBase>>& {
         return m_features;
     }
 

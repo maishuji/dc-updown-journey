@@ -25,7 +25,9 @@ class PlatformBehaviorStrategy {
 class StaticBehaviorStrategy : public PlatformBehaviorStrategy {
  public:
     void update(Platform& platform, float delta) override;
-    PlatformBehaviorType get_type() const override { return PlatformBehaviorType::Static; }
+    PlatformBehaviorType get_type() const override {
+        return PlatformBehaviorType::Static;
+    }
 };
 
 }  // namespace udjourney

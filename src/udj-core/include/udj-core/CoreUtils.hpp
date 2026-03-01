@@ -37,8 +37,9 @@ inline std::string get_assets_base_path() {
  * @return A `std::string` containing the full path to the asset.
  */
 inline std::string get_assets_path(const std::string& filename) {
-    udj::core::Logger::info(
-        "Getting asset path for file: % : folder = %", filename, get_assets_base_path() );
+    udj::core::Logger::info("Getting asset path for file: % : folder = %",
+                            filename,
+                            get_assets_base_path());
     return get_assets_base_path() + filename;
 }
 

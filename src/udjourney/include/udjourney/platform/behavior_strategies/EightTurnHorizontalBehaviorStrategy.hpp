@@ -11,7 +11,9 @@ class EightTurnHorizontalBehaviorStrategy : public PlatformBehaviorStrategy {
                                         float amplitude = 100.0F);
     ~EightTurnHorizontalBehaviorStrategy() override;
     void update(Platform &platform, float delta) override;
-    PlatformBehaviorType get_type() const override { return PlatformBehaviorType::EightTurnHorizontal; }
+    PlatformBehaviorType get_type() const override {
+        return PlatformBehaviorType::EightTurnHorizontal;
+    }
 
  private:
     struct PImpl;
