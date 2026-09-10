@@ -34,7 +34,7 @@
             "name": "Debug Tests (Linux)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/editor-linux/tilepanel_tests",
+            "program": "${workspaceFolder}/build/editor-linux/udjourney_editor_tests",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/build/editor-linux",

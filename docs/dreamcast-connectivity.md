@@ -1,17 +1,34 @@
 
+# Dreamcast Connectivity
 
 ## Running the game on hardware (BBA connection)
 
+We assume the IP address of the Dreamcast is `10.42.0.80`.
+The Dreamcast is connected to the network via a BBA (Broadband Adapter) through the Ethernet port of the host machine.
 
-We assume the IP address of the Dreamcast is `10.42.0.80`
-The dreamcast is connected to the network via a BBA (Broadband Adapter) through the ethernet port of the host machine.
+## Network Topology
+
+```mermaid
+flowchart LR
+    Host[Linux host] --> Nic[Dedicated Ethernet interface]
+    Nic --> Dnsmasq[dnsmasq DHCP service]
+    Nic --> Tool[dc-tool-ip]
+    Tool --> DC[Dreamcast BBA]
+    Dnsmasq --> DC
+    DC --> Dcload[dcload-ip]
+    Dcload --> GDB[GDB remote stub on :2159]
+```
+
+This setup has two distinct channels:
+
+- DHCP from `dnsmasq`, which assigns the Dreamcast an address
+- deployment/debug traffic from `dc-tool-ip` and optionally GDB
 
 ```shell
 make run-dc
 ```
 
-
-### 🔧 Debugging Dreamcast Network Connection (DHCP Setup)
+## DHCP Setup with `dnsmasq`
 
 To allow your Dreamcast to get an IP address automatically over Ethernet (via BBA), you’ll need to set up a lightweight DHCP server using `dnsmasq`.
 
@@ -20,8 +37,6 @@ To allow your Dreamcast to get an IP address automatically over Ethernet (via BB
 ```bash
 sudo apt install dnsmasq
 ```
-
----
 
 #### 2. Configure `dnsmasq`
 
@@ -42,7 +57,7 @@ dhcp-option=3,192.168.0.1
 dhcp-option=6,8.8.8.8,1.1.1.1
 ```
 
-🔁 **Replace** `<your-dreamcast-interface>` with the name of your Ethernet-to-USB adapter or relevant NIC (e.g., `enxa0cec85e02d8`).  
+Replace `<your-dreamcast-interface>` with the name of your Ethernet-to-USB adapter or relevant NIC (for example `enxa0cec85e02d8`).
 You can find it using:
 
 ```bash
@@ -51,15 +66,11 @@ ip addr
 
 Look for the interface that is **connected to the Dreamcast** (usually shows as `DOWN` when unplugged, `UP` when plugged in).
 
----
-
 #### 3. Restart `dnsmasq`
 
 ```bash
 sudo systemctl restart dnsmasq
 ```
-
----
 
 #### 4. Find the Dreamcast IP
 
@@ -101,8 +112,8 @@ Apr 22 22:55:33 daoliangshu-ux430uq dnsmasq[36544]: FAILED to start up
 It means that the interface is not available when dnsmasq starts.
 
 ##### The interface is not up
-It can means that the <interface> is not up. 
-Checks with:
+It can mean that the interface is not up.
+Check with:
 ```bash
 ip addr show <your-dreamcast-interface>
 ```
@@ -138,7 +149,7 @@ sudo journalctl -u dnsmasq -f
 If you see a message like this:
 
 ```text
-HCP packet received on <your-dreamcast-interface> which has no address
+DHCP packet received on <your-dreamcast-interface> which has no address
 ```
 It means that your Dreamcast is sending a DHCP request, but your network adapter (usually the USB-Ethernet interface) doesn’t have an IP address assigned to it — so dnsmasq can’t respond.
 
@@ -149,7 +160,7 @@ sudo ip addr add 192.168.0.1/24 dev <your-dreamcast-interface>
 sudo ip link set <your-dreamcast-interface> up
 ```
 
-Then restart dnsmasq
+Then restart `dnsmasq`:
 ```bash
 sudo systemctl restart dnsmasq
 ```
@@ -176,7 +187,7 @@ sudo ip addr add 192.168.0.1/24 dev enxa0cec85e02d8 # replace with your interfac
 sudo systemctl restart dnsmasq
 ```
 
-4. If this problem persists, you can use a `udev` rule to automatically assign an IP address to the interface when it is connected. 
+4. If this problem persists, you can use a `udev` rule to automatically assign an IP address to the interface when it is connected.
 Create a file in `/etc/udev/rules.d/` with the following content:
 
 ```bash
@@ -195,23 +206,34 @@ Replace `a0:ce:c8:5e:02:d8` with the MAC address of your interface. You can find
 ip link show <your-dreamcast-interface>
 ```
 
-Then restart the udev service:
+Then reload `udev` rules and trigger them:
 
 ```bash
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
 
-## Debugging cmake
+## Connectivity Checklist
+
+- the host NIC is up and has `192.168.0.1/24`
+- `dnsmasq` is bound to that NIC
+- the Dreamcast is booted into `dcload-ip`
+- `journalctl -u dnsmasq -f` shows DHCP discovery and ACK traffic
+- `dc-tool-ip -t <dreamcast-ip> ...` can reach the assigned address
+
+## Debugging CMake and Deployment Commands
 
 ```bash
 source /opt/toolchains/dc/kos/environ.sh
-cmake -S . -B build/build-test -DCMAKE_TOOLCHAIN_FILE=toolchain.cmake -DCMAKE_BUILD_TYPE=Debug
+cmake -S . -B build/build-test -DCMAKE_TOOLCHAIN_FILE=toolchains/dreamcast.cmake -DCMAKE_BUILD_TYPE=Debug
 cmake --build build/build-test/  -- -j 4
 
 export CMAKE_CXX_COMPILER_LAUNCHER=gdb
 cmake --build build/build-test/ --config Debug --target all --verbose
 ```
 ```bash
-cmake --build build --target updown -- -j 4
+cmake --build build --target updown-journey -- -j 4
 ```
 ```bash
-cmake --build build --target updown -- -j 4 -- VERBOSE=1
+cmake --build build --target updown-journey -- -j 4 -- VERBOSE=1
 ```
