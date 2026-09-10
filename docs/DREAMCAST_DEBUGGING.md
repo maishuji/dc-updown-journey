@@ -2,6 +2,20 @@
 
 This guide explains how to debug the UDJourney game on Dreamcast hardware or emulator using GDB.
 
+## Debug Workflow
+
+```mermaid
+flowchart LR
+	Source[Source changes] --> Build[build-dreamcast-debug.sh or make build-dc-debug]
+	Build --> Elf[updown-journey.elf]
+	Elf --> Deploy[dc-tool-ip deploy or deploy-dc-debug]
+	Deploy --> Target[Dreamcast with dcload-ip]
+	Target --> GDB[sh-elf-gdb target remote :2159]
+	GDB --> Inspect[breakpoints, stepping, inspection]
+```
+
+The important boundary is that `dc-tool-ip` gets the program onto the target and optionally starts the remote stub, while `sh-elf-gdb` connects afterward to inspect and control execution.
+
 ## Prerequisites
 
 1. **KallistiOS toolchain** with `sh-elf-gdb` installed
@@ -24,11 +38,13 @@ Replace `192.168.0.14` with your Dreamcast's IP address.
 
 ### Method 2: Using VS Code
 
-1. Open the project in VS Code
-2. Press `F5` or go to Run → Start Debugging
-3. Select "Debug Dreamcast (Remote GDB)" from the dropdown
-4. Enter your Dreamcast's IP address when prompted
-5. The build will start automatically, then GDB will connect
+The current workspace is set up primarily around tasks for the Dreamcast flow:
+
+1. Run **Build Dreamcast (Debug)**
+2. Run **Deploy to Dreamcast (Debug)**
+3. Run **Start GDB Debug Session** and provide the Dreamcast IP when prompted
+
+There is also an **Attach to Dreamcast (GDB)** launch configuration in `.vscode/launch.json`, but it is separate from the task-based flow and assumes a reachable GDB server endpoint.
 
 ### Method 3: Manual Steps
 
@@ -358,6 +374,8 @@ make debug-dc DC_IP=192.168.0.14
 
 Available tasks (Ctrl+Shift+P → "Tasks: Run Task"):
 - **Build Dreamcast (Debug)** - Build with debug symbols
+- **Deploy to Dreamcast (Debug)** - Push the debug ELF to the console
+- **Start GDB Debug Session** - Connect `sh-elf-gdb` to the remote target
 - **Deploy to Dreamcast (Debug)** - Build and deploy debug version
 - **Start GDB Debug Session** - Interactive GDB in terminal
 

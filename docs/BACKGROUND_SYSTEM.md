@@ -3,6 +3,23 @@
 ## Overview
 The background layer system allows the editor to support parallax scrolling backgrounds with up to 5 independent layers, each containing multiple objects. This creates depth and visual interest in game levels.
 
+## Architecture Overview
+
+```mermaid
+flowchart LR
+  Editor[Editor] --> Panel[EditorPanel]
+  Panel --> Handler[BackgroundModeHandler]
+  Handler --> Manager[BackgroundManager]
+  Handler --> Presets[BackgroundObjectPresetManager]
+  Manager --> Layer[BackgroundLayer x N]
+  Layer --> Object[BackgroundObject x N]
+  Manager --> Json[JSON level data]
+  Json --> RuntimeScene[Scene background layers]
+  RuntimeScene --> RuntimeManager[Runtime BackgroundManager]
+```
+
+The editor-side background tooling owns authoring, selection, and JSON persistence. The runtime-side background manager then consumes the serialized scene data and handles drawing plus UI scrolling behavior in-game.
+
 ## Architecture
 
 ### Components
@@ -44,44 +61,42 @@ Central manager for all background layers:
 - `select_layer(index)`: Select layer for editing
 - `load_from_file(filename)` / `save_to_file(filename)`: JSON persistence
 
-#### 4. BackgroundPanel (`BackgroundPanel.hpp`, `BackgroundPanel.cpp`)
-ImGui UI panel for editing backgrounds:
-- Layer list with add/remove/reorder buttons
-- Layer properties editor (name, texture, parallax, depth)
-- Object list for selected layer
-- Add object controls
-- Layer capacity indicator (X/5)
+#### 4. BackgroundModeHandler (`BackgroundModeHandler.hpp`, `BackgroundModeHandler.cpp`)
+Editor strategy responsible for background edit mode:
+- Renders background-specific controls inside the main editor UI
+- Coordinates layer selection, creation, deletion, and object placement
+- Uses `BackgroundObjectPresetManager` for placeable object presets
+- Exposes placement state back to the editor scene
 
 **Key Methods:**
-- `render()`: Main render method, calls sub-methods
-- `render_layer_list()`: Shows all layers with selection
-- `render_layer_properties()`: Edit selected layer properties
-- `render_object_list()`: Shows objects in selected layer
-- `render_add_layer_controls()`: UI for adding new layers
-- `render_add_object_controls()`: UI for adding objects
+- `render()`: Main UI entry point for background editing
+- `render_layer_list()`: Shows all layers with selection and ordering controls
+- `render_layer_properties()`: Edits the currently selected layer
+- `render_object_controls()`: Configures object placement and presets
+- `render_delete_confirmation()`: Guards destructive layer deletion
+
+#### 5. EditorPanel (`EditorPanel.hpp`, `EditorPanel.cpp`)
+Top-level ImGui shell that hosts edit modes, including background editing:
+- Owns the current editor mode
+- Delegates background-specific UI to `BackgroundModeHandler`
+- Shares state with `Editor` and `EditorScene`
 
 ## Integration
 
 ### In Editor Class
-The background system is integrated into the editor in `Editor.cpp`:
+The background system is integrated into the editor through the shared editor shell rather than a dedicated standalone panel:
 
-1. **PImpl Structure** - Added members:
+1. **Editor state** keeps the data model and preset manager:
    ```cpp
    BackgroundManager background_manager;
-   std::unique_ptr<BackgroundPanel> background_panel;
+  BackgroundObjectPresetManager background_object_preset_manager;
    ```
 
-2. **Initialization** (`Editor::init()`):
-   ```cpp
-   pimpl->background_panel = std::make_unique<BackgroundPanel>(pimpl->background_manager);
-   ```
+2. **EditorPanel wiring** connects the UI layer to both managers:
+  - `EditorPanel::set_background_managers(...)`
+  - background edit mode is handled by `BackgroundModeHandler`
 
-3. **Rendering** (`Editor::run()`):
-   ```cpp
-   if (pimpl->background_panel) {
-       pimpl->background_panel->render();
-   }
-   ```
+3. **EditorScene placement flow** uses the handler state to place selected background objects into the selected layer.
 
 ## JSON Format
 
@@ -149,8 +164,8 @@ Background data is saved/loaded using this JSON structure:
    - Objects: Click "Remove" button next to object in list
 
 5. **Persistence:**
-   - Background configuration auto-saves with level data
-   - Can be exported/imported as JSON
+  - Background configuration is serialized with the level JSON
+  - The runtime scene loader reads the same layer/object structure
 
 ## Parallax Factor Guide
 
@@ -173,9 +188,18 @@ Example:
 - Depth 3: Close trees
 - Depth 4: Foreground decorations
 
+## Runtime Relationship
+
+At runtime, the gameplay target does not reuse the editor classes directly. Instead:
+
+- editor background data is written into scene JSON
+- `udjourney::scene::Scene` parses `BackgroundLayerData`
+- the runtime `udjourney::BackgroundManager` binds to the scene and renders sorted layers
+- UI screens can additionally use the runtime manager's scroll state for menu backgrounds
+
 ## Testing
 
-The system includes comprehensive unit tests (`test_background.cpp`):
+The system includes dedicated unit coverage in `test_background.cpp`:
 - BackgroundLayer construction and object management
 - BackgroundManager layer management and constraints
 - Layer selection and movement

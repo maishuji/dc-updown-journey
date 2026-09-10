@@ -13,6 +13,19 @@ This allows the editor to depend on **udj-core** without depending on the **udjo
 
 ## Architecture
 
+```mermaid
+flowchart LR
+    Shared[udj-core ParticlePreset] --> Loader[ParticlePresetLoader]
+    Loader --> Manager[ParticleManager]
+    Manager --> Emitter[ParticleEmitter x N]
+    Emitter --> Particle[Particle x N]
+    Component[ParticleEmitterComponent] --> Manager
+    Component --> Actor[IActor owner]
+    Manager --> Render[Game render/update loop]
+```
+
+The system is split between shared configuration data and runtime-only simulation. Presets are loaded once, emitters are created by name, and per-frame update/draw work stays inside `ParticleManager`.
+
 The particle system follows the existing game architecture patterns:
 
 ### Core Components
@@ -86,45 +99,32 @@ romdisk/
 ### 1. Load Particle Presets
 
 ```cpp
-#include "udjourney/loaders/ParticlePresetLoader.hpp"
+#include "udjourney/managers/ParticleManager.hpp"
 
-ParticlePresetLoader loader;
-if (loader.load_from_file("particles.json")) {
-    // Presets loaded successfully
+ParticleManager& particle_manager = game.get_particle_manager();
+if (particle_manager.load_presets("particles.json")) {
+    // Presets are now available by name
 }
 ```
 
 ### 2. Create a One-Shot Burst Effect
 
 ```cpp
-// Get reference to particle manager
 ParticleManager& particle_manager = game.get_particle_manager();
 
-// Load preset
-const ParticlePreset* preset = loader.get_preset("explosion");
-
-if (preset) {
-    // Create burst at specific position
-    Vector2 explosion_pos = {100.0f, 200.0f};
-    particle_manager.create_burst(*preset, explosion_pos);
-}
+Vector2 explosion_pos = {100.0f, 200.0f};
+particle_manager.create_burst("explosion", explosion_pos);
 ```
 
 ### 3. Create a Continuous Effect
 
 ```cpp
-// Get reference to particle manager
 ParticleManager& particle_manager = game.get_particle_manager();
 
-// Load preset
-const ParticlePreset* trail_preset = loader.get_preset("trail");
+Vector2 position = {150.0f, 300.0f};
+ParticleEmitter* emitter = particle_manager.create_emitter("trail", position);
 
-if (trail_preset) {
-    // Create continuous emitter
-    Vector2 position = {150.0f, 300.0f};
-    ParticleEmitter* emitter = particle_manager.create_emitter(*trail_preset, position);
-    
-    // Update position each frame as needed
+if (emitter) {
     emitter->set_position(new_position);
 }
 ```
@@ -134,19 +134,13 @@ if (trail_preset) {
 ```cpp
 #include "udjourney/components/ParticleEmitterComponent.hpp"
 
-// In actor initialization
-const ParticlePreset* sparkle_preset = loader.get_preset("sparkle");
+auto component = std::make_unique<ParticleEmitterComponent>(
+    game.get_particle_manager(),
+    "sparkle",
+    Vector2{0.0f, -10.0f}
+);
 
-if (sparkle_preset) {
-    // Create component that follows the actor
-    auto component = std::make_unique<ParticleEmitterComponent>(
-        game.get_particle_manager(),
-        *sparkle_preset,
-        Vector2{0.0f, -10.0f}  // Offset above actor
-    );
-    
-    actor->add_component(std::move(component));
-}
+actor->add_component(std::move(component));
 ```
 
 ### 5. Manual Burst from Component
@@ -230,10 +224,11 @@ The system includes 5 preset effects in [particles.json](src/udjourney/romdisk/p
 
 The particle system is integrated into the game at these points:
 
-1. **Game.hpp/cpp**: ParticleManager member variable
-2. **Game::update()**: Updates all particles each frame
-3. **PlayStateRenderer::render()**: Draws particles after actors, before HUD
-4. **CMakeLists.txt**: All particle system source files added
+1. **Game.hpp/cpp**: `ParticleManager` is owned by `Game`
+2. **Game::update()**: updates all emitters each frame
+3. **Game::draw_particles()**: delegates particle rendering through the manager
+4. **Actor components**: `ParticleEmitterComponent` attaches effects to moving actors
+5. **Preset loading**: presets are resolved by name through `ParticleManager`
 
 ## Future Enhancements
 

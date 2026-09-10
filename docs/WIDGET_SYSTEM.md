@@ -7,6 +7,25 @@ The game now supports:
 2. **Scrolling backgrounds** for infinite vertical scrolling effects  
 3. **Action dispatcher** for menu actions and scene transitions
 
+## Runtime Architecture
+
+```mermaid
+flowchart LR
+  SceneJson[Scene JSON HUD and background data] --> Scene[Scene]
+  Scene --> UiFactory[UiFactory]
+  UiFactory --> WidgetFactory[WidgetFactory]
+  WidgetFactory --> Button[ButtonWidget]
+  WidgetFactory --> List[ScrollableListWidget]
+  Button --> Actions[ActionDispatcher]
+  List --> Actions
+  Actions --> Game[Game / IGame]
+  Scene --> BgManager[Runtime BackgroundManager]
+  BgManager --> Render[State renderers]
+  Game --> Render
+```
+
+The menu/UI flow is data-driven: scene JSON defines HUD elements, the runtime creates widget instances from those definitions, and user interaction resolves to named actions routed back into the game.
+
 ## Components
 
 ### 1. ActionDispatcher
@@ -31,6 +50,8 @@ ActionDispatcher::execute("start_game", game);
 - `return_to_title` - Returns to title screen
 
 ### 2. Widgets
+
+The runtime currently instantiates widgets through `WidgetFactory` based on the `type_id` stored in scene HUD data.
 
 #### ButtonWidget
 Interactive button for menus.
@@ -76,12 +97,9 @@ Add limitless scrolling backgrounds to any scene.
         "depth": 0,
         "parallax_factor": 1.0,
         "auto_scroll_enabled": true,
-        "scroll_velocity": {
-          "x": 0,
-          "y": -30
-        },
-        "wrap_x": false,
-        "wrap_y": true,
+        "scroll_speed_x": 0,
+        "scroll_speed_y": -30,
+        "repeat": true,
         "objects": []
       }
     ]
@@ -91,11 +109,9 @@ Add limitless scrolling backgrounds to any scene.
 
 **Properties:**
 - `auto_scroll_enabled` - Enable auto-scrolling (default: false)
-- `scroll_velocity` - Scroll speed in pixels/second
-  - `x` - Horizontal scroll speed (positive = right)
-  - `y` - Vertical scroll speed (positive = down, negative = up)
-- `wrap_x` - Wrap horizontally when reaching edge
-- `wrap_y` - Wrap vertically when reaching edge
+- `scroll_speed_x` - Horizontal scroll speed in pixels/second
+- `scroll_speed_y` - Vertical scroll speed in pixels/second
+- `repeat` - Repeat layer content for looping backgrounds
 - `parallax_factor` - Parallax effect (0.0 = follows camera, 1.0 = static)
 - `depth` - Layer ordering (lower = behind)
 
@@ -112,8 +128,9 @@ Add limitless scrolling backgrounds to any scene.
         "name": "Background",
         "texture_file": "backgrounds/stars.png",
         "auto_scroll_enabled": true,
-        "scroll_velocity": {"x": 0, "y": -40},
-        "wrap_y": true
+        "scroll_speed_x": 0,
+        "scroll_speed_y": -40,
+        "repeat": true
       }
     ]
   },
@@ -136,11 +153,11 @@ Add limitless scrolling backgrounds to any scene.
 ### Step 2: Load Title Screen
 
 ```cpp
-// In Game::run() or Game::Game()
-load_scene("levels/title_screen.json");
-load_widgets_from_scene();
-m_state = GameState::TITLE;
+// Use the public scene loading flow
+load_and_apply_scene("levels/title_screen.json");
 ```
+
+`load_and_apply_scene(...)` keeps the scene load and runtime object creation path together, including HUD/widget creation.
 
 ### Step 3: Add Background Images
 
@@ -150,6 +167,8 @@ Create seamless tileable textures:
 - Recommended sizes: 640x480 or multiples
 
 ## Editor Integration
+
+Scrolling background authoring in the desktop editor is documented in more detail in [BACKGROUND_SYSTEM.md](BACKGROUND_SYSTEM.md).
 
 ### Adding Widgets in Editor
 
@@ -171,8 +190,8 @@ Widgets are added as FUD elements:
 3. Set texture file
 4. Enable scrolling:
    - Check `auto_scroll_enabled`
-   - Set `scroll_velocity` (x, y)
-   - Check `wrap_x` or `wrap_y` for seamless looping
+  - Set `scroll_speed_x` and `scroll_speed_y`
+  - Set `repeat` for seamless looping
 
 ## Advanced Usage
 
@@ -194,12 +213,23 @@ Create parallax scrolling with multiple layers at different speeds:
 ```json
 {
   "layers": [
-    {"scroll_velocity": {"y": -20}, "depth": 0},  // Far background
-    {"scroll_velocity": {"y": -40}, "depth": 1},  // Middle
-    {"scroll_velocity": {"y": -60}, "depth": 2}   // Near foreground
+    {"scroll_speed_y": -20, "depth": 0},
+    {"scroll_speed_y": -40, "depth": 1},
+    {"scroll_speed_y": -60, "depth": 2}
   ]
 }
 ```
+
+### Supported Widget Types
+
+Based on the current runtime factory, these widget type IDs are recognized:
+
+- `menu_button`
+- `icon_button`
+- `small_button`
+- `large_button`
+- `textured_button`
+- `scrollable_list`
 
 ### Widget Hierarchies
 

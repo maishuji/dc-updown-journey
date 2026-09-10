@@ -85,11 +85,10 @@ else
     exit 1
 fi
 
-# Run tests if they exist
-if [ -f "tilepanel_tests" ]; then
+# Run tests if CTest metadata exists
+if [ -f "CTestTestfile.cmake" ]; then
     print_status "Running tests..."
-    chmod +x tilepanel_tests
-    if ./tilepanel_tests; then
+    if ctest --output-on-failure; then
         print_success "All tests passed!"
     else
         print_warning "Some tests failed, but build is complete"
